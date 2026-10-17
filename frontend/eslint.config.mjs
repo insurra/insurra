@@ -2,6 +2,13 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 export default defineConfig([
-  ...nextVitals, ...nextTs,
-  globalIgnores([".next/**", "next-env.d.ts", "src/lib/api/types.gen.ts", "playwright-report/**", "test-results/**"]),
+  ...nextVitals,
+  ...nextTs,
+  globalIgnores([
+    ".next/**",
+    "next-env.d.ts",
+    "src/lib/api/types.gen.ts",
+    "playwright-report/**",
+    "test-results/**",
+  ]),
 ]);

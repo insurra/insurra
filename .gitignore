@@ -14,7 +14,7 @@ out/
 dist/
 build/
 *.tsbuildinfo
-.env
+.env*
 .env.local
 .env.*.local
 backend/.env
