@@ -36,8 +36,9 @@ Story-derived routing specifications (not listed in API CSV):
 | Story | Canonical proposed path | Contracts / status |
 | --- | --- | --- |
 | US-01-01..02 | POST /auth/register, /auth/login | RegisterRequest/LoginRequest → AuthSession; public 501, no credentials persisted. |
+| US-01-02 | GET /auth/google, /auth/google/callback | Live Google authorization-code + PKCE flow; creates/updates an account and returns a browser handoff token in the URL fragment. |
 | US-01-01..02 | POST /auth/verify-email, /auth/resend-verification, /auth/password-reset | VerificationRequest/EmailRequest → AuthMessage; public 501. |
-| US-01-02 | POST /auth/logout; GET /auth/me | Logout eventually 204; current 501 after session. AccountSummary for future authenticated account; current 501. Demo session is never an account. |
+| US-01-02 | POST /auth/logout; GET /auth/me | Live bearer account-session lookup and revocation. Demo session is never an account. |
 | US-12-02 | GET /data | DataInventory; scoped 501, no invented counts. |
 | US-14-01..02 | GET /coverage-needs | CoverageNeed[]; D; 501. Legacy /assessments/coverage-needs retained. |
 | US-11-02 | GET /audit/{event_id} | AuditEvent; owned 501 detail boundary. Existing list remains functional. |

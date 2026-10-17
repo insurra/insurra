@@ -20,9 +20,10 @@ Implemented:
 - Versioned, validated AU/ID country configuration and idempotent fixture seeding.
 - Deterministic, inclusive interval calculation: Raka has a **potential 76-day gap**, 16 April–30 June 2027. Because rules/policies are unverified, status is `NEEDS_VERIFICATION`, not a legal finding. Sinta returns `NOT_APPLICABLE`.
 - Responsive Indonesian application shell, persona selection, onboarding, dashboard, document metadata and audit pages.
+- Public cover, Google OAuth sign-in, revocable seven-day account sessions, and a guest/demo path.
 - Generated TypeScript/OpenAPI contracts, contract-drift checks, typed GET/POST/PUT/PATCH/DELETE and multipart/no-content/stream transport, additive migrations, scope/approval primitives, and automated verification.
 
-Contract-only (`501`): production-auth routing, document upload/detail/delete and field review, completeness, home summary, policy Q&A/SSE, pathway comparison, triage, claim cases/evidence/draft, action decisions/execution, data inventory/deletion, coverage needs, audit detail and sandbox submission. These are shared interfaces, not implemented product features. P1/bonus features and the full nineteen-screen PRD remain deferred; current pages are preserved.
+Contract-only (`501`): password registration/login/recovery, document upload/detail/delete and field review, completeness, home summary, policy Q&A/SSE, pathway comparison, triage, claim cases/evidence/draft, action decisions/execution, data inventory/deletion, coverage needs, audit detail and sandbox submission. These are shared interfaces, not implemented product features. P1/bonus features and the full nineteen-screen PRD remain deferred; current pages are preserved.
 
 ## Tech Stack
 
@@ -84,7 +85,7 @@ The backend owns domain contracts, calculations, consent and ownership. The fron
 
 ## Prerequisites
 
-Python 3.11+, Node.js 20.9+ (verified with Node 24.21.0), npm, and `make`. An installed `uv` is preferred; `make setup` bootstraps a repository-local uv into ignored `.tools/` when absent. Initial package/browser downloads require internet access. No API key or external database is needed.
+Python 3.11+, Node.js 20.9+ (verified with Node 24.21.0), npm, and `make`. An installed `uv` is preferred; `make setup` bootstraps a repository-local uv into ignored `.tools/` when absent. Initial package/browser downloads require internet access. Guest/demo mode needs no OAuth credential; Google sign-in requires a Google OAuth client and PostgreSQL database.
 
 ## Quick Start
 
@@ -139,6 +140,11 @@ Copy the root `.env.example` to `.env`. Pydantic and Next's configuration read t
 | `ENVIRONMENT` | `development` |
 | `SESSION_TTL_HOURS` | Optional, defaults to `24` |
 | `KB_ROOT` | Optional absolute override for the `kb/` folder |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Server-only Google OAuth credentials |
+| `GOOGLE_REDIRECT_URI` | Backend callback; locally `http://localhost:8000/auth/google/callback` |
+| `FRONTEND_URL`, `BACKEND_URL` | Trusted application URLs used by OAuth redirects |
+| `SESSION_SECRET` | Random server-only secret reserved for session hardening |
+| `ACCOUNT_SESSION_TTL_DAYS` | Account session lifetime; defaults to `7` |
 
 Never prefix secrets with `NEXT_PUBLIC_`. In future hosted builds, supply the public base URL at frontend build time and backend credentials through server environment configuration.
 
@@ -211,15 +217,15 @@ The deterministic engine still unions matching policy intervals and counts inclu
 
 ## Consent & Security
 
-This is **demo authentication, not production authentication**. Random 256-bit bearer tokens are hashed with SHA-256 in the database, sent in `X-Demo-Session`, and stored only in per-tab `sessionStorage` by the UI. Anyone possessing a token can access that synthetic session until expiry. There is no account login, token rotation, logout/revocation endpoint, rate limiting, cleanup scheduler, or protection against an XSS-compromised browser. Switching personas clears the tab's token and displayed data; the old server session remains until expiry. Use synthetic data only.
+Google OAuth account authentication and guest/demo sessions are separate. Google uses authorization code + PKCE and provider state cookies; the backend stores accounts, provider identities, and only SHA-256 hashes of revocable seven-day session tokens. Browser account tokens stay in per-tab `sessionStorage` and are returned from the callback in a URL fragment so they are not sent in HTTP referrers or server logs. Password auth remains 501. Demo sessions continue to use hashed opaque `X-Demo-Session` tokens and synthetic data only.
 
-Consent defaults false for all three purposes. Canonical GET/POST `/consents` reads/changes explicit purposes; policy_version is `1.5` for new decisions. The retained `/consent` API mirrors process_documents only. The existing screen grants/revokes documents only; it never silently enables AI or retention. No new privacy or auth screen is implemented.
+Consent defaults false for all three purposes. Canonical GET/POST `/consents` reads/changes explicit purposes; policy_version is `1.5` for new decisions. The retained `/consent` API mirrors process_documents only. The existing screen grants/revokes documents only; it never silently enables AI or retention. Google sign-in does not grant processing consent.
 
 Every protected call rechecks current database grants. Upload/external extraction/Q&A/claim-evidence stubs require process_documents AND external_ai; local processing stubs require process_documents. Seeded profile/record reads, audit and deterministic date checks remain available without those grants. Optional retention is not a processing prerequisite. Revocation blocks subsequent protected processing, but does not imply successful storage cleanup. No uploaded originals are stored by the current application; real retention cleanup must be implemented before storage is enabled.
 
 Consent does not authorize an action. Execution/sandbox stubs require an owned persisted APPROVED action, timestamp and exact canonical server payload SHA-256, with matching request context, before returning 501. They execute nothing. Future effects must also implement idempotency and lifecycle checks; approval/execute endpoints currently never return success.
 
-Audit metadata uses an allow-list of operational values; raw tokens, questions, document content and identifiers are excluded. Request IDs are generated by the server. CORS uses an explicit origin. Production authentication, medical triage, injection detection and full page/citation verification are not complete; guard extension points fail closed.
+Audit metadata uses an allow-list of operational values; raw tokens, questions, document content and identifiers are excluded. Request IDs are generated by the server. CORS uses explicit frontend origins. Password authentication, medical triage, injection detection and full page/citation verification are not complete; guard extension points fail closed.
 
 ## Development Commands
 
@@ -291,6 +297,6 @@ Original CSVs and the local alignment prompt remain reference material; CSVs are
 
 ## Next Steps
 
-Stop at shared foundation alignment. Production auth, verified country content, extraction/retrieval, medical routing, claim workflows, privacy cleanup, feature screens and P1/bonus work require separate reviewed scope. No task is assigned to a person or team here, and no feature branch is created.
+Verified country content, password auth, extraction/retrieval, medical routing, claim workflows, privacy cleanup, remaining feature screens and P1/bonus work require separate reviewed scope. No task is assigned to a person or team here, and no feature branch is created.
 
 **No team ownership has been assigned. Foundation is ready for a separate feature split only after maintainer review.** Read root, frontend and backend AGENTS.md before extending the repository.
