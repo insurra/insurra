@@ -28,6 +28,17 @@ class RulesEngine:
                 or profile.residence_context in rule.applicability.residence_context
             )
         ]
+        if record.country_code != profile.country_code:
+            return VisaCoverageAssessment(
+                applicable=bool(applicable_rules),
+                assessment_status=AssessmentStatus.NEEDS_VERIFICATION,
+                gap_periods=[],
+                explanation=(
+                    f"Catatan polis dan dokumen berasal dari {record.country_code}; "
+                    f"konteks profil saat ini {profile.country_code}. "
+                    "Kesesuaian perlindungan belum diverifikasi. Data asal tetap disimpan."
+                ),
+            )
         if not applicable_rules:
             return VisaCoverageAssessment(
                 applicable=False,
@@ -60,8 +71,7 @@ class RulesEngine:
             "verifikasi aturan dan polis tetap diperlukan."
         )
         if (
-            record.country_code != profile.country_code
-            or not start
+            not start
             or not end
             or not policies
             or any(p.coverage_start_date is None or p.coverage_end_date is None for p in policies)

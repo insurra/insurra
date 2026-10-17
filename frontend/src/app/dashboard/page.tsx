@@ -111,7 +111,10 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <h3>{policy.policy_type}</h3>
-                    <p>{policy.provider_name ?? "Penyedia belum diketahui"}</p>
+                    <p>
+                      {policy.provider_name ?? "Penyedia belum diketahui"} ·{" "}
+                      Negara catatan: {record.country_code}
+                    </p>
                   </div>
                   <span className="badge warning">BELUM DIVERIFIKASI</span>
                 </div>
@@ -167,7 +170,7 @@ export default function Dashboard() {
                 ? "Perlindungan & masa tinggal"
                 : "Konteks perlindunganmu"}
             </h2>
-            {assessment.applicable ? (
+            {assessment.assessment_status !== "NOT_APPLICABLE" ? (
               <>
                 {assessment.gap_days !== null &&
                 assessment.gap_days !== undefined ? (
@@ -176,7 +179,7 @@ export default function Dashboard() {
                     <span>hari potensi jeda</span>
                   </div>
                 ) : (
-                  <p>Tanggal perlu dilengkapi.</p>
+                  <p>Konteks dan tanggal perlu diverifikasi.</p>
                 )}
                 {assessment.gap_periods.map((gap) => (
                   <p className="gap-period" key={gap.start_date}>

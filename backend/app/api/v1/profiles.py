@@ -23,9 +23,24 @@ def profile(db: DB, session: ActiveSession):
 @router.put("", response_model=ProfileResponse)
 def update_profile(body: ProfileUpdate, db: DB, session: ActiveSession, kb: KB):
     row = profile_row(db, session.id)
+    changes = body.model_dump(mode="json", exclude_unset=True)
+    if changes.get("country_code", row.payload["country_code"]) != row.payload["country_code"]:
+        # A new residence cannot implicitly reuse the previous country's location/visa/budget.
+        # Explicit values in this update are re-confirmed by the caller; records stay untouched.
+        for field in (
+            "city",
+            "timezone",
+            "institution_name",
+            "arrival_date",
+            "visa_expiry_date",
+            "budget_range",
+            "currency",
+        ):
+            if field not in changes:
+                changes[field] = None
     payload = {
         **row.payload,
-        **body.model_dump(mode="json", exclude_unset=True),
+        **changes,
         "updated_at": datetime.now(UTC).isoformat(),
     }
     try:

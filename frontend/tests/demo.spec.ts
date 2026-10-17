@@ -92,3 +92,35 @@ test("persona, consent, dashboard, audit, revocation, and isolated switch", asyn
     ),
   ).toBe(true);
 });
+
+test("country changes retain origin labels and do not revive a stale gap", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Mulai demo Raka" }).click();
+  await expect(page).toHaveURL(/onboarding/);
+  await page.getByRole("link", { name: "Lihat data demo tanpa persetujuan" }).click();
+  await expect(page.locator(".gap-value strong")).toHaveText("76");
+  const token = await page.evaluate(() => sessionStorage.getItem("insurra.demo-session"));
+  if (!token) throw new Error("Expected an isolated synthetic demo session");
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+  for (const [country_code, residence_context] of [["ID", "DOMESTIC"], ["AU", "ABROAD"]]) {
+    const updated = await page.request.put(`${base}/api/v1/profile`, {
+      headers: { "X-Demo-Session": token },
+      data: { country_code, residence_context },
+    });
+    expect(updated.status()).toBe(200);
+    await page.reload();
+    await expect(page.locator(".profile-context")).toContainText(country_code);
+    await expect(page.locator(".gap-value strong")).toHaveCount(0);
+    await expect(page.locator(".assessment-card")).toContainText("PERLU VERIFIKASI");
+    await expect(page.locator(".assessment-card")).not.toContainText("Tidak berlaku");
+    await expect(page.locator(".policy-card")).toContainText("Negara catatan: AU");
+    await page.getByRole("link", { name: "Dokumen saya", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "oshc-synthetic.txt" })).toBeVisible();
+    await expect(page.locator(".document-row")).toContainText("Negara catatan: AU");
+    await page.getByRole("link", { name: "Ringkasan", exact: true }).click();
+  }
+  await page.getByRole("link", { name: "Dokumen saya", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "oshc-synthetic.txt" })).toBeVisible();
+  await expect(page.locator(".document-row")).toContainText("Negara catatan: AU");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});

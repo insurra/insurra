@@ -1630,7 +1630,7 @@ export interface components {
         };
         /**
          * ProfileUpdate
-         * @description Merge supplied fields into the actor's profile; never reset omitted fields.
+         * @description Partial profile update; country switches clear omitted country-bound metadata.
          */
         ProfileUpdate: {
             /** Display Name */

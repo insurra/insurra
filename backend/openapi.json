@@ -8491,7 +8491,7 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ProfileUpdate",
-        "description": "Merge supplied fields into the actor's profile; never reset omitted fields."
+        "description": "Partial profile update; country switches clear omitted country-bound metadata."
       },
       "ProposedAction": {
         "properties": {

@@ -58,7 +58,7 @@ class ProfileData(Contract):
 
 
 class ProfileUpdate(ProfileData):
-    """Merge supplied fields into the actor's profile; never reset omitted fields."""
+    """Partial profile update; country switches clear omitted country-bound metadata."""
 
     display_name: str | None = Field(
         default=None, min_length=1, max_length=100, json_schema_extra=non_nullable_update_schema

@@ -27,7 +27,9 @@ export default function Documents() {
             </div>
             <div>
               <h2>{doc.original_filename}</h2>
-              <p>{doc.document_type} · Sintetis</p>
+              <p>
+                {doc.document_type} · Negara catatan: {data.record.country_code} · Sintetis
+              </p>
             </div>
             <span className="badge neutral">MENUNGGU PEMROSESAN</span>
           </article>
