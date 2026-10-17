@@ -1,12 +1,19 @@
 import hashlib
+import io
 import json
+import ssl
 from datetime import UTC, datetime, timedelta
-from uuid import UUID
+from urllib.error import HTTPError
+from urllib.parse import parse_qs, urlparse
+from urllib.request import Request as UrlRequest
+from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import select
 
-from app.models import AuditRow, DemoSessionRow
+from app.api.auth import _provider_json
+from app.core.errors import AppError
+from app.models import AccountRow, AccountSessionRow, AuditRow, DemoSessionRow
 
 
 def test_health_and_docs(client):
@@ -36,6 +43,126 @@ def test_country_discovery_and_personas(client):
         "raka",
         "sinta",
     }
+
+
+def test_google_login_uses_state_and_pkce(client):
+    response = client.get("/auth/google", follow_redirects=False)
+    assert response.status_code == 302
+    assert response.headers["location"].startswith("https://accounts.google.com/o/oauth2/v2/auth?")
+    assert "code_challenge_method=S256" in response.headers["location"]
+    assert "insurra_oauth_state=" in response.headers["set-cookie"]
+
+
+def test_google_provider_uses_explicit_verified_ssl_context(monkeypatch):
+    class ProviderResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+        def read(self):
+            return b'{"access_token":"synthetic"}'
+
+    def fake_urlopen(_request, *, data, timeout, context):
+        assert data is None
+        assert timeout == 15
+        assert isinstance(context, ssl.SSLContext)
+        assert context.verify_mode == ssl.CERT_REQUIRED
+        assert context.check_hostname is True
+        return ProviderResponse()
+
+    monkeypatch.setattr("app.api.auth.urlopen", fake_urlopen)
+    assert _provider_json(UrlRequest("https://example.com")) == {"access_token": "synthetic"}
+
+
+def test_google_provider_surfaces_invalid_grant(monkeypatch):
+    def reject_request(*_args, **_kwargs):
+        raise HTTPError(
+            "https://oauth2.googleapis.com/token",
+            400,
+            "Bad Request",
+            {},
+            io.BytesIO(b'{"error":"invalid_grant","error_description":"private detail"}'),
+        )
+
+    monkeypatch.setattr("app.api.auth.urlopen", reject_request)
+    with pytest.raises(AppError) as caught:
+        _provider_json(UrlRequest("https://oauth2.googleapis.com/token"))
+    assert caught.value.status_code == 400
+    assert caught.value.code == "OAUTH_CODE_INVALID"
+    assert "private detail" not in caught.value.message
+
+
+def test_google_callback_creates_account_session(client, app, monkeypatch):
+    login = client.get("/auth/google", follow_redirects=False)
+    state = parse_qs(urlparse(login.headers["location"]).query)["state"][0]
+    responses = iter(
+        [
+            {"access_token": "synthetic-provider-token"},
+            {
+                "sub": "google-user-1",
+                "email": "google@example.com",
+                "email_verified": True,
+                "name": "Google Person",
+                "picture": "https://example.com/avatar.png",
+            },
+        ]
+    )
+    monkeypatch.setattr("app.api.auth._provider_json", lambda *_args, **_kwargs: next(responses))
+    callback = client.get(
+        f"/auth/google/callback?code=synthetic-code&state={state}", follow_redirects=False
+    )
+    assert callback.status_code == 303
+    assert callback.headers["location"].startswith(
+        "http://127.0.0.1:3000/auth/callback#access_token="
+    )
+    with app.state.session_factory() as db:
+        account = db.scalar(select(AccountRow).where(AccountRow.email == "google@example.com"))
+        assert account is not None
+        assert db.scalar(
+            select(AccountSessionRow).where(AccountSessionRow.account_id == account.id)
+        )
+
+
+def test_account_session_me_and_logout(client, app):
+    token = "synthetic-account-token"
+    now = datetime.now(UTC)
+    account_id = uuid4()
+    with app.state.session_factory() as db:
+        db.add(
+            AccountRow(
+                id=account_id,
+                email="person@example.com",
+                display_name="Synthetic Person",
+                avatar_url=None,
+                email_verified=True,
+                created_at=now,
+                updated_at=now,
+            )
+        )
+        db.add(
+            AccountSessionRow(
+                id=uuid4(),
+                account_id=account_id,
+                token_hash=hashlib.sha256(token.encode()).hexdigest(),
+                created_at=now,
+                expires_at=now + timedelta(days=7),
+                revoked_at=None,
+            )
+        )
+        db.commit()
+    headers = {"Authorization": f"Bearer {token}"}
+    me = client.get("/api/v1/auth/me", headers=headers)
+    assert me.status_code == 200
+    assert me.json()["email"] == "person@example.com"
+    assert me.json()["actor"] == {
+        "actor_type": "AUTHENTICATED_ACCOUNT",
+        "session_id": None,
+        "account_id": str(account_id),
+    }
+    assert client.post("/api/v1/auth/logout", headers=headers).status_code == 204
+    assert client.get("/api/v1/auth/me", headers=headers).status_code == 401
 
 
 @pytest.mark.parametrize("token", [None, "invalid-token", "", "x" * 129])

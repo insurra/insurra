@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api import auth
 from app.api.v1 import (
     actions,
     assessments,
@@ -17,6 +18,7 @@ from app.api.v1 import (
 from app.core.errors import ERROR_RESPONSES
 
 router = APIRouter(prefix="/api/v1", responses=ERROR_RESPONSES)
+router.include_router(auth.api_router)
 for module in (
     sessions,
     consent,

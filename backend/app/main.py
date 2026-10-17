@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from pydantic import TypeAdapter
 
+from app.api.auth import public_router as public_auth_router
 from app.api.v1.router import router
 from app.core.config import Settings, get_settings
 from app.core.database import make_engine, session_factory
@@ -42,9 +43,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.kb_loader = CountryKBLoader(settings.kb_root)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[settings.frontend_origin],
+        allow_origins=list(dict.fromkeys([settings.frontend_origin, settings.frontend_url])),
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-        allow_headers=["Content-Type", "X-Demo-Session"],
+        allow_headers=["Authorization", "Content-Type", "X-Demo-Session"],
         expose_headers=["X-Request-ID", "X-Total-Count"],
     )
 
@@ -58,6 +59,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     install_error_handlers(app)
     app.include_router(router)
+    app.include_router(public_auth_router)
 
     @app.get("/health", response_model=Health, responses=ERROR_RESPONSES, tags=["System"])
     def health():

@@ -68,6 +68,9 @@ class AuthMessage(Contract):
 
 class AccountSummary(Contract):
     id: UUID
+    email: Email | None = None
+    display_name: str | None = None
+    avatar_url: str | None = None
     email_verified: bool
     actor: Actor
 

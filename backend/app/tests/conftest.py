@@ -17,7 +17,17 @@ def app(tmp_path, monkeypatch):
     get_settings.cache_clear()
     config = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
     command.upgrade(config, "head")
-    application = create_app(Settings(database_url=url, openai_api_key=""))
+    application = create_app(
+        Settings(
+            database_url=url,
+            openai_api_key="",
+            frontend_origin="http://localhost:3000",
+            frontend_url="http://127.0.0.1:3000",
+            google_client_id="synthetic-client",
+            google_client_secret="synthetic-secret",
+            session_secret="synthetic-session-secret",
+        )
+    )
     with application.state.session_factory() as db:
         assert seed_personas(db) == 2
         assert seed_personas(db) == 0

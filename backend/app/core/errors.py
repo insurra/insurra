@@ -3,6 +3,7 @@ from uuid import uuid4
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 from app.schemas.common import ApiError
@@ -50,12 +51,21 @@ def install_error_handlers(app: FastAPI):
             request, exc.status_code, "HTTP_ERROR", "Permintaan tidak dapat diproses."
         )
 
+    @app.exception_handler(SQLAlchemyError)
+    async def database_error(request: Request, exc: SQLAlchemyError):
+        return error_response(
+            request,
+            503,
+            "DATABASE_UNAVAILABLE",
+            "Database sementara tidak dapat dihubungi. Silakan coba kembali.",
+        )
+
     @app.exception_handler(Exception)
     async def unexpected_error(request: Request, exc: Exception):
         return error_response(request, 500, "INTERNAL_ERROR", "Terjadi kesalahan internal.")
 
 
-ERROR_RESPONSES = {code: {"model": ApiError} for code in [401, 403, 404, 409, 422, 500, 501]}
+ERROR_RESPONSES = {code: {"model": ApiError} for code in [401, 403, 404, 409, 422, 500, 501, 503]}
 
 
 def not_implemented():
