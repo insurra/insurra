@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/app-shell";
 import { SessionProvider } from "@/lib/session";
+import { AuthProvider } from "@/lib/auth";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body>
-        <SessionProvider>
-          <AppShell>{children}</AppShell>
-        </SessionProvider>
+        <AuthProvider>
+          <SessionProvider>
+            <AppShell>{children}</AppShell>
+          </SessionProvider>
+        </AuthProvider>
       </body>
     </html>
   );
