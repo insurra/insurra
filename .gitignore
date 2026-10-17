@@ -38,3 +38,5 @@ Thumbs.db
 *.swp
 playwright-report/
 test-results/
+
+/docs/prd/*.csv
