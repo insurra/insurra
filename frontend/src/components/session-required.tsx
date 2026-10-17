@@ -1,21 +1,17 @@
+import "@/app/dashboard/dashboard.css";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
+
 export function SessionRequired() {
   return (
-    <div className="empty-state card">
-      <div className="empty-icon">
-        <ShieldCheck />
-      </div>
-      <h1>Mulai dari ceritamu.</h1>
-      <p>
-        Pilih persona demo untuk melihat profil dan perlindungan asuransinya.
-      </p>
-      <Button asChild>
-        <Link href="/">
-          Pilih persona <ArrowRight size={16} />
-        </Link>
-      </Button>
+    <div className="dx-empty">
+      <Image src="/mascot-shield.png" alt="" width={120} height={110} />
+      <h1>Start with a demo profile.</h1>
+      <p>Pick the demo to see a profile and its insurance protection.</p>
+      <Link href="/" className="dx-link">
+        Back to start <ArrowRight size={16} aria-hidden="true" />
+      </Link>
     </div>
   );
 }
