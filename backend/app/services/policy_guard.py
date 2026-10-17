@@ -43,9 +43,11 @@ class PolicyGuard:
         allowed_values = {
             "assessment_status": {"PASS", "GAP_FOUND", "NEEDS_VERIFICATION", "NOT_APPLICABLE"},
             "feature": {"documents", "chat", "care", "claims", "actions"},
+            "purpose": {"process_documents", "external_ai", "retention"},
+            "policy_version": {"1.5", "legacy-v1"},
         }
         for key, value in metadata.items():
-            if key in {"processing_consent", "changed"} and isinstance(value, bool):
+            if key in {"processing_consent", "changed", "granted"} and isinstance(value, bool):
                 output[key] = value
             elif key == "gap_days" and (value is None or type(value) is int):
                 output[key] = value

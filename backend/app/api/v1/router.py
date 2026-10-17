@@ -9,6 +9,7 @@ from app.api.v1 import (
     claims,
     consent,
     documents,
+    foundation,
     insurance,
     profiles,
     sessions,
@@ -28,5 +29,6 @@ for module in (
     claims,
     actions,
     audit,
+    foundation,
 ):
     router.include_router(module.router)

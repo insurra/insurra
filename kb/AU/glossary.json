@@ -1,5 +1,12 @@
 {
-  "OSHC": "Kategori asuransi kesehatan mahasiswa internasional",
-  "excess": "Biaya awal yang mungkin ditanggung sendiri; periksa polis",
-  "gap": "Selisih periode atau biaya; makna bergantung konteks"
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": {
+    "OSHC": "Kategori asuransi kesehatan mahasiswa internasional",
+    "excess": "Biaya awal yang mungkin ditanggung sendiri; periksa polis",
+    "gap": "Selisih periode atau biaya; makna bergantung konteks"
+  }
 }

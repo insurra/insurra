@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import Field, StrictBool
 
+from app.schemas.actor import Actor
 from app.schemas.common import Contract, CountryCode
 
 
@@ -24,6 +25,7 @@ class DemoSession(Contract):
     profile_id: UUID
     created_at: datetime
     expires_at: datetime
+    actor: Actor
 
 
 class SessionCreated(DemoSession):

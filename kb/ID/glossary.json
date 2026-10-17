@@ -1,5 +1,12 @@
 {
-  "BPJS": "Kategori jaminan kesehatan nasional",
-  "EMPLOYER": "Kategori asuransi dari pemberi kerja",
-  "rujukan": "Dokumen pengantar antar layanan; ketentuan perlu diperiksa"
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": {
+    "BPJS": "Kategori jaminan kesehatan nasional",
+    "EMPLOYER": "Kategori asuransi dari pemberi kerja",
+    "rujukan": "Dokumen pengantar antar layanan; ketentuan perlu diperiksa"
+  }
 }

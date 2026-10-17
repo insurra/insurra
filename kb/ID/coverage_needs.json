@@ -1,20 +1,27 @@
-[
-  {
-    "need_code": "BPJS",
-    "label": "BPJS",
-    "requirement_level": "RECOMMENDED",
-    "policy_types": [
-      "BPJS"
-    ],
-    "verification_status": "UNVERIFIED"
-  },
-  {
-    "need_code": "EMPLOYER",
-    "label": "EMPLOYER",
-    "requirement_level": "RECOMMENDED",
-    "policy_types": [
-      "EMPLOYER"
-    ],
-    "verification_status": "UNVERIFIED"
-  }
-]
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": [
+    {
+      "need_code": "BPJS",
+      "label": "BPJS",
+      "requirement_level": "RECOMMENDED",
+      "policy_types": [
+        "BPJS"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "need_code": "EMPLOYER",
+      "label": "EMPLOYER",
+      "requirement_level": "RECOMMENDED",
+      "policy_types": [
+        "EMPLOYER"
+      ],
+      "verification_status": "UNVERIFIED"
+    }
+  ]
+}

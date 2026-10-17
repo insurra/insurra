@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": [
+    {
+      "code": "oshc_certificate",
+      "label": "oshc_certificate"
+    },
+    {
+      "code": "policy_booklet",
+      "label": "policy_booklet"
+    },
+    {
+      "code": "visa_grant_notice",
+      "label": "visa_grant_notice"
+    },
+    {
+      "code": "employer_policy",
+      "label": "employer_policy"
+    },
+    {
+      "code": "insurance_card",
+      "label": "insurance_card"
+    },
+    {
+      "code": "other",
+      "label": "other"
+    },
+    {
+      "code": "receipt",
+      "label": "receipt"
+    },
+    {
+      "code": "medical_resume",
+      "label": "medical_resume"
+    },
+    {
+      "code": "prescription",
+      "label": "prescription"
+    },
+    {
+      "code": "referral",
+      "label": "referral"
+    }
+  ]
+}

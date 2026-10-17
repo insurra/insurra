@@ -1,37 +1,44 @@
 {
-  "pathways": [
-    {
-      "pathway_code": "GP",
-      "label": "Dokter umum",
-      "description": "Placeholder konfigurasi demo. Syarat dan jaringan fasilitas belum diverifikasi.",
-      "required_documents": [],
-      "estimated_out_of_pocket": null,
-      "currency": "AUD",
-      "uncertainties": [
-        "Biaya, waktu tunggu, kelayakan, dan dokumen belum diverifikasi."
-      ],
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": {
+    "pathways": [
+      {
+        "pathway_code": "GP",
+        "label": "Dokter umum",
+        "description": "Placeholder konfigurasi demo. Syarat dan jaringan fasilitas belum diverifikasi.",
+        "required_documents": [],
+        "estimated_out_of_pocket": null,
+        "currency": "AUD",
+        "uncertainties": [
+          "Biaya, waktu tunggu, kelayakan, dan dokumen belum diverifikasi."
+        ],
+        "source_url": null,
+        "verification_status": "UNVERIFIED"
+      },
+      {
+        "pathway_code": "URGENT_CARE",
+        "label": "Layanan perawatan mendesak",
+        "description": "Placeholder konfigurasi demo. Syarat dan jaringan fasilitas belum diverifikasi.",
+        "required_documents": [],
+        "estimated_out_of_pocket": null,
+        "currency": "AUD",
+        "uncertainties": [
+          "Biaya, waktu tunggu, kelayakan, dan dokumen belum diverifikasi."
+        ],
+        "source_url": null,
+        "verification_status": "UNVERIFIED"
+      }
+    ],
+    "emergency": {
+      "label": "Informasi darurat lokal harus diverifikasi sebelum aktivasi navigasi.",
+      "phone_number": null,
       "source_url": null,
-      "verification_status": "UNVERIFIED"
-    },
-    {
-      "pathway_code": "URGENT_CARE",
-      "label": "Layanan perawatan mendesak",
-      "description": "Placeholder konfigurasi demo. Syarat dan jaringan fasilitas belum diverifikasi.",
-      "required_documents": [],
-      "estimated_out_of_pocket": null,
-      "currency": "AUD",
-      "uncertainties": [
-        "Biaya, waktu tunggu, kelayakan, dan dokumen belum diverifikasi."
-      ],
-      "source_url": null,
+      "checked_at": null,
       "verification_status": "UNVERIFIED"
     }
-  ],
-  "emergency": {
-    "label": "Informasi darurat lokal harus diverifikasi sebelum aktivasi navigasi.",
-    "phone_number": null,
-    "source_url": null,
-    "checked_at": null,
-    "verification_status": "UNVERIFIED"
   }
 }

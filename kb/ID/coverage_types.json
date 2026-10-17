@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": [
+    {
+      "code": "BPJS",
+      "label": "BPJS"
+    },
+    {
+      "code": "EMPLOYER",
+      "label": "EMPLOYER"
+    },
+    {
+      "code": "PERSONAL_HEALTH",
+      "label": "PERSONAL_HEALTH"
+    },
+    {
+      "code": "TRAVEL",
+      "label": "TRAVEL"
+    },
+    {
+      "code": "LIFE",
+      "label": "LIFE"
+    }
+  ]
+}

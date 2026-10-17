@@ -1,32 +1,47 @@
-from datetime import UTC, datetime
-
 from fastapi import APIRouter
+from sqlalchemy import select
 
 from app.core.dependencies import DB, ActiveSession
-from app.models import ConsentRow
+from app.models import ConsentRow, PurposeConsentRow
+from app.schemas.consent import ConsentPurpose, PurposeConsent, PurposeConsentUpdate
 from app.schemas.session import ConsentState, ConsentUpdate
-from app.services.audit_logger import log_event
+from app.services.consents import update_purpose
 
-router = APIRouter(prefix="/consent", tags=["Consent"])
+router = APIRouter(tags=["Consent"])
 
 
-@router.get("", response_model=ConsentState)
+@router.get("/consent", response_model=ConsentState, deprecated=True)
 def get_consent(db: DB, session: ActiveSession):
+    """Compatibility view of process_documents only; never external_ai or retention."""
     return db.get(ConsentRow, session.id)
 
 
-@router.put("", response_model=ConsentState)
+@router.put("/consent", response_model=ConsentState, deprecated=True)
 def update_consent(body: ConsentUpdate, db: DB, session: ActiveSession):
-    row = db.get(ConsentRow, session.id)
-    changed = row.processing_consent != body.processing_consent
-    row.processing_consent = body.processing_consent
-    row.updated_at = datetime.now(UTC)
-    log_event(
+    update_purpose(
         db,
         session.id,
-        "CONSENT_GRANTED" if body.processing_consent else "CONSENT_REVOKED",
-        processing_consent=body.processing_consent,
-        changed=changed,
+        PurposeConsentUpdate(
+            purpose=ConsentPurpose.PROCESS_DOCUMENTS,
+            granted=body.processing_consent,
+        ),
     )
-    db.commit()
-    return row
+    return db.get(ConsentRow, session.id)
+
+
+@router.get("/consents", response_model=list[PurposeConsent])
+def get_purposes(db: DB, session: ActiveSession):
+    return list(
+        db.scalars(
+            select(PurposeConsentRow)
+            .where(
+                PurposeConsentRow.session_id == session.id,
+            )
+            .order_by(PurposeConsentRow.purpose)
+        )
+    )
+
+
+@router.post("/consents", response_model=PurposeConsent)
+def set_purpose(body: PurposeConsentUpdate, db: DB, session: ActiveSession):
+    return update_purpose(db, session.id, body)

@@ -2,9 +2,11 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from app.core.dependencies import ConsentedSession
+from app.core.dependencies import DB, ActiveActor, ConsentedSession
 from app.core.errors import not_implemented
+from app.repositories.ownership import owned_resource
 from app.schemas.action import ProposedAction
+from app.schemas.foundation import ActionDecisionRequest
 
 router = APIRouter(prefix="/actions", tags=["Actions"])
 
@@ -15,10 +17,24 @@ def actions(session: ConsentedSession):
 
 
 @router.post("/{action_id}/approve", response_model=ProposedAction)
-def approve(action_id: UUID, session: ConsentedSession):
+def approve(
+    action_id: UUID,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+    body: ActionDecisionRequest | None = None,
+):
+    owned_resource(db, actor, "action", action_id)
     not_implemented()
 
 
 @router.post("/{action_id}/reject", response_model=ProposedAction)
-def reject(action_id: UUID, session: ConsentedSession):
+def reject(
+    action_id: UUID,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+    body: ActionDecisionRequest | None = None,
+):
+    owned_resource(db, actor, "action", action_id)
     not_implemented()

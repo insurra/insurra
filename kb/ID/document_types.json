@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": [
+    {
+      "code": "bpjs_card",
+      "label": "bpjs_card"
+    },
+    {
+      "code": "insurance_card",
+      "label": "insurance_card"
+    },
+    {
+      "code": "policy_booklet",
+      "label": "policy_booklet"
+    },
+    {
+      "code": "hr_benefit",
+      "label": "hr_benefit"
+    },
+    {
+      "code": "employer_policy",
+      "label": "employer_policy"
+    },
+    {
+      "code": "other",
+      "label": "other"
+    },
+    {
+      "code": "receipt",
+      "label": "receipt"
+    },
+    {
+      "code": "medical_resume",
+      "label": "medical_resume"
+    },
+    {
+      "code": "prescription",
+      "label": "prescription"
+    },
+    {
+      "code": "referral",
+      "label": "referral"
+    }
+  ]
+}

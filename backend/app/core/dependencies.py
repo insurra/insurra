@@ -8,9 +8,11 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.errors import AppError
-from app.models import ConsentRow, DemoSessionRow
+from app.models import DemoSessionRow
+from app.schemas.actor import Actor, ActorType
+from app.schemas.consent import ConsentPurpose
+from app.services.consents import require_purposes
 from app.services.kb_loader import CountryKBLoader
-from app.services.policy_guard import PolicyGuard
 
 DB = Annotated[Session, Depends(get_db)]
 
@@ -38,9 +40,23 @@ ActiveSession = Annotated[DemoSessionRow, Depends(current_session)]
 
 
 def consent_session(db: DB, session: ActiveSession) -> DemoSessionRow:
-    consent = db.get(ConsentRow, session.id)
-    PolicyGuard().require_active_consent(consent is not None and consent.processing_consent)
+    require_purposes(db, session.id, (ConsentPurpose.PROCESS_DOCUMENTS,))
     return session
 
 
 ConsentedSession = Annotated[DemoSessionRow, Depends(consent_session)]
+
+
+def ai_session(db: DB, session: ActiveSession) -> DemoSessionRow:
+    require_purposes(db, session.id, (ConsentPurpose.PROCESS_DOCUMENTS, ConsentPurpose.EXTERNAL_AI))
+    return session
+
+
+AISession = Annotated[DemoSessionRow, Depends(ai_session)]
+
+
+def current_actor(session: ActiveSession) -> Actor:
+    return Actor(actor_type=ActorType.DEMO_SESSION, session_id=session.id)
+
+
+ActiveActor = Annotated[Actor, Depends(current_actor)]

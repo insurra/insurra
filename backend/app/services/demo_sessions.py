@@ -7,10 +7,12 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.models import ConsentRow, DemoSessionRow, InsuranceRecordRow, PersonaRow, ProfileRow
+from app.schemas.actor import Actor, ActorType
 from app.schemas.insurance import UnifiedInsuranceRecord
 from app.schemas.profile import UserProfile
 from app.schemas.session import DemoSession, SessionCreated
 from app.services.audit_logger import log_event
+from app.services.consents import initialize_consents
 
 
 def describe_session(db: Session, row: DemoSessionRow) -> DemoSession:
@@ -23,6 +25,7 @@ def describe_session(db: Session, row: DemoSessionRow) -> DemoSession:
         profile_id=profile.id,
         created_at=row.created_at,
         expires_at=row.expires_at,
+        actor=Actor(actor_type=ActorType.DEMO_SESSION, session_id=row.id),
     )
 
 
@@ -73,6 +76,7 @@ def create_demo_session(db: Session, persona_id: str, ttl_hours: int) -> Session
         )
     )
     db.add(ConsentRow(session_id=session.id, processing_consent=False, updated_at=now))
+    initialize_consents(db, session.id, now)
     log_event(db, session.id, "SESSION_CREATED")
     db.commit()
     return SessionCreated(**describe_session(db, session).model_dump(), session_token=token)

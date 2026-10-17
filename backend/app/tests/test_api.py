@@ -85,6 +85,10 @@ def test_consent_defaults_grants_revokes_and_audits(client, app, demo):
     grant = client.put("/api/v1/consent", headers=h, json={"processing_consent": True})
     assert grant.status_code == 200 and grant.json()["processing_consent"] is True
     assert (
+        client.post("/api/v1/chat/ask", headers=h, json={"question": "Manfaat?"}).status_code == 403
+    )
+    client.post("/api/v1/consents", headers=h, json={"purpose": "external_ai", "granted": True})
+    assert (
         client.post(
             "/api/v1/chat/ask", headers=h, json={"question": "Apa manfaat polis?"}
         ).status_code
@@ -208,13 +212,24 @@ def test_profile_validation_and_country_guard(client, demo):
         ("post", "/actions/00000000-0000-0000-0000-000000000001/reject", None),
     ],
 )
-def test_skeletons_fail_honestly_and_require_consent(client, demo, method, path, body):
-    _, h = demo()
+def test_skeletons_fail_honestly_and_require_consent(client, app, demo, method, path, body):
+    data, h = demo()
+    if path.startswith("/actions/"):
+        from app.models import ActionRow
+
+        with app.state.session_factory() as db:
+            db.add(
+                ActionRow(
+                    id=UUID(path.split("/")[2]), session_id=UUID(data["id"]), type="claim_form"
+                )
+            )
+            db.commit()
     kwargs = {"headers": h}
     if body is not None:
         kwargs["json"] = body
     assert client.request(method, "/api/v1" + path, **kwargs).status_code == 403
     client.put("/api/v1/consent", headers=h, json={"processing_consent": True})
+    client.post("/api/v1/consents", headers=h, json={"purpose": "external_ai", "granted": True})
     response = client.request(method, "/api/v1" + path, **kwargs)
     assert response.status_code == 501
     assert response.json()["code"] == "NOT_IMPLEMENTED"
@@ -225,6 +240,7 @@ def test_upload_is_explicitly_not_implemented(client, demo):
     files = {"file": ("synthetic.txt", b"SYNTHETIC", "text/plain")}
     assert client.post("/api/v1/documents/upload", headers=h, files=files).status_code == 403
     client.put("/api/v1/consent", headers=h, json={"processing_consent": True})
+    client.post("/api/v1/consents", headers=h, json={"purpose": "external_ai", "granted": True})
     assert client.post("/api/v1/documents/upload", headers=h, files=files).status_code == 501
 
 

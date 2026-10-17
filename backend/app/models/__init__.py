@@ -15,3 +15,13 @@ __all__ = [
     "PersonaRow",
     "ProfileRow",
 ]
+
+from app.models.foundation import (
+    ActionRow,
+    ClaimCaseRow,
+    DocumentRow,
+    ExtractedFieldRow,
+    PurposeConsentRow,
+)
+
+__all__ += ["ActionRow", "ClaimCaseRow", "DocumentRow", "ExtractedFieldRow", "PurposeConsentRow"]

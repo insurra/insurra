@@ -1,11 +1,18 @@
-[
-  {
-    "need_code": "OSHC",
-    "label": "OSHC",
-    "requirement_level": "RECOMMENDED",
-    "policy_types": [
-      "OSHC"
-    ],
-    "verification_status": "UNVERIFIED"
-  }
-]
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": [
+    {
+      "need_code": "OSHC",
+      "label": "OSHC",
+      "requirement_level": "RECOMMENDED",
+      "policy_types": [
+        "OSHC"
+      ],
+      "verification_status": "UNVERIFIED"
+    }
+  ]
+}

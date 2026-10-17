@@ -3,7 +3,13 @@ import re
 from pathlib import Path
 
 from app.core.errors import AppError
-from app.schemas.kb import CountryKB, CountryManifest
+from app.schemas.kb import (
+    CountryKB,
+    CountryManifest,
+    CountryResources,
+    InjectionPattern,
+    VersionedResource,
+)
 
 
 class CountryKBLoader:
@@ -25,11 +31,30 @@ class CountryKBLoader:
             raise AppError(
                 422, "UNSUPPORTED_COUNTRY", "Negara belum tersedia dalam basis pengetahuan."
             )
-        data = {
-            name: json.loads((folder / f"{name}.json").read_text())
-            for name in ("manifest", "rules", "coverage_needs", "pathways", "glossary")
-        }
-        kb = CountryKB.model_validate(data)
-        if kb.manifest.country_code != country_code:
+        manifest = CountryManifest.model_validate_json((folder / "manifest.json").read_text())
+        resources = CountryResources.model_validate(
+            {
+                name: json.loads((folder / f"{name}.json").read_text())
+                for name in CountryResources.model_fields
+            }
+        )
+        if manifest.country_code != country_code:
             raise ValueError("KB folder and manifest country code differ")
-        return kb
+        if any(
+            getattr(resources, name).version != manifest.version
+            for name in CountryResources.model_fields
+        ):
+            raise ValueError("Resource and manifest versions differ")
+        return CountryKB(
+            manifest=manifest,
+            rules=resources.rules.data,
+            coverage_needs=resources.coverage_needs.data,
+            pathways=resources.pathways.data,
+            glossary=resources.glossary.data,
+            resources=resources,
+        )
+
+    def load_injection_patterns(self) -> VersionedResource[list[InjectionPattern]]:
+        return VersionedResource[list[InjectionPattern]].model_validate_json(
+            (self.root / "injection_patterns.json").read_text()
+        )
