@@ -166,7 +166,7 @@ OpenAPI UI: `/docs`; machine schema: `/openapi.json`; health: `/health`. Domain 
 | GET | `/api/v1/demo/sessions/me` | Current session, excluding token |
 | GET / PUT | `/api/v1/consent` | Deprecated compatibility view/update of process_documents only |
 | GET / POST | `/api/v1/consents` | Read all grants / explicitly update `{ "purpose": "external_ai", "granted": true, "policy_version": "1.5" }` |
-| GET / PUT | `/api/v1/profile` | Read/update current profile; IDs/timestamps cannot be overwritten |
+| GET / PUT | `/api/v1/profile` | GET returns bare profile; PUT merges provided fields and returns `{profile,suggested_docs}`; IDs/timestamps cannot be overwritten |
 | GET | `/api/v1/insurance/record` | Session-owned seeded insurance record |
 | GET | `/api/v1/assessments/visa-gap` | Deterministic calculation; audit event |
 | GET | `/api/v1/audit?event_type=CONSENT_GRANTED` | Scoped array; also supports type=consent, optional limit/offset and X-Total-Count |
@@ -175,7 +175,9 @@ Canonical P0 future contracts return **501**; the complete method/path/schema/co
 
 Identity failures return 401, missing required purposes return 403, and foreign/missing object IDs return the same 404. Owned deferred operations return 501. Body references (coverage/claim/document/action IDs) are scoped as well. Invalid input returns 422 without echoing raw values. Every error uses `ApiError(code,message,details,request_id)`. Privacy deletion requires identity and exact `confirm: "HAPUS"`, never processing permission, and always returns 501 until complete cleanup exists.
 
-New generic claim-list contracts use `items` plus `pagination(limit,offset,total)` with limits 1–100. Existing audit list stays an array and remains unbounded if limit is omitted, preserving old callers; new callers should request `limit=20&offset=0`. Optional `type` values are answer, compare, action, guardrail, deletion and consent. Exact `event_type` continues to work.
+Canonical PUT `/profile` now returns `{profile,suggested_docs}`; PUT consumers must read `.profile`. Existing GET/demo behavior remains unchanged. Full legacy update bodies and partial PRD bodies are accepted; omitted fields are preserved and merged dates are validated before saving. Suggestions only project a VERIFIED versioned country KB resource (max six); shipped unverified resources return an empty list.
+
+New generic claim-list contracts use `items` (each containing `case`, `checklist`, `consistency_checks`) plus `pagination(limit,offset,total)` with limits 1–100. Existing audit list stays an array and remains unbounded if limit is omitted, preserving old callers; new callers should request `limit=20&offset=0`. Optional `type` values are answer, compare, action, guardrail, deletion and consent. Exact `event_type` continues to work.
 
 The client retains static `get/post/put` convenience calls. Use `api.request(method, pathTemplate, { token, params, query, body, signal })` for generated dynamic routes, `api.patch/delete` for those methods, and `api.stream` for future native byte-stream transport. Browser FormData sets its own boundary. No stream parser or AI response engine is active; all corresponding server routes still return ApiError/501.
 
@@ -225,12 +227,25 @@ Audit metadata uses an allow-list of operational values; raw tokens, questions, 
 | `make test` | Backend tests, isolated migrated SQLite DBs |
 | `make check` | Ruff check/format, ESLint, strict TypeScript, production build |
 | `make generate-types` | Export Python OpenAPI then generate TypeScript types |
-| `make check-contracts` | Verify both committed generated artifacts without modifying them |
+| `make check-contracts` | Verify committed generated artifacts and PRD HTTP route manifest without modifying them |
+| `make check-prd-contracts` | Verify all 21 mapped PRD HTTP operations exist in OpenAPI |
+| `make check-prd-source` | Compare local-only `docs/prd/PRD - Kontrak API.csv` against tracked manifest and OpenAPI |
 | `make test-client` | Run browser-independent typed HTTP transport tests |
+
+The source PRD CSV files are intentionally ignored. `make check-prd-contracts` checks the
+committed normalized HTTP manifest without private CSV access. When the local PRD CSV
+is available, use `make check-prd-source` to detect source-to-manifest drift. This
+checks HTTP methods, routes, multipart/query transport and registered response
+status codes; it does **not** prove semantic equivalence of every nested request/
+response field or completion of 501 feature routes. Review payload differences in
+`docs/prd/API_CONTRACTS.md` and `docs/prd/DECISIONS.md` before changing wire shapes.
+The CI workflow runs checks and browser smoke tests on locked dependencies; it has been validated locally with actionlint, but no hosted CI execution is claimed.
 
 ## Testing
 
-Verified on 17 October 2026: **77 backend tests, 6 typed-client tests and 2 existing desktop/mobile browser flows passed.** Ruff, ESLint, strict TypeScript, production build, migration/seed commands and generated-contract drift checks passed. No dependency upgrades were needed.
+Foundation stabilization verification on 17 October 2026: **128 backend tests, 7 typed-client tests and 2 existing desktop/mobile browser flows passed.** Ruff, ESLint, strict TypeScript, production build, migration/seed commands and generated-contract drift checks passed. No dependency upgrades were needed.
+
+Exact commands, migration checks, compatibility notes and limitations are recorded in [FOUNDATION_VERIFICATION.md](docs/FOUNDATION_VERIFICATION.md).
 
 Verification includes backend API/rules tests, fresh/populated migrations without data loss, idempotent fixtures, independent consent grant/revocation, owner-IDOR guards, composite foreign keys, persisted approval/hash validation, audit redaction/query pagination, OpenAPI references/snapshot and TypeScript artifact drift. No OpenAI key or live call is required.
 
@@ -244,7 +259,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Playwright starts both local services, migrates/seeds a separate `.cache/e2e.db`, and runs the complete flow at desktop and mobile widths. It checks consent, Raka's backend result, reload persistence, documents, audit filtering, revocation, persona switching, Sinta isolation, runtime errors and horizontal overflow. When services already run, Playwright reuses them; use `CI=1` to require fresh servers. A custom `PLAYWRIGHT_BROWSERS_PATH` may be used in restricted environments.
+Playwright starts both local services, migrates/seeds a separate `.cache/e2e.db`, and runs the complete flow at desktop and mobile widths. With `CI=1`, it builds and serves the production frontend so assertions do not depend on development-route compilation; local runs use the development server. It checks consent, Raka's backend result, reload persistence, documents, audit filtering, revocation, persona switching, Sinta isolation, runtime errors and horizontal overflow. When services already run, Playwright reuses them; use `CI=1` to require fresh servers and the production frontend. A custom `PLAYWRIGHT_BROWSERS_PATH` may be used in restricted environments.
 
 ## Known Limitations
 
@@ -261,6 +276,7 @@ Tracked mappings cover all 55 user stories (44 P0, 11 P1), all 19 screen names/r
 
 - [TRACEABILITY.md](docs/prd/TRACEABILITY.md): exact story IDs, names, priorities, foundation status and deferred integration.
 - [SCREEN_ROUTES.md](docs/prd/SCREEN_ROUTES.md): planned routes vs current partial demo/shells; no nineteen-page implementation claim.
+- [API_CONTRACT_MANIFEST.json](docs/prd/API_CONTRACT_MANIFEST.json): checked-in, machine-verifiable map of the 21 PRD HTTP operations. Source CSV files remain local-only.
 - [API_CONTRACTS.md](docs/prd/API_CONTRACTS.md): methods, schemas, purpose requirements, compatibility and 501 boundaries.
 - [SCHEMA_MAPPING.md](docs/prd/SCHEMA_MAPPING.md): added storage justifications and deferred feature tables/fields.
 - [DECISIONS.md](docs/prd/DECISIONS.md): namespace, Pydantic/Zod, demo auth, consent, enums, missing evidence, duplicates and safety tradeoffs.
