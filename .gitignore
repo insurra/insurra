@@ -38,5 +38,8 @@ Thumbs.db
 *.swp
 playwright-report/
 test-results/
-/docs/prd
+# PRD source CSVs are local-only; keep reviewed Markdown mappings tracked.
 /docs/prd/*.csv
+
+# Local task instructions; reviewed mappings and manifest remain tracked.
+/docs/prd/PROMPT_FOR_CODEX.md

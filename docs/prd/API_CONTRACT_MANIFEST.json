@@ -1,0 +1,175 @@
+{
+  "source": "PRD - Kontrak API.csv",
+  "api_prefix": "/api/v1",
+  "notes": "Normalized PRD endpoints; internal tools are not HTTP routes. Source CSV remains local-only.",
+  "http_contracts": [
+    {
+      "method": "GET",
+      "prd_path": "/api/actions",
+      "path": "/api/v1/actions",
+      "screen": "SC-10",
+      "request": "-",
+      "response": "actions[]"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/actions/:id/approve",
+      "path": "/api/v1/actions/{action_id}/approve",
+      "screen": "SC-10",
+      "request": "{edited_payload?, reason?}",
+      "response": "{status}"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/actions/:id/reject",
+      "path": "/api/v1/actions/{action_id}/reject",
+      "screen": "SC-10",
+      "request": "{edited_payload?, reason?}",
+      "response": "{status}"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/ask",
+      "path": "/api/v1/ask",
+      "screen": "SC-06",
+      "request": "{question}",
+      "response": "stream: {answer_points[{text, label, citations[{doc, page, quote}]}]} atau {redirect: \"emergency\"}"
+    },
+    {
+      "method": "GET",
+      "prd_path": "/api/audit?type=",
+      "path": "/api/v1/audit",
+      "screen": "SC-11",
+      "request": "type",
+      "response": "audit_logs[] (tersamar)"
+    },
+    {
+      "method": "GET",
+      "prd_path": "/api/claims",
+      "path": "/api/v1/claims",
+      "screen": "SC-09",
+      "request": "-",
+      "response": "{case, checklist[{item_key, required, rule_source, status}]}"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/claims",
+      "path": "/api/v1/claims",
+      "screen": "SC-07",
+      "request": "{path, coverage_id}",
+      "response": "{claim_case_id}"
+    },
+    {
+      "method": "GET",
+      "prd_path": "/api/claims/:id",
+      "path": "/api/v1/claims/{claim_case_id}",
+      "screen": "SC-09",
+      "request": "-",
+      "response": "{case, checklist[{item_key, required, rule_source, status}]}"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/claims/:id/draft-form",
+      "path": "/api/v1/claims/{claim_case_id}/draft-form",
+      "screen": "SC-09",
+      "request": "-",
+      "response": "{action_id, status: \"pending\"}"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/claims/:id/evidence",
+      "path": "/api/v1/claims/{claim_case_id}/evidence",
+      "screen": "SC-09",
+      "request": "multipart: file",
+      "response": "{matched_items[]}"
+    },
+    {
+      "method": "GET",
+      "prd_path": "/api/completeness?task=",
+      "path": "/api/v1/completeness",
+      "screen": "SC-04",
+      "request": "task",
+      "response": "{ready_pct, items[{field_key, status, suggested_doc}]}"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/consents",
+      "path": "/api/v1/consents",
+      "screen": "SC-01, SC-12",
+      "request": "{purpose, granted}",
+      "response": "consent"
+    },
+    {
+      "method": "DELETE",
+      "prd_path": "/api/data",
+      "path": "/api/v1/data",
+      "screen": "SC-12",
+      "request": "{confirm: \"HAPUS\"}",
+      "response": "{deleted: true}"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/documents",
+      "path": "/api/v1/documents",
+      "screen": "SC-03",
+      "request": "multipart: file, kind?",
+      "response": "{document_id, status}"
+    },
+    {
+      "method": "DELETE",
+      "prd_path": "/api/documents/:id",
+      "path": "/api/v1/documents/{document_id}",
+      "screen": "SC-12",
+      "request": "{confirm: \"HAPUS\"}",
+      "response": "{deleted: true}"
+    },
+    {
+      "method": "GET",
+      "prd_path": "/api/documents/:id",
+      "path": "/api/v1/documents/{document_id}",
+      "screen": "SC-03",
+      "request": "-",
+      "response": "{status, kind, injection_flag, fields[]}"
+    },
+    {
+      "method": "PATCH",
+      "prd_path": "/api/fields/:id",
+      "path": "/api/v1/fields/{field_id}",
+      "screen": "SC-03, SC-04",
+      "request": "{value?, confirm: true}",
+      "response": "field"
+    },
+    {
+      "method": "GET",
+      "prd_path": "/api/home/summary",
+      "path": "/api/v1/home/summary",
+      "screen": "SC-05",
+      "request": "-",
+      "response": "{active, expiring_30d, needs_verification, recommendations[≤3]}"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/pathways/compare",
+      "path": "/api/v1/pathways/compare",
+      "screen": "SC-07",
+      "request": "{complaint, service_type, city}",
+      "response": "{paths[{name, steps, requirements, est_out_of_pocket, docs, uncertainties, sources}]} atau {redirect: \"emergency\"}"
+    },
+    {
+      "method": "PUT",
+      "prd_path": "/api/profile",
+      "path": "/api/v1/profile",
+      "screen": "SC-02",
+      "request": "{employment_status, dependents, city, owned_coverage, priorities, budget_range}",
+      "response": "{profile, suggested_docs[]}"
+    },
+    {
+      "method": "POST",
+      "prd_path": "/api/triage",
+      "path": "/api/v1/triage",
+      "screen": "SC-06, SC-07 (internal)",
+      "request": "{text}",
+      "response": "{red_flag, matched[]}"
+    }
+  ]
+}

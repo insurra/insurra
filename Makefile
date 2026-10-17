@@ -16,7 +16,7 @@ dev-frontend:
 test:
 	cd backend && $(UV) run pytest
 check:
-	cd backend && $(UV) run ruff check . && $(UV) run ruff format --check .
+	cd backend && $(UV) run ruff check . ../scripts/verify_prd_contracts.py && $(UV) run ruff format --check . ../scripts/verify_prd_contracts.py
 	cd frontend && npm run lint && npm run typecheck && npm run build
 generate-types:
 	cd backend && $(UV) run python ../scripts/export_openapi.py
@@ -25,5 +25,12 @@ generate-types:
 .PHONY: check-contracts test-client
 check-contracts:
 	cd backend && $(UV) run python ../scripts/check_contracts.py
+	cd backend && $(UV) run python ../scripts/verify_prd_contracts.py
 test-client:
 	cd frontend && npm run test:client
+
+.PHONY: check-prd-contracts check-prd-source
+check-prd-contracts:
+	cd backend && $(UV) run python ../scripts/verify_prd_contracts.py
+check-prd-source:
+	cd backend && $(UV) run python ../scripts/verify_prd_contracts.py --csv "../docs/prd/PRD - Kontrak API.csv"

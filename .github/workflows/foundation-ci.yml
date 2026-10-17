@@ -1,0 +1,57 @@
+name: Foundation checks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.11'
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Install locked dependencies
+        run: make setup
+      - name: Backend tests
+        run: make test
+      - name: Lint, typecheck, frontend build
+        run: make check
+      - name: OpenAPI/TypeScript/PRD contract drift checks
+        run: make check-contracts
+      - name: Typed API client tests
+        run: make test-client
+  browser-smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.11'
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Install locked dependencies
+        run: make setup
+      - name: Install Chromium for Playwright
+        run: cd frontend && npx playwright install --with-deps chromium
+      - name: Browser demo smoke tests
+        run: cd frontend && CI=1 npm run test:e2e
