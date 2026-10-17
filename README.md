@@ -4,32 +4,32 @@
 
 Insurra helps Indonesian speakers understand unfamiliar health insurance systems. The intended product connects document evidence, policy questions, coverage checks, care pathways, and claim preparation in one workspace.
 
-This repository implements **Phase 1: Foundation & Contracts** of a 48-hour hackathon MVP. Its working demo uses entirely synthetic data for Raka, a student in Melbourne, and Sinta, a new employee in Jakarta. No real policy documents, personal identifiers, provider integrations, or paid credentials are required.
+This repository implements **Phase 1.5: Shared Foundation Alignment** of a 48-hour hackathon MVP. Its working demo uses entirely synthetic data for Raka, a student in Melbourne, and Sinta, a new employee in Jakarta. No real policy documents, personal identifiers, provider integrations, or paid credentials are required.
 
 ## Hackathon Scope
 
-Phase 1 provides stable interfaces for three development tracks: frontend; Document Intelligence and AI; rules and claims. Future features have typed OpenAPI contracts and return explicit `501 NOT_IMPLEMENTED`, after session and consent checks. Nothing is deployed.
+Phase 1.5 aligns the existing foundation with the complete PRD while preserving the working demo. It adds contracts, minimal shared storage, security boundaries, KB structures and tests. Product workflows and screen implementations remain deferred. Future routes return `501 NOT_IMPLEMENTED` after identity, purpose and object-scope checks. No team ownership, feature branches or deployments are assigned or created.
 
 ## Features
 
 Implemented:
 
 - Backend-backed, isolated demo sessions with opaque tokens, hashed at rest, expiring after 24 hours.
-- Explicit consent, false by default; grant/revoke controls and server-side enforcement.
-- Session-scoped profile read/update, seeded insurance records, and filtered audit history.
+- Independent `process_documents`, `external_ai`, and `retention` grants, false by default, with policy versions and grant/revocation timestamps. The existing demo control manages document-processing consent only; the canonical API manages all three purposes.
+- Session-scoped profile read/update, optional PRD profile metadata, seeded insurance records, and filtered audit history with optional pagination. Actor contracts distinguish demo sessions from future authenticated accounts.
 - Versioned, validated AU/ID country configuration and idempotent fixture seeding.
 - Deterministic, inclusive interval calculation: Raka has a **potential 76-day gap**, 16 April–30 June 2027. Because rules/policies are unverified, status is `NEEDS_VERIFICATION`, not a legal finding. Sinta returns `NOT_APPLICABLE`.
 - Responsive Indonesian application shell, persona selection, onboarding, dashboard, document metadata and audit pages.
-- Generated TypeScript contracts, typed fetch client, migrations, automated tests, linting and build commands.
+- Generated TypeScript/OpenAPI contracts, contract-drift checks, typed GET/POST/PUT/PATCH/DELETE and multipart/no-content/stream transport, additive migrations, scope/approval primitives, and automated verification.
 
-Planned: document upload/storage/extraction, completeness and coverage-needs checks, cited policy Q&A, care comparison, claim drafts and action approval/execution. Their pages honestly show the next-phase boundary.
+Contract-only (`501`): production-auth routing, document upload/detail/delete and field review, completeness, home summary, policy Q&A/SSE, pathway comparison, triage, claim cases/evidence/draft, action decisions/execution, data inventory/deletion, coverage needs, audit detail and sandbox submission. These are shared interfaces, not implemented product features. P1/bonus features and the full nineteen-screen PRD remain deferred; current pages are preserved.
 
 ## Tech Stack
 
 - Frontend: Next.js 16 App Router, React 19, TypeScript 5 strict mode, Tailwind CSS 4, initialized shadcn/ui Radix Button, Lucide, native fetch, React Context.
 - Backend: Python 3.11+, uv, FastAPI, Pydantic v2/Settings, SQLAlchemy 2, Alembic, Uvicorn, pytest, httpx, Ruff.
 - Persistence: SQLite locally; PostgreSQL through psycopg and `DATABASE_URL`. Supabase PostgreSQL is a future deployment option; Storage is not integrated.
-- AI seam: OpenAI Python SDK, Responses API and Pydantic Structured Outputs. Models default to `gpt-6.1-sol` and `gpt-6-luna`, both configurable. No Phase 1 route calls AI; account/model availability is not tested.
+- AI seam: OpenAI Python SDK, Responses API and Pydantic Structured Outputs. Models default to `gpt-6.1-sol` and `gpt-6-luna`, both configurable. No Phase 1.5 route calls AI; account/model availability is not tested.
 - Contracts: OpenAPI → openapi-typescript. Browser smoke tests: Playwright/Chromium.
 - Deployment targets only: Vercel frontend and Railway backend. No deployment configuration or deployment is performed.
 
@@ -61,7 +61,7 @@ The backend owns domain contracts, calculations, consent and ownership. The fron
 │   ├── src/components/      # Application shell and reusable UI
 │   ├── src/lib/api/         # Typed client + generated types.gen.ts
 │   ├── src/lib/session.tsx  # Per-tab demo session lifecycle
-│   └── tests/               # Desktop/mobile end-to-end demo flow
+│   └── tests/               # HTTP transport unit + desktop/mobile demo tests
 ├── backend/
 │   ├── app/api/v1/          # Functional endpoints and 501 skeletons
 │   ├── app/schemas/         # Pydantic domain/API/KB contracts
@@ -74,7 +74,9 @@ The backend owns domain contracts, calculations, consent and ownership. The fron
 │   └── openapi.json         # Generated API snapshot
 ├── kb/{AU,ID}/              # Versioned configuration, never legal advice
 ├── fixtures/{raka,sinta}/   # Synthetic profiles, records, metadata, placeholders
-├── scripts/                # Offline OpenAPI export
+├── scripts/                # Offline OpenAPI export and drift verification
+├── docs/prd/               # Tracked traceability/routes/API/schema/decisions docs
+│                           # Original local CSVs stay ignored and byte-identical
 ├── AGENTS.md
 ├── .env.example
 └── Makefile
@@ -116,6 +118,8 @@ Backend: **http://localhost:8000**. Interactive API docs: **http://localhost:800
 make test
 make check
 make generate-types
+make check-contracts
+make test-client
 ```
 
 Next uses Webpack for dev/build to avoid Turbopack worker-port restrictions in some local sandboxes. Fonts use a local system stack; builds need no Google Fonts network access.
@@ -160,41 +164,52 @@ OpenAPI UI: `/docs`; machine schema: `/openapi.json`; health: `/health`. Domain 
 | GET | `/api/v1/demo/personas` | Available seeded synthetic personas |
 | POST | `/api/v1/demo/sessions` | `{ "persona_id": "raka" }` or `"sinta"`; 201 and opaque token |
 | GET | `/api/v1/demo/sessions/me` | Current session, excluding token |
-| GET / PUT | `/api/v1/consent` | Read/update `{ "processing_consent": true }` |
+| GET / PUT | `/api/v1/consent` | Deprecated compatibility view/update of process_documents only |
+| GET / POST | `/api/v1/consents` | Read all grants / explicitly update `{ "purpose": "external_ai", "granted": true, "policy_version": "1.5" }` |
 | GET / PUT | `/api/v1/profile` | Read/update current profile; IDs/timestamps cannot be overwritten |
 | GET | `/api/v1/insurance/record` | Session-owned seeded insurance record |
 | GET | `/api/v1/assessments/visa-gap` | Deterministic calculation; audit event |
-| GET | `/api/v1/audit?event_type=CONSENT_GRANTED` | Session-scoped events; optional filter |
+| GET | `/api/v1/audit?event_type=CONSENT_GRANTED` | Scoped array; also supports type=consent, optional limit/offset and X-Total-Count |
 
-Stable future contracts return **501** with `ApiError` for valid, consented requests:
+Canonical P0 future contracts return **501**; the complete method/path/schema/consent matrix is in [API_CONTRACTS.md](docs/prd/API_CONTRACTS.md). The PRD `/api/...` paths map to `/api/v1/...`. Existing `/chat/ask`, `/care/compare`, `/claims/draft`, `/documents/upload`, `/assessments/completeness` and `/assessments/coverage-needs` foundation stubs remain compatible aliases with their original response shapes; canonical PRD routes use `/ask`, `/pathways/compare`, `/claims`, `/documents`, `/completeness` and `/coverage-needs`.
 
-- GET `/documents`, POST `/documents/upload` (multipart `file`, optional `document_type`).
-- GET `/assessments/completeness`, GET `/assessments/coverage-needs`.
-- POST `/chat/ask` (`question`), POST `/care/compare` (`symptoms`, optional `service_type`, `city`).
-- POST `/claims/draft` (`selected_pathway_code`).
-- GET `/actions`, POST `/actions/{action_id}/approve`, POST `/actions/{action_id}/reject`.
+Identity failures return 401, missing required purposes return 403, and foreign/missing object IDs return the same 404. Owned deferred operations return 501. Body references (coverage/claim/document/action IDs) are scoped as well. Invalid input returns 422 without echoing raw values. Every error uses `ApiError(code,message,details,request_id)`. Privacy deletion requires identity and exact `confirm: "HAPUS"`, never processing permission, and always returns 501 until complete cleanup exists.
 
-The future paths above also have the `/api/v1` prefix. Invalid/missing sessions return 401; protected features without consent return 403; invalid requests return 422. No skeleton returns fake success or persists an action. Error fields: `code`, `message`, nullable `details`, `request_id`. Validation errors omit raw submitted values.
+New generic claim-list contracts use `items` plus `pagination(limit,offset,total)` with limits 1–100. Existing audit list stays an array and remains unbounded if limit is omitted, preserving old callers; new callers should request `limit=20&offset=0`. Optional `type` values are answer, compare, action, guardrail, deletion and consent. Exact `event_type` continues to work.
+
+The client retains static `get/post/put` convenience calls. Use `api.request(method, pathTemplate, { token, params, query, body, signal })` for generated dynamic routes, `api.patch/delete` for those methods, and `api.stream` for future native byte-stream transport. Browser FormData sets its own boundary. No stream parser or AI response engine is active; all corresponding server routes still return ApiError/501.
 
 ## Database & Migrations
 
-`make migrate` applies the explicit initial Alembic revision. Startup does not create tables automatically. `make seed` inserts the two validated templates if absent and leaves existing sessions untouched; running it twice inserts zero additional templates. To change template content later, add a deliberate seed/version migration rather than overwriting active session data.
+`make migrate` applies `0001` → `0002` → `0003` without resetting data. `0001` is unchanged. `0002` adds purpose grants plus owner-scoped document, extracted-field, claim-case and action primitives; it backfills the historical boolean into process_documents only. It retains legacy rows, timestamps and audit history. **external_ai and retention are never inferred from that boolean.** `0003` adds canonical server action payload storage for approval-hash binding; it does not approve/execute actions or promote statuses.
 
-Tables: `demo_sessions`, `profiles`, `consents`, `insurance_records`, `audit_events`, `persona_templates`. JSON payloads are validated at application boundaries; UUID and JSON columns use portable SQLAlchemy types. SQLite foreign keys are enabled. `postgres://` and `postgresql://` URLs normalize to psycopg in online mode; `postgresql+psycopg://` is also accepted. For Supabase use an appropriate PostgreSQL connection string and SSL configuration in the server environment. No live PostgreSQL/Supabase instance was required or tested.
+`0002` must run against an online database because it reads historical rows for its portable UUID/timestamp-preserving backfill; `alembic --sql` is deliberately rejected for that revision. SQLite fresh and populated upgrade tests pass. New table DDL compiles for PostgreSQL, but no live PostgreSQL/Supabase upgrade was run. Use `make migrate` for both local and configured PostgreSQL environments.
+
+Original tables remain: demo_sessions, profiles, consents, insurance_records, audit_events, persona_templates. Added shared tables: purpose_consents, documents, extracted_fields, claim_cases, actions. Every new table has a specific identifier/consent/provenance purpose; these are not functioning product workflows. Composite owner foreign keys prevent cross-session document→field and claim→action links. Coverages remain validated insurance-record JSON and are scoped at API boundaries. Deeper feature storage, pages/OCR, benefits/chunks, claim histories, P1 and bonus tables are deferred. See [SCHEMA_MAPPING.md](docs/prd/SCHEMA_MAPPING.md).
+
+Startup never creates tables automatically. `make seed` inserts missing validated templates and leaves existing sessions untouched; repeat runs insert zero templates. Profiles use validated JSON with optional timezone/employment/dependents/coverage/priorities/budget/currency metadata, so existing rows require no destructive rewrite.
+
+UUID/JSON types are portable; SQLite foreign keys are enabled. `postgres://` and `postgresql://` normalize to psycopg online; `postgresql+psycopg://` is accepted directly. Future Supabase deployment must use server-only connection/SSL configuration. No Storage integration is active.
 
 ## Country Knowledge Base
 
-Each `kb/{ISO_CODE}/` has `manifest.json`, `rules.json`, `coverage_needs.json`, `pathways.json`, `glossary.json`. The loader validates every file and discovers countries from manifests. Add another folder with the same contracts to add a country; no engine country branches are needed. Rule applicability, policy types, and date field selection are configuration.
+AU and ID resources now use schema version `1.5` and country version `0.2.0`. Each resource file has `schema_version`, `version`, `source_url`, `checked_at`, `verification_status`, and typed `data`. Resource versions must match the manifest. The manifest retains its sources list. The loader exposes the existing `.rules`, `.coverage_needs`, `.pathways` and `.glossary` views, plus validated `.resources`. Direct JSON consumers must now unwrap `data` instead of treating files as bare arrays/objects.
 
-Seed rules are **UNVERIFIED**: `checked_at` and `source_url` are null, manifest sources are empty. No regulatory verification is claimed. Emergency routing has an explicitly unverified placeholder and no asserted telephone number; care routes stay disabled until reviewed. Before activating such guidance, check authoritative sources, add real URLs and review dates, and validate requirements with a qualified reviewer.
+Resources: rules, coverage_needs, pathways, glossary, coverage_types, document_types, extraction_templates, suggested_docs, tasks, required_fields, recommendation_rules, verification_steps, red_flags and emergency. The root injection_patterns resource is also versioned. Structural references/duplicates and verified-source metadata are validated. Add countries through folders, without country-specific service branches.
 
-All interval endpoints are inclusive. The engine unions matching policies, clips them to arrival through visa expiry, then counts each uncovered calendar day once. Missing dates/context return `NEEDS_VERIFICATION` with null day counts. Invalid ranges fail Pydantic validation. Money is a decimal string; no float calculations or currency conversions occur.
+Unknown resources are empty UNVERIFIED placeholders with null official sources/review dates. Existing vocabulary and synthetic interval configuration are retained; no legal requirements, medical trigger lists, emergency numbers, prices or policy facts are invented. There is no triage, injection detector, recommender or extraction pipeline activated by these files. Source verification and meaningful content remain future work.
+
+The deterministic engine still unions matching policy intervals and counts inclusive uncovered calendar days once. Raka remains 76 potential gap days, never an automatic visa-violation finding. Missing dates/context return NEEDS_VERIFICATION with null counts; invalid ranges fail validation. Money remains a decimal string; no float money arithmetic or currency conversion occurs.
 
 ## Consent & Security
 
 This is **demo authentication, not production authentication**. Random 256-bit bearer tokens are hashed with SHA-256 in the database, sent in `X-Demo-Session`, and stored only in per-tab `sessionStorage` by the UI. Anyone possessing a token can access that synthetic session until expiry. There is no account login, token rotation, logout/revocation endpoint, rate limiting, cleanup scheduler, or protection against an XSS-compromised browser. Switching personas clears the tab's token and displayed data; the old server session remains until expiry. Use synthetic data only.
 
-Consent is false by default, checked from the database on every protected request, and revocation blocks subsequent protected calls. Seeded profile/record reads and deterministic date assessments do not require processing consent. Consent never authorizes real submissions. All approval/execution routes remain unimplemented; future execution must resolve server-owned approval state and ownership, not trust client-provided status.
+Consent defaults false for all three purposes. Canonical GET/POST `/consents` reads/changes explicit purposes; policy_version is `1.5` for new decisions. The retained `/consent` API mirrors process_documents only. The existing screen grants/revokes documents only; it never silently enables AI or retention. No new privacy or auth screen is implemented.
+
+Every protected call rechecks current database grants. Upload/external extraction/Q&A/claim-evidence stubs require process_documents AND external_ai; local processing stubs require process_documents. Seeded profile/record reads, audit and deterministic date checks remain available without those grants. Optional retention is not a processing prerequisite. Revocation blocks subsequent protected processing, but does not imply successful storage cleanup. No uploaded originals are stored by the current application; real retention cleanup must be implemented before storage is enabled.
+
+Consent does not authorize an action. Execution/sandbox stubs require an owned persisted APPROVED action, timestamp and exact canonical server payload SHA-256, with matching request context, before returning 501. They execute nothing. Future effects must also implement idempotency and lifecycle checks; approval/execute endpoints currently never return success.
 
 Audit metadata uses an allow-list of operational values; raw tokens, questions, document content and identifiers are excluded. Request IDs are generated by the server. CORS uses an explicit origin. Production authentication, medical triage, injection detection and full page/citation verification are not complete; guard extension points fail closed.
 
@@ -210,12 +225,16 @@ Audit metadata uses an allow-list of operational values; raw tokens, questions, 
 | `make test` | Backend tests, isolated migrated SQLite DBs |
 | `make check` | Ruff check/format, ESLint, strict TypeScript, production build |
 | `make generate-types` | Export Python OpenAPI then generate TypeScript types |
+| `make check-contracts` | Verify both committed generated artifacts without modifying them |
+| `make test-client` | Run browser-independent typed HTTP transport tests |
 
 ## Testing
 
-Verified on 17 October 2026: **48 backend tests passed; 2 Playwright flows passed (desktop and mobile); Ruff, ESLint, TypeScript and production build passed.** Clean SQLite migrations and repeat seeding passed; PostgreSQL migration SQL compiled offline.
+Verified on 17 October 2026: **77 backend tests, 6 typed-client tests and 2 existing desktop/mobile browser flows passed.** Ruff, ESLint, strict TypeScript, production build, migration/seed commands and generated-contract drift checks passed. No dependency upgrades were needed.
 
-`make test` covers health/docs, country discovery/parsing, session creation/expiry, token hashing, isolation including repeated personas, consent/revocation, seeded records, deterministic gaps, missing/invalid dates, multiple coverage intervals, new-country configuration, guard validation, audit filtering/redaction, error shape, CORS, persistence across restart, OpenAPI snapshot drift, and mocked Responses integration. Tests require no OpenAI key or live AI call.
+Verification includes backend API/rules tests, fresh/populated migrations without data loss, idempotent fixtures, independent consent grant/revocation, owner-IDOR guards, composite foreign keys, persisted approval/hash validation, audit redaction/query pagination, OpenAPI references/snapshot and TypeScript artifact drift. No OpenAI key or live call is required.
+
+`make test-client` runs typed transport tests for query encoding, multipart boundaries, PATCH/DELETE path/body handling, 204, future streaming/error responses, cancellation and compile-time contract misuse. `make check` covers Ruff, ESLint, strict TypeScript and the production build. PostgreSQL DDL is compiled in tests; a live database migration remains untested.
 
 For browser tests, with ports 3000/8000 available:
 
@@ -229,17 +248,27 @@ Playwright starts both local services, migrates/seeds a separate `.cache/e2e.db`
 
 ## Known Limitations
 
-- All Phase 2 routes are deliberate 501s; no actual uploads/storage, parsing/OCR, retrieval, chat, care advice, benefit assessment, claim draft or execution is enabled.
-- Source validation utilities are conservative foundations, not completed citation/injection/triage safeguards.
+- All future product/auth/privacy/streaming routes are deliberate 501s; no actual uploads/storage, parsing/OCR, retrieval, chat, care advice, benefit assessment, claim draft or execution is enabled.
+- Source validation and approval checks are conservative foundations, not completed citation/injection/triage/execution safeguards. File size/MIME enforcement, cleanup, upload deduplication/cache and rate limiting remain feature implementation work.
 - KB configuration is unchecked demo material, not regulatory guidance. No emergency-number or legal-compliance claims are made.
 - No live PostgreSQL, Supabase, OpenAI model availability, deployment or real provider integration was tested.
 - The installed Starlette/FastAPI test client emits a deprecation notice for httpx; tests still pass with the requested httpx dependency.
 - `npm audit` reports five high findings in the development lint chain (`braces` → `micromatch` → `fast-glob` → Next ESLint tooling). No patched compatible `braces` version was available when installed. `npm audit --omit=dev` reports zero findings. Recheck upstream before publishing; do not blindly downgrade Next or use `audit fix --force`.
 
+## PRD Alignment & Remaining Work
+
+Tracked mappings cover all 55 user stories (44 P0, 11 P1), all 19 screen names/routes (including the Bonus screen), every API CSV entry and shared storage decisions:
+
+- [TRACEABILITY.md](docs/prd/TRACEABILITY.md): exact story IDs, names, priorities, foundation status and deferred integration.
+- [SCREEN_ROUTES.md](docs/prd/SCREEN_ROUTES.md): planned routes vs current partial demo/shells; no nineteen-page implementation claim.
+- [API_CONTRACTS.md](docs/prd/API_CONTRACTS.md): methods, schemas, purpose requirements, compatibility and 501 boundaries.
+- [SCHEMA_MAPPING.md](docs/prd/SCHEMA_MAPPING.md): added storage justifications and deferred feature tables/fields.
+- [DECISIONS.md](docs/prd/DECISIONS.md): namespace, Pydantic/Zod, demo auth, consent, enums, missing evidence, duplicates and safety tradeoffs.
+
+Original CSVs and the local alignment prompt remain reference material; CSVs are ignored, unchanged and never committed. These Markdown mappings and this README are self-contained.
+
 ## Next Steps
 
-1. **Frontend developer:** work against generated response types and real error states; connect feature pages when backend implementations replace their 501 boundaries.
-2. **Document/AI developer:** implement upload/storage, extraction and original-page evidence behind the consent dependency. Return validated `ExtractedField` data, preserve currency, verify quotations, and only then wire `ResponsesGateway` to cited Q&A. See the official [Structured Outputs documentation](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses).
-3. **Rules/claims developer:** verify/version KB sources, implement completeness/coverage-needs and reviewed pathways, then checklist/draft persistence. Persist proposed actions and enforce server-side approval before any future execution.
+Stop at shared foundation alignment. Production auth, verified country content, extraction/retrieval, medical routing, claim workflows, privacy cleanup, feature screens and P1/bonus work require separate reviewed scope. No task is assigned to a person or team here, and no feature branch is created.
 
-Phase 2 is not started automatically. Review `AGENTS.md` before extending the foundation.
+**No team ownership has been assigned. Foundation is ready for a separate feature split only after maintainer review.** Read root, frontend and backend AGENTS.md before extending the repository.

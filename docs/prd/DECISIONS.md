@@ -27,3 +27,5 @@ Baseline: seven foundation commits through `56a3422`. Read all five local CSVs w
 | Local PRD directory is already ignored by an uncommitted user change | Preserve that user change. Add the explicit CSV ignore rule as our own staged change; force-stage only named generated Markdown mapping files. Never stage CSVs. Preserve CSV hashes byte-for-byte. |
 
 Detailed route/status mappings and storage justifications are maintained in adjacent documents. README and all AGENTS files must remain self-contained without the local CSVs.
+
+Migration revisions: 0001 is untouched; 0002 adds consent/scoped identities and backfills online; 0003 adds approval payload JSON without changing approval statuses. Online execution is required for 0002; table DDL portability is checked separately. Resource schema 1.5 uses country resource version 0.2.0 envelopes; direct file consumers must unwrap data while the shared loader preserves existing views.

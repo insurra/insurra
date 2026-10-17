@@ -1,6 +1,6 @@
 # Shared storage mapping
 
-The initial `0001` migration is immutable. Phase 1.5 adds revision `0002` only. Existing sessions, profile JSON, consent booleans, insurance record JSON and audit entries are retained. Existing insurance fixture statuses and IDs are not silently upgraded.
+The initial `0001` migration is immutable. Phase 1.5 adds revisions `0002` (scopes/consents) and `0003` (approval payload binding). Existing sessions, profile JSON, consent booleans, insurance record JSON and audit entries are retained. Existing insurance fixture statuses and IDs are not silently upgraded.
 
 | Exact PRD entity | Existing storage | Minimum alignment | Deferred fields/storage |
 | --- | --- | --- | --- |
@@ -14,7 +14,7 @@ The initial `0001` migration is immutable. Phase 1.5 adds revision `0002` only. 
 | clause_chunks | none | None. | Entire retrieval/chunk/vector feature deferred; no vector database. |
 | claim_cases | Legacy Claim DTO only | New claim_cases identity primitive: id, session_id FK/index, coverage_id reference to owned JSON policy, country_code, path, status DRAFT, created_at. Essential for scoped claim-detail/evidence/draft identifiers. No creation endpoint implemented. | complaint text, status history, consistency execution, sandbox lifecycle; expanded lifecycle exists only as API enum. |
 | claim_items | ClaimChecklistItem DTO only | Typed checklist/consistency response contracts. | Persistence and checklist generation deferred. |
-| actions | ProposedAction DTO only | New actions identity/approval primitive: id, session_id FK/index, claim_case_id scoped FK nullable, type, status PENDING, approved_at nullable, approved_payload_sha256 nullable. Essential for actor-bound approval and future execution guard; no approval/execution mutation is implemented. | Payload persistence/edits, approval hashing workflow, executor/idempotency and all external effects. Bonus testnet type deferred. |
+| actions | ProposedAction DTO only | New actions identity/approval primitive: id, session_id FK/index, claim_case_id scoped FK nullable, type, status PENDING, approved_at nullable, approved_payload_sha256 nullable, payload JSON (0003) bound by deterministic SHA-256. Essential for actor-bound approval and future execution guard; no approval/execution mutation is implemented. | Payload creation/edit workflows, approval transitions/hash persistence workflow, executor/idempotency and all external effects. Bonus testnet type deferred. |
 | audit_logs | audit_events(id, session_id FK, event_type, outcome, event_metadata, created_at) | Preserve rows; operational allow-list adds purpose, granted and known policy versions. Add scoped query/filter/pagination contracts; never raw data. | Tool traces, screen/detail presentation, semantic subtype workflows; no invented events for demo features. |
 | family_members (P1) | none | None. | Entire P1 feature. |
 | products (P1) | none | None. | Entire P1 feature. |
@@ -23,3 +23,5 @@ The initial `0001` migration is immutable. Phase 1.5 adds revision `0002` only. 
 | trips (mentioned in US-16-01, absent from data CSV) | none | Document discrepancy only. | Entire P1 table/feature. |
 
 All new owner-bearing tables are explicitly demo-session scoped. Authenticated account identity is a contract boundary, not an implemented accounts table. Composite foreign keys on extraction-to-document and action-to-claim references prevent crossing sessions even through direct writes. UUID and JSON representations remain portable to SQLite/PostgreSQL; money remains a decimal string. No CREATE ALL, dropping existing tables, or silent database reset is permitted.
+
+Revision 0002 requires an online database for its historical consent backfill. Offline full migration SQL export is unsupported; PostgreSQL table DDL compilation is tested without claiming a live PostgreSQL upgrade.
