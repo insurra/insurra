@@ -62,6 +62,25 @@ class VerificationRequest(Contract):
     token: SecretStr = Field(min_length=1, max_length=4096)
 
 
+class ResetPasswordRequest(Contract):
+    token: SecretStr = Field(min_length=1, max_length=4096)
+    password: SecretStr = Field(min_length=1, max_length=128)
+    password_confirmation: SecretStr = Field(min_length=1, max_length=128)
+
+    @model_validator(mode="after")
+    def password_requirements(self):
+        value = self.password.get_secret_value()
+        if value != self.password_confirmation.get_secret_value():
+            raise ValueError("Password confirmation must match")
+        if (
+            len(value) < 8
+            or not any(c.isalpha() for c in value)
+            or not any(c.isdigit() for c in value)
+        ):
+            raise ValueError("Password requires at least 8 characters, letters and digits")
+        return self
+
+
 class AuthMessage(Contract):
     message: str
 
@@ -73,6 +92,8 @@ class AccountSummary(Contract):
     avatar_url: str | None = None
     email_verified: bool
     actor: Actor
+    consent_decided: bool = False
+    profile_completed: bool = False
 
     @model_validator(mode="after")
     def account_actor(self):
