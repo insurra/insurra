@@ -8,13 +8,23 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.errors import AppError
-from app.models import DemoSessionRow
+from app.models import AccountRow, DemoSessionRow
 from app.schemas.actor import Actor, ActorType
 from app.schemas.consent import ConsentPurpose
+from app.services.account_access import active_account
 from app.services.consents import require_purposes
 from app.services.kb_loader import CountryKBLoader
 
 DB = Annotated[Session, Depends(get_db)]
+
+
+def current_account(
+    db: DB, authorization: Annotated[str | None, Header(max_length=300)] = None
+) -> AccountRow:
+    return active_account(db, authorization)[1]
+
+
+ActiveAccount = Annotated[AccountRow, Depends(current_account)]
 
 
 def get_kb(request: Request) -> CountryKBLoader:

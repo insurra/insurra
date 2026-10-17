@@ -5,8 +5,8 @@
   "policies": [
     {
       "id": "966fd9c9-aae1-5c2a-862d-e7173b37c670",
-      "provider_name": "Penyedia sintetis (demo)",
-      "policy_name": "BPJS — data sintetis",
+      "provider_name": "Synthetic provider (demo)",
+      "policy_name": "BPJS (synthetic data)",
       "policy_type": "BPJS",
       "policy_number_masked": "DEMO-****",
       "coverage_start_date": "2026-10-01",
@@ -14,7 +14,7 @@
       "coverage_items": [
         {
           "coverage_code": "OUTPATIENT",
-          "benefit_name": "Rawat jalan (belum diverifikasi)",
+          "benefit_name": "Outpatient care (not yet verified)",
           "coverage_status": "UNKNOWN",
           "limit_amount": null,
           "remaining_amount": null,
@@ -29,8 +29,8 @@
     },
     {
       "id": "bc2f7c2d-08b2-5368-8673-eddf255b9a48",
-      "provider_name": "Penyedia sintetis (demo)",
-      "policy_name": "EMPLOYER — data sintetis",
+      "provider_name": "Synthetic provider (demo)",
+      "policy_name": "EMPLOYER (synthetic data)",
       "policy_type": "EMPLOYER",
       "policy_number_masked": "DEMO-****",
       "coverage_start_date": "2026-10-01",
@@ -38,7 +38,7 @@
       "coverage_items": [
         {
           "coverage_code": "OUTPATIENT",
-          "benefit_name": "Rawat jalan (belum diverifikasi)",
+          "benefit_name": "Outpatient care (not yet verified)",
           "coverage_status": "UNKNOWN",
           "limit_amount": null,
           "remaining_amount": null,

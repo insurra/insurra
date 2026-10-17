@@ -4,5 +4,9 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
-  "data": []
+  "data": [
+    {"task_code": "outpatient_claim", "label": "Outpatient claim preparation", "policy_types": ["PERSONAL_HEALTH", "EMPLOYER"]},
+    {"task_code": "inpatient_claim", "label": "Inpatient claim preparation", "policy_types": ["PERSONAL_HEALTH", "EMPLOYER"]},
+    {"task_code": "bpjs_care", "label": "BPJS healthcare preparation", "policy_types": ["BPJS"]}
+  ]
 }
