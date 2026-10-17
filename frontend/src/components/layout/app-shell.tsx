@@ -80,6 +80,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               )}
             </Link>
           ))}
+          <Link
+            href="/audit"
+            aria-current={pathname === "/audit" ? "page" : undefined}
+            className={cn(
+              "nav-item mobile-utility",
+              pathname === "/audit" && "active",
+            )}
+          >
+            <Activity size={18} />
+            Riwayat aktivitas
+          </Link>
+          <Link
+            href="/onboarding"
+            aria-current={pathname === "/onboarding" ? "page" : undefined}
+            className={cn(
+              "nav-item mobile-utility",
+              pathname === "/onboarding" && "active",
+            )}
+          >
+            <SlidersHorizontal size={18} />
+            Privasi & persetujuan
+          </Link>
         </nav>
         <div className="sidebar-bottom">
           <div className="help-card">

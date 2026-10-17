@@ -1382,3 +1382,19 @@ p {
     scroll-behavior: auto !important;
   }
 }
+
+/* Keep utility controls reachable on short desktops and in the mobile navigation. */
+.sidebar {
+  overflow-y: auto;
+}
+.mobile-utility {
+  display: none;
+}
+@media (max-width: 760px) {
+  .sidebar {
+    overflow: visible;
+  }
+  .mobile-utility {
+    display: flex;
+  }
+}

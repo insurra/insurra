@@ -1,0 +1,42 @@
+from pathlib import Path
+
+import pytest
+from alembic import command
+from alembic.config import Config
+from fastapi.testclient import TestClient
+
+from app.core.config import Settings, get_settings
+from app.main import create_app
+from app.seeds.demo import seed_personas
+
+
+@pytest.fixture
+def app(tmp_path, monkeypatch):
+    url = f"sqlite:///{tmp_path / 'test.db'}"
+    monkeypatch.setenv("DATABASE_URL", url)
+    get_settings.cache_clear()
+    config = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
+    command.upgrade(config, "head")
+    application = create_app(Settings(database_url=url, openai_api_key=""))
+    with application.state.session_factory() as db:
+        assert seed_personas(db) == 2
+        assert seed_personas(db) == 0
+    yield application
+    get_settings.cache_clear()
+
+
+@pytest.fixture
+def client(app):
+    with TestClient(app) as http:
+        yield http
+
+
+@pytest.fixture
+def demo(client):
+    def create(persona="raka"):
+        response = client.post("/api/v1/demo/sessions", json={"persona_id": persona})
+        assert response.status_code == 201, response.text
+        data = response.json()
+        return data, {"X-Demo-Session": data["session_token"]}
+
+    return create

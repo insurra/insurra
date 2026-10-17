@@ -4,5 +4,5 @@ import path from "node:path";
 
 // Only NEXT_PUBLIC_* values are eligible for browser inlining.
 loadEnvConfig(path.resolve(__dirname, ".."));
-const nextConfig: NextConfig = { poweredByHeader: false };
+const nextConfig: NextConfig = { poweredByHeader: false, devIndicators: false };
 export default nextConfig;
