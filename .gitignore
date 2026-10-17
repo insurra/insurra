@@ -38,5 +38,5 @@ Thumbs.db
 *.swp
 playwright-report/
 test-results/
-
+/docs/prd
 /docs/prd/*.csv
