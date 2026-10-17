@@ -175,7 +175,7 @@ Canonical P0 future contracts return **501**; the complete method/path/schema/co
 
 Identity failures return 401, missing required purposes return 403, and foreign/missing object IDs return the same 404. Owned deferred operations return 501. Body references (coverage/claim/document/action IDs) are scoped as well. Invalid input returns 422 without echoing raw values. Every error uses `ApiError(code,message,details,request_id)`. Privacy deletion requires identity and exact `confirm: "HAPUS"`, never processing permission, and always returns 501 until complete cleanup exists.
 
-Canonical PUT `/profile` now returns `{profile,suggested_docs}`; PUT consumers must read `.profile`. Existing GET/demo behavior remains unchanged. Full legacy update bodies and partial PRD bodies are accepted; omitted fields are preserved and merged dates are validated before saving. Suggestions only project a VERIFIED versioned country KB resource (max six); shipped unverified resources return an empty list.
+Canonical PUT `/profile` now returns `{profile,suggested_docs}`; PUT consumers must read `.profile`. Existing GET/demo behavior remains unchanged. Full legacy update bodies and partial PRD bodies are accepted; same-country omitted fields are preserved, country switches reset omitted destination metadata, and merged dates are validated before saving. Suggestions only project a VERIFIED versioned country KB resource (max six); shipped unverified resources return an empty list.
 
 New generic claim-list contracts use `items` (each containing `case`, `checklist`, `consistency_checks`) plus `pagination(limit,offset,total)` with limits 1–100. Existing audit list stays an array and remains unbounded if limit is omitted, preserving old callers; new callers should request `limit=20&offset=0`. Optional `type` values are answer, compare, action, guardrail, deletion and consent. Exact `event_type` continues to work.
 
@@ -192,6 +192,12 @@ Original tables remain: demo_sessions, profiles, consents, insurance_records, au
 Startup never creates tables automatically. `make seed` inserts missing validated templates and leaves existing sessions untouched; repeat runs insert zero templates. Profiles use validated JSON with optional timezone/employment/dependents/coverage/priorities/budget/currency metadata, so existing rows require no destructive rewrite.
 
 UUID/JSON types are portable; SQLite foreign keys are enabled. `postgres://` and `postgresql://` normalize to psycopg online; `postgresql+psycopg://` is accepted directly. Future Supabase deployment must use server-only connection/SSL configuration. No Storage integration is active.
+
+## Country context and frontend route integration
+
+Country edits select the new KB without rewriting original insurance/documents. On a country change, omitted city, timezone, institution, visa dates and budget/currency are cleared from the profile; explicit destination values remain accepted. Other same-country partial updates retain omitted values. A record/profile country mismatch returns NEEDS_VERIFICATION with no numerical gap; switching back cannot reuse old visa dates unless explicitly supplied again. Demo policy/document labels show the original record country. API shapes, purpose guards and migrations are unchanged.
+
+[SCREEN_ROUTES.md](docs/prd/SCREEN_ROUTES.md) maps every existing demo URL to its intended PRD screen: dashboard→home, ask-policy→ask, care→pathways, coverage→coverage-needs; documents/audit keep their paths. The consent-only onboarding page is not the planned profile wizard, and the claims placeholder has no detail case ID. No links, redirects or screens are added. [COUNTRY_INTEGRATION.md](docs/prd/COUNTRY_INTEGRATION.md) records US-02-02 behavior, future profile/cache coordination and exact unverified/missing KB prerequisites for SC-04, SC-07, SC-08 and SC-14.
 
 ## Country Knowledge Base
 
@@ -243,9 +249,9 @@ The CI workflow runs checks and browser smoke tests on locked dependencies; it h
 
 ## Testing
 
-Foundation stabilization verification on 17 October 2026: **128 backend tests, 7 typed-client tests and 2 existing desktop/mobile browser flows passed.** Ruff, ESLint, strict TypeScript, production build, migration/seed commands and generated-contract drift checks passed. No dependency upgrades were needed.
+Country-context integration verification on 17 October 2026: **134 backend tests, 7 typed-client tests and 4 desktop/mobile browser cases passed.** Ruff, ESLint, strict TypeScript, production build, migration/seed commands and generated-contract drift checks passed. No dependency upgrades were needed.
 
-Exact commands, migration checks, compatibility notes and limitations are recorded in [FOUNDATION_VERIFICATION.md](docs/FOUNDATION_VERIFICATION.md).
+Baseline stabilization commands and limitations are recorded in [FOUNDATION_VERIFICATION.md](docs/FOUNDATION_VERIFICATION.md). Current focused integration checks and decisions are in [COUNTRY_INTEGRATION.md](docs/prd/COUNTRY_INTEGRATION.md).
 
 Verification includes backend API/rules tests, fresh/populated migrations without data loss, idempotent fixtures, independent consent grant/revocation, owner-IDOR guards, composite foreign keys, persisted approval/hash validation, audit redaction/query pagination, OpenAPI references/snapshot and TypeScript artifact drift. No OpenAI key or live call is required.
 
