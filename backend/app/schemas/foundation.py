@@ -105,6 +105,17 @@ class ReviewedField(Contract):
     source_evidence: SourceEvidence | None = None
     updated_at: datetime
 
+    @model_validator(mode="after")
+    def found_requires_verified_value(self):
+        if self.status == CompletenessStatus.FOUND:
+            if self.value is None:
+                raise ValueError("FOUND requires a value")
+            if not self.confirmed_by_user and (
+                self.confidence is None or self.confidence < 0.8 or self.source_evidence is None
+            ):
+                raise ValueError("FOUND requires user confirmation or high-confidence evidence")
+        return self
+
 
 class DocumentUploadAccepted(Contract):
     document_id: UUID
@@ -307,11 +318,6 @@ class ClaimCase(ClaimCaseCreate):
     created_at: datetime
 
 
-class ClaimCasePage(Contract):
-    items: list[ClaimCase]
-    pagination: PageMeta
-
-
 class CaseChecklistItem(Contract):
     item_key: str
     required: bool
@@ -333,13 +339,18 @@ class ClaimCaseDetail(Contract):
     consistency_checks: list[ConsistencyCheck]
 
 
+class ClaimCasePage(Contract):
+    items: list[ClaimCaseDetail]
+    pagination: PageMeta
+
+
 class EvidenceMatchResult(Contract):
     matched_items: list[CaseChecklistItem]
 
 
 class ClaimDraftAction(Contract):
     action_id: UUID
-    status: Literal["PENDING"]
+    status: Literal["pending"]
 
 
 class ActionDecisionRequest(Contract):

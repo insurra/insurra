@@ -2,7 +2,7 @@ from datetime import date, datetime
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from app.schemas.common import Contract, CountryCode, CurrencyCode
 
@@ -18,7 +18,14 @@ class Occupation(StrEnum):
     OTHER = "OTHER"
 
 
-class ProfileUpdate(Contract):
+def non_nullable_update_schema(schema: dict) -> None:
+    """Omission is supported, but explicit null is rejected by the field validator."""
+    schema.pop("default", None)
+    variants = [item for item in schema.pop("anyOf") if item.get("type") != "null"]
+    schema.update(variants[0])
+
+
+class ProfileData(Contract):
     display_name: str = Field(min_length=1, max_length=100)
     residence_context: ResidenceContext
     country_code: CountryCode
@@ -50,7 +57,31 @@ class ProfileUpdate(Contract):
         return self
 
 
-class UserProfile(ProfileUpdate):
+class ProfileUpdate(ProfileData):
+    """Merge supplied fields into the actor's profile; never reset omitted fields."""
+
+    display_name: str | None = Field(
+        default=None, min_length=1, max_length=100, json_schema_extra=non_nullable_update_schema
+    )
+    residence_context: ResidenceContext | None = Field(
+        default=None, json_schema_extra=non_nullable_update_schema
+    )
+    country_code: CountryCode | None = Field(
+        default=None, json_schema_extra=non_nullable_update_schema
+    )
+    occupation: Occupation | None = Field(
+        default=None, json_schema_extra=non_nullable_update_schema
+    )
+
+    @field_validator("display_name", "residence_context", "country_code", "occupation")
+    @classmethod
+    def non_nullable_core(cls, value):
+        if value is None:
+            raise ValueError("Core profile fields cannot be cleared")
+        return value
+
+
+class UserProfile(ProfileData):
     id: UUID
     created_at: datetime
     updated_at: datetime

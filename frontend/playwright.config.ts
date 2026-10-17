@@ -29,7 +29,8 @@ export default defineConfig({
       timeout: 60_000,
     },
     {
-      command: "npm run dev",
+      // CI exercises the built application, without on-demand dev compilation during assertions.
+      command: process.env.CI ? "npm run build && npm run start" : "npm run dev",
       url: "http://localhost:3000",
       reuseExistingServer: !process.env.CI,
       env: { NEXT_PUBLIC_API_BASE_URL: "http://localhost:8000" },

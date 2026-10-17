@@ -22,6 +22,10 @@ class ActionPermissionLevel(StrEnum):
     L3 = "L3"
 
 
+class ActionDecisionResult(Contract):
+    status: ActionStatus
+
+
 class ProposedAction(Contract):
     id: UUID
     action_type: str

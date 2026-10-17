@@ -1020,7 +1020,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserProfile"
+                  "$ref": "#/components/schemas/ProfileResponse"
                 }
               }
             }
@@ -2435,7 +2435,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProposedAction"
+                  "$ref": "#/components/schemas/ActionDecisionResult"
                 }
               }
             }
@@ -2572,7 +2572,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProposedAction"
+                  "$ref": "#/components/schemas/ActionDecisionResult"
                 }
               }
             }
@@ -6073,6 +6073,19 @@
         "type": "object",
         "title": "ActionDecisionRequest"
       },
+      "ActionDecisionResult": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ActionStatus"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ActionDecisionResult"
+      },
       "ActionExecutionRequest": {
         "properties": {
           "approved_payload_sha256": {
@@ -6799,7 +6812,7 @@
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/ClaimCase"
+              "$ref": "#/components/schemas/ClaimCaseDetail"
             },
             "type": "array",
             "title": "Items"
@@ -6861,7 +6874,7 @@
           },
           "status": {
             "type": "string",
-            "const": "PENDING",
+            "const": "pending",
             "title": "Status"
           }
         },
@@ -8313,6 +8326,28 @@
         ],
         "title": "ProcessingStatus"
       },
+      "ProfileResponse": {
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/UserProfile"
+          },
+          "suggested_docs": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestedDocument"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Suggested Docs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "profile",
+          "suggested_docs"
+        ],
+        "title": "ProfileResponse"
+      },
       "ProfileUpdate": {
         "properties": {
           "display_name": {
@@ -8455,13 +8490,8 @@
         },
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "display_name",
-          "residence_context",
-          "country_code",
-          "occupation"
-        ],
-        "title": "ProfileUpdate"
+        "title": "ProfileUpdate",
+        "description": "Merge supplied fields into the actor's profile; never reset omitted fields."
       },
       "ProposedAction": {
         "properties": {
@@ -9063,6 +9093,45 @@
           "original_text"
         ],
         "title": "SourceEvidence"
+      },
+      "SuggestedDocument": {
+        "properties": {
+          "document_type": {
+            "type": "string",
+            "title": "Document Type"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "requirement_level": {
+            "type": "string",
+            "enum": [
+              "REQUIRED",
+              "RECOMMENDED"
+            ],
+            "title": "Requirement Level"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "document_type",
+          "label",
+          "requirement_level"
+        ],
+        "title": "SuggestedDocument"
       },
       "TriageMatch": {
         "properties": {
@@ -9996,46 +10065,6 @@
           "policy_types"
         ],
         "title": "RuleParameters",
-        "type": "object"
-      },
-      "SuggestedDocument": {
-        "additionalProperties": false,
-        "properties": {
-          "document_type": {
-            "title": "Document Type",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "requirement_level": {
-            "enum": [
-              "REQUIRED",
-              "RECOMMENDED"
-            ],
-            "title": "Requirement Level",
-            "type": "string"
-          },
-          "source_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Source Url"
-          }
-        },
-        "required": [
-          "document_type",
-          "label",
-          "requirement_level"
-        ],
-        "title": "SuggestedDocument",
         "type": "object"
       },
       "TaskConfig": {

@@ -795,6 +795,10 @@ export interface components {
              */
             confirmed: boolean;
         };
+        /** ActionDecisionResult */
+        ActionDecisionResult: {
+            status: components["schemas"]["ActionStatus"];
+        };
         /** ActionExecutionRequest */
         ActionExecutionRequest: {
             /** Approved Payload Sha256 */
@@ -1071,7 +1075,7 @@ export interface components {
         /** ClaimCasePage */
         ClaimCasePage: {
             /** Items */
-            items: components["schemas"]["ClaimCase"][];
+            items: components["schemas"]["ClaimCaseDetail"][];
             pagination: components["schemas"]["PageMeta"];
         };
         /**
@@ -1098,7 +1102,7 @@ export interface components {
              * Status
              * @constant
              */
-            status: "PENDING";
+            status: "pending";
         };
         /** ClaimDraftRequest */
         ClaimDraftRequest: {
@@ -1618,16 +1622,25 @@ export interface components {
          * @enum {string}
          */
         ProcessingStatus: "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED";
-        /** ProfileUpdate */
+        /** ProfileResponse */
+        ProfileResponse: {
+            profile: components["schemas"]["UserProfile"];
+            /** Suggested Docs */
+            suggested_docs: components["schemas"]["SuggestedDocument"][];
+        };
+        /**
+         * ProfileUpdate
+         * @description Merge supplied fields into the actor's profile; never reset omitted fields.
+         */
         ProfileUpdate: {
             /** Display Name */
-            display_name: string;
-            residence_context: components["schemas"]["ResidenceContext"];
+            display_name?: string;
+            residence_context?: components["schemas"]["ResidenceContext"];
             /** Country Code */
-            country_code: string;
+            country_code?: string;
             /** City */
             city?: string | null;
-            occupation: components["schemas"]["Occupation"];
+            occupation?: components["schemas"]["Occupation"];
             /** Timezone */
             timezone?: string | null;
             /** Employment Status */
@@ -1883,6 +1896,20 @@ export interface components {
             original_text: string;
             /** Source Field */
             source_field?: string | null;
+        };
+        /** SuggestedDocument */
+        SuggestedDocument: {
+            /** Document Type */
+            document_type: string;
+            /** Label */
+            label: string;
+            /**
+             * Requirement Level
+             * @enum {string}
+             */
+            requirement_level: "REQUIRED" | "RECOMMENDED";
+            /** Source Url */
+            source_url?: string | null;
         };
         /** TriageMatch */
         TriageMatch: {
@@ -2210,23 +2237,6 @@ export interface components {
              * @constant
              */
             inclusive_end: true;
-        };
-        /** SuggestedDocument */
-        SuggestedDocument: {
-            /** Document Type */
-            document_type: string;
-            /** Label */
-            label: string;
-            /**
-             * Requirement Level
-             * @enum {string}
-             */
-            requirement_level: "REQUIRED" | "RECOMMENDED";
-            /**
-             * Source Url
-             * @default null
-             */
-            source_url: string | null;
         };
         /** TaskConfig */
         TaskConfig: {
@@ -3307,7 +3317,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserProfile"];
+                    "application/json": components["schemas"]["ProfileResponse"];
                 };
             };
             /** @description Unauthorized */
@@ -4353,7 +4363,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProposedAction"];
+                    "application/json": components["schemas"]["ActionDecisionResult"];
                 };
             };
             /** @description Unauthorized */
@@ -4444,7 +4454,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProposedAction"];
+                    "application/json": components["schemas"]["ActionDecisionResult"];
                 };
             };
             /** @description Unauthorized */
