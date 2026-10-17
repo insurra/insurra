@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "generate-types": "openapi-typescript ../backend/openapi.json -o src/lib/api/types.gen.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:client": "playwright test --config playwright.unit.config.ts"
   },
   "dependencies": {
     "@next/env": "^16.4.2",

@@ -4,6 +4,7 @@ import path from "node:path";
 const root = path.resolve(__dirname, "..");
 export default defineConfig({
   testDir: "./tests",
+  testMatch: "demo.spec.ts",
   fullyParallel: false,
   retries: 0,
   reporter: "list",

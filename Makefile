@@ -21,3 +21,9 @@ check:
 generate-types:
 	cd backend && $(UV) run python ../scripts/export_openapi.py
 	cd frontend && npm run generate-types
+
+.PHONY: check-contracts test-client
+check-contracts:
+	cd backend && $(UV) run python ../scripts/check_contracts.py
+test-client:
+	cd frontend && npm run test:client

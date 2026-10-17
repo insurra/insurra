@@ -45,9 +45,10 @@ export default function Onboarding() {
         </div>
         <h2>Persetujuan pemrosesan</h2>
         <p>
-          Persetujuan diperlukan untuk pemrosesan dokumen dan fitur AI saat
-          tersedia. Data sintetis yang sudah disiapkan tetap dapat dilihat tanpa
-          persetujuan.
+          Kontrol ini menyetujui pemrosesan dokumen saja. Pengiriman ke penyedia
+          AI dan penyimpanan file asli memerlukan persetujuan terpisah; keduanya
+          belum diaktifkan di layar demo ini. Data sintetis tetap dapat dilihat
+          tanpa persetujuan.
         </p>
         <div className="consent-point">
           <FileCheck2 size={21} />
@@ -104,7 +105,7 @@ export default function Onboarding() {
               />{" "}
               <span>
                 Saya secara eksplisit menyetujui pemrosesan data untuk fitur
-                dokumen dan AI.
+                dokumen asuransi saya.
               </span>
             </label>
             <Button
