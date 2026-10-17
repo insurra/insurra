@@ -50,7 +50,9 @@ def upgrade():
     )
     op.create_index("ix_account_sessions_account_id", "account_sessions", ["account_id"])
     op.create_index("ix_account_sessions_expires_at", "account_sessions", ["expires_at"])
-    op.create_index("ix_account_sessions_token_hash", "account_sessions", ["token_hash"], unique=True)
+    op.create_index(
+        "ix_account_sessions_token_hash", "account_sessions", ["token_hash"], unique=True
+    )
 
     if op.get_bind().dialect.name == "postgresql":
         tables = (
