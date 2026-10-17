@@ -50,3 +50,9 @@ def demo(client):
         return data, {"X-Demo-Session": data["session_token"]}
 
     return create
+
+
+@pytest.fixture
+def db_session(app):
+    with app.state.session_factory() as db:
+        yield db
