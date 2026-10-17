@@ -1,0 +1,12 @@
+{
+  "country_code": "ID",
+  "label": "Indonesia",
+  "version": "0.1.0",
+  "checked_at": null,
+  "sources": [],
+  "supported_features": [
+    "coverage_vocabulary",
+    "care_placeholders"
+  ],
+  "verification_status": "UNVERIFIED"
+}

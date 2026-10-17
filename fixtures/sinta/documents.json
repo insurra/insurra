@@ -1,0 +1,30 @@
+[
+  {
+    "id": "727cece2-7477-55a5-8f3f-5a9db7ff358a",
+    "document_type": "INSURANCE_POLICY",
+    "original_filename": "bpjs-synthetic.txt",
+    "processing_status": "QUEUED",
+    "synthetic": true,
+    "owner_session_id": "61c2077c-3fcd-50ed-98aa-de9920ea2689",
+    "mime_type": "text/plain",
+    "sha256": "a03fd42a5ceea9db57036a5615f7493df40be6b8f6705289270d192784a4ad73",
+    "detected_language": "en",
+    "uploaded_at": "2026-10-17T00:00:00Z",
+    "processed_at": null,
+    "extraction_error": null
+  },
+  {
+    "id": "c4711c36-9f41-59a6-987b-f479828e3d50",
+    "document_type": "INSURANCE_POLICY",
+    "original_filename": "employer-synthetic.txt",
+    "processing_status": "QUEUED",
+    "synthetic": true,
+    "owner_session_id": "61c2077c-3fcd-50ed-98aa-de9920ea2689",
+    "mime_type": "text/plain",
+    "sha256": "b2f0650567ec60a6ae68de4a00c273a782b86020608443727815dc83ab00c4b6",
+    "detected_language": "en",
+    "uploaded_at": "2026-10-17T00:00:00Z",
+    "processed_at": null,
+    "extraction_error": null
+  }
+]

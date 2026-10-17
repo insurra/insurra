@@ -1,0 +1,72 @@
+{
+  "id": "8e99e299-c7ee-5408-93d2-9db5d67773ce",
+  "profile_id": "b603af04-b95b-53bf-9a1e-fe1b69fc567c",
+  "country_code": "ID",
+  "policies": [
+    {
+      "id": "966fd9c9-aae1-5c2a-862d-e7173b37c670",
+      "provider_name": "Penyedia sintetis (demo)",
+      "policy_name": "BPJS — data sintetis",
+      "policy_type": "BPJS",
+      "policy_number_masked": "DEMO-****",
+      "coverage_start_date": "2026-10-01",
+      "coverage_end_date": "2027-09-30",
+      "coverage_items": [
+        {
+          "coverage_code": "OUTPATIENT",
+          "benefit_name": "Rawat jalan (belum diverifikasi)",
+          "coverage_status": "UNKNOWN",
+          "limit_amount": null,
+          "remaining_amount": null,
+          "currency": "IDR",
+          "evidence": null
+        }
+      ],
+      "source_document_ids": [
+        "727cece2-7477-55a5-8f3f-5a9db7ff358a"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "id": "bc2f7c2d-08b2-5368-8673-eddf255b9a48",
+      "provider_name": "Penyedia sintetis (demo)",
+      "policy_name": "EMPLOYER — data sintetis",
+      "policy_type": "EMPLOYER",
+      "policy_number_masked": "DEMO-****",
+      "coverage_start_date": "2026-10-01",
+      "coverage_end_date": "2027-09-30",
+      "coverage_items": [
+        {
+          "coverage_code": "OUTPATIENT",
+          "benefit_name": "Rawat jalan (belum diverifikasi)",
+          "coverage_status": "UNKNOWN",
+          "limit_amount": null,
+          "remaining_amount": null,
+          "currency": "IDR",
+          "evidence": null
+        }
+      ],
+      "source_document_ids": [
+        "c4711c36-9f41-59a6-987b-f479828e3d50"
+      ],
+      "verification_status": "UNVERIFIED"
+    }
+  ],
+  "documents": [
+    {
+      "id": "727cece2-7477-55a5-8f3f-5a9db7ff358a",
+      "document_type": "INSURANCE_POLICY",
+      "original_filename": "bpjs-synthetic.txt",
+      "processing_status": "QUEUED",
+      "synthetic": true
+    },
+    {
+      "id": "c4711c36-9f41-59a6-987b-f479828e3d50",
+      "document_type": "INSURANCE_POLICY",
+      "original_filename": "employer-synthetic.txt",
+      "processing_status": "QUEUED",
+      "synthetic": true
+    }
+  ],
+  "updated_at": "2026-10-17T00:00:00Z"
+}

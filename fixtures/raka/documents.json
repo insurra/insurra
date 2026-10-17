@@ -1,0 +1,16 @@
+[
+  {
+    "id": "67a837e5-b344-5a45-8d0f-511a23b17cd9",
+    "document_type": "INSURANCE_POLICY",
+    "original_filename": "oshc-synthetic.txt",
+    "processing_status": "QUEUED",
+    "synthetic": true,
+    "owner_session_id": "1e4f2649-8e3e-5fe0-8e31-164230b14cb3",
+    "mime_type": "text/plain",
+    "sha256": "03e2275b48676bf067c576af8ca2a833bb9ce5c0bc78e6f69ccc895adaa90486",
+    "detected_language": "en",
+    "uploaded_at": "2026-10-17T00:00:00Z",
+    "processed_at": null,
+    "extraction_error": null
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "rule_id": "student-insurance-interval-v1",
+    "kind": "visa_coverage",
+    "description": "Konfigurasi demo untuk membandingkan interval asuransi mahasiswa dengan tanggal tinggal. Bukan penetapan kepatuhan visa.",
+    "applicability": {
+      "residence_context": [
+        "ABROAD"
+      ],
+      "occupation": [
+        "STUDENT"
+      ]
+    },
+    "parameters": {
+      "policy_types": [
+        "OSHC"
+      ],
+      "start_field": "arrival_date",
+      "end_field": "visa_expiry_date",
+      "inclusive_end": true
+    },
+    "source_url": null,
+    "checked_at": null,
+    "verification_status": "UNVERIFIED"
+  }
+]

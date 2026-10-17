@@ -1,0 +1,20 @@
+[
+  {
+    "need_code": "BPJS",
+    "label": "BPJS",
+    "requirement_level": "RECOMMENDED",
+    "policy_types": [
+      "BPJS"
+    ],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "need_code": "EMPLOYER",
+    "label": "EMPLOYER",
+    "requirement_level": "RECOMMENDED",
+    "policy_types": [
+      "EMPLOYER"
+    ],
+    "verification_status": "UNVERIFIED"
+  }
+]

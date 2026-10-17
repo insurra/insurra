@@ -1,0 +1,41 @@
+{
+  "id": "03d5e06f-8210-53f7-9615-f7f096904ccf",
+  "profile_id": "2a7259c6-7fe9-571f-b39f-af0a05b46f82",
+  "country_code": "AU",
+  "policies": [
+    {
+      "id": "a9af164f-a7ef-51da-92d8-90a922e5ffe4",
+      "provider_name": "Penyedia sintetis (demo)",
+      "policy_name": "OSHC — data sintetis",
+      "policy_type": "OSHC",
+      "policy_number_masked": "DEMO-****",
+      "coverage_start_date": "2026-07-01",
+      "coverage_end_date": "2027-04-15",
+      "coverage_items": [
+        {
+          "coverage_code": "OUTPATIENT",
+          "benefit_name": "Rawat jalan (belum diverifikasi)",
+          "coverage_status": "UNKNOWN",
+          "limit_amount": null,
+          "remaining_amount": null,
+          "currency": "AUD",
+          "evidence": null
+        }
+      ],
+      "source_document_ids": [
+        "67a837e5-b344-5a45-8d0f-511a23b17cd9"
+      ],
+      "verification_status": "UNVERIFIED"
+    }
+  ],
+  "documents": [
+    {
+      "id": "67a837e5-b344-5a45-8d0f-511a23b17cd9",
+      "document_type": "INSURANCE_POLICY",
+      "original_filename": "oshc-synthetic.txt",
+      "processing_status": "QUEUED",
+      "synthetic": true
+    }
+  ],
+  "updated_at": "2026-10-17T00:00:00Z"
+}
