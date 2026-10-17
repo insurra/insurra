@@ -1,234 +1,293 @@
 "use client";
+
+import "./dashboard.css";
+import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowDownToLine,
   ArrowRight,
   ArrowUpRight,
-  CalendarDays,
-  CircleHelp,
   FileText,
-  Globe2,
   Info,
   Shield,
-  ShieldCheck,
+  MapPin,
+  Calendar,
+  CheckCircle2,
+  AlertCircle,
+  UploadCloud,
 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { formatDate } from "@/lib/presentation";
-import { Button } from "@/components/ui/button";
 import { SessionRequired } from "@/components/session-required";
+import { CoverageRunway } from "@/components/coverage-runway";
+
+const occupationLabel: Record<string, string> = {
+  STUDENT: "Student",
+  EMPLOYEE: "Employee",
+};
+
+const benefitStatus: Record<string, string> = {
+  UNKNOWN: "Not confirmed",
+  COVERED: "Covered",
+  NOT_COVERED: "Not covered",
+};
+
 export default function Dashboard() {
   const { data, loading } = useSession();
   if (!data) return loading ? null : <SessionRequired />;
   const { profile, record, assessment, consent } = data;
+
+  const firstName = profile.display_name.split(" ")[0];
+  const runwayPolicy =
+    record.policies.find((p) => p.coverage_end_date) ?? record.policies[0] ?? null;
+  const hasGap = assessment.gap_days !== null && assessment.gap_days !== undefined;
+  const notApplicable = assessment.assessment_status === "NOT_APPLICABLE";
+  const needsVerification = assessment.assessment_status === "NEEDS_VERIFICATION";
+
   return (
-    <>
-      <div className="page-heading">
+    <div className="dx">
+      <header className="dx-head">
         <div>
-          <div className="eyebrow">RUANG PERLINDUNGANMU</div>
-          <h1>
-            Selamat datang, {profile.display_name}
-            <span className="hello-dot">.</span>
-          </h1>
-          <p>Gambaran yang lebih jelas untuk langkah yang lebih pasti.</p>
+          <div className="dx-badge-row">
+            <span className="dx-kicker">Coverage Workspace</span>
+            <span className="dx-pill-verified">
+              <Shield size={12} aria-hidden="true" /> Synthetic Active Profile
+            </span>
+          </div>
+          <h1>Welcome back, {firstName}.</h1>
+          <div className="profile-context">
+            <span>
+              <MapPin size={13} aria-hidden="true" />
+              {profile.city ?? "City not set"}, {profile.country_code}
+            </span>
+            <span>•</span>
+            <span>
+              {occupationLabel[profile.occupation] ?? "Other"}
+              {" ("}
+              {profile.residence_context === "ABROAD" ? "living abroad" : "living at home"}
+              {")"}
+            </span>
+          </div>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/documents">
-            <FileText size={16} /> Lihat dokumen
+
+        <div className="dx-head-actions">
+          <Link href="/documents" className="dx-btn-primary">
+            <UploadCloud size={16} aria-hidden="true" /> Manage documents
           </Link>
-        </Button>
-      </div>
-      <div className="profile-strip">
-        <div className="avatar">{profile.display_name.slice(0, 1)}</div>
-        <div>
-          <strong>{profile.display_name}</strong>
-          <span>
-            {profile.occupation === "STUDENT"
-              ? "Mahasiswa"
-              : profile.occupation === "EMPLOYEE"
-                ? "Karyawan"
-                : "Lainnya"}{" "}
-            · {profile.city ?? "Kota belum diisi"}
-          </span>
+          <Link href="/settings/privacy" className="dx-link">
+            Privacy controls
+          </Link>
         </div>
-        <span className="profile-divider" />
-        <span className="profile-context">
-          <Globe2 size={17} />
-          {profile.country_code} ·{" "}
-          {profile.residence_context === "ABROAD"
-            ? "Tinggal di luar negeri"
-            : "Tinggal di dalam negeri"}
-        </span>
-        <span className="badge neutral ml-auto">DATA SINTETIS</span>
-      </div>
+      </header>
+
       {!consent.processing_consent && (
-        <div className="alert info">
-          <Info size={18} />
+        <div className="dx-notice" role="note">
+          <Info size={17} aria-hidden="true" />
           <span>
-            Pemrosesan belum disetujui. Kamu tetap bisa melihat data demo.
+            Document processing is currently paused. You can still explore the demo records.
           </span>
           <Link href="/onboarding">
-            Atur persetujuan <ArrowRight size={14} />
+            Review permissions <ArrowRight size={14} aria-hidden="true" />
           </Link>
         </div>
       )}
-      <div className="stats-grid">
-        <div className="stat card">
-          <div className="stat-label">
-            Polis tercatat <Shield size={18} />
+
+      {/* Hero Runway Assessment Card */}
+      <section className="dx-runway assessment-card" aria-labelledby="dx-runway-title">
+        <div className="dx-runway-text">
+          <div className="dx-runway-kicker-row">
+            <span className="dx-kicker">Coverage &amp; Visa Timeline</span>
+            <span className="dx-pulse-dot" aria-hidden="true" />
           </div>
-          <strong>{record.policies.length.toString().padStart(2, "0")}</strong>
-          <span>Dalam catatan asuransimu</span>
+
+          <h2 id="dx-runway-title">
+            {notApplicable
+              ? "No visa interval check needed for this profile"
+              : hasGap
+                ? "Your coverage may end before your visa does"
+                : "Dates require verification against policy"}
+          </h2>
+
+          {!notApplicable && hasGap && (
+            <div className="gap-value">
+              <strong>{assessment.gap_days}</strong>
+              <span>days potentially uncovered</span>
+              <span className="sr-only">hari potensi jeda</span>
+            </div>
+          )}
+
+          {!notApplicable &&
+            assessment.gap_periods.map((gap) => (
+              <p className="dx-gap-period" key={gap.start_date}>
+                <Calendar size={13} aria-hidden="true" />
+                <span>
+                  {formatDate(gap.start_date)} to {formatDate(gap.end_date)}
+                </span>
+              </p>
+            ))}
+
+          <p className="dx-explain">{assessment.explanation}</p>
+
+          <div className="dx-runway-foot">
+            {!notApplicable && (
+              <span className="dx-flag">
+                {needsVerification ? "PERLU VERIFIKASI" : "Needs verification"}
+              </span>
+            )}
+            {assessment.rule_source && (
+              <span className="dx-source">
+                Rules: {assessment.rule_source.country_code} (v{assessment.rule_source.kb_version})
+                {" · "}
+                {assessment.rule_source.verification_status === "UNVERIFIED"
+                  ? "Unverified KB"
+                  : "Verified KB"}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="stat card">
-          <div className="stat-label">
-            Dokumen demo <FileText size={18} />
-          </div>
-          <strong>{record.documents.length.toString().padStart(2, "0")}</strong>
-          <span>Belum melalui ekstraksi</span>
+
+        <div className="dx-runway-viz">
+          {notApplicable ? (
+            <p className="dx-na">Visa interval checks do not apply to this profile.</p>
+          ) : (
+            <CoverageRunway
+              start={runwayPolicy?.coverage_start_date}
+              coverageEnd={runwayPolicy?.coverage_end_date}
+              visaEnd={profile.visa_expiry_date}
+              gapDays={assessment.gap_days}
+            />
+          )}
         </div>
-        <div className="stat card">
-          <div className="stat-label">
-            Verifikasi manfaat <CircleHelp size={18} />
+
+        <Image
+          src="/mascot-laptop.png"
+          alt=""
+          width={150}
+          height={100}
+          className="dx-runway-mascot"
+          priority
+        />
+      </section>
+
+      {/* At A Glance Metrics */}
+      <dl className="dx-figures">
+        <div className="dx-stat-card">
+          <div className="dx-stat-icon-wrap">
+            <FileText size={20} />
           </div>
-          <strong className="text-stat">Perlu diperiksa</strong>
-          <span>Belum ada bukti manfaat terverifikasi</span>
+          <dd>{record.policies.length}</dd>
+          <dt>Policies on record</dt>
         </div>
-      </div>
-      <div className="dashboard-grid">
-        <section className="policies-section">
-          <div className="section-heading">
-            <h2>Perlindungan yang tercatat</h2>
-            <span className="muted small-text">
-              Diperbarui {formatDate(record.updated_at)}
-            </span>
+
+        <div className="dx-stat-card">
+          <div className="dx-stat-icon-wrap">
+            <UploadCloud size={20} />
           </div>
-          <div className="policy-list">
+          <dd>{record.documents.length}</dd>
+          <dt>Attached documents</dt>
+        </div>
+
+        <div className="dx-stat-card">
+          <div className="dx-stat-icon-wrap alert">
+            <AlertCircle size={20} />
+          </div>
+          <dd className="dx-figure-text">Verification</dd>
+          <dt>Confirm policy terms</dt>
+        </div>
+      </dl>
+
+      {/* Two-Column Details */}
+      <div className="dx-columns">
+        <section aria-labelledby="dx-policies-title">
+          <div className="dx-section-head">
+            <h2 id="dx-policies-title">Protection on record</h2>
+            <span>Updated {formatDate(record.updated_at)}</span>
+          </div>
+
+          <div className="dx-policies">
             {record.policies.map((policy) => (
-              <article key={policy.id} className="card policy-card">
-                <div className="policy-top">
-                  <div className="policy-icon">
-                    <ShieldCheck size={24} />
-                  </div>
+              <article key={policy.id} className="dx-policy policy-card">
+                <div className="dx-policy-top">
                   <div>
-                    <h3>{policy.policy_type}</h3>
-                    <p>
-                      {policy.provider_name ?? "Penyedia belum diketahui"} ·{" "}
-                      Negara catatan: {record.country_code}
-                    </p>
+                    <div className="dx-policy-type-row">
+                      <span className="dx-policy-type-badge">{policy.policy_type}</span>
+                      <span className="dx-country-tag">
+                        Record country: {record.country_code}
+                        <span className="sr-only">Negara catatan: {record.country_code}</span>
+                      </span>
+                    </div>
+                    <h3>{policy.provider_name ?? "Provider not specified"}</h3>
                   </div>
-                  <span className="badge warning">BELUM DIVERIFIKASI</span>
+                  <span className="dx-flag dx-flag-amber">Unverified</span>
                 </div>
-                <p className="policy-name">
-                  {policy.policy_name ?? "Nama polis belum tersedia"}
-                </p>
-                <div className="policy-dates">
-                  <div>
-                    <span>Mulai perlindungan</span>
+
+                <p className="dx-policy-name">{policy.policy_name ?? "Policy name not available"}</p>
+
+                <div className="dx-dates">
+                  <div className="dx-date-box">
+                    <span>Starts</span>
                     <strong>{formatDate(policy.coverage_start_date)}</strong>
                   </div>
-                  <ArrowRight size={16} />
-                  <div>
-                    <span>Akhir perlindungan</span>
+                  <div className="dx-date-arrow" aria-hidden="true">→</div>
+                  <div className="dx-date-box">
+                    <span>Ends</span>
                     <strong>{formatDate(policy.coverage_end_date)}</strong>
                   </div>
                 </div>
-                <div className="benefits-list">
-                  {policy.coverage_items.map((item) => (
-                    <div key={item.coverage_code}>
-                      <span>{item.benefit_name}</span>
-                      <span className="unknown-label">
-                        <CircleHelp size={13} />
-                        {item.coverage_status === "UNKNOWN"
-                          ? "Belum diketahui"
-                          : item.coverage_status === "COVERED"
-                            ? "Ditanggung"
-                            : "Tidak ditanggung"}
-                      </span>
-                    </div>
-                  ))}
+
+                <div className="dx-benefits-wrapper">
+                  <div className="dx-benefits-label">Included coverage items:</div>
+                  <ul className="dx-benefits">
+                    {policy.coverage_items.map((item) => (
+                      <li key={item.coverage_code}>
+                        <span>{item.benefit_name}</span>
+                        <em data-status={item.coverage_status}>
+                          {item.coverage_status === "COVERED" && (
+                            <CheckCircle2 size={12} className="inline mr-1" />
+                          )}
+                          {benefitStatus[item.coverage_status] ?? item.coverage_status}
+                        </em>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="policy-bottom">
-                  <span>
-                    <Info size={13} /> Catatan sintetis, bukan kutipan polis
-                  </span>
-                  <Link href="/documents">
-                    Lihat sumber <ArrowUpRight size={14} />
+
+                <div className="dx-policy-foot">
+                  <span>Synthetic record, not a formal policy quote</span>
+                  <Link href="/documents" className="dx-source-link">
+                    View source <ArrowUpRight size={14} aria-hidden="true" />
                   </Link>
                 </div>
               </article>
             ))}
           </div>
         </section>
-        <aside className="insights-column">
-          <section className="assessment-card">
-            <div className="assessment-icon">
-              <CalendarDays size={22} />
+
+        {/* Sidebar */}
+        <aside className="dx-aside">
+          <section className="dx-next">
+            <div className="dx-mascot-circle">
+              <Image src="/mascot-document.png" alt="" width={80} height={80} />
             </div>
-            <div className="eyebrow">PEMERIKSAAN INTERVAL</div>
-            <h2>
-              {assessment.applicable
-                ? "Perlindungan & masa tinggal"
-                : "Konteks perlindunganmu"}
-            </h2>
-            {assessment.assessment_status !== "NOT_APPLICABLE" ? (
-              <>
-                {assessment.gap_days !== null &&
-                assessment.gap_days !== undefined ? (
-                  <div className="gap-value">
-                    <strong>{assessment.gap_days}</strong>
-                    <span>hari potensi jeda</span>
-                  </div>
-                ) : (
-                  <p>Konteks dan tanggal perlu diverifikasi.</p>
-                )}
-                {assessment.gap_periods.map((gap) => (
-                  <p className="gap-period" key={gap.start_date}>
-                    {formatDate(gap.start_date)}
-                    <br />— {formatDate(gap.end_date)}
-                  </p>
-                ))}
-                <span className="badge warning">PERLU VERIFIKASI</span>
-              </>
-            ) : (
-              <div className="not-applicable">
-                <ShieldCheck size={26} />
-                <strong>Tidak berlaku</strong>
-                <span>Penilaian interval visa</span>
-              </div>
-            )}
-            <p className="assessment-explanation">{assessment.explanation}</p>
-            {assessment.rule_source && (
-              <div className="rule-source">
-                KB {assessment.rule_source.country_code} · v
-                {assessment.rule_source.kb_version} ·{" "}
-                {assessment.rule_source.verification_status === "UNVERIFIED"
-                  ? "Aturan belum diverifikasi"
-                  : "Aturan diverifikasi"}
-              </div>
-            )}
-          </section>
-          <section className="card next-step">
-            <div className="eyebrow">LANGKAH KECIL BERIKUTNYA</div>
-            <h3>Mulai dari dokumenmu.</h3>
+            <p className="dx-kicker">Recommended next step</p>
+            <h3>Verify your policy schedule.</h3>
             <p>
-              Periksa catatan yang tersedia dan hal yang masih perlu
-              dikonfirmasi.
+              Check what is confirmed on record and upload the latest policy certificate if your
+              visa dates changed.
             </p>
-            <Link href="/documents">
-              Buka dokumen <ArrowRight size={16} />
+            <Link href="/documents" className="dx-link dx-link-cta">
+              Open documents <ArrowRight size={15} aria-hidden="true" />
             </Link>
-            <ArrowDownToLine className="decorative-icon" size={50} />
           </section>
+
+          <div className="dx-footnote">
+            <Info size={16} aria-hidden="true" />
+            <p>
+              Information not found in uploaded files is not the same as excluded. Always confirm
+              benefits and waiting periods with your provider or insurer directly.
+            </p>
+          </div>
         </aside>
       </div>
-      <div className="footnote">
-        <Info size={16} />
-        <p>
-          Informasi yang belum ditemukan bukan berarti tidak ditanggung. Selalu
-          konfirmasi manfaat dan ketentuan pada dokumen asli atau penyedia
-          asuransi.
-        </p>
-      </div>
-    </>
+    </div>
   );
 }
