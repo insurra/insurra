@@ -112,6 +112,15 @@ def test_upgrade_retains_all_legacy_data_and_does_not_infer_ai_consent(tmp_path,
 
 
 def test_new_tables_compile_for_postgresql_without_connecting():
-    for name in ["purpose_consents", "documents", "extracted_fields", "claim_cases", "actions"]:
+    for name in [
+        "purpose_consents",
+        "documents",
+        "extracted_fields",
+        "claim_cases",
+        "actions",
+        "accounts",
+        "oauth_identities",
+        "account_sessions",
+    ]:
         sql = str(CreateTable(Base.metadata.tables[name]).compile(dialect=postgresql.dialect()))
         assert "UUID" in sql and "CREATE TABLE" in sql

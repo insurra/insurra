@@ -1,3 +1,4 @@
+from app.models.auth import AccountRow, AccountSessionRow, OAuthIdentityRow
 from app.models.entities import (
     AuditRow,
     ConsentRow,
@@ -8,12 +9,15 @@ from app.models.entities import (
 )
 
 __all__ = [
+    "AccountRow",
+    "AccountSessionRow",
     "AuditRow",
     "ConsentRow",
     "DemoSessionRow",
     "InsuranceRecordRow",
     "PersonaRow",
     "ProfileRow",
+    "OAuthIdentityRow",
 ]
 
 from app.models.foundation import (
