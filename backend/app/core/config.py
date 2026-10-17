@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     environment: str = "development"
     session_ttl_hours: int = 24
     kb_root: Path = ROOT / "kb"
+    google_client_id: str = ""
+    google_client_secret: SecretStr = SecretStr("")
+    google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
+    frontend_url: str = "http://127.0.0.1:3000"
+    backend_url: str = "http://localhost:8000"
+    session_secret: SecretStr = SecretStr("")
+    account_session_ttl_days: int = 7
 
     @model_validator(mode="after")
     def restrict_origin(self):

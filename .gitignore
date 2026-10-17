@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 .tools/
 .cache/
+.npm-cache/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

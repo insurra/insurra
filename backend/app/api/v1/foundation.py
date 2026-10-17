@@ -12,7 +12,6 @@ from app.schemas.action import ProposedAction
 from app.schemas.assessment import CoverageNeed
 from app.schemas.audit import AuditEvent
 from app.schemas.foundation import (
-    AccountSummary,
     ActionExecutionRequest,
     AskAnswer,
     AskRequest,
@@ -73,16 +72,6 @@ def resend_verification(body: EmailRequest):
 
 @router.post("/auth/password-reset", response_model=AuthMessage)
 def password_reset(body: EmailRequest):
-    not_implemented()
-
-
-@router.post("/auth/logout", status_code=204)
-def logout(session: ActiveSession):
-    not_implemented()
-
-
-@router.get("/auth/me", response_model=AccountSummary)
-def account_me(session: ActiveSession):
     not_implemented()
 
 

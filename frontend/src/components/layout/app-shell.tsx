@@ -16,6 +16,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useSession } from "@/lib/session";
+import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -44,7 +45,14 @@ const navigation = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const publicPage = pathname === "/" || pathname === "/login" || pathname === "/auth/callback";
+  if (publicPage) return <>{children}</>;
+  return <PrivateShell pathname={pathname}>{children}</PrivateShell>;
+}
+
+function PrivateShell({ pathname, children }: { pathname: string; children: React.ReactNode }) {
   const { data, loading, error } = useSession();
+  const { account } = useAuth();
   const pageTitle =
     navigation.find((item) => item.href === pathname)?.label ??
     (pathname === "/audit"
@@ -144,9 +152,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
             <div
               className="avatar small"
-              aria-label={data?.profile.display_name ?? "Demo"}
+              aria-label={account?.display_name ?? data?.profile.display_name ?? "Demo"}
             >
-              {data?.profile.display_name.slice(0, 1) ?? "D"}
+              {(account?.display_name ?? data?.profile.display_name ?? "D").slice(0, 1)}
             </div>
           </div>
         </header>

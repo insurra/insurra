@@ -291,8 +291,6 @@ def test_country_resources_metadata_and_bad_config(tmp_path):
             True,
         ),
         ("post", "/triage", {"text": "synthetic"}, False),
-        ("post", "/auth/logout", None, False),
-        ("get", "/auth/me", None, False),
     ],
 )
 def test_remaining_scoped_contract_routes(client, demo, method, path, body, needs_consent):
