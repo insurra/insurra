@@ -131,7 +131,7 @@ async def upload_document(
     if existing:
         raise AppError(409, "DUPLICATE_DOCUMENT", "Dokumen ini sudah pernah diunggah.")
     filename = PurePath((file.filename or "document").replace("\\", "/")).name[:255]
-    document_kind = classify_document(kind, country)
+    document_kind = classify_document(kind, country, filename)
     pages = extract_text_or_ocr(content, mime_type)
     patterns = [item.pattern for item in kb.load_injection_patterns().data]
     clean_pages, flagged = remove_injection_lines(pages, patterns)

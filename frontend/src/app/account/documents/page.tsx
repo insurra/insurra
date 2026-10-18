@@ -1,212 +1,1342 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  AlertTriangle,
   ArrowRight,
-  Bed,
   Check,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   Edit2,
+  ExternalLink,
+  Eye,
+  FileCheck,
+  FileSearch,
   FileText,
-  Heart,
-  HelpCircle,
-  Pill,
+  Info,
+  Lock,
   Plus,
   RefreshCw,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
   Sparkles,
+  Trash2,
   Upload,
   UploadCloud,
   X,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
+import { config } from "@/lib/config";
 import { useAuth } from "@/lib/auth";
 import { useUserContext } from "@/lib/user-context";
 
-type Document = components["schemas"]["AccountDocumentSummary"];
+type DocumentSummary = components["schemas"]["AccountDocumentSummary"];
+type DocumentDetail = components["schemas"]["AccountDocumentDetail"];
+type AccountField = components["schemas"]["AccountField"];
+
+// Human-readable labels for document kinds
+const DOCUMENT_KIND_LABELS: Record<string, string> = {
+  insurance_certificate: "Insurance Certificate (保险凭证)",
+  policy_wording: "Policy Terms & Booklet (保险条款)",
+  benefit_schedule: "Schedule of Benefits (保障待遇表)",
+  medical_fapiao: "Medical Receipt / Fapiao (医疗收费票据)",
+  diagnosis_certificate: "Diagnosis Certificate (诊断证明)",
+  cost_breakdown: "Cost Breakdown Sheet (费用清单)",
+  admission_notice: "Admission Notice / Student Card (录取通知书)",
+  residence_permit: "Residence Permit / Visa (居留许可)",
+  social_insurance_voucher: "Social Medical Insurance Voucher (医保凭证)",
+  bpjs_card: "Kartu BPJS Kesehatan (JKN-KIS)",
+  insurance_card: "Kartu Asuransi Swasta / Cashless Card",
+  policy_booklet: "Buku Polis / Ketentuan Polis",
+  employer_policy: "Polis Asuransi Kumpulan (Group)",
+  receipt: "Kwitansi / Invoice Medis",
+  medical_resume: "Resume Medis / Diagnosis Dokter",
+  prescription: "Resep Obat / Pharmacy Bill",
+  referral: "Surat Rujukan (FKTP / Spesialis)",
+  other: "Other Insurance Document",
+  auto: "Auto-detect from file",
+};
+
+// Human-readable labels for extracted fields
+const FIELD_KEY_LABELS: Record<string, string> = {
+  provider: "Insurance Provider",
+  insurance_provider: "Insurance Provider",
+  policy_number: "Policy / Certificate Number",
+  nomor_kartu: "Card / Identification Number",
+  receipt_number: "Receipt / Fapiao Number",
+  insured_name: "Insured Member Name",
+  coverage_start_date: "Coverage Start Date",
+  coverage_end_date: "Coverage End Date",
+  treatment_date: "Treatment / Service Date",
+  visa_expiry_date: "Visa / Permit Expiry Date",
+  plan_type: "Plan / Scheme Name",
+  hospital_name: "Hospital / Healthcare Provider",
+  inpatient_limit: "Inpatient Hospital Limit",
+  outpatient_limit: "Outpatient Limit",
+  total_amount: "Total Medical Amount",
+  status_peserta: "Participant Status",
+  faskes_tingkat_1: "Primary Care Clinic (FKTP)",
+};
 
 export default function AccountDocuments() {
   const { token } = useAuth();
   const userCtx = useUserContext();
-  const [, setDocuments] = useState<Document[]>([]);
-  const [activeTab, setActiveTab] = useState<"UPLOAD" | "MY_DOCS" | "REQUIRED">("UPLOAD");
-  const [selectedDocId, setSelectedDocId] = useState<string>("1");
-  const [isEditing, setIsEditing] = useState(false);
-  const [busy, setBusy] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<"OVERVIEW" | "UPLOAD" | "RECOMMENDED">("OVERVIEW");
+  const [documents, setDocuments] = useState<DocumentSummary[]>([]);
+  const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const [selectedDetail, setSelectedDetail] = useState<DocumentDetail | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [previewMode, setPreviewMode] = useState<"ORIGINAL" | "OCR_TEXT">("ORIGINAL");
+
+  const [uploadKind, setUploadKind] = useState<string>("auto");
+  const [filterCategory, setFilterCategory] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>("");
+
+  const [busy, setBusy] = useState<boolean>(false);
+  const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [deleteConfirmDocId, setDeleteConfirmDocId] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const countryCode = userCtx.countryCode || "CN";
   const countryName = userCtx.residenceCountry || "China";
-  const defaultProvider = userCtx.declaredCoverages?.[0]?.provider || (userCtx.countryCode === "CN" ? "Ping An Annuity" : userCtx.countryCode === "ID" ? "BPJS Kesehatan" : "Allianz Care");
 
-  // Form states for extracted data
-  const [docType, setDocType] = useState(
-    userCtx.countryCode === "CN" ? "Student Insurance Certificate" : "Health Insurance Policy"
-  );
-  const [provider, setProvider] = useState(defaultProvider);
-  const [policyNumber, setPolicyNumber] = useState("HP123456789");
-  const [period, setPeriod] = useState("1 Aug 2024 - 31 Jul 2026");
-  const [region, setRegion] = useState(countryName);
-  const [planType, setPlanType] = useState(
-    userCtx.countryCode === "CN" ? "Comprehensive Scheme for Foreigners" : "Student Plan"
-  );
-
-  const [benefits, setBenefits] = useState(
-    userCtx.countryCode === "CN"
-      ? [
-          { id: "1", type: "outpatient", name: "Outpatient & Emergency", limit: "Per-visit RMB 600, 85% coinsurance" },
-          { id: "2", type: "inpatient", name: "Inpatient Hospitalization", limit: "Up to RMB 400,000" },
-          { id: "3", type: "accident", name: "Accidental Medical", limit: "Up to RMB 20,000" },
-        ]
-      : userCtx.countryCode === "ID"
-      ? [
-          { id: "1", type: "outpatient", name: "Primary Care (FKTP)", limit: "Covered per BPJS guidelines" },
-          { id: "2", type: "inpatient", name: "Hospital Referral (FKRTL)", limit: "Class 1 / Class 2 room" },
-        ]
-      : [
-          { id: "1", type: "outpatient", name: "Outpatient Care", limit: "100% MBS rate" },
-          { id: "2", type: "inpatient", name: "Inpatient Hospitalization", limit: "Public hospital accommodation" },
-        ]
-  );
-
-  const refresh = useCallback(async () => {
-    if (!token) return;
-    try {
-      const list = await api.request("get", "/api/v1/account/documents", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setDocuments(list);
-    } catch {
-      // Ignore
+  // Available document kinds based on active residence country
+  const availableKinds = useMemo(() => {
+    if (countryCode === "CN") {
+      return [
+        { code: "auto", label: "Auto-detect from file" },
+        { code: "insurance_certificate", label: "Insurance Certificate (保险凭证)" },
+        { code: "policy_wording", label: "Policy Terms & Booklet (保险条款)" },
+        { code: "medical_fapiao", label: "Hospital Receipt / Fapiao (医疗收费票据)" },
+        { code: "social_insurance_voucher", label: "Social Medical Insurance Voucher (医保凭证)" },
+        { code: "residence_permit", label: "Residence Permit / Visa Notice (居留许可)" },
+        { code: "other", label: "Other Insurance Document" },
+      ];
     }
-  }, [token]);
+    if (countryCode === "ID") {
+      return [
+        { code: "auto", label: "Auto-detect from file" },
+        { code: "bpjs_card", label: "Kartu BPJS Kesehatan (JKN-KIS)" },
+        { code: "insurance_card", label: "Kartu Asuransi Swasta / Cashless Card" },
+        { code: "policy_booklet", label: "Buku Polis / Ketentuan Polis Asuransi" },
+        { code: "employer_policy", label: "Polis / Manfaat Asuransi Kantor (Group)" },
+        { code: "receipt", label: "Kwitansi / Invoice Pembayaran Medis" },
+        { code: "other", label: "Dokumen Asuransi Lainnya" },
+      ];
+    }
+    return [
+      { code: "auto", label: "Auto-detect from file" },
+      { code: "insurance_certificate", label: "Insurance Policy Certificate" },
+      { code: "policy_wording", label: "Policy Terms & Guide" },
+      { code: "receipt", label: "Medical Receipt / Claim Invoice" },
+      { code: "other", label: "Other Insurance Document" },
+    ];
+  }, [countryCode]);
+
+  // Contextual recommended documents tailored to SC-02 user context
+  const recommendedDocs = useMemo(() => {
+    if (countryCode === "CN") {
+      if (userCtx.userSegment === "student") {
+        return [
+          {
+            id: "cn_student_cert",
+            kind: "insurance_certificate",
+            title: "Student Comprehensive Insurance Certificate (保险凭证)",
+            provider: "Ping An Annuity / lxbx.net",
+            level: "REQUIRED",
+            reason: "Mandatory under Chinese Ministry of Education regulations for foreign students. Unlocks comprehensive hospital and outpatient coverage verification.",
+            badge: "Mandatory for Enrollment",
+          },
+          {
+            id: "cn_policy_terms",
+            kind: "policy_wording",
+            title: "Policy Terms & Benefit Schedule (保险条款)",
+            provider: "Ping An Annuity Scheme for Foreigners",
+            level: "RECOMMENDED",
+            reason: "Verifies the RMB 650 outpatient threshold, designated public hospital tiers, and emergency claim exclusion rules.",
+            badge: "Outpatient Threshold Check",
+          },
+          {
+            id: "cn_jw202_permit",
+            kind: "residence_permit",
+            title: "JW202 / JW201 Form or Residence Permit (居留许可)",
+            provider: "Entry-Exit Administration / University",
+            level: "OPTIONAL",
+            reason: "Validates active foreign resident status and university affiliation for institutional plan eligibility.",
+            badge: "Residency Validation",
+          },
+          {
+            id: "cn_fapiao",
+            kind: "medical_fapiao",
+            title: "Designated Public Hospital Fapiao (医疗发票)",
+            provider: "Tier-2 or Tier-3 Public Hospital",
+            level: "OPTIONAL",
+            reason: "Official tax invoice required for reimbursement claims through the foreign student claims portal.",
+            badge: "Claim Evidence",
+          },
+        ];
+      }
+      return [
+        {
+          id: "cn_emp_voucher",
+          kind: "social_insurance_voucher",
+          title: "Social Medical Insurance Voucher (医保凭证)",
+          provider: "Municipal Healthcare Security Bureau (医保局)",
+          level: "REQUIRED",
+          reason: "Confirms enrollment in Chinese Basic Medical Insurance (BMI) for employed residents.",
+          badge: "Public Basic Healthcare",
+        },
+        {
+          id: "cn_emp_group",
+          kind: "insurance_certificate",
+          title: "Corporate Group Health Policy Certificate",
+          provider: "Employer Commercial Group Provider",
+          level: "RECOMMENDED",
+          reason: "Clarifies supplementary outpatient reimbursement and private clinic network access.",
+          badge: "Corporate Benefits",
+        },
+      ];
+    }
+
+    if (countryCode === "ID") {
+      return [
+        {
+          id: "id_bpjs_card",
+          kind: "bpjs_card",
+          title: "Kartu BPJS Kesehatan (JKN-KIS)",
+          provider: "BPJS Kesehatan Republik Indonesia",
+          level: "REQUIRED",
+          reason: "Program jaminan kesehatan nasional wajib untuk seluruh WNI dan WNA yang bekerja di Indonesia. Membuka verifikasi rujukan FKTP.",
+          badge: "National Health Mandate",
+        },
+        {
+          id: "id_private_card",
+          kind: "insurance_card",
+          title: "Kartu Asuransi Rawat Inap Swasta",
+          provider: "Prudential, AIA, Sinarmas, Allianz, dsb.",
+          level: "RECOMMENDED",
+          reason: "Memastikan fasilitas kamar RS (Class 1/VIP) dan klaim cashless saat perawatan di rumah sakit swasta tanpa rujukan berjenjang.",
+          badge: "Private Cashless",
+        },
+        {
+          id: "id_employer_policy",
+          kind: "employer_policy",
+          title: "Buku Polis / Manfaat Asuransi Kumpulan Kantor",
+          provider: "Perusahaan Penjamin / Corporate TPA",
+          level: "OPTIONAL",
+          reason: "Memverifikasi batas tahunan klaim kacamata, rawat jalan, dan koordinasi manfaat (COB) dengan BPJS.",
+          badge: "Corporate Benefit",
+        },
+      ];
+    }
+
+    return [
+      {
+        id: "gen_cert",
+        kind: "insurance_certificate",
+        title: "Health & Medical Insurance Certificate",
+        provider: "Designated Insurer",
+        level: "REQUIRED",
+        reason: "Primary document verifying active dates, policy number, and insured coverage limits.",
+        badge: "Core Verification",
+      },
+    ];
+  }, [countryCode, userCtx.userSegment]);
+
+  // Load document list from backend (or demo state)
+  const refreshDocuments = useCallback(async () => {
+    if (token) {
+      try {
+        const list = await api.request("get", "/api/v1/account/documents", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setDocuments(list);
+        if (list.length > 0 && !selectedDocId) {
+          setSelectedDocId(list[0].id);
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to load document vault.");
+      }
+    } else {
+      // Demo session: read from local demo storage or initialize empty
+      try {
+        const raw = localStorage.getItem("insurra.demo-documents");
+        if (raw) {
+          const parsed = JSON.parse(raw) as DocumentSummary[];
+          setDocuments(parsed);
+          if (parsed.length > 0 && !selectedDocId) {
+            setSelectedDocId(parsed[0].id);
+          }
+        }
+      } catch {
+        // Ignore
+      }
+    }
+  }, [token, selectedDocId]);
 
   useEffect(() => {
-    void Promise.resolve().then(refresh);
-  }, [refresh]);
+    void Promise.resolve().then(refreshDocuments);
+  }, [refreshDocuments]);
 
-  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !token) return;
+  // Load selected document detail
+  const loadDetail = useCallback(
+    async (docId: string) => {
+      setLoadingDetail(true);
+      setError(null);
+      if (token) {
+        try {
+          const detail = await api.request("get", "/api/v1/account/documents/{document_id}", {
+            params: { document_id: docId },
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setSelectedDetail(detail);
+
+          // Fetch original file preview URL
+          try {
+            const resp = await fetch(
+              `${config.apiBaseUrl}/api/v1/account/documents/${encodeURIComponent(docId)}/file`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+                cache: "no-store",
+              }
+            );
+            if (resp.ok) {
+              const blob = await resp.blob();
+              if (fileUrl) URL.revokeObjectURL(fileUrl);
+              setFileUrl(URL.createObjectURL(blob));
+            } else {
+              setFileUrl(null);
+            }
+          } catch {
+            setFileUrl(null);
+          }
+        } catch (err: unknown) {
+          setError(err instanceof Error ? err.message : "Could not load document details.");
+        } finally {
+          setLoadingDetail(false);
+        }
+      } else {
+        // Demo detail fallback
+        try {
+          const rawDetails = localStorage.getItem(`insurra.demo-doc-detail.${docId}`);
+          if (rawDetails) {
+            setSelectedDetail(JSON.parse(rawDetails) as DocumentDetail);
+          } else {
+            setSelectedDetail(null);
+          }
+        } catch {
+          setSelectedDetail(null);
+        } finally {
+          setLoadingDetail(false);
+        }
+      }
+    },
+    [token, fileUrl]
+  );
+
+  useEffect(() => {
+    if (selectedDocId) {
+      void Promise.resolve().then(() => loadDetail(selectedDocId));
+    }
+  }, [selectedDocId, loadDetail]);
+
+  // Clean up object URL
+  useEffect(() => {
+    return () => {
+      if (fileUrl) URL.revokeObjectURL(fileUrl);
+    };
+  }, [fileUrl]);
+
+  // Handle real file upload
+  async function handleFileUpload(file: File, kind: string) {
+    if (!file) return;
     setBusy(true);
-    try {
-      const body = new FormData();
-      body.append("file", file);
-      body.append("kind", "health_policy");
-      await api.request("post", "/api/v1/account/documents", {
-        body,
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      await refresh();
-    } catch {
-      // ignore
-    } finally {
+    setError(null);
+    setNotice(null);
+
+    if (token) {
+      try {
+        const body = new FormData();
+        body.append("file", file);
+        if (kind && kind !== "auto") {
+          body.append("kind", kind);
+        }
+
+        const res = await api.request("post", "/api/v1/account/documents", {
+          body,
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setNotice("Document uploaded and analyzed successfully.");
+        await refreshDocuments();
+        if (res.document_id) {
+          setSelectedDocId(res.document_id);
+          setActiveTab("OVERVIEW");
+        }
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Upload failed. Please ensure file is a valid PDF, JPG, or PNG under 10MB."
+        );
+      } finally {
+        setBusy(false);
+      }
+    } else {
+      // Demo session upload: process locally and persist
+      try {
+        const docId = `demo-${Date.now()}`;
+        const newSummary: DocumentSummary = {
+          id: docId,
+          kind: kind === "auto" ? "insurance_certificate" : kind,
+          country_code: countryCode as DocumentSummary["country_code"],
+          original_filename: file.name,
+          mime_type: file.type || "application/pdf",
+          size_bytes: file.size,
+          status: "COMPLETED",
+          language: countryCode === "CN" ? "zh" : countryCode === "ID" ? "id" : "en",
+          injection_flag: false,
+          original_file_status: "RETAINED",
+          error_code: null,
+          created_at: new Date().toISOString(),
+        };
+
+        const providerName =
+          countryCode === "CN" ? "Ping An Annuity" : countryCode === "ID" ? "BPJS Kesehatan" : "Allianz Care";
+
+        const newDetail: DocumentDetail = {
+          ...newSummary,
+          pages: [
+            {
+              page_no: 1,
+              text: `[Header: ${providerName}]\nPolicy Certificate No: CERT-${Math.floor(100000 + Math.random() * 900000)}\nInsured: ${userCtx.nationality || "Member"}\nCoverage: 2024-09-01 to 2025-08-31\nStatus: Active In-force\nHospital Network: Designated Public Hospitals`,
+              ocr_used: false,
+            },
+          ],
+          fields: [
+            {
+              id: `field-prov-${Date.now()}`,
+              document_id: docId,
+              field_key: "provider",
+              value: providerName,
+              previous_value: null,
+              status: "FOUND",
+              confidence: 0.96,
+              source_page: 1,
+              source_type: "DOCUMENT_EXTRACTION",
+              confirmed_by_user: false,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              id: `field-pol-${Date.now()}`,
+              document_id: docId,
+              field_key: "policy_number",
+              value: `PA-${Math.floor(10000000 + Math.random() * 90000000)}`,
+              previous_value: null,
+              status: "FOUND",
+              confidence: 0.94,
+              source_page: 1,
+              source_type: "DOCUMENT_EXTRACTION",
+              confirmed_by_user: false,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              id: `field-start-${Date.now()}`,
+              document_id: docId,
+              field_key: "coverage_start_date",
+              value: "2024-09-01",
+              previous_value: null,
+              status: "FOUND",
+              confidence: 0.98,
+              source_page: 1,
+              source_type: "DOCUMENT_EXTRACTION",
+              confirmed_by_user: false,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              id: `field-end-${Date.now()}`,
+              document_id: docId,
+              field_key: "coverage_end_date",
+              value: "2025-08-31",
+              previous_value: null,
+              status: "FOUND",
+              confidence: 0.98,
+              source_page: 1,
+              source_type: "DOCUMENT_EXTRACTION",
+              confirmed_by_user: false,
+              updated_at: new Date().toISOString(),
+            },
+          ],
+        };
+
+        const existingList = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("insurra.demo-documents") || "[]");
+          } catch {
+            return [];
+          }
+        })();
+
+        const updatedList = [newSummary, ...existingList];
+        localStorage.setItem("insurra.demo-documents", JSON.stringify(updatedList));
+        localStorage.setItem(`insurra.demo-doc-detail.${docId}`, JSON.stringify(newDetail));
+
+        setDocuments(updatedList);
+        setSelectedDocId(docId);
+        setSelectedDetail(newDetail);
+        setNotice("Document uploaded and extracted in demo sandbox.");
+        setActiveTab("OVERVIEW");
+
+        // Sync with user context policy list
+        userCtx.updateContext({
+          insuranceVerificationStatus: "in_progress",
+        });
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Upload processing failed.");
+      } finally {
+        setBusy(false);
+      }
+    }
+  }
+
+  // Handle reviewing/editing an extracted field
+  async function handleFieldConfirm(field: AccountField, customValue?: string) {
+    const finalValue = customValue !== undefined ? customValue : (typeof field.value === "string" ? field.value : "");
+    if (!finalValue.trim()) {
+      setError("Field value cannot be empty.");
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+
+    if (token) {
+      try {
+        const updated = await api.request("patch", "/api/v1/account/fields/{field_id}", {
+          params: { field_id: field.id },
+          body: {
+            value: finalValue.trim(),
+            confirm: true,
+          },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Update local state
+        if (selectedDetail) {
+          const nextFields = selectedDetail.fields.map((f) => (f.id === field.id ? updated : f));
+          setSelectedDetail({ ...selectedDetail, fields: nextFields });
+        }
+        setEditingFieldId(null);
+        setNotice(`Confirmed ${FIELD_KEY_LABELS[field.field_key] || field.field_key}.`);
+
+        // Refresh documents and sync userCtx
+        await refreshDocuments();
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to confirm field.");
+      } finally {
+        setBusy(false);
+      }
+    } else {
+      // Demo session field update
+      if (selectedDetail) {
+        const updatedField: AccountField = {
+          ...field,
+          value: finalValue.trim(),
+          previous_value: field.value,
+          status: "FOUND",
+          confirmed_by_user: true,
+          source_type: field.value !== finalValue.trim() ? "USER_CORRECTED" : "USER_CONFIRMED",
+          updated_at: new Date().toISOString(),
+        };
+        const nextFields = selectedDetail.fields.map((f) => (f.id === field.id ? updatedField : f));
+        const nextDetail = { ...selectedDetail, fields: nextFields };
+        setSelectedDetail(nextDetail);
+        try {
+          localStorage.setItem(`insurra.demo-doc-detail.${selectedDetail.id}`, JSON.stringify(nextDetail));
+        } catch {
+          // Ignore
+        }
+        setEditingFieldId(null);
+        setNotice(`Confirmed ${FIELD_KEY_LABELS[field.field_key] || field.field_key}.`);
+      }
       setBusy(false);
     }
   }
 
-  function handleRemoveBenefit(id: string) {
-    setBenefits((prev) => prev.filter((b) => b.id !== id));
+  // Handle secure document deletion
+  async function handleDeleteDocument(docId: string) {
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+
+    if (token) {
+      try {
+        await api.request("delete", "/api/v1/account/documents/{document_id}", {
+          params: { document_id: docId },
+          body: { confirm: "HAPUS" },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setNotice("Document securely deleted.");
+        setDeleteConfirmDocId(null);
+        setSelectedDocId(null);
+        setSelectedDetail(null);
+        await refreshDocuments();
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Failed to delete document.");
+      } finally {
+        setBusy(false);
+      }
+    } else {
+      // Demo session deletion
+      const filtered = documents.filter((d) => d.id !== docId);
+      setDocuments(filtered);
+      try {
+        localStorage.setItem("insurra.demo-documents", JSON.stringify(filtered));
+        localStorage.removeItem(`insurra.demo-doc-detail.${docId}`);
+      } catch {
+        // Ignore
+      }
+      setDeleteConfirmDocId(null);
+      setSelectedDocId(null);
+      setSelectedDetail(null);
+      setNotice("Document deleted from demo vault.");
+      setBusy(false);
+    }
   }
 
-  const queueDocuments = [
-    {
-      id: "1",
-      filename: "Student Insurance Policy.pdf",
-      uploadedAgo: "Uploaded 2 minutes ago",
-      status: "Extraction complete",
-      statusType: "success",
-    },
-    {
-      id: "2",
-      filename: "Visa Approval Letter.pdf",
-      uploadedAgo: "Uploaded 1 hour ago",
-      status: "Extracting... 70%",
-      statusType: "processing",
-    },
-    {
-      id: "3",
-      filename: "Travel Insurance.jpg",
-      uploadedAgo: "Uploaded 2 days ago",
-      status: "Ready to review",
-      statusType: "neutral",
-    },
-  ];
+  // Filtered documents
+  const filteredDocuments = useMemo(() => {
+    return documents.filter((d) => {
+      const matchCat = filterCategory === "ALL" || d.kind === filterCategory;
+      const matchSearch =
+        !searchQuery.trim() ||
+        d.original_filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (DOCUMENT_KIND_LABELS[d.kind] || d.kind).toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCat && matchSearch;
+    });
+  }, [documents, filterCategory, searchQuery]);
+
+  // Overall workspace statistics
+  const stats = useMemo(() => {
+    const total = documents.length;
+    const completed = documents.filter((d) => d.status === "COMPLETED").length;
+    const flagged = documents.filter((d) => d.injection_flag).length;
+    const failed = documents.filter((d) => d.status === "FAILED").length;
+    return { total, completed, flagged, failed };
+  }, [documents]);
 
   return (
     <div className="figma-page-shell">
       {/* ---------------- Back Navigation ---------------- */}
       <Link href="/protection" className="figma-back-link">
-        ← My Protection
+        ← Back to My Protection
       </Link>
 
       {/* ---------------- Header ---------------- */}
       <header className="figma-page-header">
         <div>
-          <h1>Documents</h1>
-          <p>Upload your insurance documents and let INSURRA extract the important information.</p>
+          <h1>Documents &amp; AI Intelligence</h1>
+          <p>
+            Securely upload your insurance certificates, policies, and medical receipts. INSURRA extracts,
+            verifies, and maps policy benefits directly to your protection profile.
+          </p>
         </div>
-        <button type="button" className="figma-btn-outline" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <HelpCircle size={15} /> Need help?
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            type="button"
+            className="figma-btn-primary"
+            onClick={() => setActiveTab("UPLOAD")}
+            style={{ height: 40, padding: "0 16px", fontSize: 13 }}
+          >
+            <Upload size={14} /> Upload Document
+          </button>
+        </div>
       </header>
 
-      {/* ---------------- Tabs ---------------- */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
+      {/* ---------------- Notice & Error Banners ---------------- */}
+      {error && (
+        <div className="doc-injection-banner" style={{ background: "#fef2f2", borderColor: "#fecaca", color: "#991b1b" }}>
+          <AlertTriangle size={18} />
+          <div style={{ flex: 1 }}>
+            <strong>Action Error</strong>
+            <p style={{ margin: "2px 0 0", fontSize: 12.5 }}>{error}</p>
+          </div>
+          <button type="button" onClick={() => setError(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#991b1b" }}>
+            <X size={15} />
+          </button>
+        </div>
+      )}
+
+      {notice && (
+        <div className="doc-injection-banner" style={{ background: "#f0fdf4", borderColor: "#bbf7d0", color: "#166534" }}>
+          <CheckCircle2 size={18} />
+          <div style={{ flex: 1 }}>
+            <strong>Success</strong>
+            <p style={{ margin: "2px 0 0", fontSize: 12.5 }}>{notice}</p>
+          </div>
+          <button type="button" onClick={() => setNotice(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#166534" }}>
+            <X size={15} />
+          </button>
+        </div>
+      )}
+
+      {/* ---------------- Metrics Row ---------------- */}
+      <div className="doc-metrics-row">
+        <div className="doc-metric-card">
+          <div className="doc-metric-icon" style={{ background: "#e6f7f3", color: "#0ea58a" }}>
+            <FileText size={20} />
+          </div>
+          <div>
+            <div className="doc-metric-val">{stats.total}</div>
+            <div className="doc-metric-lbl">Total Documents</div>
+          </div>
+        </div>
+
+        <div className="doc-metric-card">
+          <div className="doc-metric-icon" style={{ background: "#f0fdf4", color: "#16a34a" }}>
+            <FileCheck size={20} />
+          </div>
+          <div>
+            <div className="doc-metric-val">{stats.completed}</div>
+            <div className="doc-metric-lbl">Extracted &amp; Ready</div>
+          </div>
+        </div>
+
+        <div className="doc-metric-card">
+          <div className="doc-metric-icon" style={{ background: "#eff6ff", color: "#0284c7" }}>
+            <Sparkles size={20} />
+          </div>
+          <div>
+            <div className="doc-metric-val">{countryName}</div>
+            <div className="doc-metric-lbl">Jurisdiction Context</div>
+          </div>
+        </div>
+
+        <div className="doc-metric-card">
+          <div
+            className="doc-metric-icon"
+            style={{
+              background: stats.flagged > 0 ? "#fef3c7" : "#f1f5f9",
+              color: stats.flagged > 0 ? "#d97706" : "#64748b",
+            }}
+          >
+            {stats.flagged > 0 ? <ShieldAlert size={20} /> : <ShieldCheck size={20} />}
+          </div>
+          <div>
+            <div className="doc-metric-val" style={{ color: stats.flagged > 0 ? "#d97706" : "#0f1d38" }}>
+              {stats.flagged}
+            </div>
+            <div className="doc-metric-lbl">Security Protections</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ---------------- Navigation Tabs ---------------- */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24, borderBottom: "1px solid #e2e8f0", paddingBottom: 12 }}>
+        <button
+          type="button"
+          className={`figma-pill-btn ${activeTab === "OVERVIEW" ? "active" : ""}`}
+          onClick={() => setActiveTab("OVERVIEW")}
+        >
+          <FileSearch size={14} style={{ display: "inline", marginRight: 6 }} /> Document Vault ({documents.length})
+        </button>
         <button
           type="button"
           className={`figma-pill-btn ${activeTab === "UPLOAD" ? "active" : ""}`}
           onClick={() => setActiveTab("UPLOAD")}
         >
-          <Upload size={14} style={{ display: "inline", marginRight: 6 }} /> Upload &amp; Extract
+          <Upload size={14} style={{ display: "inline", marginRight: 6 }} /> Upload &amp; Analyze
         </button>
         <button
           type="button"
-          className={`figma-pill-btn ${activeTab === "MY_DOCS" ? "active" : ""}`}
-          onClick={() => setActiveTab("MY_DOCS")}
+          className={`figma-pill-btn ${activeTab === "RECOMMENDED" ? "active" : ""}`}
+          onClick={() => setActiveTab("RECOMMENDED")}
         >
-          <FileText size={14} style={{ display: "inline", marginRight: 6 }} /> My Documents
-        </button>
-        <button
-          type="button"
-          className={`figma-pill-btn ${activeTab === "REQUIRED" ? "active" : ""}`}
-          onClick={() => setActiveTab("REQUIRED")}
-        >
-          <CheckCircle2 size={14} style={{ display: "inline", marginRight: 6 }} /> Required Documents
+          <CheckCircle2 size={14} style={{ display: "inline", marginRight: 6 }} /> Recommended for You ({recommendedDocs.length})
         </button>
       </div>
 
-      {/* ---------------- Two Column Layout ---------------- */}
-      <div className="figma-wallet-grid" style={{ gridTemplateColumns: "45% 55%" }}>
-        {/* Left Column: Upload Dropzone & Uploaded List */}
-        <div>
-          {/* Drag & Drop Card */}
-          <div
-            className="figma-dropzone-box"
-            onClick={() => fileInputRef.current?.click()}
-            role="button"
-            tabIndex={0}
-          >
+      {/* ======================================================================
+          TAB 1: DOCUMENT VAULT & TWO-PANEL REVIEW
+          ====================================================================== */}
+      {activeTab === "OVERVIEW" && (
+        <>
+          {documents.length === 0 ? (
+            /* Empty State */
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1.5px dashed #cbd5e1",
+                borderRadius: 20,
+                padding: "54px 24px",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 14,
+              }}
+            >
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: "50%",
+                  background: "#e6f7f3",
+                  color: "#0ea58a",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <UploadCloud size={32} />
+              </div>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0f1d38", margin: 0 }}>
+                No insurance documents uploaded yet
+              </h2>
+              <p style={{ maxWidth: 480, fontSize: 13.5, color: "#64748b", margin: 0, lineHeight: 1.5 }}>
+                Upload your insurance certificate, policy wording, or receipts to automatically extract coverages,
+                deductibles, and emergency care network rules.
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+                <button
+                  type="button"
+                  className="figma-btn-primary"
+                  onClick={() => setActiveTab("UPLOAD")}
+                  style={{ height: 42, padding: "0 20px" }}
+                >
+                  <Upload size={15} /> Upload Your First Document
+                </button>
+                <button
+                  type="button"
+                  className="figma-btn-outline"
+                  onClick={() => setActiveTab("RECOMMENDED")}
+                  style={{ height: 42, padding: "0 20px" }}
+                >
+                  View Recommended Documents
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Two-Panel Layout */
+            <div className="doc-review-layout">
+              {/* Left Column: Uploaded Document Queue & Source Preview */}
+              <div>
+                {/* Search & Filter Bar */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <div style={{ position: "relative", flex: 1 }}>
+                    <Search
+                      size={14}
+                      color="#94a3b8"
+                      style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search documents by name or type..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{
+                        width: "100%",
+                        height: 38,
+                        paddingLeft: 34,
+                        paddingRight: 12,
+                        borderRadius: 10,
+                        border: "1px solid #cbd5e1",
+                        fontSize: 13,
+                        outline: "none",
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="figma-btn-outline"
+                    onClick={() => setActiveTab("UPLOAD")}
+                    style={{ height: 38, padding: "0 14px", fontSize: 12.5 }}
+                  >
+                    <Plus size={14} /> Add
+                  </button>
+                </div>
+
+                {/* Category Filter Pills */}
+                <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 14, paddingBottom: 2 }}>
+                  {[
+                    { id: "ALL", label: "All Documents" },
+                    { id: "policy", label: "Policy" },
+                    { id: "claim_form", label: "Claims" },
+                    { id: "receipt", label: "Receipts" },
+                    { id: "card", label: "Cards" },
+                  ].map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setFilterCategory(cat.id)}
+                      className={`figma-pill-btn ${filterCategory === cat.id ? "active" : ""}`}
+                      style={{ fontSize: 11.5, padding: "4px 10px", whiteSpace: "nowrap" }}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Document List */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+                  {filteredDocuments.map((doc) => {
+                    const isSelected = doc.id === selectedDocId;
+                    return (
+                      <div
+                        key={doc.id}
+                        className="figma-doc-queue-item"
+                        style={{
+                          borderColor: isSelected ? "#0ea58a" : "#e2e8f0",
+                          background: isSelected ? "#f9fefd" : "#ffffff",
+                          boxShadow: isSelected ? "0 2px 8px rgba(14, 165, 138, 0.12)" : "none",
+                        }}
+                        onClick={() => setSelectedDocId(doc.id)}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div
+                            style={{
+                              width: 38,
+                              height: 44,
+                              background: isSelected ? "#e6f7f3" : "#f1f5f9",
+                              color: isSelected ? "#0ea58a" : "#64748b",
+                              borderRadius: 8,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <FileText size={20} />
+                          </div>
+                          <div>
+                            <strong style={{ display: "block", fontSize: 13.5, color: "#0f1d38" }}>
+                              {doc.original_filename}
+                            </strong>
+                            <span style={{ fontSize: 11.5, color: "#64748b" }}>
+                              {DOCUMENT_KIND_LABELS[doc.kind] || doc.kind} · {(doc.size_bytes / 1024).toFixed(0)} KB
+                            </span>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          {doc.injection_flag && (
+                            <span
+                              className="figma-hub-card-pill neutral"
+                              style={{ background: "#fef3c7", color: "#b45309", fontSize: 10.5 }}
+                              title="Prompt injection neutralized"
+                            >
+                              <ShieldAlert size={12} /> Protected
+                            </span>
+                          )}
+
+                          {doc.status === "COMPLETED" && (
+                            <span className="figma-hub-card-pill success" style={{ fontSize: 11 }}>
+                              <CheckCircle2 size={12} /> Ready
+                            </span>
+                          )}
+
+                          {doc.status === "FAILED" && (
+                            <span
+                              className="figma-hub-card-pill neutral"
+                              style={{ background: "#fee2e2", color: "#dc2626", fontSize: 11 }}
+                            >
+                              Failed
+                            </span>
+                          )}
+
+                          <ChevronRight size={16} color={isSelected ? "#0ea58a" : "#94a3b8"} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Source File Preview Card */}
+                {selectedDetail && (
+                  <div className="doc-source-pane">
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <button
+                          type="button"
+                          className={`figma-pill-btn ${previewMode === "ORIGINAL" ? "active" : ""}`}
+                          onClick={() => setPreviewMode("ORIGINAL")}
+                          style={{ fontSize: 11.5, padding: "4px 10px" }}
+                        >
+                          <Eye size={12} /> Source Preview
+                        </button>
+                        <button
+                          type="button"
+                          className={`figma-pill-btn ${previewMode === "OCR_TEXT" ? "active" : ""}`}
+                          onClick={() => setPreviewMode("OCR_TEXT")}
+                          style={{ fontSize: 11.5, padding: "4px 10px" }}
+                        >
+                          <FileText size={12} /> Extracted Text ({selectedDetail.pages.length} Pages)
+                        </button>
+                      </div>
+
+                      {fileUrl && (
+                        <a
+                          href={fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="figma-btn-outline"
+                          style={{ padding: "4px 8px", fontSize: 11.5, height: 28 }}
+                        >
+                          <ExternalLink size={12} /> Open File
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="doc-source-frame-wrap">
+                      {previewMode === "ORIGINAL" ? (
+                        fileUrl ? (
+                          selectedDetail.mime_type.includes("pdf") ? (
+                            <iframe src={fileUrl} title="Document Preview" className="doc-source-frame" />
+                          ) : (
+                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 10 }}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={fileUrl} alt="Document" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                            </div>
+                          )
+                        ) : (
+                          <div style={{ textAlign: "center", padding: 20 }}>
+                            <FileText size={32} color="#94a3b8" />
+                            <p style={{ margin: "8px 0 0", fontSize: 13, color: "#64748b" }}>
+                              Original file content preview is available when retention consent is active.
+                            </p>
+                          </div>
+                        )
+                      ) : (
+                        <div className="doc-ocr-text-scroll">
+                          {selectedDetail.pages.map((p, idx) => (
+                            <div key={idx} style={{ marginBottom: 16 }}>
+                              <div style={{ color: "#38bdf8", fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                                <span>[Page {String(p.page_no)}]</span>
+                                {Boolean(p.ocr_used) && (
+                                  <span style={{ fontSize: 10, background: "rgba(56, 189, 248, 0.2)", padding: "1px 6px", borderRadius: 4 }}>
+                                    OCR Fallback
+                                  </span>
+                                )}
+                              </div>
+                              <p style={{ margin: 0 }}>{typeof p.text === "string" ? p.text : ""}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column: AI Extraction Review Panel */}
+              <div className="figma-policy-detail">
+                {selectedDetail ? (
+                  <>
+                    {/* Prompt Injection Alert Banner (US-03-04) */}
+                    {selectedDetail.injection_flag && (
+                      <div className="doc-injection-banner">
+                        <ShieldAlert size={20} style={{ flexShrink: 0, marginTop: 2 }} />
+                        <div>
+                          <strong>Prompt Injection Protected</strong>
+                          <p style={{ margin: "2px 0 0" }}>
+                            Suspicious prompt text in this document was identified and safely isolated. No unauthorized
+                            instructions or tool actions were executed.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Document Header Tile */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "14px 16px",
+                        background: "#f8fafc",
+                        borderRadius: 14,
+                        marginBottom: 16,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div
+                          style={{
+                            width: 36,
+                            height: 42,
+                            background: "#ffffff",
+                            border: "1px solid #cbd5e1",
+                            borderRadius: 6,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <FileText size={18} color="#0ea58a" />
+                        </div>
+                        <div>
+                          <strong style={{ display: "block", fontSize: 14, color: "#0f1d38" }}>
+                            {selectedDetail.original_filename}
+                          </strong>
+                          <span style={{ fontSize: 12, color: "#64748b" }}>
+                            {DOCUMENT_KIND_LABELS[selectedDetail.kind] || selectedDetail.kind} ·{" "}
+                            {new Date(selectedDetail.created_at).toLocaleDateString()}
+                            {loadingDetail && " (updating...)"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <button
+                          type="button"
+                          className="figma-btn-outline"
+                          onClick={() => setDeleteConfirmDocId(selectedDetail.id)}
+                          style={{
+                            height: 32,
+                            padding: "0 10px",
+                            fontSize: 12,
+                            color: "#dc2626",
+                            borderColor: "#fca5a5",
+                          }}
+                          title="Delete Document"
+                        >
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* AI Extraction Banner */}
+                    <div className="figma-alert-banner" style={{ marginBottom: 18 }}>
+                      <div
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          background: "#0ea58a",
+                          color: "#ffffff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Sparkles size={16} />
+                      </div>
+                      <div>
+                        <strong style={{ display: "block", fontSize: 13.5, color: "#065f46" }}>
+                          AI Extraction Summary ({selectedDetail.fields.length} Fields Found)
+                        </strong>
+                        <span style={{ fontSize: 12, color: "#047857" }}>
+                          Extracted from source evidence. Review each field below and confirm or edit as needed. User
+                          confirmation records provenance and syncs to your Policy Wallet.
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Extracted Fields List */}
+                    <div style={{ marginBottom: 20 }}>
+                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f1d38", marginBottom: 12 }}>
+                        Extracted Policy Information
+                      </h3>
+
+                      {selectedDetail.fields.length === 0 ? (
+                        <div
+                          style={{
+                            padding: 24,
+                            background: "#f8fafc",
+                            borderRadius: 12,
+                            textAlign: "center",
+                            color: "#64748b",
+                            fontSize: 13,
+                          }}
+                        >
+                          <Info size={20} style={{ margin: "0 auto 8px", color: "#94a3b8" }} />
+                          No structured fields could be automatically extracted from this file. You can manually enter policy
+                          details or upload a clearer policy certificate.
+                        </div>
+                      ) : (
+                        selectedDetail.fields.map((field) => {
+                          const isEditing = editingFieldId === field.id;
+                          const fieldLabel = FIELD_KEY_LABELS[field.field_key] || field.field_key;
+                          const strValue = typeof field.value === "string" ? field.value : JSON.stringify(field.value);
+
+                          return (
+                            <div key={field.id} className="doc-field-row-item">
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                <label style={{ fontSize: 12, fontWeight: 700, color: "#475569" }}>
+                                  {fieldLabel}
+                                </label>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  {field.source_page && (
+                                    <span
+                                      className="figma-tag"
+                                      style={{ fontSize: 10.5, background: "#e0f2fe", color: "#0369a1" }}
+                                    >
+                                      Page {field.source_page}
+                                    </span>
+                                  )}
+                                  <span
+                                    className="figma-tag"
+                                    style={{
+                                      fontSize: 10.5,
+                                      background: field.confirmed_by_user ? "#dcfce7" : "#f1f5f9",
+                                      color: field.confirmed_by_user ? "#15803d" : "#64748b",
+                                    }}
+                                  >
+                                    {field.confirmed_by_user ? "Confirmed by You" : "Self-Reported"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {isEditing ? (
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                                  <input
+                                    type="text"
+                                    className="figma-extract-input"
+                                    style={{ height: 36 }}
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    autoFocus
+                                  />
+                                  <button
+                                    type="button"
+                                    className="figma-btn-primary"
+                                    onClick={() => handleFieldConfirm(field, editValue)}
+                                    style={{ height: 36, padding: "0 12px", fontSize: 12 }}
+                                    disabled={busy}
+                                  >
+                                    <Check size={13} /> Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="figma-btn-outline"
+                                    onClick={() => setEditingFieldId(null)}
+                                    style={{ height: 36, padding: "0 10px", fontSize: 12 }}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: 12,
+                                  }}
+                                >
+                                  <span style={{ fontSize: 14, fontWeight: 600, color: "#0f1d38" }}>
+                                    {strValue || <span style={{ color: "#94a3b8" }}>Not detected</span>}
+                                  </span>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingFieldId(field.id);
+                                        setEditValue(strValue);
+                                      }}
+                                      className="figma-btn-outline"
+                                      style={{ height: 28, padding: "0 8px", fontSize: 11.5 }}
+                                    >
+                                      <Edit2 size={11} /> Edit
+                                    </button>
+                                    {!field.confirmed_by_user && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleFieldConfirm(field)}
+                                        className="figma-btn-primary"
+                                        style={{ height: 28, padding: "0 10px", fontSize: 11.5 }}
+                                        disabled={busy}
+                                      >
+                                        <Check size={11} /> Confirm
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Bottom Navigation Actions */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        paddingTop: 16,
+                        borderTop: "1px solid #e2e8f0",
+                      }}
+                    >
+                      <Link href="/policies" className="figma-btn-outline" style={{ height: 40, fontSize: 12.5 }}>
+                        View in Policy Wallet
+                      </Link>
+                      <Link
+                        href="/completeness"
+                        className="figma-btn-primary"
+                        style={{ height: 40, fontSize: 12.5 }}
+                      >
+                        Check Completeness <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
+                    <FileSearch size={36} color="#94a3b8" style={{ margin: "0 auto 12px" }} />
+                    <h3 style={{ fontSize: 16, color: "#0f1d38", margin: "0 0 6px" }}>Select a Document</h3>
+                    <p style={{ fontSize: 13, margin: 0 }}>
+                      Choose any document from the list on the left to review its source file, OCR text, and extracted
+                      insurance benefits.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ======================================================================
+          TAB 2: UPLOAD & INGEST EXPERIENCE
+          ====================================================================== */}
+      {activeTab === "UPLOAD" && (
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          <div className="figma-dropzone-box" onClick={() => fileInputRef.current?.click()}>
             <input
               type="file"
               ref={fileInputRef}
-              onChange={handleFileSelect}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void handleFileUpload(f, uploadKind);
+              }}
               style={{ display: "none" }}
               accept=".pdf,.jpg,.jpeg,.png"
             />
             <div className="figma-dropzone-icon">
-              <UploadCloud size={26} />
+              {busy ? <RefreshCw size={26} className="spin-slow" /> : <UploadCloud size={26} />}
             </div>
             <strong style={{ fontSize: 16, fontWeight: 800, color: "#0f1d38" }}>
-              {busy ? "Uploading document..." : "Drag and drop your documents here"}
+              {busy ? "Analyzing and extracting document..." : "Drag and drop your insurance documents here"}
             </strong>
             <span style={{ fontSize: 13, color: "#64748b" }}>
-              {busy ? "Please wait while we process the file" : "or click to browse files"}
+              {busy ? "Performing OCR, prompt security isolation, and structured extraction" : "or click to browse local files"}
             </span>
             <small style={{ fontSize: 11.5, color: "#94a3b8" }}>
-              We support PDF, JPG, PNG (max 10MB per file)
+              Supported: PDF, JPG, PNG (maximum 10MB per file)
             </small>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
@@ -222,282 +1352,186 @@ export default function AccountDocuments() {
             </div>
           </div>
 
-          {/* Uploaded Documents List */}
-          <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f1d38", margin: 0 }}>
-                Uploaded Documents ({queueDocuments.length})
-              </h3>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#64748b" }}>
-                <span>Sort by:</span>
-                <strong style={{ color: "#0f1d38" }}>Newest</strong>
-                <ChevronDown size={14} />
-              </div>
-            </div>
-
-            {queueDocuments.map((doc) => {
-              const isSelected = doc.id === selectedDocId;
-              return (
-                <div
-                  key={doc.id}
-                  className="figma-doc-queue-item"
-                  style={{
-                    borderColor: isSelected ? "#0ea58a" : "#e2e8f0",
-                    background: isSelected ? "#f9fefd" : "#ffffff",
-                  }}
-                  onClick={() => setSelectedDocId(doc.id)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 36, height: 42, background: "#f1f5f9", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <FileText size={20} color="#64748b" />
-                    </div>
-                    <div>
-                      <strong style={{ display: "block", fontSize: 13.5, color: "#0f1d38" }}>
-                        {doc.filename}
-                      </strong>
-                      <span style={{ fontSize: 11.5, color: "#94a3b8" }}>{doc.uploadedAgo}</span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    {doc.statusType === "success" && (
-                      <span className="figma-hub-card-pill success" style={{ padding: "4px 10px", fontSize: 11 }}>
-                        <CheckCircle2 size={12} /> {doc.status}
-                      </span>
-                    )}
-                    {doc.statusType === "processing" && (
-                      <span className="figma-hub-card-pill neutral" style={{ padding: "4px 10px", fontSize: 11, background: "#e0f2fe", color: "#0284c7" }}>
-                        <RefreshCw size={12} className="spin-slow" /> {doc.status}
-                      </span>
-                    )}
-                    {doc.statusType === "neutral" && (
-                      <span className="figma-hub-card-pill neutral" style={{ padding: "4px 10px", fontSize: 11 }}>
-                        <Check size={12} /> {doc.status}
-                      </span>
-                    )}
-                    <ChevronRight size={16} color="#94a3b8" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right Column: AI Extraction Review Panel */}
-        <div className="figma-policy-detail">
-          {/* AI Banner */}
-          <div className="figma-alert-banner">
-            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#0ea58a", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Sparkles size={16} />
-            </div>
-            <div>
-              <strong style={{ display: "block", fontSize: 13.5, color: "#065f46" }}>AI extraction complete</strong>
-              <span style={{ fontSize: 12, color: "#047857" }}>
-                We&apos;ve extracted the key information below. Please review and edit if needed.
-              </span>
-            </div>
-          </div>
-
-          {/* Document Header Tile */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: "#f8fafc", borderRadius: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 34, height: 42, background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <FileText size={18} color="#0284c7" />
-              </div>
-              <div>
-                <strong style={{ display: "block", fontSize: 14, color: "#0f1d38" }}>
-                  Student Insurance Policy.pdf
-                </strong>
-                <span style={{ fontSize: 11.5, color: "#94a3b8" }}>Uploaded 2 minutes ago</span>
-              </div>
-            </div>
-            <button
-              type="button"
-              style={{ background: "none", border: "none", color: "#0ea58a", fontSize: 12.5, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
-            >
-              View file
-            </button>
-          </div>
-
-          {/* Extracted Information Form */}
-          <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f1d38", margin: 0 }}>
-                Extracted Information
-              </h3>
-              <button
-                type="button"
-                className="figma-btn-outline"
-                style={{ padding: "4px 10px", fontSize: 12, height: 30 }}
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                <Edit2 size={12} /> {isEditing ? "Done" : "Edit all"}
-              </button>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <div className="figma-extract-field">
-                <label>Document type</label>
-                <select
-                  className="figma-extract-input"
-                  value={docType}
-                  onChange={(e) => setDocType(e.target.value)}
-                  disabled={!isEditing}
-                >
-                  <option>Health Insurance Policy</option>
-                  <option>Visa Grant Notice</option>
-                  <option>Travel Policy</option>
-                </select>
-              </div>
-
-              <div className="figma-extract-field">
-                <label>Provider</label>
-                <select
-                  className="figma-extract-input"
-                  value={provider}
-                  onChange={(e) => setProvider(e.target.value)}
-                  disabled={!isEditing}
-                >
-                  <option>AIA</option>
-                  <option>AXA</option>
-                  <option>Allianz</option>
-                  <option>Medibank</option>
-                  <option>BPJS Kesehatan</option>
-                </select>
-              </div>
-
-              <div className="figma-extract-field">
-                <label>Policy number</label>
-                <input
-                  type="text"
-                  className="figma-extract-input"
-                  value={policyNumber}
-                  onChange={(e) => setPolicyNumber(e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div className="figma-extract-field">
-                <label>Coverage period</label>
-                <input
-                  type="text"
-                  className="figma-extract-input"
-                  value={period}
-                  onChange={(e) => setPeriod(e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div className="figma-extract-field">
-                <label>Coverage region</label>
-                <select
-                  className="figma-extract-input"
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                  disabled={!isEditing}
-                >
-                  <option>China</option>
-                  <option>Indonesia</option>
-                  <option>Australia</option>
-                  <option>Singapore</option>
-                </select>
-              </div>
-
-              <div className="figma-extract-field">
-                <label>Plan type</label>
-                <select
-                  className="figma-extract-input"
-                  value={planType}
-                  onChange={(e) => setPlanType(e.target.value)}
-                  disabled={!isEditing}
-                >
-                  <option>Student Plan</option>
-                  <option>Standard Comprehensive</option>
-                  <option>Corporate Health</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Key Benefits (Extracted) */}
-          <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f1d38", margin: 0 }}>
-                Key Benefits (Extracted)
-              </h3>
-              <button
-                type="button"
-                className="figma-btn-outline"
-                style={{ padding: "4px 10px", fontSize: 12, height: 30 }}
-                onClick={() => setBenefits((prev) => [...prev, { id: String(Date.now()), type: "dental", name: "Dental & Vision", limit: "Up to SGD 300 per year" }])}
-              >
-                <Plus size={12} /> Add benefit
-              </button>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {benefits.map((b) => (
-                <div
-                  key={b.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "10px 14px",
-                    background: "#f8fafc",
-                    borderRadius: 10,
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div
-                      style={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: 6,
-                        background: b.type === "outpatient" ? "#fee2e2" : b.type === "inpatient" ? "#e0f2fe" : "#f3e8ff",
-                        color: b.type === "outpatient" ? "#dc2626" : b.type === "inpatient" ? "#0284c7" : "#7e22ce",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {b.type === "outpatient" ? <Heart size={13} /> : b.type === "inpatient" ? <Bed size={13} /> : <Pill size={13} />}
-                    </div>
-                    <strong style={{ fontSize: 13, color: "#0f1d38" }}>{b.name}</strong>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ fontSize: 12.5, color: "#475569" }}>{b.limit}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveBenefit(b.id)}
-                      style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", padding: 2 }}
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bottom Action Buttons */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 12, marginTop: 12 }}>
-            <Link href="/protection" className="figma-btn-outline" style={{ height: 42 }}>
-              Save &amp; Close
-            </Link>
-            <Link
-              href="/completeness"
-              className="figma-btn-primary"
+          {/* Document Kind Pre-Selection */}
+          <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 16, padding: 20, marginBottom: 20 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#0f1d38", marginBottom: 8 }}>
+              Document Category ({countryName})
+            </label>
+            <select
+              className="figma-extract-input"
+              value={uploadKind}
+              onChange={(e) => setUploadKind(e.target.value)}
               style={{ height: 42 }}
             >
-              Confirm Information <ArrowRight size={15} />
-            </Link>
+              {availableKinds.map((k) => (
+                <option key={k.code} value={k.code}>
+                  {k.label}
+                </option>
+              ))}
+            </select>
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#64748b" }}>
+              Selecting the appropriate category accelerates field classification and alignment with your country&apos;s
+              healthcare regulations.
+            </p>
+          </div>
+
+          {/* Security & Private Storage Commitment */}
+          <div
+            style={{
+              background: "#f0faf8",
+              border: "1px solid #cceee7",
+              borderRadius: 14,
+              padding: "16px 20px",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 14,
+            }}
+          >
+            <Lock size={20} color="#0ea58a" style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <strong style={{ fontSize: 13.5, color: "#0f3630", display: "block" }}>
+                Private Storage &amp; Prompt Security Guarantee
+              </strong>
+              <p style={{ fontSize: 12.5, color: "#144a42", margin: "4px 0 0", lineHeight: 1.5 }}>
+                Documents are stored in private user-scoped storage with SHA-256 verification. Content is treated as
+                untrusted data with prompt injection isolation. Original files can be deleted anytime.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* ======================================================================
+          TAB 3: CONTEXT-AWARE RECOMMENDED DOCUMENTS
+          ====================================================================== */}
+      {activeTab === "RECOMMENDED" && (
+        <div>
+          <div style={{ marginBottom: 18 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: "#0f1d38", margin: "0 0 4px" }}>
+              Tailored Document Checklist for {countryName}
+            </h2>
+            <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+              Based on your declared location ({countryName}) and background (
+              {userCtx.userSegmentLabel || "General Protection"}), these documents provide the highest coverage certainty.
+            </p>
+          </div>
+
+          <div className="doc-recommended-grid">
+            {recommendedDocs.map((doc) => (
+              <div key={doc.id} className="doc-rec-card">
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <span
+                      className="figma-tag"
+                      style={{
+                        fontWeight: 750,
+                        background: doc.level === "REQUIRED" ? "#fef2f2" : doc.level === "RECOMMENDED" ? "#eff6ff" : "#f1f5f9",
+                        color: doc.level === "REQUIRED" ? "#dc2626" : doc.level === "RECOMMENDED" ? "#0284c7" : "#64748b",
+                      }}
+                    >
+                      {doc.level}
+                    </span>
+                    <span style={{ fontSize: 11.5, color: "#94a3b8" }}>{doc.badge}</span>
+                  </div>
+
+                  <strong style={{ fontSize: 14.5, color: "#0f1d38", display: "block", marginBottom: 4 }}>
+                    {doc.title}
+                  </strong>
+                  <span style={{ fontSize: 12, color: "#0ea58a", fontWeight: 600, display: "block", marginBottom: 10 }}>
+                    Source: {doc.provider}
+                  </span>
+
+                  <p style={{ fontSize: 12.5, color: "#475569", margin: 0, lineHeight: 1.5 }}>
+                    {doc.reason}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="figma-btn-primary"
+                  onClick={() => {
+                    setUploadKind(doc.kind);
+                    setActiveTab("UPLOAD");
+                  }}
+                  style={{ width: "100%", height: 38, fontSize: 12.5, justifyContent: "center" }}
+                >
+                  <Upload size={13} /> Upload this Document
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- Delete Confirmation Modal ---------------- */}
+      {deleteConfirmDocId && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 29, 56, 0.4)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+            padding: 20,
+          }}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: 20,
+              padding: 28,
+              maxWidth: 440,
+              width: "100%",
+              boxShadow: "0 20px 48px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                background: "#fee2e2",
+                color: "#dc2626",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Trash2 size={24} />
+            </div>
+            <h3 style={{ fontSize: 17, fontWeight: 800, color: "#0f1d38", margin: "0 0 8px" }}>
+              Delete Document Permanently?
+            </h3>
+            <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 20px", lineHeight: 1.5 }}>
+              This action will remove the document file, OCR page records, and associated unverified extraction fields
+              from private storage.
+            </p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10 }}>
+              <button
+                type="button"
+                className="figma-btn-outline"
+                onClick={() => setDeleteConfirmDocId(null)}
+                disabled={busy}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="figma-btn-primary"
+                onClick={() => handleDeleteDocument(deleteConfirmDocId)}
+                style={{ background: "#dc2626", borderColor: "#dc2626" }}
+                disabled={busy}
+              >
+                {busy ? "Deleting..." : "Confirm Deletion"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

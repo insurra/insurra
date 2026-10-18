@@ -136,12 +136,33 @@ def remove_injection_lines(
     return cleaned, flagged
 
 
-def classify_document(kind: str | None, country: CountryKB) -> str:
+def classify_document(kind: str | None, country: CountryKB, filename: str = "") -> str:
     allowed = {item.code for item in country.resources.document_types.data}
     if kind and kind != "auto":
         if kind not in allowed:
             raise AppError(422, "INVALID_DOCUMENT_KIND", "Jenis dokumen tidak tersedia.")
         return kind
+    fn = filename.lower()
+    if any(k in fn for k in ("certificate", "pingan", "ping an", "surat")):
+        if "insurance_certificate" in allowed:
+            return "insurance_certificate"
+        if "insurance_card" in allowed:
+            return "insurance_card"
+    if "bpjs" in fn:
+        if "bpjs_card" in allowed:
+            return "bpjs_card"
+        if "social_insurance_voucher" in allowed:
+            return "social_insurance_voucher"
+    if any(k in fn for k in ("fapiao", "receipt", "kwitansi", "invoice")):
+        if "medical_fapiao" in allowed:
+            return "medical_fapiao"
+        if "receipt" in allowed:
+            return "receipt"
+    if any(k in fn for k in ("policy", "polis", "booklet", "terms")):
+        if "policy_wording" in allowed:
+            return "policy_wording"
+        if "policy_booklet" in allowed:
+            return "policy_booklet"
     return "other"
 
 
@@ -160,17 +181,50 @@ def _date(value: str) -> str | None:
 
 
 def _conservative_fields(pages: list[PageText], allowed: set[str]) -> ExtractionResult:
-    labels = {
+    date_labels = {
         "coverage_start_date": (
-            r"(?:coverage start|cover start|policy start|tanggal mulai perlindungan)"
+            r"(?:coverage start|cover start|policy start|"
+            r"tanggal mulai perlindungan|起保日期|生效日期)"
         ),
         "coverage_end_date": (
-            r"(?:coverage end|cover end|policy end|expiry date|tanggal akhir perlindungan)"
+            r"(?:coverage end|cover end|policy end|expiry date|"
+            r"tanggal akhir perlindungan|终保日期|截止日期)"
         ),
-        "visa_expiry_date": r"(?:visa expiry|visa end|visa ceases|tanggal akhir visa)",
+        "treatment_date": (
+            r"(?:treatment date|admission date|visit date|"
+            r"tanggal berobat|tanggal kwitansi|就诊日期)"
+        ),
+        "visa_expiry_date": (r"(?:visa expiry|visa end|visa ceases|tanggal akhir visa|居留有效期)"),
     }
-    result = []
-    for key, label in labels.items():
+    text_labels = {
+        "policy_number": (
+            r"(?:policy no|policy number|certificate no|no polis|nomor polis|"
+            r"保险单号|凭证号|保单号)[^\w\n]{0,15}([A-Za-z0-9\-_]{5,32})"
+        ),
+        "nomor_kartu": (r"(?:nomor kartu|no\.? kartu|kartu bpjs|nik)[^\w\n]{0,15}([0-9]{11,16})"),
+        "receipt_number": (
+            r"(?:receipt no|invoice no|kwitansi no|fapiao no|发票号码|发票号)"
+            r"[^\w\n]{0,15}([A-Za-z0-9\-_]{5,32})"
+        ),
+        "provider": (
+            r"(?:insurer|provider|insurance company|penanggung|perusahaan asuransi|"
+            r"保险人|承保公司)[^\w\n]{0,15}([A-Za-z0-9\s\u4e00-\u9fa5]{3,50})"
+        ),
+        "insured_name": (
+            r"(?:insured|member name|policyholder|nama tertanggung|nama peserta|"
+            r"被保险人|姓名)[^\w\n]{0,15}([A-Za-z0-9\s\u4e00-\u9fa5]{2,40})"
+        ),
+        "plan_type": (
+            r"(?:plan|scheme|scheme name|jenis paket|produk|险种名称|方案名称)"
+            r"[^\w\n]{0,15}([A-Za-z0-9\s\u4e00-\u9fa5]{3,50})"
+        ),
+        "hospital_name": (
+            r"(?:hospital|clinic|rumah sakit|rs|医院|医疗机构)"
+            r"[^\w\n]{0,15}([A-Za-z0-9\s\u4e00-\u9fa5]{4,50})"
+        ),
+    }
+    result: list[CandidateField] = []
+    for key, label in date_labels.items():
         if key not in allowed:
             continue
         for page in pages:
@@ -182,6 +236,20 @@ def _conservative_fields(pages: list[PageText], allowed: set[str]) -> Extraction
                         CandidateField(field_key=key, value=value, source_page=page.page_no)
                     )
                     break
+
+    for key, pattern in text_labels.items():
+        if key not in allowed or any(f.field_key == key for f in result):
+            continue
+        for page in pages:
+            match = re.search(pattern, page.text, re.IGNORECASE)
+            if match:
+                val = match.group(1).strip()
+                if val:
+                    result.append(
+                        CandidateField(field_key=key, value=val[:500], source_page=page.page_no)
+                    )
+                    break
+
     return ExtractionResult(fields=result)
 
 
@@ -198,7 +266,19 @@ def extract_to_schema(
     )
     allowed = {field.field_key for field in template.fields} if template else set()
     if not allowed:
-        return ExtractionResult(fields=[])
+        allowed = {
+            "provider",
+            "policy_number",
+            "insured_name",
+            "coverage_start_date",
+            "coverage_end_date",
+            "plan_type",
+            "hospital_name",
+            "nomor_kartu",
+            "receipt_number",
+            "treatment_date",
+            "visa_expiry_date",
+        }
     clean_text = "\n".join(f"[Page {page.page_no}]\n{page.text}" for page in pages)
     if settings.openai_api_key.get_secret_value() and clean_text.strip():
         instructions = (

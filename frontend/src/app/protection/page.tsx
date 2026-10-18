@@ -6,17 +6,16 @@ import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   ArrowRight,
-  BarChart3,
-  Calendar,
+  CalendarDays,
   CheckCircle2,
   ChevronRight,
-  Clock,
   FileText,
-  ListChecks,
   Search,
-  Shield,
   ShieldCheck,
   Users,
+  Wallet,
+  ListChecks,
+  BarChart3,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
@@ -28,420 +27,368 @@ type ProfileState = components["schemas"]["AccountProfileState"];
 type Inventory = components["schemas"]["AccountInventory"];
 type Policy = components["schemas"]["AccountPolicySummary"];
 type FamilyMember = components["schemas"]["FamilyMember"];
+type Setup = components["schemas"]["AccountSetup"];
 type Completeness = components["schemas"]["AccountCompleteness"];
 
-export default function MyProtectionParentPage() {
-  const { token } = useAuth();
-  const { data: demoSession } = useSession();
-  const userCtx = useUserContext();
+type NextStep = { title: string; description: string; href: string };
 
-  const [profile, setProfile] = useState<ProfileState | null>(null);
+export default function MyProtectionParentPage() {
+  const { account, token, loading: authLoading } = useAuth();
+  const { data: demoSession, loading: demoLoading } = useSession();
+  const userContext = useUserContext();
+  const [profileState, setProfileState] = useState<ProfileState | null>(null);
   const [inventory, setInventory] = useState<Inventory | null>(null);
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [family, setFamily] = useState<FamilyMember[]>([]);
+  const [setup, setSetup] = useState<Setup | null>(null);
   const [completeness, setCompleteness] = useState<Completeness | null>(null);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
+    if (!token) return;
+    const controller = new AbortController();
     let active = true;
+    const headers = { Authorization: `Bearer ${token}` };
 
-    async function loadData() {
-      if (!token) return;
+    async function loadAccountData() {
+      const [profileResult, inventoryResult, policiesResult, familyResult] = await Promise.allSettled([
+        api.request("get", "/api/v1/account/profile", { headers, signal: controller.signal }),
+        api.request("get", "/api/v1/account/inventory", { headers, signal: controller.signal }),
+        api.request("get", "/api/v1/account/policies", { headers, signal: controller.signal }),
+        api.request("get", "/api/v1/account/family", { headers, signal: controller.signal }),
+      ]);
+      if (!active) return;
+
+      const nextProfile = profileResult.status === "fulfilled" ? profileResult.value : null;
+      if (nextProfile) setProfileState(nextProfile);
+      if (inventoryResult.status === "fulfilled") setInventory(inventoryResult.value);
+      if (policiesResult.status === "fulfilled") setPolicies(policiesResult.value);
+      if (familyResult.status === "fulfilled") setFamily(familyResult.value);
+
+      const countryCode = nextProfile?.profile?.country_code;
+      if (!countryCode) return;
+
       try {
-        const headers = { Authorization: `Bearer ${token}` };
-        const [nextProfile, nextInventory, nextPolicies, nextFamily] = await Promise.allSettled([
-          api.request("get", "/api/v1/account/profile", { headers }),
-          api.request("get", "/api/v1/account/inventory", { headers }),
-          api.request("get", "/api/v1/account/policies", { headers }),
-          api.request("get", "/api/v1/account/family", { headers }),
-        ]);
-
+        const nextSetup = await api.request("get", "/api/v1/account/setup/{country_code}", {
+          params: { country_code: countryCode },
+          headers,
+          signal: controller.signal,
+        });
         if (!active) return;
-        if (nextProfile.status === "fulfilled") setProfile(nextProfile.value);
-        if (nextInventory.status === "fulfilled") setInventory(nextInventory.value);
-        if (nextPolicies.status === "fulfilled") setPolicies(nextPolicies.value);
-        if (nextFamily.status === "fulfilled") setFamily(nextFamily.value);
+        setSetup(nextSetup);
 
-        try {
-          const compResult = await api.request("get", "/api/v1/account/completeness", { headers });
-          if (active) setCompleteness(compResult);
-        } catch {
-          // ignore
-        }
+        const firstTask = nextSetup.tasks.find((item) => typeof item.task_code === "string")?.task_code;
+        if (typeof firstTask !== "string") return;
+        const result = await api.request("get", "/api/v1/account/completeness", {
+          query: { task: firstTask },
+          headers,
+          signal: controller.signal,
+        });
+        if (active) setCompleteness(result);
       } catch {
-        // Fallback gracefully
+        // Without a task in the verified country KB, completeness remains unknown.
       }
     }
 
-    void loadData();
+    void loadAccountData().catch(() => {
+      // Keep the hub usable with any account data that did load successfully.
+    });
     return () => {
       active = false;
+      controller.abort();
     };
   }, [token]);
 
-  // Active user facts from context
-  const countryCode = profile?.profile?.country_code || userCtx.countryCode || "CN";
-  const countryName = userCtx.residenceCountry || (countryCode === "CN" ? "China" : countryCode === "ID" ? "Indonesia" : "Australia");
-  const countryFlag = userCtx.countryFlag || "🇨🇳";
-  const city = profile?.profile?.city || userCtx.residenceCity || "Shenzhen";
-  const isStudent = userCtx.userSegment === "student";
-  const isEmployee = userCtx.userSegment === "employee";
-  const declaredCoverages = useMemo(() => userCtx.declaredCoverages || [], [userCtx.declaredCoverages]);
-  const isSelfOnly = userCtx.householdScope === "self";
-  const dependentCount = userCtx.dependentCount || family.length || 0;
-  const readyPct = completeness ? completeness.ready_pct : 0;
+  const isDemo = !token && Boolean(demoSession);
+  const displayName = account?.display_name ?? account?.email ?? "";
+  const demoDependents = isDemo
+    ? userContext.dependents.filter((name) => name && name.toLowerCase() !== "none")
+    : [];
+  const documentCount = token
+    ? inventory?.document_count ?? 0
+    : demoSession?.record.documents.length ?? 0;
+  const policyCount = token
+    ? policies.length
+    : Math.max(demoSession?.record.policies.length ?? 0, isDemo ? userContext.declaredCoverages.length : 0);
+  const familyCount = token ? family.length : demoDependents.length;
+  const profileComplete = token
+    ? Boolean(profileState?.completed)
+    : isDemo && userContext.profileSetupComplete;
 
-  // Search results
+  const completenessItems = completeness?.items;
+  const missingItems = useMemo(
+    () => completenessItems?.filter((item) => item.status === "MISSING") ?? [],
+    [completenessItems],
+  );
+  const unverifiedItems = useMemo(
+    () => completenessItems?.filter((item) => item.status === "UNVERIFIED") ?? [],
+    [completenessItems],
+  );
+  const readyPercent = completeness && completeness.total_count > 0 ? completeness.ready_pct : null;
+  const hasCompleteness = Boolean(completeness && completeness.total_count > 0);
+
+  const dateCount = useMemo(() => {
+    const dates = new Set<string>();
+    const visaDate = token
+      ? profileState?.profile?.visa_expiry_date
+      : demoSession?.profile.visa_expiry_date ?? userContext.segmentDetails.residencePermitExpiry;
+    if (visaDate) dates.add(visaDate);
+    const policyDates = token
+      ? policies.map((policy) => policy.end_date)
+      : (demoSession?.record.policies ?? []).map((policy) => policy.coverage_end_date);
+    policyDates.forEach((date) => {
+      if (date) dates.add(date);
+    });
+    return dates.size;
+  }, [demoSession, policies, profileState, token, userContext.segmentDetails.residencePermitExpiry]);
+
+  const nextStep = useMemo<NextStep>(() => {
+    if (!profileComplete) {
+      return {
+        title: "Complete your profile context",
+        description: "Add basic information to give your protection overview context.",
+        href: "/onboarding",
+      };
+    }
+    if (setup && setup.tasks.length === 0) {
+      return {
+        title: "Review available documents",
+        description: "A completeness check is not available for this context yet.",
+        href: "/documents",
+      };
+    }
+    if (missingItems.length || unverifiedItems.length) {
+      const firstItem = missingItems[0] ?? unverifiedItems[0];
+      return {
+        title: firstItem.status === "MISSING" ? "Add missing information" : "Verify information source",
+        description: firstItem.status === "MISSING" ? "This information has not been found yet." : "Review the source for this information.",
+        href: firstItem.document_id ? `/documents` : "/completeness",
+      };
+    }
+    if (!documentCount) {
+      return {
+        title: "Upload your first document",
+        description: "Add a policy or protection document for review.",
+        href: "/documents",
+      };
+    }
+    return {
+      title: "Review your protection details",
+      description: "Review the available information and its supporting sources.",
+      href: "/completeness",
+    };
+  }, [documentCount, missingItems, profileComplete, setup, unverifiedItems]);
+
+  const statusTitle = hasCompleteness && completeness
+    ? missingItems.length
+      ? `${missingItems.length} items not found`
+      : unverifiedItems.length
+        ? `${unverifiedItems.length} items need verification`
+        : "Required information found"
+    : setup && setup.tasks.length === 0
+      ? "Checks are not available for this context yet"
+    : profileComplete
+      ? "Completeness check is not available yet"
+      : "Start with your protection context";
+  const statusDescription = hasCompleteness && completeness
+    ? `${completeness.ready_count} of ${completeness.total_count} required items found${unverifiedItems.length ? ` · ${unverifiedItems.length} not yet verified` : ""}.`
+    : setup && setup.tasks.length === 0
+      ? "No completeness tasks are available for this context yet."
+      : "Completeness details appear when profile information and checks are available.";
+
   const searchResults = useMemo(() => {
-    const term = query.trim().toLowerCase();
+    const term = query.trim().toLocaleLowerCase();
     if (!term) return [];
     return [
       ...policies
-        .filter((item) => `${item.provider ?? ""} ${item.kind}`.toLowerCase().includes(term))
-        .map((item) => ({ label: item.provider ?? item.kind.replaceAll("_", " "), hint: "Policy Wallet", href: "/policies" })),
-      ...declaredCoverages
-        .filter((item) => `${item.category} ${item.label} ${item.provider ?? ""}`.toLowerCase().includes(term))
-        .map((item) => ({ label: item.label, hint: "Policy Wallet (Declared)", href: "/policies" })),
+        .filter((policy) => `${policy.provider ?? ""} ${policy.kind}`.toLocaleLowerCase().includes(term))
+        .map((policy) => ({ label: policy.provider ?? policy.kind.replaceAll("_", " "), hint: "Policy Wallet", href: "/policies" })),
       ...(inventory?.documents ?? [])
-        .filter((item) => `${item.original_filename} ${item.kind}`.toLowerCase().includes(term))
-        .map((item) => ({ label: item.original_filename, hint: "Documents", href: `/documents` })),
-    ].slice(0, 5);
-  }, [declaredCoverages, inventory?.documents, policies, query]);
+        .filter((document) => `${document.original_filename} ${document.kind}`.toLocaleLowerCase().includes(term))
+        .map((document) => ({ label: document.original_filename, hint: "Documents", href: "/documents" })),
+      ...family
+        .filter((member) => `${member.name} ${member.relation}`.toLocaleLowerCase().includes(term))
+        .map((member) => ({ label: member.name, hint: "Family Coverage", href: "/family" })),
+      ...userContext.declaredCoverages
+        .filter(() => isDemo)
+        .filter((coverage) => `${coverage.label} ${coverage.provider ?? ""}`.toLocaleLowerCase().includes(term))
+        .map((coverage) => ({ label: coverage.label, hint: "Declared coverage", href: "/policies" })),
+    ].slice(0, 6);
+  }, [family, inventory?.documents, isDemo, policies, query, userContext.declaredCoverages]);
 
-  // Real document and policy counts
-  const docCount = inventory?.document_count ?? (token ? 0 : demoSession?.record.documents.length ?? 0);
-  const totalPolicyCount = policies.length > 0 ? policies.length : declaredCoverages.length;
+  if (authLoading || demoLoading) {
+    return <main className="figma-page-shell"><p role="status">Memuat My Protection…</p></main>;
+  }
 
-  // Context-aware tailored hero next step
-  const tailoredNextStep = useMemo(() => {
-    if (countryCode === "CN") {
-      if (isStudent) {
-        return {
-          title: "Upload student insurance certificate",
-          desc: `Upload your Ping An or university certificate to verify hospital networks and coverage dates in ${city}.`,
-          href: "/documents",
-        };
-      }
-      if (isEmployee) {
-        return {
-          title: "Add employer benefit schedule",
-          desc: `Upload your corporate medical schedule or social medical voucher (医保) for ${city}.`,
-          href: "/documents",
-        };
-      }
-      return {
-        title: "Upload your medical policy certificate",
-        desc: `Upload your policy documents to verify coverage in ${city}, China.`,
-        href: "/documents",
-      };
-    }
-
-    if (countryCode === "ID") {
-      return {
-        title: "Verify BPJS & private health coverage",
-        desc: `Upload your BPJS card or private hospital schedule to confirm your care pathways in ${city}.`,
-        href: "/documents",
-      };
-    }
-
-    if (countryCode === "AU") {
-      return {
-        title: "Verify your OSHC coverage dates",
-        desc: "Upload your OSHC policy certificate to confirm Student Visa Condition 8501 compliance.",
-        href: "/documents",
-      };
-    }
-
-    return {
-      title: "Upload insurance certificate",
-      desc: `Upload policy documents to begin evidence checks for ${countryName}.`,
+  const hubCards = [
+    {
+      title: "Policy Wallet",
+      description: "Lihat catatan polis dan informasi yang tercatat.",
+      href: "/policies",
+      icon: <Wallet size={21} />,
+      tone: "mint",
+      image: "/protection-policy-stack.png",
+      imageAlt: "",
+      pill: `${policyCount} polis tercatat`,
+      pillTone: "success",
+    },
+    {
+      title: "Dokumen",
+      description: "Unggah dan tinjau dokumen perlindunganmu.",
       href: "/documents",
-    };
-  }, [countryCode, countryName, city, isEmployee, isStudent]);
+      icon: <FileText size={21} />,
+      tone: "blue",
+      image: "/protection-documents.png",
+      imageAlt: "",
+      pill: `${documentCount} dokumen tersimpan`,
+      pillTone: "success",
+    },
+    {
+      title: "Data Completeness",
+      description: "Periksa informasi yang belum ditemukan atau diverifikasi.",
+      href: "/completeness",
+      icon: <ListChecks size={21} />,
+      tone: "green",
+      image: "/protection-completeness.png",
+      imageAlt: "",
+      pill: hasCompleteness
+        ? missingItems.length
+          ? `${missingItems.length} informasi belum ditemukan`
+          : unverifiedItems.length
+            ? `${unverifiedItems.length} perlu diverifikasi`
+            : "Informasi wajib ditemukan"
+        : "Belum diperiksa",
+      pillTone: missingItems.length ? "danger" : unverifiedItems.length ? "warning" : "success",
+    },
+    {
+      title: "Coverage Needs",
+      description: "Analisis kebutuhan perlindungan belum tersedia.",
+      href: null,
+      icon: <BarChart3 size={21} />,
+      tone: "purple",
+      image: "/protection-coverage-checklist.png",
+      imageAlt: "",
+      pill: "Belum tersedia",
+      pillTone: "neutral",
+    },
+    {
+      title: "Family Coverage",
+      description: "Kelola anggota keluarga dan catat polis yang tertaut.",
+      href: "/family",
+      icon: <Users size={21} />,
+      tone: "amber",
+      image: "/protection-family.png",
+      imageAlt: "",
+      pill: `${familyCount} anggota keluarga`,
+      pillTone: "warning",
+    },
+    {
+      title: "Key Dates",
+      description: "Pantau tanggal yang tercatat pada profil dan polis.",
+      href: "/completeness",
+      icon: <CalendarDays size={21} />,
+      tone: "red",
+      image: "/protection-calendar.png",
+      imageAlt: "",
+      pill: dateCount ? `${dateCount} tanggal tercatat` : "Belum ada tanggal",
+      pillTone: "warning",
+    },
+  ] as const;
 
   return (
-    <div className="figma-page-shell">
-      {/* ---------------- Page Header ---------------- */}
-      <header className="figma-page-header">
+    <main className="figma-page-shell my-protection-page">
+      <header className="figma-page-header my-protection-header">
         <div>
           <h1>My Protection</h1>
-          <p>
-            Overview of your protection, declared policies, and verification status for{" "}
-            <strong>
-              {countryFlag} {city}, {countryName}
-            </strong>
-            .
-          </p>
+          <p>Kelola polis, dokumen, dan informasi perlindunganmu.</p>
         </div>
-        <div className="figma-search-input-wrap">
-          <Search size={16} />
+        <div className="figma-search-input-wrap my-protection-search-wrap">
+          <Search size={17} aria-hidden="true" />
           <input
-            type="text"
+            type="search"
             className="figma-search-input"
-            placeholder="Search policies, documents, or members..."
+            placeholder="Cari polis, dokumen, atau anggota…"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(event) => setQuery(event.target.value)}
+            aria-label="Cari polis, dokumen, atau anggota"
           />
-          {query && searchResults.length > 0 && (
-            <div className="protection-search-results">
-              {searchResults.map((item, idx) => (
-                <Link key={idx} href={item.href}>
-                  <span>
-                    {item.label} <small>{item.hint}</small>
-                  </span>
-                  <ArrowRight size={14} />
+          {query && (
+            <div className="protection-search-results" role="listbox">
+              {searchResults.length ? searchResults.map((item) => (
+                <Link key={`${item.href}-${item.label}`} href={item.href} role="option">
+                  <span>{item.label}<small>{item.hint}</small></span><ArrowRight size={15} />
                 </Link>
-              ))}
+              )) : <p>Tidak ada hasil yang cocok.</p>}
             </div>
           )}
         </div>
       </header>
 
-      {/* ---------------- Overall Protection Status Banner ---------------- */}
-      <section className="figma-protection-hero" aria-label="Overall protection status">
-        <div className="figma-hero-left">
-          <span className="figma-hero-tag">Overall Protection Status</span>
+      <section className="figma-protection-hero my-protection-hero" aria-label="Status kelengkapan perlindungan">
+        <div className="figma-hero-left my-protection-hero-copy">
+          <span className="figma-hero-tag">STATUS KELENGKAPAN</span>
           <div className="figma-hero-title-row">
-            <div className="figma-hero-icon">
-              <ShieldCheck size={28} />
-            </div>
+            <Image src="/protection-shield.png" alt="" width={68} height={68} className="my-protection-shield" />
             <div>
-              <h2>Profile Setup Complete</h2>
-              <p>Upload policy documents to verify active coverage.</p>
+              <h2>{statusTitle}</h2>
+              <p>{statusDescription}</p>
             </div>
           </div>
           <div className="figma-hero-progress-row">
-            <div className="figma-progress-track">
-              <div
-                className="figma-progress-fill"
-                style={{ width: docCount > 0 ? "50%" : "20%" }}
-              />
+            <div className="figma-progress-track" role="progressbar" aria-label="Kelengkapan data" aria-valuemin={0} aria-valuemax={100} aria-valuenow={readyPercent ?? undefined}>
+              <div className="figma-progress-fill" style={{ width: `${readyPercent ?? 0}%` }} />
             </div>
-            <span className="figma-progress-label">
-              {docCount > 0 ? "Evidence Under Review" : "Self-Reported · Verification Pending"}
-            </span>
+            <span className="figma-progress-label">{readyPercent === null ? "Belum diperiksa" : `${readyPercent}% · data ditemukan`}</span>
           </div>
+          <small className="my-protection-disclaimer">Kelengkapan data bukan konfirmasi bahwa polis aktif atau manfaat dijamin.</small>
         </div>
-
-        {/* Mascot / Person Art */}
         <Image
-          src="/protection-hero-person.png"
-          alt="INSURRA Assistant"
-          width={150}
-          height={150}
-          className="figma-hero-illustration"
+          src="/protection-hero-checklist.png"
+          alt="Ilustrasi pemeriksaan informasi perlindungan"
+          width={190}
+          height={190}
+          className="figma-hero-illustration my-protection-hero-art"
           priority
         />
-
-        {/* Dynamic Context Next Step Card */}
-        <Link href={tailoredNextStep.href} className="figma-hero-next-step">
-          <span className="figma-next-step-badge">Next Step</span>
+        <Link href={nextStep.href} className="figma-hero-next-step my-protection-next-step">
+          <span className="figma-next-step-badge">LANGKAH BERIKUTNYA</span>
           <div className="figma-next-step-content">
-            <div className="figma-next-step-icon">
-              <AlertCircle size={17} />
-            </div>
-            <div className="figma-next-step-text">
-              <h4>{tailoredNextStep.title}</h4>
-              <p>{tailoredNextStep.desc}</p>
-            </div>
-            <ChevronRight size={18} />
+            <div className="figma-next-step-icon"><AlertCircle size={18} /></div>
+            <div className="figma-next-step-text"><h4>{nextStep.title}</h4><p>{nextStep.description}</p></div>
+            <ChevronRight size={18} aria-hidden="true" />
           </div>
         </Link>
       </section>
 
-      {/* ---------------- 6 Grid Cards (3 columns x 2 rows) ---------------- */}
-      <div className="figma-protection-grid">
-        {/* Card 1: Policy Wallet */}
-        <Link href="/policies" className="figma-hub-card">
-          <div className="figma-hub-card-head">
-            <div className="figma-hub-icon-box mint">
-              <Shield size={22} />
-            </div>
-            <ChevronRight size={18} color="#94a3b8" />
-          </div>
-          <h3>Policy Wallet</h3>
-          <p>View and manage your self-reported and verified policies.</p>
-          <div className="figma-hub-card-art">
-            <div className="figma-art-policy-cards">
-              {declaredCoverages.length > 0 ? (
-                declaredCoverages.slice(0, 2).map((cov, idx) => (
-                  <span key={idx} className="figma-mini-card aia" style={{ textTransform: "capitalize", fontSize: 11 }}>
-                    {cov.provider || cov.category}
-                  </span>
-                ))
-              ) : (
-                <span className="figma-mini-card aia">Policy</span>
-              )}
-              {declaredCoverages.length > 2 && (
-                <span className="figma-mini-card more">+{declaredCoverages.length - 2}</span>
-              )}
-            </div>
-          </div>
-          <span className="figma-hub-card-pill neutral">
-            <Clock size={13} /> {totalPolicyCount} self-reported policies
-          </span>
-        </Link>
-
-        {/* Card 2: Documents */}
-        <Link href="/documents" className="figma-hub-card">
-          <div className="figma-hub-card-head">
-            <div className="figma-hub-icon-box blue">
-              <FileText size={22} />
-            </div>
-            <ChevronRight size={18} color="#94a3b8" />
-          </div>
-          <h3>Documents</h3>
-          <p>Upload and manage your insurance policies and certificates.</p>
-          <div className="figma-hub-card-art">
-            <div className="figma-art-doc-stack">
-              <div className="figma-mini-doc passport" />
-              <div className="figma-mini-doc" />
-              <div className="figma-mini-doc" />
-              {docCount > 0 && (
-                <span style={{ fontSize: 11, fontWeight: 750, color: "#64748b", marginLeft: 4 }}>
-                  +{docCount}
-                </span>
-              )}
-            </div>
-          </div>
-          <span className="figma-hub-card-pill success">
-            <CheckCircle2 size={13} /> {docCount} documents uploaded
-          </span>
-        </Link>
-
-        {/* Card 3: Data Completeness */}
-        <Link href="/completeness" className="figma-hub-card">
-          <div className="figma-hub-card-head">
-            <div className="figma-hub-icon-box green">
-              <ListChecks size={22} />
-            </div>
-            <ChevronRight size={18} color="#94a3b8" />
-          </div>
-          <h3>Data Completeness</h3>
-          <p>Check what information is missing to ensure full protection.</p>
-          <div className="figma-hub-card-art" style={{ width: "100%", flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-              <div className="figma-progress-track" style={{ width: 140 }}>
-                <div
-                  className="figma-progress-fill"
-                  style={{ width: `${readyPct}%` }}
-                />
+      <section className="figma-protection-grid my-protection-grid" aria-label="Fitur My Protection">
+        {hubCards.map((card) => {
+          const content = (
+            <>
+              <div className="my-protection-card-heading">
+                <span className={`figma-hub-icon-box ${card.tone}`}>{card.icon}</span>
+                <span className="my-protection-card-copy"><strong>{card.title}</strong><small>{card.description}</small></span>
+                {card.href && <ChevronRight className="my-protection-card-arrow" size={18} aria-hidden="true" />}
               </div>
-              <span style={{ fontSize: 11.5, fontWeight: 750, color: "#64748b" }}>
-                {readyPct > 0 ? `${readyPct}% complete` : docCount > 0 ? "Under Review" : "Pending Evidence"}
+              <Image src={card.image} alt={card.imageAlt} width={150} height={126} className="my-protection-card-art" />
+              <span className={`figma-hub-card-pill ${card.pillTone}`}>
+                {card.pillTone === "danger" ? <AlertCircle size={14} /> : card.pillTone === "warning" ? <CalendarDays size={14} /> : <CheckCircle2 size={14} />}
+                {card.pill}
               </span>
-            </div>
-          </div>
-          <span className="figma-hub-card-pill danger">
-            <AlertCircle size={13} /> Policy verification pending
-          </span>
-        </Link>
+            </>
+          );
+          return card.href ? (
+            <Link href={card.href} className="figma-hub-card my-protection-card" key={card.title}>{content}</Link>
+          ) : (
+            <div className="figma-hub-card my-protection-card my-protection-card-disabled" key={card.title} aria-disabled="true">{content}</div>
+          );
+        })}
+      </section>
 
-        {/* Card 4: Coverage Needs */}
-        <Link href="/coverage-needs" className="figma-hub-card">
-          <div className="figma-hub-card-head">
-            <div className="figma-hub-icon-box purple">
-              <BarChart3 size={22} />
-            </div>
-            <ChevronRight size={18} color="#94a3b8" />
-          </div>
-          <h3>Coverage Needs</h3>
-          <p>Analyze coverage adequacy, out-of-pocket caps, and recommendations.</p>
-          <div className="figma-hub-card-art">
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div
-                style={{
-                  width: 48,
-                  height: 36,
-                  background: "#f5effc",
-                  border: "1px solid #ddd6fe",
-                  borderRadius: 6,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <CheckCircle2 size={18} color="#0ea58a" />
-              </div>
-            </div>
-          </div>
-          <span className="figma-hub-card-pill success">
-            <CheckCircle2 size={13} /> Profile analyzed
-          </span>
-        </Link>
-
-        {/* Card 5: Family Coverage */}
-        <Link href="/family" className="figma-hub-card">
-          <div className="figma-hub-card-head">
-            <div className="figma-hub-icon-box amber">
-              <Users size={22} />
-            </div>
-            <ChevronRight size={18} color="#94a3b8" />
-          </div>
-          <h3>Family Coverage</h3>
-          <p>
-            {isSelfOnly
-              ? "Personal protection only. No household dependents added."
-              : "Manage family members and their insurance protection."}
-          </p>
-          <div className="figma-hub-card-art">
-            <Image
-              src="/protection-family-illustration.png"
-              alt="Family"
-              width={110}
-              height={55}
-              style={{ objectFit: "contain" }}
-            />
-          </div>
-          <span className="figma-hub-card-pill neutral">
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#64748b" }} />{" "}
-            {isSelfOnly ? "Personal protection only" : `${dependentCount} household members`}
-          </span>
-        </Link>
-
-        {/* Card 6: Key Dates */}
-        <Link href="/completeness" className="figma-hub-card">
-          <div className="figma-hub-card-head">
-            <div className="figma-hub-icon-box red">
-              <Calendar size={22} />
-            </div>
-            <ChevronRight size={18} color="#94a3b8" />
-          </div>
-          <h3>Key Dates</h3>
-          <p>Track renewal dates, policy validity, and residence milestones.</p>
-          <div className="figma-hub-card-art">
-            <div
-              style={{
-                width: 50,
-                height: 42,
-                background: "#f8fafc",
-                border: "1.5px solid #cbd5e1",
-                borderRadius: 8,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                style={{
-                  width: "100%",
-                  height: 10,
-                  background: "#0ea58a",
-                  borderTopLeftRadius: 6,
-                  borderTopRightRadius: 6,
-                }}
-              />
-              <span style={{ fontSize: 13, fontWeight: 800, color: "#0f1d38", marginTop: 2 }}>
-                {userCtx.segmentDetails?.studyPeriod ? "26" : "01"}
-              </span>
-            </div>
-          </div>
-          <span className="figma-hub-card-pill neutral">
-            <Clock size={13} /> Verification required for dates
-          </span>
-        </Link>
-      </div>
-    </div>
+      <footer className="my-protection-footer">
+        <ShieldCheck size={15} aria-hidden="true" />
+        <span>Informasi dirangkum dari profil dan dokumen yang tersedia. Tinjau sumber asli sebelum mengambil keputusan.</span>
+        {displayName && <span className="my-protection-account-label">{displayName}</span>}
+      </footer>
+    </main>
   );
 }
