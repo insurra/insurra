@@ -198,14 +198,24 @@ def decide_consents(body: BulkConsentDecision, db: DB, account: ActiveAccount):
 
 
 @router.get("/profile", response_model=AccountProfileState)
-def get_profile(db: DB, account: ActiveAccount):
+def get_profile(db: DB, account: ActiveAccount, kb: KB):
     row = db.get(AccountProfileRow, account.id)
     if row is None:
         return AccountProfileState()
+    suggested = []
+    if row.completed and row.payload.get("country_code"):
+        try:
+            country = kb.load(row.payload["country_code"])
+            suggested = [
+                item.model_dump(mode="json") for item in country.resources.suggested_docs.data[:6]
+            ]
+        except Exception:
+            suggested = []
     return AccountProfileState(
         profile=UserProfile.model_validate(row.payload) if row.completed else None,
         draft=row.payload,
         completed=row.completed,
+        suggested_docs=suggested,
     )
 
 
@@ -265,8 +275,15 @@ def save_profile(body: ProfileData, db: DB, account: ActiveAccount, kb: KB):
         row.completed = True
         row.updated_at = now
     audit(db, account.id, "PROFILE_UPDATED", country_code=body.country_code)
+    audit(db, account.id, "profile_update", country_code=body.country_code)
     db.commit()
-    return AccountProfileState(profile=profile, draft=payload, completed=True)
+    suggested = [
+        item.model_dump(mode="json")
+        for item in kb.load(body.country_code).resources.suggested_docs.data[:6]
+    ]
+    return AccountProfileState(
+        profile=profile, draft=payload, completed=True, suggested_docs=suggested
+    )
 
 
 @router.get("/setup/{country_code}", response_model=AccountSetup)

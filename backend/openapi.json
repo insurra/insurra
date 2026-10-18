@@ -10891,6 +10891,16 @@
             "type": "boolean",
             "title": "Completed",
             "default": false
+          },
+          "suggested_docs": {
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Suggested Docs"
           }
         },
         "additionalProperties": false,

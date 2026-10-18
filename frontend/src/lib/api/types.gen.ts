@@ -1474,6 +1474,10 @@ export interface components {
              * @default false
              */
             completed: boolean;
+            /** Suggested Docs */
+            suggested_docs?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
         };
         /** AccountSetup */
         AccountSetup: {

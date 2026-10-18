@@ -51,6 +51,7 @@ def update_profile(body: ProfileUpdate, db: DB, session: ActiveSession, kb: KB):
     suggestions = kb.load(validated.country_code).resources.suggested_docs
     row.payload = validated.model_dump(mode="json")
     log_event(db, session.id, "PROFILE_UPDATED")
+    log_event(db, session.id, "profile_update")
     db.commit()
     return ProfileResponse(
         profile=validated,

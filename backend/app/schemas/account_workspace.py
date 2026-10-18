@@ -15,6 +15,7 @@ class AccountProfileState(Contract):
     profile: UserProfile | None = None
     draft: dict[str, JsonValue] = Field(default_factory=dict)
     completed: bool = False
+    suggested_docs: list[dict[str, JsonValue]] = Field(default_factory=list)
 
 
 class AccountConsentState(Contract):
