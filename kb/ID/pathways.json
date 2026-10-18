@@ -67,7 +67,7 @@
           "OUTPATIENT"
         ],
         "policy_types": [
-          "EMPLOYER_HEALTH"
+          "EMPLOYER"
         ],
         "benefit_category": "outpatient",
         "verification_codes": [

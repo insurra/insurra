@@ -115,7 +115,7 @@ export default function HomePage() {
                   <strong>{c.provider ?? "Penyedia belum diisi"}</strong> ·{" "}
                   {c.kind}
                   <p>
-                    Negara catatan: {c.country_code} · Akhir{" "}
+                    Negara catatan: {c.country_code} ({c.country_label}) · Akhir{" "}
                     {c.end_date ?? "belum diketahui"}
                   </p>
                 </li>

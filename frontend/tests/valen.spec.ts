@@ -4,6 +4,65 @@ import type { components } from "../src/lib/api/types.gen";
 
 type Comparison = components["schemas"]["PathwayComparison"];
 
+test("SC-05 and SC-06 empty workspace links to documents and disables processing", async ({
+  page,
+}) => {
+  const fixture = await accountWorkspace(page);
+  expect(
+    (
+      await page.request.delete(
+        `http://localhost:8000/api/v1/account/documents/${fixture.document_id}`,
+        {
+          headers: fixture.headers,
+          data: { confirm: "HAPUS" },
+        },
+      )
+    ).status(),
+  ).toBe(200);
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Belum ada perlindungan tersimpan" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Unggah dokumen pertama" }),
+  ).toHaveAttribute("href", "/documents");
+  await expect(
+    page.getByRole("button", { name: "Siapkan klaim", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Siapkan klaim", exact: true }),
+  ).toHaveAttribute("title", "Unggah polis terlebih dulu");
+  await page.goto("/ask");
+  await expect(
+    page.getByRole("textbox", { name: "Pertanyaan Anda" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("link", { name: "Unggah dokumen", exact: true }),
+  ).toHaveAttribute("href", "/documents");
+});
+
+test("SC-05 and SC-14 Indonesian account uses only its country context", async ({
+  page,
+}) => {
+  await accountWorkspace(page, "ID");
+  await expect(
+    page.getByRole("heading", { name: "Halo, Sinta." }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Indonesia · Jakarta · Pekerja", { exact: true }),
+  ).toBeVisible();
+  await page.goto("/coverage-needs");
+  await expect(
+    page.getByRole("heading", {
+      name: "Perlindungan yang kamu butuhkan di Indonesia",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "OSHC", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: /BPJS/ })).toBeVisible();
+});
+
 async function pathwayFixture(page: import("@playwright/test").Page) {
   const fixture = await accountWorkspace(page);
   await page.route("**/api/v1/home/summary", async (route) => {
@@ -234,6 +293,8 @@ test("SC-07 comparison form, unknown costs and copy questions work with a synthe
 test("SC-05 account home shows deterministic counts, canonical links and visible emergency fallback", async ({
   page,
 }, testInfo) => {
+  if (testInfo.project.name === "mobile")
+    await page.setViewportSize({ width: 375, height: 812 });
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await accountWorkspace(page);

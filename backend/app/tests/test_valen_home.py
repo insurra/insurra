@@ -36,6 +36,9 @@ def test_home_is_live_for_accounts_and_preserves_original_countries(app, client,
         db.commit()
     changed = client.get("/api/v1/home/summary", headers=headers).json()
     assert changed["coverages"][0]["country_code"] != changed["context"]["country_code"]
+    assert changed["coverages"][0]["country_label"] == (
+        "Indonesia" if country == "AU" else "Australia"
+    )
 
 
 @pytest.mark.parametrize(

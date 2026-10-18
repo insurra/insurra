@@ -93,6 +93,7 @@ def summary(db, actor, kb, now=None) -> HomeSummary:
             provider=c.provider,
             kind=c.kind,
             country_code=c.country_code,
+            country_label=kb.load(c.country_code).manifest.label,
             start_date=c.start,
             end_date=c.end,
             active=c.active(today),

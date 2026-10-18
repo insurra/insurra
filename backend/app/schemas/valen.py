@@ -30,6 +30,7 @@ class CoverageCard(Contract):
     provider: str | None
     kind: str
     country_code: CountryCode
+    country_label: str | None = None
     start_date: date | None
     end_date: date | None
     active: bool

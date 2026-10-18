@@ -26,7 +26,7 @@
         ],
         "policy_types": [
           "OSHC",
-          "PRIVATE_HEALTH"
+          "PERSONAL_HEALTH"
         ],
         "benefit_category": "outpatient",
         "verification_codes": [
@@ -68,7 +68,7 @@
         ],
         "policy_types": [
           "OSHC",
-          "PRIVATE_HEALTH"
+          "PERSONAL_HEALTH"
         ],
         "benefit_category": "outpatient",
         "verification_codes": [

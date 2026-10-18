@@ -8,6 +8,7 @@ from sqlalchemy import select
 from app.models import AccountAuditRow, AccountCoverageRow, AccountFieldRow, PathwayDecisionRow
 from app.schemas.common import VerificationStatus
 from app.schemas.kb import ReferenceTariff
+from app.services.kb_loader import CountryKBLoader
 from app.tests.valen_fixtures import reviewed_triage, workspace
 
 
@@ -61,20 +62,29 @@ def test_country_cards_unknown_costs_no_false_denial_and_masked_state(
     country = reviewed_triage(app, monkeypatch)[code]
     h, account, coverage, doc = workspace(app, client, code)
     if code == "ID":
+        employer = uuid4()
         with app.state.session_factory() as db:
             db.add(
                 AccountCoverageRow(
-                    id=uuid4(),
+                    id=employer,
                     account_id=account,
                     document_id=None,
                     country_code=code,
-                    kind="EMPLOYER_HEALTH",
+                    kind="EMPLOYER",
                     provider="Fictional Employer",
                     start_date="2026-01-01",
                     end_date="2027-04-15",
                 )
             )
             db.commit()
+        fields(
+            app,
+            account,
+            employer,
+            None,
+            coverage_start_date="2026-01-01",
+            coverage_end_date="2027-04-15",
+        )
     response = request(client, h, code, complaint="PRIVATE COMPLAINT 123")
     assert response.status_code == 200, response.text
     result = response.json()
@@ -92,6 +102,8 @@ def test_country_cards_unknown_costs_no_false_denial_and_masked_state(
     assert any(q["code"] == "provider_network" for q in result["uncertainties"])
     if code == "ID":
         assert any(q["code"] == "kapj" for q in result["uncertainties"])
+        assert result["paths"][1]["coverage_id"] == str(employer)
+        assert all(p["coverage_status"] == "MATCHED" for p in result["paths"])
     summary = client.get("/api/v1/home/summary", headers=h).json()
     assert summary["service_types"] == [s.model_dump() for s in country.pathways.service_types]
     with app.state.session_factory() as db:
@@ -267,3 +279,18 @@ def test_processing_consent_required_but_no_external_ai_needed(client, app, monk
     assert request(client, h).status_code == 200
     grant(client, h, "process_documents", False)
     assert request(client, h).status_code == 403
+
+
+def test_pathway_kb_rejects_noncanonical_policy_and_service_references(app, tmp_path):
+    import json
+    import shutil
+
+    shutil.copytree(app.state.kb_loader.root / "ID", tmp_path / "ID")
+    path = tmp_path / "ID/pathways.json"
+    original = json.loads(path.read_text())
+    for field in ("policy_types", "service_types", "verification_codes"):
+        changed = json.loads(json.dumps(original))
+        changed["data"]["pathways"][0][field] = ["undefined_reference"]
+        path.write_text(json.dumps(changed))
+        with pytest.raises(ValueError, match="Unknown pathway"):
+            CountryKBLoader(tmp_path).load("ID")

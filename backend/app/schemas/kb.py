@@ -151,6 +151,19 @@ class CountryKB(Contract):
         ids = [rule.rule_id for rule in self.rules]
         if len(ids) != len(set(ids)):
             raise ValueError("Duplicate KB rule IDs")
+        services = {s.code for s in self.pathways.service_types}
+        policies = {p.code for p in self.resources.coverage_types.data}
+        verifications = {v.code for v in self.resources.verification_steps.data}
+        paths = [p.pathway_code for p in self.pathways.pathways]
+        if len(paths) != len(set(paths)) or len(services) != len(self.pathways.service_types):
+            raise ValueError("Duplicate pathway or service codes")
+        for path in self.pathways.pathways:
+            if (
+                not set(path.service_types) <= services
+                or not set(path.policy_types) <= policies
+                or not set(path.verification_codes) <= verifications
+            ):
+                raise ValueError("Unknown pathway service, policy or verification reference")
         return self
 
 

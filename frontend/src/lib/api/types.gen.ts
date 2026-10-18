@@ -2164,6 +2164,8 @@ export interface components {
             kind: string;
             /** Country Code */
             country_code: string;
+            /** Country Label */
+            country_label?: string | null;
             /** Start Date */
             start_date: string | null;
             /** End Date */

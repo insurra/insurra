@@ -22,6 +22,7 @@ POLICY_TEXT = (
 
 
 def workspace(app, client, country="AU", suffix=None, retention=True):
+    policy_text = POLICY_TEXT if country == "AU" else POLICY_TEXT.replace("AUD", "IDR")
     headers = account_headers(app, suffix or uuid4().hex[:8])
     body = profile_payload()
     body.update(
@@ -50,7 +51,7 @@ def workspace(app, client, country="AU", suffix=None, retention=True):
             original_filename="fictional-policy.pdf",
             mime_type="application/pdf",
             size_bytes=100,
-            sha256=hashlib.sha256(POLICY_TEXT.encode()).hexdigest(),
+            sha256=hashlib.sha256(policy_text.encode()).hexdigest(),
             content=b"%PDF-fictional" if retention else None,
             status="COMPLETED",
             injection_flag=False,
@@ -70,7 +71,7 @@ def workspace(app, client, country="AU", suffix=None, retention=True):
         db.add(coverage)
         db.flush()
         db.add(
-            AccountDocumentPageRow(document_id=doc.id, page_no=1, text=POLICY_TEXT, ocr_used=False)
+            AccountDocumentPageRow(document_id=doc.id, page_no=1, text=policy_text, ocr_used=False)
         )
         values = {
             "coverage_start_date": "2026-01-01",

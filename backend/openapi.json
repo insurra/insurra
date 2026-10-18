@@ -13548,6 +13548,17 @@
             "pattern": "^[A-Z]{2}$",
             "title": "Country Code"
           },
+          "country_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Label"
+          },
           "start_date": {
             "anyOf": [
               {
