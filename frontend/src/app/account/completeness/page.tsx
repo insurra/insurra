@@ -93,18 +93,18 @@ export default function AccountCompleteness() {
   }
 
   return (
-    <div className="account-completeness">
+    <div className="account-completeness protection-screen completeness-screen">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">EVIDENCE BASED COMPLETENESS</div>
+          <div className="eyebrow">RINGKASAN PERLINDUNGAN</div>
           <h1>Data Completeness</h1>
-          <p>Review existing coverage data, identify missing items, and inspect visa rule evaluations.</p>
+          <p>Lihat data yang sudah tersedia, temukan yang masih perlu dilengkapi, dan tinjau rentang perlindungan.</p>
         </div>
         <Image
-          src="/Cute%20Mascot%20with%20Checklist%20Clipboard.png"
-          alt="Insurra Mascot with Checklist"
-          width={155}
-          height={104}
+          src="/protection-mascot.png"
+          alt="Maskot Insurra"
+          width={82}
+          height={82}
         />
       </div>
 
@@ -117,7 +117,7 @@ export default function AccountCompleteness() {
       {setup && (
         <div className="card account-task-picker">
           <label>
-            Evaluation Task:
+            Konteks pemeriksaan:
             <select value={task} onChange={(event) => setTask(event.target.value)}>
               {setup.tasks.map((item) => (
                 <option key={String(item.task_code)} value={String(item.task_code)}>
@@ -134,7 +134,7 @@ export default function AccountCompleteness() {
 
       {result && (
         <>
-          <section className="card account-readiness">
+          <section className="card account-readiness completeness-score-card">
             <div className="readiness-head">
               <div>
                 <div className="eyebrow">READINESS SCORE</div>
@@ -177,6 +177,8 @@ export default function AccountCompleteness() {
             </div>
           )}
 
+          <div className="completeness-layout">
+          <section className="card completeness-required-panel">
           <div className="section-heading">
             <h2>Required Fields Checklist</h2>
             <Button asChild variant="outline">
@@ -239,6 +241,25 @@ export default function AccountCompleteness() {
                 </span>
               </article>
             ))}
+          </div>
+          </section>
+          <aside className="completeness-side-column">
+            <section className="card completeness-guidance">
+              <div className="completeness-side-title"><ClipboardCheck size={20}/><h2>Yang perlu disiapkan</h2></div>
+              <p>Dokumen dan informasi berikut ditentukan oleh konteks pemeriksaan yang dipilih.</p>
+              {result.items.filter((item) => item.status === "MISSING").length ? (
+                result.items.filter((item) => item.status === "MISSING").map((item) => (
+                  <div className="completeness-missing" key={item.field_key}><FileText size={17}/><span><strong>{item.label}</strong><small>{item.suggested_doc ? item.suggested_doc.replaceAll("_", " ") : "Informasi belum tersedia"}</small></span><Link href="/documents">Unggah</Link></div>
+                ))
+              ) : <div className="completeness-all-set"><CheckCircle2 size={18}/> Tidak ada data wajib yang ditandai hilang.</div>}
+            </section>
+            <section className="card completeness-guidance">
+              <div className="completeness-side-title"><CircleHelp size={20}/><h2>Catatan pemeriksaan</h2></div>
+              <p>Skor menunjukkan kelengkapan bukti yang tersedia, bukan jaminan klaim atau kepatuhan visa.</p>
+              <span className={`badge ${result.verification_status === "VERIFIED" ? "success" : "warning"}`}>Panduan negara: {result.verification_status}</span>
+              <small>Versi basis pengetahuan: {result.kb_version}</small>
+            </section>
+          </aside>
           </div>
         </>
       )}
