@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Check,
@@ -20,10 +19,9 @@ export default function OnboardingPage() {
   const { account, token } = useAuth();
   const { data, loading, setConsent } = useSession();
   const [checked, setChecked] = useState(false);
-  const router = useRouter();
 
-  // If authenticated account session or guest preview, show full 6-step context wizard
-  if ((token && account) || (!data && !loading)) {
+  // If authenticated account session, consent granted, or guest preview, show interactive onboarding
+  if ((token && account) || (!data && !loading) || data?.consent?.processing_consent) {
     return <AccountOnboarding />;
   }
 
@@ -31,7 +29,7 @@ export default function OnboardingPage() {
   if (!data) return loading ? null : <SessionRequired />;
 
   async function grant() {
-    if (await setConsent(true)) router.push("/dashboard");
+    await setConsent(true);
   }
 
   return (

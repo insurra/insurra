@@ -2,20 +2,22 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
-  AlertTriangle,
-  ArrowLeft,
+  AlertCircle,
   ArrowRight,
+  Briefcase,
   Check,
-  CheckCircle2,
-  ExternalLink,
+  Compass,
+  Edit2,
   Globe2,
-  RotateCcw,
-  Save,
+  Heart,
+  MapPin,
+  Shield,
   ShieldCheck,
   Sparkles,
+  Users,
+  Wallet,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
@@ -26,116 +28,96 @@ type ProfileData = components["schemas"]["ProfileData"];
 type AccountProfileState = components["schemas"]["AccountProfileState"];
 type CountryCode = "AU" | "ID";
 
-const STEP_TITLES = [
-  "Residence Context",
-  "Location & Status",
-  "Dependents",
-  "Existing Coverage",
-  "Protection Priorities",
-  "Budget",
-];
-
 const DEFAULT_PROFILE: ProfileData = {
   display_name: "",
   residence_context: "ABROAD",
   country_code: "AU",
-  city: "",
+  city: "Melbourne",
   occupation: "STUDENT",
   timezone: "Australia/Melbourne",
   employment_status: "",
   institution_name: "",
   dependents: ["None"],
   owned_coverage: ["OSHC"],
-  priorities: [],
-  budget_range: "No additional budget",
+  priorities: ["low_cost", "speed"],
+  budget_range: "$50 - $150 / month",
   currency: "AUD",
-  arrival_date: null,
-  visa_expiry_date: null,
+  arrival_date: "2026-02-15",
+  visa_expiry_date: "2027-03-15",
 };
-
-// Supported and Coming Soon Countries for Step 2
-const ABROAD_COUNTRIES = [
-  { code: "AU", name: "Australia", supported: true },
-  { code: "SG", name: "Singapore", supported: false },
-  { code: "GB", name: "United Kingdom", supported: false },
-  { code: "JP", name: "Japan", supported: false },
-  { code: "DE", name: "Germany", supported: false },
-  { code: "US", name: "United States", supported: false },
-];
 
 const AUSTRALIA_CITIES = ["Melbourne", "Sydney", "Brisbane", "Perth", "Adelaide", "Canberra"];
 const INDONESIA_CITIES = ["Jakarta", "Surabaya", "Bandung", "Medan", "Yogyakarta", "Bali"];
 
 const DEPENDENT_OPTIONS = [
-  { id: "None", label: "None", sub: "Only myself" },
-  { id: "Spouse", label: "Spouse", sub: "Partner / Husband / Wife" },
-  { id: "Children", label: "Children", sub: "Dependents under 18" },
-  { id: "Parents", label: "Parents", sub: "Elderly or dependent parents" },
+  { id: "None", label: "Hanya Saya Sendiri", sub: "Tidak ada tanggungan tambahan" },
+  { id: "Spouse", label: "Pasangan", sub: "Suami / Istri / Partner" },
+  { id: "Children", label: "Anak", sub: "Tanggungan anak di bawah 18 tahun" },
+  { id: "Parents", label: "Orang Tua", sub: "Orang tua atau tanggungan keluarga senior" },
 ];
 
 const COVERAGE_OPTIONS_AU = [
-  { id: "OSHC", label: "OSHC", sub: "Overseas Student Health Cover" },
-  { id: "EMPLOYER", label: "Employer Insurance", sub: "Corporate group health plan" },
-  { id: "PERSONAL_HEALTH", label: "Personal Health Insurance", sub: "Australian private health fund" },
-  { id: "TRAVEL", label: "Travel Insurance", sub: "Active international travel policy" },
-  { id: "BPJS", label: "BPJS (from Indonesia)", sub: "Indonesian national health membership" },
-  { id: "NOT_SURE", label: "Not Sure Yet", sub: "I do not know my exact policy details yet" },
+  { id: "OSHC", label: "OSHC (Student Health Cover)", sub: "Wajib visa pelajar Australia (Condition 8501)" },
+  { id: "EMPLOYER", label: "Employer Corporate Health", sub: "Asuransi kesehatan kelompok dari kantor" },
+  { id: "PERSONAL_HEALTH", label: "Australian Private Health", sub: "Polis asuransi swasta Australia (Medibank, Bupa, dll)" },
+  { id: "TRAVEL", label: "Travel Insurance", sub: "Polis asuransi perjalanan internasional aktif" },
+  { id: "BPJS", label: "BPJS Kesehatan (Indonesia)", sub: "Keanggotaan aktif JKN dari Indonesia" },
+  { id: "NOT_SURE", label: "Belum Yakin / Perlu Dicek", sub: "Saya belum tahu persis rincian polis saya" },
 ];
 
 const COVERAGE_OPTIONS_ID = [
-  { id: "BPJS", label: "BPJS Kesehatan", sub: "Jaminan Kesehatan Nasional (JKN)" },
-  { id: "EMPLOYER", label: "Employer Insurance", sub: "Asuransi rawat inap kantor / korporat" },
-  { id: "PERSONAL_HEALTH", label: "Personal Health Insurance", sub: "Asuransi kesehatan swasta individu" },
-  { id: "TRAVEL", label: "Travel Insurance", sub: "Asuransi perjalanan luar / dalam negeri" },
-  { id: "LIFE", label: "Life Insurance", sub: "Asuransi jiwa dan proteksi keluarga" },
-  { id: "NOT_SURE", label: "Not Sure Yet", sub: "Belum yakin / ingin diperiksa lebih lanjut" },
+  { id: "BPJS", label: "BPJS Kesehatan (JKN)", sub: "Jaminan Kesehatan Nasional wajib Indonesia" },
+  { id: "EMPLOYER", label: "Asuransi Kantor / Korporat", sub: "Fasilitas rawat inap dan rawat jalan perusahaan" },
+  { id: "PERSONAL_HEALTH", label: "Asuransi Kesehatan Swasta", sub: "Polis individu murni atau unit link swasta" },
+  { id: "TRAVEL", label: "Asuransi Perjalanan", sub: "Asuransi proteksi perjalanan luar atau domestik" },
+  { id: "LIFE", label: "Asuransi Jiwa & Keluarga", sub: "Proteksi jiwa dan antisipasi risiko masa depan" },
+  { id: "NOT_SURE", label: "Belum Yakin / Perlu Dicek", sub: "Saya ingin Insurra memeriksa dokumen saya nanti" },
 ];
 
 const PRIORITY_OPTIONS = [
   {
     id: "low_cost",
-    label: "Lower Costs",
-    sub: "Minimizing out-of-pocket expenses and excess fees",
+    label: "Biaya Lebih Hemat",
+    sub: "Meminimalkan out-of-pocket expenses dan biaya excess saat berobat",
   },
   {
     id: "speed",
-    label: "Speed & Convenience",
-    sub: "Fast clinic booking, rapid claims, and easy direct-billing",
+    label: "Kecepatan & Kemudahan",
+    sub: "Klaim kilat, direct billing di klinik/RS, dan proses serba digital",
   },
   {
     id: "choice",
-    label: "Doctor & Hospital Choice",
-    sub: "Freedom to consult preferred specialists and private hospitals",
+    label: "Bebas Pilih Dokter & RS",
+    sub: "Bebas konsultasi dengan dokter spesialis dan rawat inap di RS swasta",
   },
   {
     id: "family",
-    label: "Family Security",
-    sub: "Comprehensive health safety for partner, children, or parents",
+    label: "Keamanan Keluarga",
+    sub: "Jaminan kesehatan lengkap dan perlindungan terpadu untuk keluarga",
   },
 ];
 
 const BUDGET_OPTIONS_AU = [
-  { id: "none", label: "No additional budget", sub: "Relying strictly on existing coverage" },
-  { id: "low", label: "< $50 / month", sub: "Entry gap protection" },
-  { id: "mid", label: "$50 - $150 / month", sub: "Balanced everyday health & dental" },
-  { id: "high", label: "$150 - $300 / month", sub: "Comprehensive private inpatient cover" },
-  { id: "top", label: "> $300 / month", sub: "Premium health security" },
+  { id: "none", label: "Tidak ada anggaran tambahan", sub: "Hanya mengandalkan asuransi yang ada" },
+  { id: "low", label: "< $50 / bulan", sub: "Proteksi dasar untuk menutup celah selisih" },
+  { id: "mid", label: "$50 - $150 / bulan", sub: "Perlindungan seimbang rawat jalan dan gigi" },
+  { id: "high", label: "$150 - $300 / bulan", sub: "Asuransi komprehensif rawat inap RS swasta" },
+  { id: "top", label: "> $300 / bulan", sub: "Proteksi kelas premium dan limit tinggi" },
 ];
 
 const BUDGET_OPTIONS_ID = [
-  { id: "none", label: "No additional budget", sub: "Hanya mengandalkan asuransi yang ada" },
-  { id: "low", label: "< Rp 250.000 / month", sub: "Proteksi dasar pelengkap" },
-  { id: "mid", label: "Rp 250.000 - Rp 750.000 / month", sub: "Perlindungan rawat jalan & gigi" },
-  { id: "high", label: "Rp 750.000 - Rp 1.500.000 / month", sub: "Asuransi kesehatan swasta standar" },
-  { id: "top", label: "> Rp 1.500.000 / month", sub: "Proteksi kamar VIP & limit tinggi" },
+  { id: "none", label: "Tidak ada anggaran tambahan", sub: "Hanya mengandalkan asuransi yang ada" },
+  { id: "low", label: "< Rp 250.000 / bulan", sub: "Proteksi dasar pelengkap BPJS" },
+  { id: "mid", label: "Rp 250.000 - Rp 750.000 / bulan", sub: "Perlindungan rawat jalan & gigi standar" },
+  { id: "high", label: "Rp 750.000 - Rp 1.500.000 / bulan", sub: "Asuransi kesehatan swasta reguler" },
+  { id: "top", label: "> Rp 1.500.000 / bulan", sub: "Proteksi kamar VIP & limit tahunan tinggi" },
 ];
 
-// Document item contract for Suggested Docs screen (US-02-03)
 interface SuggestedDocItem {
   id: string;
   kind: string;
   title: string;
-  badge: "Visa requirement" | "Mandatory" | "Recommended";
+  badge: "Wajib Visa" | "Wajib" | "Rekomendasi";
   badgeType: "visa-req" | "mandatory" | "recommended";
   description: string;
   sourceUrl?: string;
@@ -143,30 +125,29 @@ interface SuggestedDocItem {
 }
 
 function AccountOnboardingContent() {
-  const { account, token, loading: authLoading } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const modeParam = searchParams.get("mode");
+  const { account, token } = useAuth();
 
-  const [step, setStep] = useState<number>(1);
+  // Profile data
   const [profile, setProfile] = useState<ProfileData>(DEFAULT_PROFILE);
-  const [savedProfile, setSavedProfile] = useState<ProfileData>(DEFAULT_PROFILE);
-  const [initialLoaded, setInitialLoaded] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [, setBusy] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Suggested docs state (US-02-03)
-  const [showSuggestedDocs, setShowSuggestedDocs] = useState(false);
-  const [selectedDocKind, setSelectedDocKind] = useState<string>("");
+  // Conversational chat state
+  // Steps: 1: Residence, 2: Location/Status/Visa, 3: Dependents, 4: Coverage, 5: Priorities, 6: Budget, 7: Finished
+  const [activeStep, setActiveStep] = useState<number>(1);
+  const [, setMaxCompletedStep] = useState<number>(0);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
 
-  // Country Change Confirmation Modal State (US-02-02)
-  const [pendingCountrySwitch, setPendingCountrySwitch] = useState<CountryCode | null>(null);
+  // Temporary state for multi-input steps (Step 2, 3, 4, 5)
+  const [customCity, setCustomCity] = useState<string>("");
+  const [tempArrivalDate, setTempArrivalDate] = useState<string>("2026-02-15");
+  const [tempVisaExpiry, setTempVisaExpiry] = useState<string>("2027-03-15");
 
-  // Edit Mode state (US-02-02)
-  const isEditMode = modeParam === "edit";
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
-  // Load existing profile / draft
+  // Load existing profile / draft on start
   useEffect(() => {
     if (!token) return;
     let active = true;
@@ -178,37 +159,94 @@ function AccountOnboardingContent() {
       .then((state: AccountProfileState) => {
         if (!active) return;
         const source = (state.profile ?? state.draft ?? {}) as Partial<ProfileData>;
+        const isAU = (source.country_code || "AU") === "AU";
         const merged: ProfileData = {
           ...DEFAULT_PROFILE,
           ...source,
           display_name: source.display_name || account?.display_name || "",
-          residence_context: source.residence_context || (source.country_code === "ID" ? "DOMESTIC" : "ABROAD"),
+          residence_context: source.residence_context || (isAU ? "ABROAD" : "DOMESTIC"),
           country_code: (source.country_code as CountryCode) || "AU",
-          currency: (source.currency as "AUD" | "IDR") || (source.country_code === "ID" ? "IDR" : "AUD"),
+          city: source.city || (isAU ? "Melbourne" : "Jakarta"),
+          currency: (source.currency as "AUD" | "IDR") || (isAU ? "AUD" : "IDR"),
+          arrival_date: source.arrival_date || (isAU ? "2026-02-15" : null),
+          visa_expiry_date: source.visa_expiry_date || (isAU ? "2027-03-15" : null),
         };
         setProfile(merged);
-        setSavedProfile(merged);
-        if (state.completed && !modeParam) {
-          // If already completed and no explicit mode, show suggested docs or allow editing
-          setShowSuggestedDocs(true);
+        setCustomCity(merged.city || "");
+        if (merged.arrival_date) setTempArrivalDate(merged.arrival_date);
+        if (merged.visa_expiry_date) setTempVisaExpiry(merged.visa_expiry_date);
+
+        if (state.completed) {
+          setIsCompleted(true);
+          setActiveStep(7);
+          setMaxCompletedStep(6);
         }
-        setInitialLoaded(true);
       })
       .catch(() => {
-        if (active) setInitialLoaded(true);
+        // Fallback default profile
       });
 
     return () => {
       active = false;
     };
-  }, [token, account?.display_name, modeParam]);
+  }, [token, account?.display_name]);
 
-  // Check if profile has uncommitted changes in edit mode
-  const isDirty = useMemo(() => {
-    return JSON.stringify(profile) !== JSON.stringify(savedProfile);
-  }, [profile, savedProfile]);
+  // Auto-scroll chat to bottom
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      if (chatScrollRef.current) {
+        chatScrollRef.current.scrollTo({
+          top: chatScrollRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    }, 80);
+  };
 
-  // Derived suggested documents list based on profile (US-02-03, FR-02-17..22)
+  useEffect(() => {
+    scrollToBottom();
+  }, [activeStep, isTyping, isCompleted]);
+
+  // Autosave draft helper
+  async function persistDraft(updatedData: ProfileData) {
+    if (!token) return;
+    try {
+      await api.request("put", "/api/v1/account/profile/draft", {
+        headers: { Authorization: `Bearer ${token}` },
+        body: updatedData,
+      });
+      setDraftSaved(true);
+      setTimeout(() => setDraftSaved(false), 2000);
+    } catch {
+      // Ignore background draft errors
+    }
+  }
+
+  // Final submission of profile to complete onboarding
+  async function completeOnboarding(profileToSave = profile) {
+    setError(null);
+    setBusy(true);
+
+    try {
+      if (token) {
+        await api.request("put", "/api/v1/account/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+          body: profileToSave,
+        });
+      }
+      setIsCompleted(true);
+      setActiveStep(7);
+      setMaxCompletedStep(6);
+      return true;
+    } catch (cause: unknown) {
+      setError(cause instanceof Error ? cause.message : "Gagal menyimpan profil. Silakan coba lagi.");
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Derived suggested documents list based on profile
   const suggestedDocsList = useMemo<SuggestedDocItem[]>(() => {
     const list: SuggestedDocItem[] = [];
     const isAU = profile.country_code === "AU";
@@ -221,12 +259,12 @@ function AccountOnboardingContent() {
         list.push({
           id: "oshc_certificate",
           kind: "oshc_certificate",
-          title: "OSHC Certificate",
-          badge: "Visa requirement",
+          title: "Sertifikat Polis OSHC",
+          badge: "Wajib Visa",
           badgeType: "visa-req",
-          description: "From your university or insurance provider (e.g. Allianz, Medibank, Bupa)",
+          description: "Dari provider OSHC Australia (Allianz, Medibank, Bupa, NIB, atau AHM)",
           sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500#Eligibility",
-          sourceLabel: "View Australian Home Affairs visa requirement",
+          sourceLabel: "Kepatuhan Visa Condition 8501",
         });
       }
 
@@ -234,21 +272,19 @@ function AccountOnboardingContent() {
         id: "visa_grant_notice",
         kind: "visa_grant_notice",
         title: "Visa Grant Notice",
-        badge: "Recommended",
+        badge: "Rekomendasi",
         badgeType: "recommended",
-        description: "From your Australian Department of Home Affairs grant notification email",
-        sourceUrl: "https://immi.homeaffairs.gov.au",
-        sourceLabel: "View Department of Home Affairs portal",
+        description: "Surat pemberitahuan resmi izin visa dari Department of Home Affairs Australia",
       });
 
       if (owned.includes("OSHC") || isStudent) {
         list.push({
           id: "policy_booklet",
           kind: "policy_booklet",
-          title: "OSHC Policy Booklet",
-          badge: "Recommended",
+          title: "Buku Panduan Polis OSHC",
+          badge: "Rekomendasi",
           badgeType: "recommended",
-          description: "From your insurer portal detailing schedule of benefits and hospital exclusions",
+          description: "Memuat daftar jadwal manfaat (MBS), rincian limit, dan pengecualian rawat inap",
         });
       }
 
@@ -256,21 +292,10 @@ function AccountOnboardingContent() {
         list.push({
           id: "employer_policy",
           kind: "employer_policy",
-          title: "Employer Policy Certificate",
-          badge: "Recommended",
+          title: "Sertifikat Polis Kantor (Employer)",
+          badge: "Rekomendasi",
           badgeType: "recommended",
-          description: "From your Australian employer HR portal or corporate benefit guide",
-        });
-      }
-
-      if (owned.includes("PERSONAL_HEALTH")) {
-        list.push({
-          id: "insurance_card",
-          kind: "insurance_card",
-          title: "Private Health Fund Statement",
-          badge: "Recommended",
-          badgeType: "recommended",
-          description: "From your registered Australian health fund (e.g. Medibank, NIB, Bupa)",
+          description: "Dari portal HR atau buku manfaat asuransi korporat perusahaan",
         });
       }
 
@@ -278,10 +303,10 @@ function AccountOnboardingContent() {
         list.push({
           id: "other",
           kind: "other",
-          title: "University Confirmation / Any Health Card",
-          badge: "Recommended",
+          title: "Kartu Asuransi / Bukti Pendaftaran",
+          badge: "Rekomendasi",
           badgeType: "recommended",
-          description: "Upload any enrollment letter or existing card to let Insurra check your coverage",
+          description: "Foto atau kartu digital apa pun untuk diverifikasi oleh sistem Insurra",
         });
       }
     } else {
@@ -290,11 +315,11 @@ function AccountOnboardingContent() {
         id: "bpjs_card",
         kind: "bpjs_card",
         title: "Kartu BPJS Kesehatan",
-        badge: "Mandatory",
+        badge: "Wajib",
         badgeType: "mandatory",
-        description: "Dari aplikasi Mobile JKN (tangkapan layar kartu digital) atau scan kartu fisik",
+        description: "Dari aplikasi Mobile JKN (screenshot kartu digital) atau scan kartu fisik",
         sourceUrl: "https://bpjs-kesehatan.go.id",
-        sourceLabel: "Lihat portal resmi BPJS Kesehatan",
+        sourceLabel: "Portal Resmi BPJS Kesehatan",
       });
 
       if (owned.includes("EMPLOYER")) {
@@ -302,7 +327,7 @@ function AccountOnboardingContent() {
           id: "employer_policy",
           kind: "employer_policy",
           title: "Polis Asuransi Kantor / Korporat",
-          badge: "Recommended",
+          badge: "Rekomendasi",
           badgeType: "recommended",
           description: "Dari portal HR perusahaan atau buku panduan manfaat karyawan",
         });
@@ -313,9 +338,9 @@ function AccountOnboardingContent() {
           id: "policy_booklet",
           kind: "policy_booklet",
           title: "Buku Polis Asuransi Pribadi",
-          badge: "Recommended",
+          badge: "Rekomendasi",
           badgeType: "recommended",
-          description: "Dari portal aplikasi asuransi atau surat konfirmasi polis yang masih aktif",
+          description: "Dari aplikasi asuransi atau surat konfirmasi polis yang masih aktif",
         });
       }
 
@@ -324,177 +349,78 @@ function AccountOnboardingContent() {
           id: "insurance_card",
           kind: "insurance_card",
           title: "Kartu Asuransi / Bukti Kepesertaan",
-          badge: "Recommended",
+          badge: "Rekomendasi",
           badgeType: "recommended",
-          description: "Foto atau dokumen asuransi apa pun yang Anda miliki saat ini",
+          description: "Foto dokumen asuransi apa pun yang Anda miliki saat ini",
         });
       }
     }
 
-    return list.slice(0, 6);
+    return list.slice(0, 4);
   }, [profile]);
 
-  // Derived selected document kind
-  const activeDocKind = selectedDocKind || suggestedDocsList[0]?.kind || "";
+  // Transition to next chat step with typing delay
+  function advanceToStep(nextStep: number, updatedProfile: ProfileData) {
+    setProfile(updatedProfile);
+    void persistDraft(updatedProfile);
+    setMaxCompletedStep((prev) => Math.max(prev, activeStep));
 
-  // Autosave draft helper (FR-02-15)
-  async function persistDraft(updatedData: ProfileData) {
-    if (!token) return;
-    try {
-      await api.request("put", "/api/v1/account/profile/draft", {
-        headers: { Authorization: `Bearer ${token}` },
-        body: updatedData,
-      });
-      setDraftSaved(true);
-      setTimeout(() => setDraftSaved(false), 2500);
-    } catch {
-      // Silently ignore draft errors
-    }
+    setIsTyping(true);
+    setTimeout(() => {
+      setIsTyping(false);
+      setActiveStep(nextStep);
+    }, 450);
   }
 
-  // Final submission of profile to complete onboarding (FR-02-16)
-  async function completeOnboarding(profileToSave = profile) {
-    setError(null);
-    setBusy(true);
+  // Handlers for interactive questions:
 
-    // Date validations
-    if (profileToSave.country_code === "AU" && profileToSave.residence_context === "ABROAD") {
-      if (!profileToSave.visa_expiry_date) {
-        setError("Visa expiry date is required for residence abroad.");
-        setBusy(false);
-        return false;
-      }
-      if (profileToSave.arrival_date && profileToSave.visa_expiry_date <= profileToSave.arrival_date) {
-        setError("Visa expiry date must be strictly after your arrival date.");
-        setBusy(false);
-        return false;
-      }
-    }
-
-    if (!profileToSave.city?.trim()) {
-      setError("Please specify your city of residence.");
-      setBusy(false);
-      return false;
-    }
-
-    try {
-      if (token) {
-        await api.request("put", "/api/v1/account/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-          body: profileToSave,
-        });
-      }
-      setSavedProfile(profileToSave);
-      setShowSuggestedDocs(true);
-      return true;
-    } catch (cause: unknown) {
-      setError(cause instanceof Error ? cause.message : "Failed to save profile. Please try again.");
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  // Handle step navigation & draft saving
-  async function handleNextStep() {
-    setError(null);
-
-    // Step 1 Validation
-    if (step === 1) {
-      if (!profile.residence_context) {
-        setError("Please choose your residence context.");
-        return;
-      }
-    }
-
-    // Step 2 Validation (Location & Status)
-    if (step === 2) {
-      if (!profile.city?.trim()) {
-        setError("Please enter your city.");
-        return;
-      }
-      if (profile.residence_context === "ABROAD") {
-        if (!profile.arrival_date) {
-          setError("Arrival date is required for residence abroad.");
-          return;
-        }
-        if (!profile.visa_expiry_date) {
-          setError("Visa expiry date is required for residence abroad.");
-          return;
-        }
-        if (profile.visa_expiry_date <= profile.arrival_date) {
-          setError("Visa expiry date must be after your arrival date.");
-          return;
-        }
-      }
-    }
-
-    // Step 3 Validation (Dependents)
-    if (step === 3) {
-      if (!profile.dependents || profile.dependents.length === 0) {
-        setError("Please select who is covered under your protection.");
-        return;
-      }
-    }
-
-    // Step 4 Validation (Coverage)
-    if (step === 4) {
-      if (!profile.owned_coverage || profile.owned_coverage.length === 0) {
-        setError("Please choose your current coverage, or select 'Not Sure Yet'.");
-        return;
-      }
-    }
-
-    // Step 5 (Priorities) - optional, up to 2
-    // Step 6 (Budget) - optional
-
-    // If step < 6, save draft and proceed
-    if (step < 6) {
-      void persistDraft(profile);
-      setStep((prev) => prev + 1);
-    } else {
-      // Step 6: Complete onboarding!
-      await completeOnboarding(profile);
-    }
-  }
-
-  function handlePrevStep() {
-    setError(null);
-    if (step > 1) {
-      setStep((prev) => prev - 1);
-    }
-  }
-
-  // Country Switch Confirmation Handlers (US-02-02)
-  function handleRequestCountrySwitch(targetCode: CountryCode) {
-    if (profile.country_code === targetCode) return;
-    setPendingCountrySwitch(targetCode);
-  }
-
-  function confirmCountrySwitch() {
-    if (!pendingCountrySwitch) return;
-    const isAU = pendingCountrySwitch === "AU";
+  // Step 1: Residence Context
+  function handleSelectResidence(context: "ABROAD" | "DOMESTIC") {
+    const isAbroad = context === "ABROAD";
+    const targetCountry: CountryCode = isAbroad ? "AU" : "ID";
     const updated: ProfileData = {
       ...profile,
-      country_code: pendingCountrySwitch,
-      residence_context: isAU ? "ABROAD" : "DOMESTIC",
-      currency: isAU ? "AUD" : "IDR",
-      timezone: isAU ? "Australia/Melbourne" : "Asia/Jakarta",
-      // Reset omitted country-bound fields per PRD context switch rules
-      city: "",
-      arrival_date: null,
-      visa_expiry_date: null,
-      institution_name: "",
-      employment_status: "",
-      budget_range: "No additional budget",
-      owned_coverage: isAU ? ["OSHC"] : ["BPJS"],
+      residence_context: context,
+      country_code: targetCountry,
+      city: isAbroad ? "Melbourne" : "Jakarta",
+      currency: isAbroad ? "AUD" : "IDR",
+      timezone: isAbroad ? "Australia/Melbourne" : "Asia/Jakarta",
+      owned_coverage: isAbroad ? ["OSHC"] : ["BPJS"],
+      budget_range: isAbroad ? "$50 - $150 / month" : "Rp 250.000 - Rp 750.000 / month",
     };
-    setProfile(updated);
-    setPendingCountrySwitch(null);
-    void persistDraft(updated);
+    advanceToStep(2, updated);
   }
 
-  // Dependent selection toggle (FR-02-09, None is exclusive)
+  // Step 2: Location & Status
+  function handleSubmitStep2() {
+    const finalCity = (customCity || profile.city || (profile.country_code === "AU" ? "Melbourne" : "Jakarta")).trim();
+    if (!finalCity) {
+      setError("Silakan tentukan kota tempat tinggalmu.");
+      return;
+    }
+
+    if (profile.residence_context === "ABROAD" && profile.country_code === "AU") {
+      if (!tempArrivalDate || !tempVisaExpiry) {
+        setError("Tanggal kedatangan dan masa berlaku visa wajib diisi untuk domisili luar negeri.");
+        return;
+      }
+      if (tempVisaExpiry <= tempArrivalDate) {
+        setError("Masa berlaku visa harus lebih lama dari tanggal kedatangan.");
+        return;
+      }
+    }
+
+    setError(null);
+    const updated: ProfileData = {
+      ...profile,
+      city: finalCity,
+      arrival_date: profile.residence_context === "ABROAD" ? tempArrivalDate : null,
+      visa_expiry_date: profile.residence_context === "ABROAD" ? tempVisaExpiry : null,
+    };
+    advanceToStep(3, updated);
+  }
+
+  // Step 3: Dependents
   function toggleDependent(id: string) {
     let current = [...(profile.dependents || [])];
     if (id === "None") {
@@ -511,7 +437,16 @@ function AccountOnboardingContent() {
     setProfile({ ...profile, dependents: current });
   }
 
-  // Coverage selection toggle (FR-02-11, Not Sure Yet is exclusive)
+  function handleSubmitStep3() {
+    if (!profile.dependents || profile.dependents.length === 0) {
+      setError("Silakan pilih siapa saja yang ikut dilindungi.");
+      return;
+    }
+    setError(null);
+    advanceToStep(4, profile);
+  }
+
+  // Step 4: Existing Coverage
   function toggleCoverage(id: string) {
     let current = [...(profile.owned_coverage || [])];
     if (id === "NOT_SURE") {
@@ -528,14 +463,23 @@ function AccountOnboardingContent() {
     setProfile({ ...profile, owned_coverage: current });
   }
 
-  // Priority selection toggle (FR-02-12, max 2)
+  function handleSubmitStep4() {
+    if (!profile.owned_coverage || profile.owned_coverage.length === 0) {
+      setError("Silakan pilih asuransi yang kamu miliki, atau pilih 'Belum yakin'.");
+      return;
+    }
+    setError(null);
+    advanceToStep(5, profile);
+  }
+
+  // Step 5: Priorities
   function togglePriority(id: string) {
     let current = [...(profile.priorities || [])];
     if (current.includes(id)) {
       current = current.filter((item) => item !== id);
     } else {
       if (current.length >= 2) {
-        current = [current[1], id]; // keep latest 2
+        current = [current[1], id];
       } else {
         current.push(id);
       }
@@ -543,936 +487,791 @@ function AccountOnboardingContent() {
     setProfile({ ...profile, priorities: current });
   }
 
-  if (authLoading || (token && !initialLoaded)) {
-    return (
-      <main className="onboarding-container" style={{ display: "grid", placeItems: "center" }}>
-        <p style={{ color: "#5b7182", fontWeight: 700 }}>Preparing your context…</p>
-      </main>
-    );
+  function handleSubmitStep5() {
+    setError(null);
+    advanceToStep(6, profile);
   }
 
-  // =========================================================================
-  // VIEW: SUGGESTED DOCUMENTS (US-02-03)
-  // =========================================================================
-  if (showSuggestedDocs) {
-    return (
-      <main className="onboarding-container">
-        <header className="onboarding-topbar">
-          <Link href="/" className="onboarding-brand" aria-label="Insurra Home">
-            <Image
-              src="/mascot-logo.png"
-              alt="Insurra"
-              width={130}
-              height={52}
-              className="onboarding-brand-logo"
-              priority
-            />
-          </Link>
-          <div className="onboarding-stepper">
-            <span className="stepper-pill completed">
-              <Check size={14} /> Profile Saved
-            </span>
-            <span className="stepper-pill active">
-              <span className="stepper-num">★</span> Suggested Documents
-            </span>
-          </div>
-          <Link href="/dashboard" className="onboarding-exit-btn">
-            Skip to Dashboard
-          </Link>
-        </header>
-
-        <section className="suggested-docs-page">
-          <div className="suggested-docs-head">
-            <div className="hero-badge" style={{ marginBottom: 12 }}>
-              <Sparkles size={14} /> Tailored to your profile
-            </div>
-            <h1>Let&apos;s get your documents ready.</h1>
-            <p>
-              Based on your {profile.country_code === "AU" ? "Australia" : "Indonesia"} profile (
-              {profile.occupation === "STUDENT" ? "Student" : "Professional"}), here are the documents
-              that may help INSURRA understand your protection.
-            </p>
-          </div>
-
-          <div className="suggested-docs-grid" role="list" aria-label="Suggested documents">
-            {suggestedDocsList.map((doc) => {
-              const isSelected = activeDocKind === doc.kind;
-              return (
-                <div
-                  key={doc.id}
-                  className={`doc-suggestion-card ${isSelected ? "selected-card" : ""}`}
-                  style={{
-                    border: isSelected ? "2px solid #0ea58a" : "1.5px solid #e1ebed",
-                    backgroundColor: isSelected ? "#f6fcfa" : "#ffffff",
-                  }}
-                  onClick={() => setSelectedDocKind(doc.kind)}
-                  role="listitem"
-                >
-                  <div className="doc-card-top">
-                    <span className={`doc-card-badge ${doc.badgeType}`}>
-                      {doc.badge === "Visa requirement" && <ShieldCheck size={12} />}
-                      {doc.badge}
-                    </span>
-                  </div>
-
-                  <div className="doc-card-main">
-                    <h3>{doc.title}</h3>
-                    <p>{doc.description}</p>
-                    {doc.sourceUrl && (
-                      <a
-                        href={doc.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="doc-card-source"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {doc.sourceLabel || "View official source"} <ExternalLink size={12} />
-                      </a>
-                    )}
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, borderTop: "1px solid #eef3f5" }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: isSelected ? "#0ea58a" : "#728494" }}>
-                      {isSelected ? "Selected for upload" : "Click to select"}
-                    </span>
-                    <div className="check-circle" style={{ borderColor: isSelected ? "#0ea58a" : "#c8d8dd", backgroundColor: isSelected ? "#0ea58a" : "transparent" }}>
-                      <Check size={14} color="#fff" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="suggested-docs-actions">
-            <button
-              type="button"
-              className="wizard-btn primary"
-              onClick={() => {
-                const target = activeDocKind ? `/documents?kind=${encodeURIComponent(activeDocKind)}` : "/documents";
-                router.push(target);
-              }}
-            >
-              Start Uploading <ArrowRight size={16} />
-            </button>
-            <button
-              type="button"
-              className="wizard-btn secondary"
-              onClick={() => router.push("/dashboard")}
-            >
-              Maybe Later
-            </button>
-          </div>
-        </section>
-      </main>
-    );
+  // Step 6: Budget
+  async function handleSelectBudget(budgetLabel: string) {
+    const updated: ProfileData = {
+      ...profile,
+      budget_range: budgetLabel,
+    };
+    setProfile(updated);
+    setIsTyping(true);
+    await completeOnboarding(updated);
+    setIsTyping(false);
   }
 
-  // =========================================================================
-  // VIEW: MY PROFILE & EDIT MODE (US-02-02, route /onboarding?mode=edit)
-  // =========================================================================
-  if (isEditMode) {
-    const isAU = profile.country_code === "AU";
-    return (
-      <main className="onboarding-container">
-        <header className="onboarding-topbar">
-          <Link href="/" className="onboarding-brand" aria-label="Insurra Home">
-            <Image
-              src="/mascot-logo.png"
-              alt="Insurra"
-              width={130}
-              height={52}
-              className="onboarding-brand-logo"
-              priority
-            />
-          </Link>
-          <div className="my-profile-chip">
-            <Globe2 size={15} /> {isAU ? "Australia" : "Indonesia"} ·{" "}
-            {profile.occupation === "STUDENT" ? "Student" : "Professional"}
-          </div>
-          <Link href="/account" className="onboarding-exit-btn">
-            Back to Workspace
-          </Link>
-        </header>
-
-        <section className="my-profile-page">
-          <div className="my-profile-head">
-            <div>
-              <h1>My Profile</h1>
-              <p style={{ color: "#556c80", margin: 0, fontSize: 14 }}>
-                Review and update your residence context, status, and insurance priorities.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="wizard-btn secondary"
-              onClick={() => {
-                setShowSuggestedDocs(false);
-                setStep(1);
-                router.push("/onboarding");
-              }}
-            >
-              <RotateCcw size={15} /> Walk Through 6 Steps
-            </button>
-          </div>
-
-          {error && <div className="wizard-error-banner" role="alert"><AlertTriangle size={18} /> {error}</div>}
-
-          <div className="profile-card-list">
-            {/* 1. Residence Context */}
-            <div className="profile-summary-card">
-              <div className="profile-card-left">
-                <span className="profile-card-label">Residence Context</span>
-                <span className="profile-card-val">
-                  {isAU ? "Australia" : "Indonesia"} {profile.city ? `· ${profile.city}` : ""}
-                </span>
-                <small style={{ color: "#6e8494", fontSize: 12 }}>
-                  {isAU ? "International context (AUD)" : "Domestic context (IDR)"}
-                </small>
-              </div>
-              <button
-                type="button"
-                className="profile-card-edit-btn"
-                onClick={() => handleRequestCountrySwitch(isAU ? "ID" : "AU")}
-              >
-                Switch Country
-              </button>
-            </div>
-
-            {/* 2. Status & Workplace */}
-            <div className="profile-summary-card">
-              <div className="profile-card-left">
-                <span className="profile-card-label">Status &amp; Occupation</span>
-                <span className="profile-card-val">
-                  {profile.occupation === "STUDENT" ? "Student" : profile.occupation === "EMPLOYEE" ? "Employee" : "Other"}
-                  {profile.institution_name ? ` · ${profile.institution_name}` : profile.employment_status ? ` · ${profile.employment_status}` : ""}
-                </span>
-                {isAU && profile.visa_expiry_date && (
-                  <small style={{ color: "#6e8494", fontSize: 12 }}>
-                    Visa expires: {profile.visa_expiry_date}
-                  </small>
-                )}
-              </div>
-              <button
-                type="button"
-                className="profile-card-edit-btn"
-                onClick={() => {
-                  setStep(2);
-                  router.push("/onboarding");
-                }}
-              >
-                Edit
-              </button>
-            </div>
-
-            {/* 3. Dependents */}
-            <div className="profile-summary-card">
-              <div className="profile-card-left">
-                <span className="profile-card-label">Dependents</span>
-                <span className="profile-card-val">
-                  {(profile.dependents ?? []).length > 0 ? (profile.dependents ?? []).join(", ") : "None"}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="profile-card-edit-btn"
-                onClick={() => {
-                  setStep(3);
-                  router.push("/onboarding");
-                }}
-              >
-                Edit
-              </button>
-            </div>
-
-            {/* 4. Existing Coverage */}
-            <div className="profile-summary-card">
-              <div className="profile-card-left">
-                <span className="profile-card-label">Existing Insurance</span>
-                <span className="profile-card-val">
-                  {(profile.owned_coverage ?? []).length > 0
-                    ? (profile.owned_coverage ?? []).map((c) => (c === "NOT_SURE" ? "Not Sure Yet" : c)).join(", ")
-                    : "Not specified"}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="profile-card-edit-btn"
-                onClick={() => {
-                  setStep(4);
-                  router.push("/onboarding");
-                }}
-              >
-                Edit
-              </button>
-            </div>
-
-            {/* 5. Priorities */}
-            <div className="profile-summary-card">
-              <div className="profile-card-left">
-                <span className="profile-card-label">Protection Priorities</span>
-                <span className="profile-card-val">
-                  {(profile.priorities ?? []).length > 0
-                    ? (profile.priorities ?? [])
-                        .map((p) => PRIORITY_OPTIONS.find((opt) => opt.id === p)?.label || p)
-                        .join(", ")
-                    : "None selected"}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="profile-card-edit-btn"
-                onClick={() => {
-                  setStep(5);
-                  router.push("/onboarding");
-                }}
-              >
-                Edit
-              </button>
-            </div>
-
-            {/* 6. Budget */}
-            <div className="profile-summary-card">
-              <div className="profile-card-left">
-                <span className="profile-card-label">Monthly Additional Budget</span>
-                <span className="profile-card-val">
-                  {profile.budget_range || "No additional budget"}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="profile-card-edit-btn"
-                onClick={() => {
-                  setStep(6);
-                  router.push("/onboarding");
-                }}
-              >
-                Edit
-              </button>
-            </div>
-          </div>
-
-          <div className="my-profile-footer">
-            <span className="updated-timestamp">
-              Last updated: {new Date().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })}
-            </span>
-            <div style={{ display: "flex", gap: 12 }}>
-              <button
-                type="button"
-                className="wizard-btn secondary"
-                onClick={() => router.push("/account")}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="wizard-btn primary"
-                disabled={!isDirty || busy}
-                onClick={async () => {
-                  const success = await completeOnboarding(profile);
-                  if (success) {
-                    router.push("/account");
-                  }
-                }}
-              >
-                <Save size={16} /> {busy ? "Saving…" : "Save Changes"}
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Confirmation Modal for Country Context Switch */}
-        {pendingCountrySwitch && (
-          <div className="modal-backdrop" role="dialog" aria-modal="true">
-            <div className="modal-dialog">
-              <div className="modal-icon-badge">
-                <AlertTriangle size={24} />
-              </div>
-              <h2>Change your residence context?</h2>
-              <p>
-                Insurance rules, suggested documents, care pathways, and emergency contacts will
-                update to match your new country ({pendingCountrySwitch === "AU" ? "Australia" : "Indonesia"}).
-                Your existing documents will remain saved.
-              </p>
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="wizard-btn secondary"
-                  onClick={() => setPendingCountrySwitch(null)}
-                >
-                  Keep Current Country
-                </button>
-                <button
-                  type="button"
-                  className="wizard-btn primary"
-                  onClick={confirmCountrySwitch}
-                >
-                  Confirm Change
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-    );
+  // Jump back to re-answer a step
+  function jumpToStep(targetStep: number) {
+    setError(null);
+    setActiveStep(targetStep);
   }
 
-  // =========================================================================
-  // VIEW: 6-STEP ONBOARDING WIZARD (SC-02)
-  // =========================================================================
+  // Display Name of User
+  const userName = profile.display_name || account?.display_name || "Sahabat Insurra";
   const isAU = profile.country_code === "AU";
-  const coverageOptions = isAU ? COVERAGE_OPTIONS_AU : COVERAGE_OPTIONS_ID;
-  const budgetOptions = isAU ? BUDGET_OPTIONS_AU : BUDGET_OPTIONS_ID;
+
+  // Calculate live completion percentage
+  const completionPct = Math.min(100, Math.round(((Math.min(activeStep, 6) - 1) / 5) * 100));
 
   return (
-    <main className="onboarding-container">
-      {/* Topbar Navigation */}
-      <header className="onboarding-topbar">
-        <Link href="/" className="onboarding-brand" aria-label="Insurra Home">
+    <div className="chat-onboarding-shell">
+      {/* ---------------- Topbar ---------------- */}
+      <header className="chat-topbar">
+        <Link href="/" className="onboarding-brand">
           <Image
-            src="/mascot-logo.png"
+            src="/Inssura Kangaroo Shield Logo.png"
             alt="Insurra"
-            width={130}
-            height={52}
+            width={120}
+            height={36}
             className="onboarding-brand-logo"
             priority
           />
         </Link>
 
-        {/* Stepper (Step X of 6) */}
-        <nav className="onboarding-stepper" aria-label={`Step ${step} of 6`}>
-          {STEP_TITLES.map((title, idx) => {
-            const stepNum = idx + 1;
-            const isCompleted = step > stepNum;
-            const isActive = step === stepNum;
-            return (
-              <div
-                key={title}
-                className={`stepper-pill ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""}`}
-                title={title}
-              >
-                <span className="stepper-num">{isCompleted ? "✓" : stepNum}</span>
-                <span className="stepper-label">{title}</span>
-              </div>
-            );
-          })}
-        </nav>
-
-        <Link href="/account" className="onboarding-exit-btn">
-          Save &amp; Exit
-        </Link>
-      </header>
-
-      {/* Main 2-Column Stage */}
-      <section className="onboarding-main">
-        {/* Left Side: Hero Travel Art */}
-        <aside className="onboarding-hero-art" aria-label="Insurra Travel Companion">
+        {/* Companion Online Badge */}
+        <div className="chat-companion-badge">
           <Image
-            src="/onboarding-traveler.png"
-            alt="Traveler with backpack ready for their journey"
-            fill
-            sizes="(max-width: 980px) 0px, 35vw"
-            className="hero-art-image"
-            priority
+            src="/protection-mascot.png"
+            alt="Insurra AI"
+            width={32}
+            height={32}
+            className="chat-companion-avatar"
           />
-          <div className="hero-art-gradient" />
-
-          <div className="hero-art-header">
-            <span className="hero-badge">
-              <Sparkles size={14} /> AI Insurance Companion
+          <div className="chat-companion-info">
+            <span className="chat-companion-name">Insurra AI Guide</span>
+            <span className="chat-companion-status">
+              <span className="status-dot-pulse" /> Pendamping Aktif
             </span>
           </div>
+        </div>
 
-          <div className="hero-art-footer">
-            <div className="hero-art-quote">
-              <Image
-                src="/mascot-bubble.png"
-                alt="Insurra Mascot"
-                width={48}
-                height={48}
-                className="quote-mascot"
-              />
-              <p>
-                &ldquo;Take your time. We adapt insurance rules, documents, and hospital guidelines
-                directly to your context.&rdquo;
-              </p>
-            </div>
-            <div className="hero-art-trust">
-              <ShieldCheck size={18} />
-              <span>
-                <b>Private by design.</b> Never asked for NIK, passport, or medical histories.
-              </span>
-            </div>
+        {/* Progress Tracker */}
+        <div className="chat-progress-wrap">
+          <div className="chat-progress-track" title={`${completionPct}% Selesai`}>
+            <div className="chat-progress-fill" style={{ width: `${isCompleted ? 100 : Math.max(16, completionPct)}%` }} />
           </div>
-        </aside>
+          <span className="chat-step-label">
+            {isCompleted ? "Lengkap" : `Langkah ${Math.min(activeStep, 6)} dari 6`}
+          </span>
+          <Link href="/dashboard" className="onboarding-exit-btn">
+            Lewati ke Dashboard
+          </Link>
+        </div>
+      </header>
 
-        {/* Right Side: Interactive Step Wizard Panel */}
-        <section className="onboarding-wizard-panel" aria-label="Onboarding form">
-          <div>
-            <div className="step-indicator-row">
-              <span className="step-tag">Step {step} of 6</span>
-              {draftSaved && (
-                <span className="draft-status">
-                  <CheckCircle2 size={13} color="#0ea58a" /> Draft saved
-                </span>
+      {/* ---------------- Main Content Grid ---------------- */}
+      <main className="chat-main-grid">
+        {/* Left Column: Interactive Chat Stream */}
+        <section className="chat-stream-container">
+          <div className="chat-stream-header">
+            <div className="chat-stream-title">
+              <Compass size={17} color="#0ea58a" />
+              <span>Percakapan Konteks Perlindungan</span>
+              <span className="badge">Interaktif</span>
+            </div>
+            {draftSaved && <span className="autosave-pill"><Check size={12} /> Tersimpan otomatis</span>}
+          </div>
+
+          <div className="chat-messages-scroll" ref={chatScrollRef}>
+            {/* ---------------- TURN 1: GREETING & RESIDENCE CONTEXT ---------------- */}
+            <div className="chat-turn assistant-turn">
+              <div className="assistant-message-row">
+                <div className="assistant-avatar-wrap">
+                  <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                </div>
+                <div className="assistant-bubble">
+                  <p>
+                    Halo <strong>{userName}</strong>! 👋 Senang bertemu denganmu.
+                  </p>
+                  <p>
+                    Saya adalah asisten AI yang akan mendampingi perlindungan asuransimu. Agar kita bisa menyesuaikan aturan visa, jenis dokumen, dan manfaat klaim tanpa ribet, yuk kita lengkapi profilmu lewat obrolan singkat ini.
+                  </p>
+                  <p>
+                    Pertama, <strong>di mana kamu tinggal saat ini?</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Active Interactive Box for Step 1 */}
+              {activeStep === 1 && (
+                <div className="chat-interactive-box">
+                  <div className="interactive-title">Pilih Wilayah Tempat Tinggalmu:</div>
+                  <div className="chat-options-grid">
+                    <button
+                      type="button"
+                      className={`chat-option-card ${profile.residence_context === "ABROAD" ? "selected" : ""}`}
+                      onClick={() => handleSelectResidence("ABROAD")}
+                    >
+                      <span className="chat-option-icon">🌏</span>
+                      <div className="chat-option-text">
+                        <h4>Tinggal di Luar Negeri</h4>
+                        <p>Australia (OSHC, Visa Condition 8501, kepatuhan imigrasi internasional)</p>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      className={`chat-option-card ${profile.residence_context === "DOMESTIC" ? "selected" : ""}`}
+                      onClick={() => handleSelectResidence("DOMESTIC")}
+                    >
+                      <span className="chat-option-icon">🏠</span>
+                      <div className="chat-option-text">
+                        <h4>Tinggal di Indonesia</h4>
+                        <p>Domestik (Integrasi BPJS Kesehatan / JKN, koordinasi manfaat KAPJ, asuransi swasta)</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
 
-            {error && (
-              <div className="wizard-error-banner" role="alert">
-                <AlertTriangle size={18} /> {error}
-              </div>
-            )}
-
-            {/* STEP 1: Residence Context */}
-            {step === 1 && (
-              <div className="step-content">
-                <div className="wizard-header">
-                  <h1>Where do you currently live?</h1>
-                  <p>Choose the context that best describes your situation.</p>
-                </div>
-
-                <div className="step-body">
-                  <div className="option-grid two-cols">
-                    <button
-                      type="button"
-                      className={`context-card ${profile.residence_context === "DOMESTIC" ? "selected" : ""}`}
-                      onClick={() => {
-                        setProfile({
-                          ...profile,
-                          residence_context: "DOMESTIC",
-                          country_code: "ID",
-                          currency: "IDR",
-                          timezone: "Asia/Jakarta",
-                          owned_coverage: ["BPJS"],
-                        });
-                      }}
-                    >
-                      <span className="context-card-badge">Domestic</span>
-                      <h2 className="context-card-title">
-                        Indonesia
-                        {profile.residence_context === "DOMESTIC" && <Check size={20} color="#0ea58a" />}
-                      </h2>
-                      <p className="context-card-desc">
-                        Living in Indonesia, covered by BPJS Kesehatan, office insurance, or local health plans.
-                      </p>
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`context-card ${profile.residence_context === "ABROAD" ? "selected" : ""}`}
-                      onClick={() => {
-                        setProfile({
-                          ...profile,
-                          residence_context: "ABROAD",
-                          country_code: "AU",
-                          currency: "AUD",
-                          timezone: "Australia/Melbourne",
-                          owned_coverage: ["OSHC"],
-                        });
-                      }}
-                    >
-                      <span className="context-card-badge">International</span>
-                      <h2 className="context-card-title">
-                        Living Abroad
-                        {profile.residence_context === "ABROAD" && <Check size={20} color="#0ea58a" />}
-                      </h2>
-                      <p className="context-card-desc">
-                        Studying or working outside Indonesia (Australia supported for MVP, more coming soon).
-                      </p>
-                    </button>
+            {/* User Response to Step 1 */}
+            {activeStep > 1 && (
+              <div className="chat-turn user-turn">
+                <div className="user-message-row">
+                  <div className="user-bubble">
+                    <span>
+                      {profile.residence_context === "ABROAD" ? "🌏 Saya tinggal di Luar Negeri (Australia)" : "🏠 Saya tinggal di Indonesia"}
+                    </span>
+                    <div className="user-bubble-actions">
+                      <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(1)}>
+                        <Edit2 size={11} /> Ubah
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* STEP 2: Location & Status */}
-            {step === 2 && (
-              <div className="step-content">
-                <div className="wizard-header">
-                  <h1>Location &amp; Status</h1>
-                  <p>
-                    {isAU
-                      ? "Specify your Australian destination, study or work status, and visa dates."
-                      : "Specify your city in Indonesia and your occupation."}
-                  </p>
+            {/* ---------------- TURN 2: LOCATION, STATUS & VISA ---------------- */}
+            {activeStep >= 2 && (
+              <div className="chat-turn assistant-turn">
+                <div className="assistant-message-row">
+                  <div className="assistant-avatar-wrap">
+                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                  </div>
+                  <div className="assistant-bubble">
+                    <p>
+                      {profile.residence_context === "ABROAD" ? (
+                        <>Bagus! Tinggal di luar negeri memerlukan perhatian ekstra pada ketentuan visa dan perlindungan medis. Di kota mana kamu berbasis di Australia?</>
+                      ) : (
+                        <>Bagus! Untuk di Indonesia, sistem akan menyesuaikan koordinasi manfaat BPJS Kesehatan dan asuransi swasta. Di kota mana kamu berdomisili?</>
+                      )}
+                    </p>
+                    <p>Silakan lengkapi kota dan status aktivitasmu di bawah ya:</p>
+                  </div>
                 </div>
 
-                <div className="step-body">
-                  <div className="form-stack">
-                    {/* Destination Country Selection for Abroad */}
-                    {profile.residence_context === "ABROAD" && (
-                      <div className="form-group">
-                        <label className="form-label">
-                          Destination Country <span className="req">*</span>
-                        </label>
-                        <div className="country-pill-grid">
-                          {ABROAD_COUNTRIES.map((c) => (
-                            <button
-                              type="button"
-                              key={c.code}
-                              className={`country-pill ${profile.country_code === c.code ? "selected" : ""} ${!c.supported ? "coming-soon" : ""}`}
-                              disabled={!c.supported}
-                              onClick={() => {
-                                if (c.supported) {
-                                  setProfile({ ...profile, country_code: c.code as CountryCode });
-                                }
-                              }}
-                            >
-                              <span>{c.name}</span>
-                              {!c.supported ? (
-                                <span className="coming-soon-badge">Soon</span>
-                              ) : profile.country_code === c.code ? (
-                                <Check size={14} color="#0ea58a" />
-                              ) : null}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                {activeStep === 2 && (
+                  <div className="chat-interactive-box">
+                    <div className="interactive-title">Detail Lokasi & Status:</div>
 
-                    {/* City input with suggestion chips */}
-                    <div className="form-group">
-                      <label htmlFor="city-input" className="form-label">
-                        City <span className="req">*</span>
-                      </label>
-                      <input
-                        id="city-input"
-                        type="text"
-                        className="form-input"
-                        placeholder={isAU ? "e.g. Melbourne, Sydney" : "e.g. Jakarta, Surabaya"}
-                        value={profile.city || ""}
-                        onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                      />
-                      <div className="chip-row">
+                    {/* Country Toggle */}
+                    <div className="chat-inline-field">
+                      <label>Negara Tempat Tinggal:</label>
+                      <div className="chat-pills-row">
+                        <button
+                          type="button"
+                          className={`chat-pill-btn ${profile.country_code === "AU" ? "active" : ""}`}
+                          onClick={() => {
+                            setProfile({ ...profile, country_code: "AU", currency: "AUD", city: "Melbourne" });
+                            setCustomCity("Melbourne");
+                          }}
+                        >
+                          🇦🇺 Australia (AU)
+                        </button>
+                        <button
+                          type="button"
+                          className={`chat-pill-btn ${profile.country_code === "ID" ? "active" : ""}`}
+                          onClick={() => {
+                            setProfile({ ...profile, country_code: "ID", currency: "IDR", city: "Jakarta" });
+                            setCustomCity("Jakarta");
+                          }}
+                        >
+                          🇮🇩 Indonesia (ID)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* City quick pills + Input */}
+                    <div className="chat-inline-field">
+                      <label>Kota Tempat Tinggal:</label>
+                      <div className="chat-pills-row">
                         {(isAU ? AUSTRALIA_CITIES : INDONESIA_CITIES).map((c) => (
                           <button
-                            type="button"
                             key={c}
-                            className={`city-chip ${profile.city === c ? "active" : ""}`}
-                            onClick={() => setProfile({ ...profile, city: c })}
+                            type="button"
+                            className={`chat-pill-btn ${(customCity || profile.city) === c ? "active" : ""}`}
+                            onClick={() => {
+                              setCustomCity(c);
+                              setProfile({ ...profile, city: c });
+                            }}
                           >
                             {c}
                           </button>
                         ))}
                       </div>
-                    </div>
-
-                    {/* Occupation / Status */}
-                    <div className="form-group">
-                      <label className="form-label">
-                        Current Status / Occupation <span className="req">*</span>
-                      </label>
-                      <div className="option-grid three-cols">
-                        {(
-                          [
-                            ["STUDENT", "Student", "Enrolled in school or university"],
-                            ["EMPLOYEE", isAU ? "Employee" : "Pekerja / Karyawan", "Working professional"],
-                            ["OTHER", "Other", "Self-employed or other"],
-                          ] as const
-                        ).map(([val, label, sub]) => (
-                          <button
-                            type="button"
-                            key={val}
-                            className={`selectable-card ${profile.occupation === val ? "selected" : ""}`}
-                            onClick={() => setProfile({ ...profile, occupation: val })}
-                          >
-                            <div className="selectable-card-content">
-                              <span className="selectable-card-title">{label}</span>
-                              <span className="selectable-card-sub">{sub}</span>
-                            </div>
-                            <div className="check-circle">
-                              {profile.occupation === val && <Check size={14} />}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Institution or Employer Name (Optional) */}
-                    <div className="form-group">
-                      <label htmlFor="inst-input" className="form-label">
-                        {profile.occupation === "STUDENT"
-                          ? "School or University Name"
-                          : "Company or Employer Name"}
-                        <span className="opt">(Optional)</span>
-                      </label>
                       <input
-                        id="inst-input"
                         type="text"
-                        className="form-input"
-                        placeholder={
-                          profile.occupation === "STUDENT"
-                            ? isAU
-                              ? "e.g. University of Melbourne"
-                              : "e.g. Universitas Indonesia"
-                            : "e.g. Acme Corp"
-                        }
-                        value={
-                          profile.occupation === "STUDENT"
-                            ? profile.institution_name || ""
-                            : profile.employment_status || ""
-                        }
+                        placeholder="Atau ketik nama kota lainnya..."
+                        className="chat-text-input"
+                        value={customCity}
                         onChange={(e) => {
-                          if (profile.occupation === "STUDENT") {
-                            setProfile({ ...profile, institution_name: e.target.value });
-                          } else {
-                            setProfile({ ...profile, employment_status: e.target.value });
-                          }
+                          setCustomCity(e.target.value);
+                          setProfile({ ...profile, city: e.target.value });
                         }}
                       />
                     </div>
 
-                    {/* Visa dates for Abroad context */}
-                    {profile.residence_context === "ABROAD" && (
-                      <div className="date-row">
-                        <div className="form-group">
-                          <label htmlFor="arrival-input" className="form-label">
-                            Arrival Date <span className="req">*</span>
-                          </label>
-                          <input
-                            id="arrival-input"
-                            type="date"
-                            className="form-input"
-                            value={profile.arrival_date || ""}
-                            onChange={(e) => setProfile({ ...profile, arrival_date: e.target.value || null })}
-                          />
+                    {/* Occupation Pills */}
+                    <div className="chat-inline-field">
+                      <label>Status / Pekerjaan Utama:</label>
+                      <div className="chat-pills-row">
+                        <button
+                          type="button"
+                          className={`chat-pill-btn ${profile.occupation === "STUDENT" ? "active" : ""}`}
+                          onClick={() => setProfile({ ...profile, occupation: "STUDENT" })}
+                        >
+                          🎓 Pelajar / Mahasiswa (Student)
+                        </button>
+                        <button
+                          type="button"
+                          className={`chat-pill-btn ${profile.occupation === "EMPLOYEE" ? "active" : ""}`}
+                          onClick={() => setProfile({ ...profile, occupation: "EMPLOYEE" })}
+                        >
+                          💼 Profesional / Pekerja
+                        </button>
+                        <button
+                          type="button"
+                          className={`chat-pill-btn ${profile.occupation === "OTHER" ? "active" : ""}`}
+                          onClick={() => setProfile({ ...profile, occupation: "OTHER" })}
+                        >
+                          🧳 Working Holiday / Lainnya
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Visa Dates (if Abroad) */}
+                    {profile.residence_context === "ABROAD" && isAU && (
+                      <div style={{ background: "#f8fafb", padding: "14px", borderRadius: "14px", border: "1px solid #e5eff2", marginBottom: "16px" }}>
+                        <div style={{ fontSize: "12px", fontWeight: "750", color: "#16584a", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                          <Shield size={14} /> Tanggal Kedatangan & Masa Berlaku Visa (Kepatuhan Condition 8501):
                         </div>
-                        <div className="form-group">
-                          <label htmlFor="visa-input" className="form-label">
-                            Visa Expiry Date <span className="req">*</span>
-                          </label>
-                          <input
-                            id="visa-input"
-                            type="date"
-                            className="form-input"
-                            value={profile.visa_expiry_date || ""}
-                            onChange={(e) => setProfile({ ...profile, visa_expiry_date: e.target.value || null })}
-                          />
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                          <div>
+                            <label style={{ fontSize: "11px", color: "#556c80" }}>Tanggal Kedatangan di Australia:</label>
+                            <input
+                              type="date"
+                              className="chat-text-input"
+                              value={tempArrivalDate}
+                              onChange={(e) => setTempArrivalDate(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: "11px", color: "#556c80" }}>Tanggal Berakhir Visa:</label>
+                            <input
+                              type="date"
+                              className="chat-text-input"
+                              value={tempVisaExpiry}
+                              onChange={(e) => setTempVisaExpiry(e.target.value)}
+                            />
+                          </div>
                         </div>
                       </div>
                     )}
+
+                    {error && (
+                      <div style={{ color: "#d93838", fontSize: "12.5px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <AlertCircle size={15} /> {error}
+                      </div>
+                    )}
+
+                    <button type="button" className="chat-submit-btn" onClick={handleSubmitStep2}>
+                      Lanjut ke Tanggungan Keluarga <ArrowRight size={15} />
+                    </button>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: Dependents */}
-            {step === 3 && (
-              <div className="step-content">
-                <div className="wizard-header">
-                  <h1>Who is covered under your protection?</h1>
-                  <p>
-                    Select any family members or dependents who will rely on this coverage with you.
-                    (Select &quot;None&quot; if this policy covers only yourself).
-                  </p>
-                </div>
-
-                <div className="step-body">
-                  <div className="option-grid two-cols">
-                    {DEPENDENT_OPTIONS.map((opt) => {
-                      const isSelected = (profile.dependents || []).includes(opt.id);
-                      return (
-                        <button
-                          type="button"
-                          key={opt.id}
-                          className={`selectable-card ${isSelected ? "selected" : ""}`}
-                          onClick={() => toggleDependent(opt.id)}
-                        >
-                          <div className="selectable-card-content">
-                            <span className="selectable-card-title">{opt.label}</span>
-                            <span className="selectable-card-sub">{opt.sub}</span>
-                          </div>
-                          <div className="check-circle">{isSelected && <Check size={14} />}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: Existing Coverage */}
-            {step === 4 && (
-              <div className="step-content">
-                <div className="wizard-header">
-                  <h1>What coverage do you already have?</h1>
-                  <p>
-                    Select all insurance policies or public healthcare plans you currently hold for{" "}
-                    {isAU ? "Australia" : "Indonesia"}.
-                  </p>
-                </div>
-
-                <div className="step-body">
-                  <div className="option-grid two-cols">
-                    {coverageOptions.map((opt) => {
-                      const isSelected = (profile.owned_coverage || []).includes(opt.id);
-                      return (
-                        <button
-                          type="button"
-                          key={opt.id}
-                          className={`selectable-card ${isSelected ? "selected" : ""}`}
-                          onClick={() => toggleCoverage(opt.id)}
-                        >
-                          <div className="selectable-card-content">
-                            <span className="selectable-card-title">{opt.label}</span>
-                            <span className="selectable-card-sub">{opt.sub}</span>
-                          </div>
-                          <div className="check-circle">{isSelected && <Check size={14} />}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 5: Protection Priorities */}
-            {step === 5 && (
-              <div className="step-content">
-                <div className="wizard-header">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <h1>What matters most to you right now?</h1>
-                    <span className="priorities-counter">
-                      {(profile.priorities || []).length} of 2 selected
-                    </span>
-                  </div>
-                  <p>
-                    Choose up to 2 priorities to help INSURRA highlight the most relevant policy clauses.
-                    You can skip this step.
-                  </p>
-                </div>
-
-                <div className="step-body">
-                  <div className="option-grid two-cols">
-                    {PRIORITY_OPTIONS.map((opt) => {
-                      const isSelected = (profile.priorities || []).includes(opt.id);
-                      return (
-                        <button
-                          type="button"
-                          key={opt.id}
-                          className={`selectable-card ${isSelected ? "selected" : ""}`}
-                          onClick={() => togglePriority(opt.id)}
-                        >
-                          <div className="selectable-card-content">
-                            <span className="selectable-card-title">{opt.label}</span>
-                            <span className="selectable-card-sub">{opt.sub}</span>
-                          </div>
-                          <div className="check-circle">{isSelected && <Check size={14} />}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 6: Budget */}
-            {step === 6 && (
-              <div className="step-content">
-                <div className="wizard-header">
-                  <h1>Monthly budget for additional coverage</h1>
-                  <p>
-                    Optional. Helps INSURRA recommend realistic options without exceeding your budget
-                    ({isAU ? "AUD" : "IDR"}).
-                  </p>
-                </div>
-
-                <div className="step-body">
-                  <div className="option-grid two-cols">
-                    {budgetOptions.map((opt) => {
-                      const isSelected = profile.budget_range === opt.label;
-                      return (
-                        <button
-                          type="button"
-                          key={opt.id}
-                          className={`selectable-card ${isSelected ? "selected" : ""}`}
-                          onClick={() => setProfile({ ...profile, budget_range: opt.label })}
-                        >
-                          <div className="selectable-card-content">
-                            <span className="selectable-card-title">{opt.label}</span>
-                            <span className="selectable-card-sub">{opt.sub}</span>
-                          </div>
-                          <div className="check-circle">{isSelected && <Check size={14} />}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Wizard Action Buttons */}
-          <div className="wizard-actions">
-            <div className="action-left">
-              {step > 1 && (
-                <button
-                  type="button"
-                  className="wizard-btn secondary"
-                  onClick={handlePrevStep}
-                  disabled={busy}
-                >
-                  <ArrowLeft size={16} /> Back
-                </button>
-              )}
-            </div>
-
-            <div className="action-right">
-              {(step === 5 || step === 6) && (
-                <button
-                  type="button"
-                  className="wizard-btn ghost"
-                  onClick={() => {
-                    if (step === 5) {
-                      setProfile({ ...profile, priorities: [] });
-                      setStep(6);
-                    } else if (step === 6) {
-                      setProfile({ ...profile, budget_range: "No additional budget" });
-                      void completeOnboarding({ ...profile, budget_range: "No additional budget" });
-                    }
-                  }}
-                  disabled={busy}
-                >
-                  Skip
-                </button>
-              )}
-
-              <button
-                type="button"
-                className="wizard-btn primary"
-                onClick={handleNextStep}
-                disabled={busy}
-              >
-                {busy ? (
-                  "Saving…"
-                ) : step === 6 ? (
-                  <>
-                    Complete Profile <Check size={16} />
-                  </>
-                ) : (
-                  <>
-                    Continue <ArrowRight size={16} />
-                  </>
                 )}
-              </button>
-            </div>
+              </div>
+            )}
+
+            {/* User Response to Step 2 */}
+            {activeStep > 2 && (
+              <div className="chat-turn user-turn">
+                <div className="user-message-row">
+                  <div className="user-bubble">
+                    <span>
+                      📍 {profile.city}, {isAU ? "Australia 🇦🇺" : "Indonesia 🇮🇩"} · {profile.occupation}
+                    </span>
+                    {profile.residence_context === "ABROAD" && profile.visa_expiry_date && (
+                      <span className="user-subtext">Visa aktif hingga: {profile.visa_expiry_date}</span>
+                    )}
+                    <div className="user-bubble-actions">
+                      <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(2)}>
+                        <Edit2 size={11} /> Ubah
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ---------------- TURN 3: DEPENDENTS ---------------- */}
+            {activeStep >= 3 && (
+              <div className="chat-turn assistant-turn">
+                <div className="assistant-message-row">
+                  <div className="assistant-avatar-wrap">
+                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                  </div>
+                  <div className="assistant-bubble">
+                    <p>
+                      Dicatat! Sekarang mengenai orang terdekatmu. <strong>Siapa saja yang ikut dilindungi dalam tanggunganmu?</strong>
+                    </p>
+                    <p>
+                      Kamu bisa memilih lebih dari satu jika ada pasangan, anak, atau orang tua yang tinggal bersamamu.
+                    </p>
+                  </div>
+                </div>
+
+                {activeStep === 3 && (
+                  <div className="chat-interactive-box">
+                    <div className="interactive-title">Pilih Anggota Keluarga yang Dilindungi:</div>
+                    <div className="chat-options-grid">
+                      {DEPENDENT_OPTIONS.map((dep) => {
+                        const isSelected = (profile.dependents || []).includes(dep.id);
+                        return (
+                          <button
+                            key={dep.id}
+                            type="button"
+                            className={`chat-option-card ${isSelected ? "selected" : ""}`}
+                            onClick={() => toggleDependent(dep.id)}
+                          >
+                            <span className="chat-option-icon">
+                              {dep.id === "None" ? "👤" : dep.id === "Spouse" ? "💍" : dep.id === "Children" ? "👶" : "👵"}
+                            </span>
+                            <div className="chat-option-text">
+                              <h4>{dep.label}</h4>
+                              <p>{dep.sub}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ marginTop: "16px" }}>
+                      <button type="button" className="chat-submit-btn" onClick={handleSubmitStep3}>
+                        Konfirmasi Tanggungan <ArrowRight size={15} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* User Response to Step 3 */}
+            {activeStep > 3 && (
+              <div className="chat-turn user-turn">
+                <div className="user-message-row">
+                  <div className="user-bubble">
+                    <span>
+                      👨‍👩‍👧 {(profile.dependents || []).map((d) => (d === "None" ? "Hanya saya sendiri" : d === "Spouse" ? "Pasangan" : d === "Children" ? "Anak" : "Orang tua")).join(", ")}
+                    </span>
+                    <div className="user-bubble-actions">
+                      <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(3)}>
+                        <Edit2 size={11} /> Ubah
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ---------------- TURN 4: EXISTING COVERAGE ---------------- */}
+            {activeStep >= 4 && (
+              <div className="chat-turn assistant-turn">
+                <div className="assistant-message-row">
+                  <div className="assistant-avatar-wrap">
+                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                  </div>
+                  <div className="assistant-bubble">
+                    <p>
+                      Sip! Berikutnya, <strong>asuransi apa saja yang sudah kamu miliki saat ini?</strong>
+                    </p>
+                    <p>
+                      Pilih semua yang sedang aktif. Bila kamu belum yakin nomor atau jenis polisnya, pilih <em>Belum Yakin</em> dan Insurra akan membantumu memeriksa berkas nanti.
+                    </p>
+                  </div>
+                </div>
+
+                {activeStep === 4 && (
+                  <div className="chat-interactive-box">
+                    <div className="interactive-title">Pilih Asuransi yang Sudah Ada:</div>
+                    <div className="chat-options-grid">
+                      {(isAU ? COVERAGE_OPTIONS_AU : COVERAGE_OPTIONS_ID).map((cov) => {
+                        const isSelected = (profile.owned_coverage || []).includes(cov.id);
+                        return (
+                          <button
+                            key={cov.id}
+                            type="button"
+                            className={`chat-option-card ${isSelected ? "selected" : ""}`}
+                            onClick={() => toggleCoverage(cov.id)}
+                          >
+                            <span className="chat-option-icon">
+                              {cov.id === "OSHC" || cov.id === "BPJS" ? "🛡️" : cov.id === "EMPLOYER" ? "🏢" : cov.id === "TRAVEL" ? "✈️" : cov.id === "NOT_SURE" ? "❓" : "🩺"}
+                            </span>
+                            <div className="chat-option-text">
+                              <h4>{cov.label}</h4>
+                              <p>{cov.sub}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ marginTop: "16px" }}>
+                      <button type="button" className="chat-submit-btn" onClick={handleSubmitStep4}>
+                        Simpan Asuransi & Lanjut <ArrowRight size={15} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* User Response to Step 4 */}
+            {activeStep > 4 && (
+              <div className="chat-turn user-turn">
+                <div className="user-message-row">
+                  <div className="user-bubble">
+                    <span>
+                      🛡️ {(profile.owned_coverage || []).join(", ")}
+                    </span>
+                    <div className="user-bubble-actions">
+                      <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(4)}>
+                        <Edit2 size={11} /> Ubah
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ---------------- TURN 5: PRIORITIES ---------------- */}
+            {activeStep >= 5 && (
+              <div className="chat-turn assistant-turn">
+                <div className="assistant-message-row">
+                  <div className="assistant-avatar-wrap">
+                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                  </div>
+                  <div className="assistant-bubble">
+                    <p>
+                      Hampir selesai! <strong>Apa prioritas utama kamu saat membutuhkan proteksi kesehatan?</strong>
+                    </p>
+                    <p>Pilih hingga 2 hal yang paling krusial untukmu:</p>
+                  </div>
+                </div>
+
+                {activeStep === 5 && (
+                  <div className="chat-interactive-box">
+                    <div className="interactive-title">Pilih Hingga 2 Prioritas:</div>
+                    <div className="chat-options-grid">
+                      {PRIORITY_OPTIONS.map((prio) => {
+                        const isSelected = (profile.priorities || []).includes(prio.id);
+                        return (
+                          <button
+                            key={prio.id}
+                            type="button"
+                            className={`chat-option-card ${isSelected ? "selected" : ""}`}
+                            onClick={() => togglePriority(prio.id)}
+                          >
+                            <span className="chat-option-icon">
+                              {prio.id === "low_cost" ? "💰" : prio.id === "speed" ? "⚡" : prio.id === "choice" ? "🏥" : "❤️"}
+                            </span>
+                            <div className="chat-option-text">
+                              <h4>{prio.label}</h4>
+                              <p>{prio.sub}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ marginTop: "16px" }}>
+                      <button type="button" className="chat-submit-btn" onClick={handleSubmitStep5}>
+                        Lanjut ke Anggaran <ArrowRight size={15} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* User Response to Step 5 */}
+            {activeStep > 5 && (
+              <div className="chat-turn user-turn">
+                <div className="user-message-row">
+                  <div className="user-bubble">
+                    <span>
+                      🎯 {(profile.priorities || []).map((p) => PRIORITY_OPTIONS.find((opt) => opt.id === p)?.label || p).join(", ")}
+                    </span>
+                    <div className="user-bubble-actions">
+                      <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(5)}>
+                        <Edit2 size={11} /> Ubah
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ---------------- TURN 6: BUDGET RANGE ---------------- */}
+            {activeStep >= 6 && (
+              <div className="chat-turn assistant-turn">
+                <div className="assistant-message-row">
+                  <div className="assistant-avatar-wrap">
+                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                  </div>
+                  <div className="assistant-bubble">
+                    <p>
+                      Pertanyaan terakhir! <strong>Berapa perkiraan anggaran bulanan tambahan yang ingin kamu alokasikan</strong> untuk menutup celah perlindungan kesehatan?
+                    </p>
+                  </div>
+                </div>
+
+                {activeStep === 6 && (
+                  <div className="chat-interactive-box">
+                    <div className="interactive-title">Pilih Kisaran Anggaran Bulanan:</div>
+                    <div className="chat-options-grid">
+                      {(isAU ? BUDGET_OPTIONS_AU : BUDGET_OPTIONS_ID).map((b) => {
+                        const isSelected = profile.budget_range === b.label;
+                        return (
+                          <button
+                            key={b.id}
+                            type="button"
+                            className={`chat-option-card ${isSelected ? "selected" : ""}`}
+                            onClick={() => {
+                              setProfile({ ...profile, budget_range: b.label });
+                            }}
+                          >
+                            <span className="chat-option-icon">💵</span>
+                            <div className="chat-option-text">
+                              <h4>{b.label}</h4>
+                              <p>{b.sub}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ marginTop: "16px" }}>
+                      <button
+                        type="button"
+                        className="chat-submit-btn"
+                        onClick={() => void handleSelectBudget(profile.budget_range || (isAU ? "$50 - $150 / month" : "Rp 250.000 - Rp 750.000 / month"))}
+                      >
+                        Selesaikan Pemetaan & Rekomendasi <Sparkles size={15} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* User Response to Step 6 */}
+            {activeStep >= 7 && (
+              <div className="chat-turn user-turn">
+                <div className="user-message-row">
+                  <div className="user-bubble">
+                    <span>💳 {profile.budget_range}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ---------------- TYPING ANIMATION ---------------- */}
+            {isTyping && (
+              <div className="chat-turn assistant-turn">
+                <div className="assistant-message-row">
+                  <div className="assistant-avatar-wrap">
+                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                  </div>
+                  <div className="typing-bubble">
+                    <div className="typing-dot" />
+                    <div className="typing-dot" />
+                    <div className="typing-dot" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ---------------- TURN 7: COMPLETION & SUGGESTED DOCS ---------------- */}
+            {isCompleted && (
+              <div className="chat-turn assistant-turn">
+                <div className="assistant-message-row">
+                  <div className="assistant-avatar-wrap">
+                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                  </div>
+                  <div className="assistant-bubble" style={{ background: "#ffffff", border: "1.5px solid #a4ddce" }}>
+                    <p>
+                      🎉 <strong>Profil Perlindunganmu Berhasil Dipetakan!</strong>
+                    </p>
+                    <p>
+                      Semua data telah tersimpan aman di database. Berdasarkan status domisili di <strong>{profile.city}, {isAU ? "Australia" : "Indonesia"}</strong>, berikut adalah berkas dokumen yang disarankan untuk diunggah agar Insurra bisa menganalisis isi polis, limit, dan masa tunggu secara otomatis:
+                    </p>
+
+                    {/* Suggested Docs List inside Chat Bubble */}
+                    <div className="chat-docs-preview-list" style={{ marginTop: "14px" }}>
+                      {suggestedDocsList.map((doc) => (
+                        <div key={doc.id} className="chat-doc-preview-item">
+                          <div>
+                            <span className={`doc-card-badge ${doc.badgeType}`} style={{ marginBottom: "4px" }}>
+                              {doc.badge}
+                            </span>
+                            <h5>{doc.title}</h5>
+                            <p>{doc.description}</p>
+                          </div>
+                          <Link
+                            href={`/documents?kind=${doc.kind}`}
+                            className="chat-submit-btn"
+                            style={{ padding: "8px 14px", fontSize: "12px", whiteSpace: "nowrap" }}
+                          >
+                            Unggah <ArrowRight size={13} />
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="chat-completion-actions">
+                      <Link href="/dashboard" className="chat-submit-btn">
+                        Lanjut ke Dashboard <ArrowRight size={15} />
+                      </Link>
+                      <Link href="/documents" className="onboarding-exit-btn">
+                        Buka Ruang Dokumen (/documents)
+                      </Link>
+                      <button type="button" className="onboarding-exit-btn" onClick={() => jumpToStep(1)}>
+                        Ulangi Pertanyaan
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </section>
-      </section>
-    </main>
+
+        {/* Right Column: Live Protection Profile Sidebar */}
+        <aside className="live-profile-card">
+          <div className="live-card-head">
+            <div className="live-user-snippet">
+              <div className="live-user-avatar">
+                {userName.charAt(0).toUpperCase()}
+              </div>
+              <div className="live-user-text">
+                <h3>{userName}</h3>
+                <p>{account?.email || "Akun Terverifikasi"}</p>
+              </div>
+            </div>
+            <span className={`badge ${isCompleted ? "success" : "neutral"}`}>
+              {isCompleted ? "Lengkap" : "Draft"}
+            </span>
+          </div>
+
+          {/* Completion Progress Gauge */}
+          <div className="live-completion-meter">
+            <div className="meter-header">
+              <span>Kelengkapan Konteks</span>
+              <strong>{isCompleted ? "100%" : `${completionPct}%`}</strong>
+            </div>
+            <div className="meter-bar-track">
+              <div className="meter-bar-fill" style={{ width: `${isCompleted ? 100 : Math.max(16, completionPct)}%` }} />
+            </div>
+          </div>
+
+          {/* Real-time Profile Facts */}
+          <div className="live-facts-list">
+            <div className="live-fact-item">
+              <span className="live-fact-label">
+                <Globe2 size={15} /> Wilayah Domisili
+              </span>
+              <span className="live-fact-val">
+                {profile.residence_context === "ABROAD" ? "Luar Negeri (AU)" : "Domestik (ID)"}
+              </span>
+            </div>
+
+            <div className="live-fact-item">
+              <span className="live-fact-label">
+                <MapPin size={15} /> Kota & Negara
+              </span>
+              <span className="live-fact-val">
+                {profile.city || "-"}{isAU ? " 🇦🇺" : " 🇮🇩"}
+              </span>
+            </div>
+
+            <div className="live-fact-item">
+              <span className="live-fact-label">
+                <Briefcase size={15} /> Status / Profesi
+              </span>
+              <span className="live-fact-val">
+                {profile.occupation || "-"}
+              </span>
+            </div>
+
+            <div className="live-fact-item">
+              <span className="live-fact-label">
+                <Users size={15} /> Tanggungan
+              </span>
+              <span className="live-fact-val">
+                {(profile.dependents || []).length ? (profile.dependents || []).join(", ") : "-"}
+              </span>
+            </div>
+
+            <div className="live-fact-item">
+              <span className="live-fact-label">
+                <ShieldCheck size={15} /> Asuransi Dimiliki
+              </span>
+              <span className="live-fact-val">
+                {(profile.owned_coverage || []).length ? (profile.owned_coverage || []).join(", ") : "-"}
+              </span>
+            </div>
+
+            <div className="live-fact-item">
+              <span className="live-fact-label">
+                <Heart size={15} /> Prioritas
+              </span>
+              <span className="live-fact-val">
+                {(profile.priorities || []).length ? (profile.priorities || []).join(", ") : "-"}
+              </span>
+            </div>
+
+            <div className="live-fact-item">
+              <span className="live-fact-label">
+                <Wallet size={15} /> Anggaran
+              </span>
+              <span className="live-fact-val">
+                {profile.budget_range || "-"}
+              </span>
+            </div>
+          </div>
+
+          {/* Footer note */}
+          <div className="live-card-footer">
+            <span>Privasi aman & data terenkripsi</span>
+            <span className="autosave-pill">
+              <Check size={12} /> Real-time
+            </span>
+          </div>
+        </aside>
+      </main>
+    </div>
   );
 }
 
 export default function AccountOnboarding() {
   return (
-    <Suspense
-      fallback={
-        <main className="onboarding-container" style={{ display: "grid", placeItems: "center", minHeight: "100svh" }}>
-          <p style={{ color: "#5b7182", fontWeight: 700 }}>Preparing your context…</p>
-        </main>
-      }
-    >
+    <Suspense fallback={<div className="narrow-page"><p>Memuat pendamping onboarding…</p></div>}>
       <AccountOnboardingContent />
     </Suspense>
   );
