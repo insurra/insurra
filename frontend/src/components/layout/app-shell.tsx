@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   ArrowLeftRight,
@@ -10,71 +11,111 @@ import {
   FileText,
   HeartPulse,
   LayoutDashboard,
+  LogOut,
   MessageSquareText,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
+  LockKeyhole,
+  Wallet,
+  Users,
 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { href: "/dashboard", label: "Ringkasan", icon: LayoutDashboard },
-  { href: "/documents", label: "Dokumen saya", icon: FileText },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/documents", label: "My Documents", icon: FileText },
   {
     href: "/ask-policy",
-    label: "Tanya polis",
+    label: "Ask Insurra",
     icon: MessageSquareText,
     soon: true,
   },
   {
     href: "/coverage",
-    label: "Cek perlindungan",
+    label: "Coverage Needs",
     icon: ShieldCheck,
     soon: true,
   },
-  { href: "/care", label: "Navigasi layanan", icon: HeartPulse, soon: true },
+  { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
   {
     href: "/claims",
-    label: "Persiapan klaim",
+    label: "Claims Center",
     icon: ClipboardCheck,
     soon: true,
   },
 ];
 
+const accountNavigation = [
+  { href: "/account", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/onboarding", label: "User Context", icon: ClipboardCheck },
+  { href: "/documents", label: "My Documents", icon: FileText },
+  { href: "/completeness", label: "Completeness", icon: ShieldCheck },
+  { href: "/policies", label: "Policy Wallet", icon: Wallet },
+  { href: "/family", label: "Family Members", icon: Users },
+  { href: "/settings/privacy", label: "Settings & Privacy", icon: LockKeyhole },
+];
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const publicPage = pathname === "/" || pathname === "/login" || pathname === "/auth/callback";
+  const publicPage =
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/auth" ||
+    pathname === "/onboarding" ||
+    pathname === "/account/onboarding" ||
+    pathname === "/auth/callback";
   if (publicPage) return <>{children}</>;
   return <PrivateShell pathname={pathname}>{children}</PrivateShell>;
 }
 
-function PrivateShell({ pathname, children }: { pathname: string; children: React.ReactNode }) {
-  const { data, loading, error } = useSession();
-  const { account } = useAuth();
+function PrivateShell({
+  pathname,
+  children,
+}: {
+  pathname: string;
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const { data, loading, error, clearSession } = useSession();
+  const { account, token, logout } = useAuth();
+  const accountMode =
+    Boolean(token && account) ||
+    pathname.startsWith("/account") ||
+    pathname === "/completeness" ||
+    pathname === "/settings/privacy" ||
+    pathname === "/policies" ||
+    pathname === "/family";
+
+  const items = accountMode ? accountNavigation : navigation;
   const pageTitle =
-    navigation.find((item) => item.href === pathname)?.label ??
+    items.find((item) => item.href === pathname)?.label ??
     (pathname === "/audit"
-      ? "Riwayat aktivitas"
+      ? "Audit History"
       : pathname === "/onboarding"
-        ? "Privasi & persetujuan"
-        : "Selamat datang");
+      ? "User Context"
+      : "Welcome");
+
   return (
     <div className="app-frame">
       <a className="skip-link" href="#main-content">
-        Langsung ke konten
+        Skip to content
       </a>
       <aside className="sidebar">
         <Link href="/" className="brand">
-          <span className="brand-mark">
-            <ShieldCheck size={25} strokeWidth={1.8} />
-          </span>
-          insurra<span className="brand-dot">.</span>
+          <Image
+            src="/Inssura%20Kangaroo%20Shield%20Logo.png"
+            width={130}
+            height={58}
+            alt="Insurra"
+            className="brand-image"
+          />
         </Link>
-        <div className="workspace-label">PENDAMPING ASURANSI ANDA</div>
-        <nav aria-label="Navigasi utama" className="main-nav">
-          {navigation.map(({ href, label, icon: Icon, soon }) => (
+        <div className="workspace-label">YOUR INSURANCE COMPANION</div>
+        <nav aria-label="Main Navigation" className="main-nav">
+          {items.map(({ href, label, icon: Icon, ...rest }) => (
             <Link
               key={href}
               href={href}
@@ -83,100 +124,177 @@ function PrivateShell({ pathname, children }: { pathname: string; children: Reac
             >
               <Icon size={19} />
               <span>{label}</span>
-              {soon && (
-                <span className="nav-dot" aria-label="Fase berikutnya" />
+              {"soon" in rest && Boolean(rest.soon) && (
+                <span className="nav-dot" aria-label="Upcoming phase" />
               )}
             </Link>
           ))}
-          <Link
-            href="/audit"
-            aria-current={pathname === "/audit" ? "page" : undefined}
-            className={cn(
-              "nav-item mobile-utility",
-              pathname === "/audit" && "active",
-            )}
-          >
-            <Activity size={18} />
-            Riwayat aktivitas
-          </Link>
-          <Link
-            href="/onboarding"
-            aria-current={pathname === "/onboarding" ? "page" : undefined}
-            className={cn(
-              "nav-item mobile-utility",
-              pathname === "/onboarding" && "active",
-            )}
-          >
-            <SlidersHorizontal size={18} />
-            Privasi & persetujuan
-          </Link>
+          {!accountMode && (
+            <Link
+              href="/audit"
+              aria-current={pathname === "/audit" ? "page" : undefined}
+              className={cn(
+                "nav-item mobile-utility",
+                pathname === "/audit" && "active"
+              )}
+            >
+              <Activity size={18} />
+              Audit History
+            </Link>
+          )}
+          {!accountMode && (
+            <Link
+              href="/onboarding"
+              aria-current={pathname === "/onboarding" ? "page" : undefined}
+              className={cn(
+                "nav-item mobile-utility",
+                pathname === "/onboarding" && "active"
+              )}
+            >
+              <SlidersHorizontal size={18} />
+              Privacy & Consent
+            </Link>
+          )}
         </nav>
         <div className="sidebar-bottom">
           <div className="help-card">
             <Sparkles size={21} />
-            <strong>Kenali perlindunganmu.</strong>
-            <p>Satu tempat untuk memahami asuransi, tanpa tebakan.</p>
-            <Link href="/onboarding">
-              Atur persetujuan <ArrowUpRight size={15} />
+            <strong>Understand your coverage.</strong>
+            <p>One place for insurance clarity, backed by document evidence.</p>
+            <Link href={accountMode ? "/settings/privacy" : "/onboarding"}>
+              Manage Consent <ArrowUpRight size={15} />
             </Link>
           </div>
-          <Link
-            className={cn("nav-item", pathname === "/audit" && "active")}
-            href="/audit"
-          >
-            <Activity size={18} />
-            Riwayat aktivitas
-          </Link>
-          <Link
-            className={cn("nav-item", pathname === "/onboarding" && "active")}
-            href="/onboarding"
-          >
-            <SlidersHorizontal size={18} />
-            Privasi & persetujuan
-          </Link>
+          {!accountMode && (
+            <Link
+              className={cn("nav-item", pathname === "/audit" && "active")}
+              href="/audit"
+            >
+              <Activity size={18} />
+              Audit History
+            </Link>
+          )}
+          {!accountMode && (
+            <Link
+              className={cn("nav-item", pathname === "/onboarding" && "active")}
+              href="/onboarding"
+            >
+              <SlidersHorizontal size={18} />
+              Privacy & Consent
+            </Link>
+          )}
           <div className="sidebar-foot">
-            <span className="status-dot" /> DEMO SINTETIS <span>v0.1</span>
+            <span className="status-dot" />{" "}
+            {accountMode ? "AUTHENTICATED ACCOUNT" : "SYNTHETIC DEMO"}{" "}
+            <span>v0.2</span>
           </div>
         </div>
       </aside>
       <div className="app-column">
         <header className="topbar">
           <div className="breadcrumb">
-            Ruang pribadi <span>/</span> <strong>{pageTitle}</strong>
+            Workspace <span>/</span> <strong>{pageTitle}</strong>
           </div>
           <div className="topbar-right">
-            <span className="demo-badge">DEMO · FASE 1</span>
-            <Link href="/" className="persona-switch">
-              <ArrowLeftRight size={15} />
-              <span>Ganti persona</span>
-            </Link>
-            <div
-              className="avatar small"
-              aria-label={account?.display_name ?? data?.profile.display_name ?? "Demo"}
-            >
-              {(account?.display_name ?? data?.profile.display_name ?? "D").slice(0, 1)}
-            </div>
+            <span className="demo-badge">
+              {accountMode ? "AUTHENTICATED" : "DEMO SESSION"}
+            </span>
+
+            {accountMode ? (
+              <Link
+                href="/onboarding?mode=edit"
+                className="topbar-profile-btn"
+                title="My Profile"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  textDecoration: "none",
+                  padding: "4px 10px 4px 4px",
+                  borderRadius: 999,
+                  background: "#f0f6f8",
+                  border: "1px solid #dce7eb",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <div
+                  className="avatar small"
+                  style={{ margin: 0 }}
+                  aria-label={account?.display_name ?? "User"}
+                >
+                  {(account?.display_name ?? "U").slice(0, 1)}
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 750, color: "#19354b" }}>
+                  My Profile
+                </span>
+              </Link>
+            ) : (
+              <div
+                className="avatar small"
+                title={data?.profile.display_name ?? "User"}
+                aria-label={data?.profile.display_name ?? "User"}
+              >
+                {(data?.profile.display_name ?? "U").slice(0, 1)}
+              </div>
+            )}
+
+            {accountMode ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  await logout();
+                  router.push("/");
+                }}
+                className="topbar-logout-btn"
+                title="Log out of account"
+              >
+                <LogOut size={14} />
+                <span>Log out</span>
+              </button>
+            ) : (
+              <div className="demo-topbar-actions">
+                <Link href="/" className="persona-switch">
+                  <ArrowLeftRight size={14} />
+                  <span>Switch Persona</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearSession();
+                    router.push("/");
+                  }}
+                  className="topbar-logout-btn"
+                  title="Exit demo session"
+                >
+                  <LogOut size={14} />
+                  <span>Exit Demo</span>
+                </button>
+              </div>
+            )}
           </div>
         </header>
         <main id="main-content" className="main-content">
-          {error && (
+          {!accountMode && error && (
             <div role="alert" className="alert error">
               {error}
             </div>
           )}
-          {loading && (
+          {!accountMode && loading && (
             <div className="loading-bar" role="status">
-              Menghubungkan sesi…
+              Connecting session...
             </div>
           )}
           {children}
         </main>
         <footer className="page-footer">
           <span>
-            <ShieldCheck size={14} /> Data demo sintetis. Bukan nasihat medis
-            atau hukum.
+            <ShieldCheck size={14} />{" "}
+            {accountMode
+              ? "Your data remains under your explicit control."
+              : "Synthetic demo persona."}{" "}
+            Not medical or legal advice.
           </span>
-          <span>AI Insurance Companion · Phase 1</span>
+          <span>Insurra AI Companion</span>
         </footer>
       </div>
     </div>

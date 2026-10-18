@@ -17,12 +17,23 @@ from sqlalchemy import select
 
 from app.core.dependencies import DB
 from app.core.errors import AppError
-from app.models import AccountRow, AccountSessionRow, OAuthIdentityRow
+from app.models import AccountProfileRow, AccountRow, AccountSessionRow, OAuthIdentityRow
 from app.schemas.actor import Actor, ActorType
-from app.schemas.foundation import AccountSummary
+from app.schemas.foundation import (
+    AccountSummary,
+    AuthMessage,
+    AuthSession,
+    EmailRequest,
+    LoginRequest,
+    RegisterRequest,
+    ResetPasswordRequest,
+    VerificationRequest,
+)
+from app.services.account_access import active_account
 
 public_router = APIRouter(prefix="/auth", tags=["Authentication"])
 api_router = APIRouter(prefix="/auth", tags=["Authentication"])
+account_auth_router = APIRouter(prefix="/account/auth", tags=["Account Authentication"])
 
 STATE_COOKIE = "insurra_oauth_state"
 VERIFIER_COOKIE = "insurra_oauth_verifier"
@@ -47,13 +58,46 @@ def _oauth_settings(request: Request):
     return settings
 
 
-def _account_summary(account: AccountRow) -> AccountSummary:
+def _hash_password(password: str) -> str:
+    salt = secrets.token_bytes(16)
+    iterations = 310_000
+    key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, iterations)
+    return f"pbkdf2_sha256${iterations}${salt.hex()}${key.hex()}"
+
+
+def _verify_password(password: str, hashed: str) -> bool:
+    try:
+        parts = hashed.split("$")
+        if len(parts) != 4 or parts[0] != "pbkdf2_sha256":
+            return False
+        iterations = int(parts[1])
+        salt = bytes.fromhex(parts[2])
+        expected_key = bytes.fromhex(parts[3])
+        key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, iterations)
+        return secrets.compare_digest(key, expected_key)
+    except Exception:
+        return False
+
+
+def _as_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC)
+
+
+def _account_summary(account: AccountRow, db: DB | None = None) -> AccountSummary:
+    profile_completed = False
+    if db is not None:
+        profile = db.get(AccountProfileRow, account.id)
+        profile_completed = profile.completed if profile else False
     return AccountSummary(
         id=account.id,
         email=account.email,
         display_name=account.display_name,
         avatar_url=account.avatar_url,
         email_verified=account.email_verified,
+        consent_decided=account.consent_decided,
+        profile_completed=profile_completed,
         actor=Actor(actor_type=ActorType.AUTHENTICATED_ACCOUNT, account_id=account.id),
     )
 
@@ -248,39 +292,189 @@ def google_callback(
     return response
 
 
-def _active_account(db: DB, authorization: str | None) -> tuple[AccountSessionRow, AccountRow]:
-    if not authorization or not authorization.startswith("Bearer "):
-        raise AppError(401, "INVALID_ACCOUNT_SESSION", "Silakan masuk untuk melanjutkan.")
-    token = authorization.removeprefix("Bearer ").strip()
-    if not token or len(token) > 256:
-        raise AppError(401, "INVALID_ACCOUNT_SESSION", "Sesi akun tidak valid.")
-    session = db.scalar(
-        select(AccountSessionRow).where(
-            AccountSessionRow.token_hash == hashlib.sha256(token.encode()).hexdigest()
+@account_auth_router.post("/register", response_model=AuthMessage, status_code=201)
+def register(body: RegisterRequest, db: DB):
+    email_clean = str(body.email).strip().lower()
+    existing = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
+    if existing is not None:
+        raise AppError(409, "EMAIL_ALREADY_REGISTERED", "This email is already registered.")
+
+    now = datetime.now(UTC)
+    raw_pw = body.password.get_secret_value()
+    token = secrets.token_urlsafe(32)
+    account = AccountRow(
+        email=email_clean,
+        display_name=email_clean.split("@")[0],
+        email_verified=False,
+        password_hash=_hash_password(raw_pw),
+        verification_token=token,
+        verification_sent_at=now,
+        failed_login_attempts=0,
+        locked_until=None,
+        consent_decided=False,
+        created_at=now,
+        updated_at=now,
+    )
+    db.add(account)
+    db.commit()
+    return AuthMessage(
+        message="Registration successful. Please check your email to verify your account."
+    )
+
+
+@account_auth_router.post("/login", response_model=AuthSession)
+def login(body: LoginRequest, db: DB, request: Request):
+    email_clean = str(body.email).strip().lower()
+    now = datetime.now(UTC)
+    account = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
+    if account is None:
+        raise AppError(401, "INVALID_CREDENTIALS", "Invalid email or password.")
+
+    if account.locked_until is not None:
+        locked_until_utc = _as_utc(account.locked_until)
+        if locked_until_utc > now:
+            retry_after = max(1, int((locked_until_utc - now).total_seconds()))
+            raise AppError(
+                423,
+                "ACCOUNT_LOCKED",
+                "Too many failed login attempts. Please try again in 5 minutes.",
+                {"locked_until": locked_until_utc.isoformat(), "retry_after": retry_after},
+            )
+        account.locked_until = None
+        account.failed_login_attempts = 0
+
+    raw_pw = body.password.get_secret_value()
+    if not account.password_hash or not _verify_password(raw_pw, account.password_hash):
+        account.failed_login_attempts += 1
+        if account.failed_login_attempts >= 5:
+            account.locked_until = now + timedelta(minutes=5)
+            db.commit()
+            raise AppError(
+                423,
+                "ACCOUNT_LOCKED",
+                "Too many failed login attempts. Please try again in 5 minutes.",
+                {"locked_until": account.locked_until.isoformat(), "retry_after": 300},
+            )
+        db.commit()
+        raise AppError(401, "INVALID_CREDENTIALS", "Invalid email or password.")
+
+    if not account.email_verified:
+        raise AppError(403, "EMAIL_NOT_VERIFIED", "Please verify your email before logging in.")
+
+    account.failed_login_attempts = 0
+    account.locked_until = None
+
+    settings = request.app.state.settings
+    access_token = secrets.token_urlsafe(32)
+    expires_at = now + timedelta(days=settings.account_session_ttl_days)
+    db.add(
+        AccountSessionRow(
+            account_id=account.id,
+            token_hash=hashlib.sha256(access_token.encode()).hexdigest(),
+            created_at=now,
+            expires_at=expires_at,
+            revoked_at=None,
         )
     )
+    db.commit()
+    return AuthSession(
+        account=_account_summary(account, db),
+        access_token=access_token,
+        expires_at=expires_at,
+    )
+
+
+@account_auth_router.post("/verify-email", response_model=AuthMessage)
+def verify_email(body: VerificationRequest, db: DB):
+    token = body.token.get_secret_value().strip()
+    account = db.scalar(select(AccountRow).where(AccountRow.verification_token == token))
+    if account is None:
+        raise AppError(400, "INVALID_VERIFICATION_TOKEN", "Invalid or expired verification token.")
+
+    now = datetime.now(UTC)
+    account.email_verified = True
+    account.verification_token = None
+    account.verification_sent_at = None
+    account.updated_at = now
+    db.commit()
+    return AuthMessage(message="Email verified successfully. Please log in.")
+
+
+@account_auth_router.post("/resend-verification", response_model=AuthMessage)
+def resend_verification(body: EmailRequest, db: DB):
+    email_clean = str(body.email).strip().lower()
+    account = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
+    if account is None or account.email_verified:
+        return AuthMessage(
+            message="If the email is registered and unverified, a verification link has been sent."
+        )
+
+    now = datetime.now(UTC)
+    if account.verification_sent_at is not None:
+        diff = (now - _as_utc(account.verification_sent_at)).total_seconds()
+        if diff < 60:
+            retry_after = int(60 - diff)
+            raise AppError(
+                429,
+                "COOLDOWN_ACTIVE",
+                f"Please wait {retry_after} seconds before requesting another verification email.",
+                {"retry_after": retry_after},
+            )
+
+    account.verification_token = secrets.token_urlsafe(32)
+    account.verification_sent_at = now
+    account.updated_at = now
+    db.commit()
+    return AuthMessage(message="Verification email resent successfully.")
+
+
+@account_auth_router.post("/forgot-password", response_model=AuthMessage)
+def forgot_password(body: EmailRequest, db: DB):
+    email_clean = str(body.email).strip().lower()
+    account = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
+    if account is not None and account.password_hash:
+        now = datetime.now(UTC)
+        account.reset_token = secrets.token_urlsafe(32)
+        account.reset_token_expires_at = now + timedelta(hours=1)
+        account.updated_at = now
+        db.commit()
+    return AuthMessage(
+        message="If this email is registered, password reset instructions have been sent."
+    )
+
+
+@account_auth_router.post("/reset-password", response_model=AuthMessage)
+def reset_password(body: ResetPasswordRequest, db: DB):
+    token = body.token.get_secret_value().strip()
+    account = db.scalar(select(AccountRow).where(AccountRow.reset_token == token))
     now = datetime.now(UTC)
     if (
-        session is None
-        or session.revoked_at is not None
-        or session.expires_at.replace(tzinfo=UTC) <= now
+        account is None
+        or account.reset_token_expires_at is None
+        or _as_utc(account.reset_token_expires_at) < now
     ):
-        raise AppError(401, "INVALID_ACCOUNT_SESSION", "Sesi akun tidak valid atau kedaluwarsa.")
-    account = db.get(AccountRow, session.account_id)
-    if account is None:
-        raise AppError(401, "INVALID_ACCOUNT_SESSION", "Sesi akun tidak valid.")
-    return session, account
+        raise AppError(400, "INVALID_RESET_TOKEN", "Password reset link is invalid or has expired.")
+
+    raw_pw = body.password.get_secret_value()
+    account.password_hash = _hash_password(raw_pw)
+    account.reset_token = None
+    account.reset_token_expires_at = None
+    account.failed_login_attempts = 0
+    account.locked_until = None
+    account.updated_at = now
+    db.commit()
+    return AuthMessage(message="Password reset successfully. Please log in with your new password.")
 
 
 @api_router.get("/me", response_model=AccountSummary)
 def account_me(db: DB, authorization: str | None = Header(default=None, max_length=300)):
-    _, account = _active_account(db, authorization)
-    return _account_summary(account)
+    _, account = active_account(db, authorization)
+    return _account_summary(account, db)
 
 
 @api_router.post("/logout", status_code=204)
 def logout(db: DB, authorization: str | None = Header(default=None, max_length=300)):
-    session, _ = _active_account(db, authorization)
+    session, _ = active_account(db, authorization)
     session.revoked_at = datetime.now(UTC)
     db.commit()
     return Response(status_code=204)

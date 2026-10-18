@@ -34,9 +34,9 @@ class RulesEngine:
                 assessment_status=AssessmentStatus.NEEDS_VERIFICATION,
                 gap_periods=[],
                 explanation=(
-                    f"Catatan polis dan dokumen berasal dari {record.country_code}; "
-                    f"konteks profil saat ini {profile.country_code}. "
-                    "Kesesuaian perlindungan belum diverifikasi. Data asal tetap disimpan."
+                    f"Policy and document records come from {record.country_code}, "
+                    f"while the current profile context is {profile.country_code}. "
+                    "Coverage fit is not yet verified. The original data is preserved."
                 ),
             )
         if not applicable_rules:
@@ -44,7 +44,7 @@ class RulesEngine:
                 applicable=False,
                 assessment_status=AssessmentStatus.NOT_APPLICABLE,
                 gap_periods=[],
-                explanation="Tidak ada aturan interval visa yang berlaku pada profil ini.",
+                explanation="No visa interval rule applies to this profile.",
             )
         if len(applicable_rules) != 1:
             return VisaCoverageAssessment(
@@ -66,9 +66,9 @@ class RulesEngine:
         end: date | None = getattr(profile, rule.parameters.end_field)
         policies = [p for p in record.policies if p.policy_type in rule.parameters.policy_types]
         explanation = (
-            "Perhitungan interval menggunakan tanggal akhir inklusif. "
-            "Hasil ini bukan penetapan pelanggaran visa; "
-            "verifikasi aturan dan polis tetap diperlukan."
+            "The interval calculation uses inclusive end dates. "
+            "This result is not a finding of a visa breach; "
+            "the rules and your policy still need to be verified."
         )
         if (
             not start
@@ -80,7 +80,7 @@ class RulesEngine:
                 applicable=True,
                 assessment_status=AssessmentStatus.NEEDS_VERIFICATION,
                 gap_periods=[],
-                explanation="Tanggal atau konteks polis belum lengkap. " + explanation,
+                explanation="Policy dates or context are incomplete. " + explanation,
                 rule_source=source,
             )
         # Union all qualifying coverage intervals, clipped to the required inclusive interval.

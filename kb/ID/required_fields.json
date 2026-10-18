@@ -4,5 +4,19 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
-  "data": []
+  "data": [
+    {"task_code": "outpatient_claim", "field_key": "policyholder", "label": "Policyholder name", "suggested_doc": "policy_booklet"},
+    {"task_code": "outpatient_claim", "field_key": "policy_number", "label": "Policy number", "suggested_doc": "insurance_card"},
+    {"task_code": "outpatient_claim", "field_key": "coverage_start_date", "label": "Coverage start date", "suggested_doc": "policy_booklet"},
+    {"task_code": "outpatient_claim", "field_key": "coverage_end_date", "label": "Coverage end date", "suggested_doc": "policy_booklet"},
+    {"task_code": "outpatient_claim", "field_key": "outpatient_limit", "label": "Outpatient limit", "suggested_doc": "policy_booklet"},
+    {"task_code": "outpatient_claim", "field_key": "claim_mode", "label": "Claim procedure", "suggested_doc": "policy_booklet"},
+    {"task_code": "inpatient_claim", "field_key": "policy_number", "label": "Policy number", "suggested_doc": "insurance_card"},
+    {"task_code": "inpatient_claim", "field_key": "coverage_end_date", "label": "Coverage end date", "suggested_doc": "policy_booklet"},
+    {"task_code": "inpatient_claim", "field_key": "inpatient_limit", "label": "Inpatient limit", "suggested_doc": "policy_booklet"},
+    {"task_code": "bpjs_care", "field_key": "member_number", "label": "BPJS card number", "suggested_doc": "bpjs_card"},
+    {"task_code": "bpjs_care", "field_key": "membership_status", "label": "Membership status", "suggested_doc": "bpjs_card"},
+    {"task_code": "bpjs_care", "field_key": "primary_facility", "label": "Primary healthcare facility", "suggested_doc": "bpjs_card"},
+    {"task_code": "bpjs_care", "field_key": "inpatient_class", "label": "Inpatient care class", "suggested_doc": "bpjs_card"}
+  ]
 }

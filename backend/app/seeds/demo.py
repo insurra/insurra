@@ -32,7 +32,7 @@ def seed_personas(db: Session, fixture_root: Path = ROOT / "fixtures") -> int:
             db.add(
                 PersonaRow(
                     persona_id=folder.name,
-                    description=f"{profile.display_name} · {profile.city} · data sintetis",
+                    description=f"{profile.display_name} · {profile.city} · synthetic data",
                     profile_payload=profile.model_dump(mode="json"),
                     record_payload=record.model_dump(mode="json"),
                 )

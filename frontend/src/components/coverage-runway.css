@@ -1,0 +1,120 @@
+.runway {
+  margin: 0;
+  position: relative;
+}
+.runway-track {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  background: #e8eef2;
+  overflow: visible;
+}
+.runway-seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.runway-seg-covered {
+  border-radius: 999px 0 0 999px;
+  background: #159b83;
+}
+.runway-seg-gap {
+  background: repeating-linear-gradient(
+    -45deg,
+    #f4b860 0 6px,
+    #fbe3bd 6px 12px
+  );
+  border-radius: 0 999px 999px 0;
+}
+.runway-seg-unknown {
+  border-radius: 999px;
+  background: repeating-linear-gradient(-45deg, #dfe6ec 0 6px, #eef2f5 6px 12px);
+}
+.runway-tick {
+  position: absolute;
+  top: -6px;
+  width: 2px;
+  height: 26px;
+  background: #1f2937;
+  border-radius: 2px;
+  transform: translateX(-1px);
+}
+.runway-tick-visa {
+  background: #b7791f;
+}
+.runway-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0 0;
+}
+.runway-legend dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7a89;
+}
+.runway-legend dd {
+  margin: 3px 0 0 15px;
+  font-size: 15px;
+  font-weight: 650;
+  color: #1f2937;
+  font-variant-numeric: tabular-nums;
+}
+.runway-legend > div:last-child {
+  text-align: right;
+}
+.runway-legend > div:last-child dd {
+  margin-left: 0;
+  margin-right: 0;
+  color: #8a5a12;
+}
+.runway-dot {
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+  background: #1f2937;
+}
+.runway-dot-visa {
+  background: #b7791f;
+}
+.runway-caption {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #4b5a68;
+}
+.runway-caption strong {
+  color: #1f2937;
+}
+.runway-key {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.runway-key-gap {
+  background: #f4b860;
+}
+.runway-key-covered {
+  background: #159b83;
+}
+.runway-sample {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7a89;
+}
+.runway-empty p {
+  margin-top: 14px;
+  font-size: 13px;
+  color: #4b5a68;
+}

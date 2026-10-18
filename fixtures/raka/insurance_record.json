@@ -5,8 +5,8 @@
   "policies": [
     {
       "id": "a9af164f-a7ef-51da-92d8-90a922e5ffe4",
-      "provider_name": "Penyedia sintetis (demo)",
-      "policy_name": "OSHC — data sintetis",
+      "provider_name": "Synthetic provider (demo)",
+      "policy_name": "OSHC (synthetic data)",
       "policy_type": "OSHC",
       "policy_number_masked": "DEMO-****",
       "coverage_start_date": "2026-07-01",
@@ -14,7 +14,7 @@
       "coverage_items": [
         {
           "coverage_code": "OUTPATIENT",
-          "benefit_name": "Rawat jalan (belum diverifikasi)",
+          "benefit_name": "Outpatient care (not yet verified)",
           "coverage_status": "UNKNOWN",
           "limit_amount": null,
           "remaining_amount": null,
