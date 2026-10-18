@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
+import { useUserContext } from "@/lib/user-context";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -95,6 +96,7 @@ function PrivateShell({
   const router = useRouter();
   const { data, loading, error, clearSession } = useSession();
   const { account, token, logout } = useAuth();
+  const { residenceCountry, countryFlag } = useUserContext();
   const accountMode =
     Boolean(token && account) ||
     pathname.startsWith("/account") ||
@@ -240,10 +242,10 @@ function PrivateShell({
             Workspace <span>/</span> <strong>{pageTitle}</strong>
           </div>
           <div className="topbar-right" style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            {/* Country Selector as in design */}
-            <div className="figma-topbar-country" title="Active Country Region">
-              <span style={{ fontSize: 15 }}>🇸🇬</span>
-              <span>Singapore</span>
+            {/* Country Selector from Active Context */}
+            <div className="figma-topbar-country" title={`Active Country: ${residenceCountry}`}>
+              <span style={{ fontSize: 15 }}>{countryFlag}</span>
+              <span>{residenceCountry}</span>
               <ChevronDown size={14} color="#64748b" />
             </div>
 
