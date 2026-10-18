@@ -17,8 +17,6 @@ import {
   SlidersHorizontal,
   Sparkles,
   LockKeyhole,
-  Wallet,
-  Users,
 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
@@ -26,17 +24,12 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/documents", label: "My Documents", icon: FileText },
+  { href: "/protection", label: "My Protection", icon: ShieldCheck },
+  { href: "/documents", label: "Documents", icon: FileText },
   {
     href: "/ask-policy",
-    label: "Ask Insurra",
+    label: "Ask INSURRA",
     icon: MessageSquareText,
-    soon: true,
-  },
-  {
-    href: "/coverage",
-    label: "Coverage Needs",
-    icon: ShieldCheck,
     soon: true,
   },
   { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
@@ -46,15 +39,36 @@ const navigation = [
     icon: ClipboardCheck,
     soon: true,
   },
+  {
+    href: "/audit",
+    label: "Activity & Audit",
+    icon: Activity,
+  },
+  { href: "/settings/privacy", label: "Settings & Privacy", icon: LockKeyhole },
 ];
 
 const accountNavigation = [
   { href: "/account", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/onboarding", label: "User Context", icon: ClipboardCheck },
-  { href: "/documents", label: "My Documents", icon: FileText },
-  { href: "/completeness", label: "Completeness", icon: ShieldCheck },
-  { href: "/policies", label: "Policy Wallet", icon: Wallet },
-  { href: "/family", label: "Family Members", icon: Users },
+  { href: "/protection", label: "My Protection", icon: ShieldCheck },
+  { href: "/documents", label: "Documents", icon: FileText },
+  {
+    href: "/ask-policy",
+    label: "Ask INSURRA",
+    icon: MessageSquareText,
+    soon: true,
+  },
+  { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
+  {
+    href: "/claims",
+    label: "Claims Center",
+    icon: ClipboardCheck,
+    soon: true,
+  },
+  {
+    href: "/audit",
+    label: "Activity & Audit",
+    icon: Activity,
+  },
   { href: "/settings/privacy", label: "Settings & Privacy", icon: LockKeyhole },
 ];
 
@@ -90,13 +104,50 @@ function PrivateShell({
     pathname === "/family";
 
   const items = accountMode ? accountNavigation : navigation;
+
+  const isNavActive = (href: string) => {
+    if (href === pathname) return true;
+    if (href === "/protection") {
+      return (
+        pathname === "/protection" ||
+        pathname.startsWith("/policies") ||
+        pathname.startsWith("/completeness") ||
+        pathname.startsWith("/family") ||
+        pathname.startsWith("/coverage") ||
+        pathname.startsWith("/employer-benefits")
+      );
+    }
+    if (href === "/documents") {
+      return pathname === "/documents" || pathname.startsWith("/documents/");
+    }
+    if (href === "/dashboard" || href === "/account") {
+      return pathname === "/dashboard" || pathname === "/account";
+    }
+    return false;
+  };
+
   const pageTitle =
-    items.find((item) => item.href === pathname)?.label ??
-    (pathname === "/audit"
-      ? "Audit History"
+    pathname === "/protection"
+      ? "My Protection"
+      : pathname === "/policies"
+      ? "Policy Wallet"
+      : pathname === "/completeness"
+      ? "Data Completeness"
+      : pathname === "/family"
+      ? "Family Coverage"
+      : pathname === "/documents" || pathname.startsWith("/documents/")
+      ? "Documents"
+      : pathname === "/coverage"
+      ? "Coverage Needs"
+      : pathname === "/employer-benefits"
+      ? "Employer Benefits"
+      : pathname === "/audit"
+      ? "Activity & Audit"
+      : pathname === "/settings/privacy"
+      ? "Settings & Privacy"
       : pathname === "/onboarding"
       ? "User Context"
-      : "Welcome");
+      : items.find((item) => item.href === pathname)?.label ?? "Dashboard";
 
   return (
     <div className="app-frame">
@@ -119,8 +170,8 @@ function PrivateShell({
             <Link
               key={href}
               href={href}
-              aria-current={pathname === href ? "page" : undefined}
-              className={cn("nav-item", pathname === href && "active")}
+              aria-current={isNavActive(href) ? "page" : undefined}
+              className={cn("nav-item", isNavActive(href) && "active")}
             >
               <Icon size={19} />
               <span>{label}</span>
