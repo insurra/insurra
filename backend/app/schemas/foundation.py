@@ -410,6 +410,7 @@ class ClaimCaseStatus(StrEnum):
 class ClaimCaseCreate(Contract):
     path: ShortCode
     coverage_id: UUID
+    comparison_id: UUID | None = None
 
 
 class ClaimCaseCreated(Contract):

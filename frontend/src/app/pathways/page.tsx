@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useWorkspace } from "@/lib/workspace";
+import { PathwayConfirmation } from "@/components/valen/pathway-confirmation";
 import {
   ConsentNotice,
   EmergencyNotice,
@@ -24,6 +25,10 @@ export default function PathwaysPage() {
   const [busy, setBusy] = useState(false);
   const [emergency, setEmergency] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selected, setSelected] = useState<
+    components["schemas"]["PathwayOption"] | null
+  >(null);
+  const [created, setCreated] = useState<string | null>(null);
   const pending = useRef<AbortController | null>(null);
   const country = workspace.summary?.context?.country_code;
   useEffect(() => {
@@ -37,9 +42,19 @@ export default function PathwaysPage() {
       setComplaint("");
       setCity(null);
       setService("");
+      setSelected(null);
+      setCreated(null);
     });
     return () => pending.current?.abort();
   }, [country, workspace.identityKey]);
+  useEffect(() => {
+    pending.current?.abort();
+    queueMicrotask(() => {
+      setResult(null);
+      setSelected(null);
+      setBusy(false);
+    });
+  }, [workspace.summary]);
   if (!workspace.summary) return <WorkspaceState workspace={workspace} />;
   const summary = workspace.summary;
   const enabled = Boolean(
@@ -105,7 +120,31 @@ export default function PathwaysPage() {
   }
   return (
     <div className="vn">
+      {selected && result?.comparison_id && workspace.headers && (
+        <PathwayConfirmation
+          key={`${result.comparison_id}:${selected.pathway_code}`}
+          path={selected}
+          comparisonId={result.comparison_id}
+          headers={workspace.headers}
+          onClose={() => setSelected(null)}
+          onCreated={(id) => {
+            setCreated(id);
+            setSelected(null);
+            setResult(null);
+          }}
+        />
+      )}
       <EmergencyNotice info={summary.emergency} />
+      {created && (
+        <div className="vn-card" role="status">
+          <h2>Kasus klaim dibuat</h2>
+          <p>Status Draft · ID {created}</p>
+          <p>
+            Kasus tersimpan. Kesiapan klaim SC-09 belum tersedia; checklist
+            belum dapat dibuka.
+          </p>
+        </div>
+      )}
       <header>
         <h1>Mau berobat ke mana?</h1>
         <p>{summary.pathway_help}</p>
@@ -310,10 +349,23 @@ export default function PathwaysPage() {
                     </div>
                   ))}
                   <button
-                    disabled
-                    title="Pembuatan kasus sedang diintegrasikan"
+                    disabled={
+                      !path.emergency &&
+                      (!path.coverage_id || !result.comparison_id)
+                    }
+                    title={
+                      !path.coverage_id
+                        ? "Perlindungan aktif perlu dipastikan sebelum membuat kasus"
+                        : undefined
+                    }
+                    onClick={() => {
+                      if (path.emergency) {
+                        setResult(null);
+                        setEmergency(true);
+                      } else setSelected(path);
+                    }}
                   >
-                    Pilih jalur ini
+                    {path.emergency ? "Bantuan darurat" : "Pilih jalur ini"}
                   </button>
                 </article>
               ))}

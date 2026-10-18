@@ -14,8 +14,6 @@ from app.schemas.foundation import (
     ActionExecutionRequest,
     AuthMessage,
     AuthSession,
-    ClaimCaseCreate,
-    ClaimCaseCreated,
     ClaimCaseDetail,
     ClaimCasePage,
     ClaimCaseStatus,
@@ -112,12 +110,6 @@ def check_completeness(
 
 @router.post("/triage", response_model=TriageResult)
 def triage(body: TriageRequest, session: ActiveSession):
-    not_implemented()
-
-
-@router.post("/claims", response_model=ClaimCaseCreated, status_code=201)
-def create_claim(body: ClaimCaseCreate, session: ConsentedSession, actor: ActiveActor, db: DB):
-    owned_resource(db, actor, "coverage", body.coverage_id)
     not_implemented()
 
 

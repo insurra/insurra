@@ -8043,13 +8043,52 @@
       }
     },
     "/api/v1/claims": {
-      "post": {
+      "get": {
         "tags": [
           "Phase 1.5 contracts (501)"
         ],
-        "summary": "Create Claim",
-        "operationId": "create_claim_api_v1_claims_post",
+        "summary": "List Claims",
+        "operationId": "list_claims_api_v1_claims_get",
         "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ClaimCaseStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
           {
             "name": "x-demo-session",
             "in": "header",
@@ -8068,23 +8107,13 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ClaimCaseCreate"
-              }
-            }
-          }
-        },
         "responses": {
-          "201": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClaimCaseCreated"
+                  "$ref": "#/components/schemas/ClaimCasePage"
                 }
               }
             }
@@ -8171,50 +8200,44 @@
           }
         }
       },
-      "get": {
+      "post": {
         "tags": [
-          "Phase 1.5 contracts (501)"
+          "Valen workspace"
         ],
-        "summary": "List Claims",
-        "operationId": "list_claims_api_v1_claims_get",
+        "summary": "Create Claim Case",
+        "operationId": "create_claim_case_api_v1_claims_post",
         "parameters": [
           {
-            "name": "status",
-            "in": "query",
+            "name": "idempotency-key",
+            "in": "header",
             "required": false,
             "schema": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/ClaimCaseStatus"
+                  "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "Status"
+              "title": "Idempotency-Key"
             }
           },
           {
-            "name": "limit",
-            "in": "query",
+            "name": "authorization",
+            "in": "header",
             "required": false,
             "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 20,
-              "title": "Limit"
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 0,
-              "title": "Offset"
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
             }
           },
           {
@@ -8235,13 +8258,23 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimCaseCreate"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClaimCasePage"
+                  "$ref": "#/components/schemas/ClaimCaseCreated"
                 }
               }
             }
@@ -12963,6 +12996,18 @@
             "format": "uuid",
             "title": "Coverage Id"
           },
+          "comparison_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Id"
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -13006,6 +13051,18 @@
             "type": "string",
             "format": "uuid",
             "title": "Coverage Id"
+          },
+          "comparison_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Id"
           }
         },
         "additionalProperties": false,

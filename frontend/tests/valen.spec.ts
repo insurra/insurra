@@ -75,6 +75,110 @@ test("SC-07 live screen fails closed while triage data is unreviewed", async ({
   ).toBeVisible();
 });
 
+test("SC-07 confirmation cancels without a case and retries with the same idempotency key", async ({
+  page,
+}) => {
+  const fixture = await pathwayFixture(page);
+  fixture.comparison.paths[0].direct_billing = true;
+  const requests: { key: string | undefined; body: unknown }[] = [];
+  const caseId = crypto.randomUUID();
+  await page.route("**/api/v1/claims", async (route) => {
+    requests.push({
+      key: route.request().headers()["idempotency-key"],
+      body: route.request().postDataJSON(),
+    });
+    if (requests.length === 1)
+      await route.fulfill({
+        status: 503,
+        json: {
+          code: "DATABASE_UNAVAILABLE",
+          message: "Coba kembali dengan konfirmasi ini.",
+          request_id: "synthetic",
+        },
+      });
+    else await route.fulfill({ status: 201, json: { claim_case_id: caseId } });
+  });
+  await page.goto("/pathways");
+  await page
+    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
+    .fill("Kebutuhan layanan non-darurat");
+  await page
+    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Bandingkan jalur", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Pilih jalur ini", exact: true })
+    .first()
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Konfirmasi jalur" });
+  await expect(dialog).toContainText("Kamu mungkin tidak perlu klaim sendiri");
+  await dialog.getByRole("button", { name: "Batal", exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  expect(requests).toHaveLength(0);
+  await page
+    .getByRole("button", { name: "Pilih jalur ini", exact: true })
+    .first()
+    .click();
+  await dialog
+    .getByRole("button", { name: "Buat kasus klaim", exact: true })
+    .evaluate((button: HTMLButtonElement) => {
+      button.click();
+      button.click();
+    });
+  await expect(dialog.getByRole("alert")).toContainText("Coba kembali");
+  expect(requests).toHaveLength(1);
+  await dialog
+    .getByRole("button", { name: "Buat kasus klaim", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Kasus klaim dibuat", exact: true }),
+  ).toBeVisible();
+  expect(requests).toHaveLength(2);
+  expect(requests[0].key).toBeTruthy();
+  expect(requests[1].key).toBe(requests[0].key);
+  expect(requests[1].body).toEqual({
+    path: "GP",
+    coverage_id: fixture.coverage_id,
+    comparison_id: fixture.comparison.comparison_id,
+  });
+  await expect(page.getByText(`Status Draft · ID ${caseId}`)).toBeVisible();
+  await expect(
+    page.getByText(
+      "Kasus tersimpan. Kesiapan klaim SC-09 belum tersedia; checklist belum dapat dibuka.",
+    ),
+  ).toBeVisible();
+});
+
+test("SC-07 emergency card never sends case creation", async ({ page }) => {
+  const fixture = await pathwayFixture(page);
+  fixture.comparison.paths[0].emergency = true;
+  fixture.comparison.paths[0].name = "IGD · synthetic UI fixture";
+  let calls = 0;
+  await page.route("**/api/v1/claims", (route) => {
+    calls += 1;
+    return route.abort();
+  });
+  await page.goto("/pathways");
+  await page
+    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
+    .fill("Kebutuhan layanan non-darurat");
+  await page
+    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Bandingkan jalur", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Bantuan darurat", exact: true })
+    .click();
+  await expect(page.locator(".vn").getByRole("alert")).toContainText(
+    "Perbandingan dihentikan",
+  );
+  expect(calls).toBe(0);
+});
+
 test("SC-07 comparison form, unknown costs and copy questions work with a synthetic dependency seam", async ({
   page,
   context,

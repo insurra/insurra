@@ -949,8 +949,8 @@ export interface paths {
         /** List Claims */
         get: operations["list_claims_api_v1_claims_get"];
         put?: never;
-        /** Create Claim */
-        post: operations["create_claim_api_v1_claims_post"];
+        /** Create Claim Case */
+        post: operations["create_claim_case_api_v1_claims_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1964,6 +1964,8 @@ export interface components {
              * Format: uuid
              */
             coverage_id: string;
+            /** Comparison Id */
+            comparison_id?: string | null;
             /**
              * Id
              * Format: uuid
@@ -1987,6 +1989,8 @@ export interface components {
              * Format: uuid
              */
             coverage_id: string;
+            /** Comparison Id */
+            comparison_id?: string | null;
         };
         /** ClaimCaseCreated */
         ClaimCaseCreated: {
@@ -10332,10 +10336,12 @@ export interface operations {
             };
         };
     };
-    create_claim_api_v1_claims_post: {
+    create_claim_case_api_v1_claims_post: {
         parameters: {
             query?: never;
             header?: {
+                "idempotency-key"?: string | null;
+                authorization?: string | null;
                 "x-demo-session"?: string | null;
             };
             path?: never;
