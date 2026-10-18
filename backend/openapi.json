@@ -7912,144 +7912,6 @@
         }
       }
     },
-    "/api/v1/pathways/compare": {
-      "post": {
-        "tags": [
-          "Phase 1.5 contracts (501)"
-        ],
-        "summary": "Compare Pathways",
-        "operationId": "compare_pathways_api_v1_pathways_compare_post",
-        "parameters": [
-          {
-            "name": "x-demo-session",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "maxLength": 128
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Demo-Session"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PathwayComparisonRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/PathwayComparison"
-                    },
-                    {
-                      "$ref": "#/components/schemas/EmergencyRedirect"
-                    }
-                  ],
-                  "title": "Response Compare Pathways Api V1 Pathways Compare Post"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "501": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Implemented"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
     "/api/v1/triage": {
       "post": {
         "tags": [
@@ -9853,6 +9715,161 @@
                     "$ref": "#/components/schemas/CoverageNeed"
                   },
                   "title": "Response Coverage Needs Api V1 Coverage Needs Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/pathways/compare": {
+      "post": {
+        "tags": [
+          "Valen workspace"
+        ],
+        "summary": "Compare Pathways",
+        "operationId": "compare_pathways_api_v1_pathways_compare_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PathwayComparisonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PathwayComparison"
+                    },
+                    {
+                      "$ref": "#/components/schemas/EmergencyRedirect"
+                    }
+                  ],
+                  "title": "Response Compare Pathways Api V1 Pathways Compare Post"
                 }
               }
             }
@@ -14442,6 +14459,11 @@
             "type": "boolean",
             "title": "Triage Available",
             "default": false
+          },
+          "pathway_help": {
+            "type": "string",
+            "title": "Pathway Help",
+            "default": "Jelaskan kebutuhan layanan non-darurat."
           }
         },
         "additionalProperties": false,
@@ -14650,6 +14672,11 @@
           },
           "source_reference": {
             "$ref": "#/components/schemas/RuleSource"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -14838,7 +14865,47 @@
               "$ref": "#/components/schemas/PathwayOption"
             },
             "type": "array",
+            "maxItems": 3,
             "title": "Paths"
+          },
+          "comparison_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Id"
+          },
+          "uncertainties": {
+            "items": {
+              "$ref": "#/components/schemas/VerificationQuestion"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Uncertainties"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "context_country_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Country Code"
           }
         },
         "additionalProperties": false,
@@ -14873,6 +14940,16 @@
               }
             ],
             "title": "City"
+          },
+          "timeframe": {
+            "type": "string",
+            "enum": [
+              "today",
+              "this_week",
+              "unknown"
+            ],
+            "title": "Timeframe",
+            "default": "unknown"
           }
         },
         "additionalProperties": false,
@@ -14949,6 +15026,63 @@
             },
             "type": "array",
             "title": "Sources"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "coverage_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage Label"
+          },
+          "coverage_status": {
+            "type": "string",
+            "enum": [
+              "MATCHED",
+              "NEEDS_CHECK"
+            ],
+            "title": "Coverage Status",
+            "default": "NEEDS_CHECK"
+          },
+          "emergency": {
+            "type": "boolean",
+            "title": "Emergency",
+            "default": false
+          },
+          "best_for_priority": {
+            "type": "boolean",
+            "title": "Best For Priority",
+            "default": false
+          },
+          "priority_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority Reason"
+          },
+          "direct_billing": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direct Billing"
           }
         },
         "additionalProperties": false,
@@ -16494,6 +16628,44 @@
         ],
         "title": "ValidationError"
       },
+      "VerificationQuestion": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "label",
+          "steps"
+        ],
+        "title": "VerificationQuestion"
+      },
       "VerificationRequest": {
         "properties": {
           "token": {
@@ -17165,6 +17337,76 @@
           },
           "verification_status": {
             "$ref": "#/components/schemas/VerificationStatus"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checked At"
+          },
+          "service_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Service Types",
+            "type": "array"
+          },
+          "policy_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Policy Types",
+            "type": "array"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Steps",
+            "type": "array"
+          },
+          "requirements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Requirements",
+            "type": "array"
+          },
+          "benefit_category": {
+            "default": "outpatient",
+            "title": "Benefit Category",
+            "type": "string"
+          },
+          "verification_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Verification Codes",
+            "type": "array"
+          },
+          "emergency": {
+            "default": false,
+            "title": "Emergency",
+            "type": "boolean"
+          },
+          "tariff": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReferenceTariff"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
           }
         },
         "required": [
@@ -17179,6 +17421,53 @@
         "title": "PathwayConfig",
         "type": "object"
       },
+      "PathwayPriority": {
+        "additionalProperties": false,
+        "properties": {
+          "codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Codes",
+            "type": "array"
+          },
+          "kind": {
+            "const": "lowest_cost",
+            "title": "Kind",
+            "type": "string"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "codes",
+          "kind",
+          "explanation"
+        ],
+        "title": "PathwayPriority",
+        "type": "object"
+      },
+      "PathwayService": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "PathwayService",
+        "type": "object"
+      },
       "PathwaysResource": {
         "additionalProperties": false,
         "properties": {
@@ -17191,6 +17480,25 @@
           },
           "emergency": {
             "$ref": "#/components/schemas/EmergencyConfig"
+          },
+          "service_types": {
+            "items": {
+              "$ref": "#/components/schemas/PathwayService"
+            },
+            "title": "Service Types",
+            "type": "array"
+          },
+          "help_text": {
+            "default": "Jelaskan kebutuhan layanan non-darurat; sistem tidak memberi diagnosis.",
+            "title": "Help Text",
+            "type": "string"
+          },
+          "priority_rules": {
+            "items": {
+              "$ref": "#/components/schemas/PathwayPriority"
+            },
+            "title": "Priority Rules",
+            "type": "array"
           }
         },
         "required": [
@@ -17335,6 +17643,53 @@
           "destination_code"
         ],
         "title": "RedFlagConfig",
+        "type": "object"
+      },
+      "ReferenceTariff": {
+        "additionalProperties": false,
+        "properties": {
+          "minimum": {
+            "pattern": "^\\d+(\\.\\d+)?$",
+            "title": "Minimum",
+            "type": "string"
+          },
+          "maximum": {
+            "pattern": "^\\d+(\\.\\d+)?$",
+            "title": "Maximum",
+            "type": "string"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          },
+          "checked_at": {
+            "format": "date",
+            "title": "Checked At",
+            "type": "string"
+          },
+          "verification_status": {
+            "$ref": "#/components/schemas/VerificationStatus"
+          },
+          "synthetic": {
+            "default": false,
+            "title": "Synthetic",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "minimum",
+          "maximum",
+          "currency",
+          "source_url",
+          "checked_at",
+          "verification_status"
+        ],
+        "title": "ReferenceTariff",
         "type": "object"
       },
       "RequiredFieldConfig": {
@@ -17489,6 +17844,37 @@
             },
             "title": "Steps",
             "type": "array"
+          },
+          "field_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Field Key"
+          },
+          "known_values": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Known Values",
+            "type": "array"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Impact"
           }
         },
         "required": [

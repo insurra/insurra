@@ -30,6 +30,7 @@
 }
 .vn button,
 .vn select {
+  max-width: 100%;
   border: 1px solid var(--border);
   border-radius: var(--radius-button);
   padding: 10px 14px;

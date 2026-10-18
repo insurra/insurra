@@ -303,9 +303,12 @@ def test_remaining_scoped_contract_routes(client, demo, method, path, body, need
         403 if needs_consent else 200 if implemented else 501
     )
     grant(client, h, "process_documents")
-    assert client.request(method, url, headers=h, json=body).status_code == (
-        200 if implemented else 501
+    result = client.request(method, url, headers=h, json=body)
+    assert result.status_code == (
+        200 if implemented else 503 if path == "/pathways/compare" else 501
     )
+    if path == "/pathways/compare":
+        assert result.json()["code"] == "TRIAGE_UNAVAILABLE"
 
 
 def test_upload_and_evidence_stubs_need_both_purposes(client, resources):

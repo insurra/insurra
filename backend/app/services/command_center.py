@@ -10,7 +10,7 @@ from app.core.errors import AppError
 from app.models import RecommendationStateRow
 from app.schemas.common import RuleSource
 from app.schemas.foundation import HomeSummary, Recommendation
-from app.schemas.valen import CoverageCard, EmergencyInfo, WorkspaceContext
+from app.schemas.valen import CoverageCard, EmergencyInfo, ServiceChoice, WorkspaceContext
 from app.services.audit_logger import log_actor_event
 from app.services.workspace import (
     FieldValue,
@@ -227,6 +227,10 @@ def summary(db, actor, kb, now=None) -> HomeSummary:
         warnings=list(dict.fromkeys(warnings)),
         question_examples=country.resources.example_questions.data[:4],
         triage_available=bool(red_flags.data and checked_official(country, red_flags)),
+        service_types=[
+            ServiceChoice(code=s.code, label=s.label) for s in country.pathways.service_types
+        ],
+        pathway_help=country.pathways.help_text,
     )
 
 

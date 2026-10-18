@@ -27,12 +27,9 @@ from app.schemas.foundation import (
     DocumentDetail,
     DocumentUploadAccepted,
     EmailRequest,
-    EmergencyRedirect,
     EvidenceMatchResult,
     FieldReviewRequest,
     LoginRequest,
-    PathwayComparison,
-    PathwayComparisonRequest,
     RegisterRequest,
     ReviewedField,
     SandboxClaimRequest,
@@ -110,11 +107,6 @@ def check_completeness(
 ):
     if coverage_id:
         owned_resource(db, actor, "coverage", coverage_id)
-    not_implemented()
-
-
-@router.post("/pathways/compare", response_model=PathwayComparison | EmergencyRedirect)
-def compare_pathways(body: PathwayComparisonRequest, session: ConsentedSession):
     not_implemented()
 
 

@@ -3,7 +3,7 @@ from typing import Generic, Literal, TypeVar
 
 from pydantic import Field, JsonValue, model_validator
 
-from app.schemas.common import Contract, CountryCode, VerificationStatus
+from app.schemas.common import Contract, CountryCode, CurrencyCode, Money, VerificationStatus
 from app.schemas.profile import Occupation, ResidenceContext
 
 
@@ -80,6 +80,16 @@ class CoverageVocabulary(Contract):
         return self
 
 
+class ReferenceTariff(Contract):
+    minimum: Money
+    maximum: Money
+    currency: CurrencyCode
+    source_url: str
+    checked_at: date
+    verification_status: VerificationStatus
+    synthetic: bool = False
+
+
 class PathwayConfig(Contract):
     pathway_code: str
     label: str
@@ -90,6 +100,26 @@ class PathwayConfig(Contract):
     uncertainties: list[str]
     source_url: str | None
     verification_status: VerificationStatus
+    checked_at: date | None = None
+    service_types: list[str] = Field(default_factory=list)
+    policy_types: list[str] = Field(default_factory=list)
+    steps: list[str] = Field(default_factory=list, max_length=5)
+    requirements: list[str] = Field(default_factory=list)
+    benefit_category: str = "outpatient"
+    verification_codes: list[str] = Field(default_factory=list)
+    emergency: bool = False
+    tariff: ReferenceTariff | None = None
+
+
+class PathwayService(Contract):
+    code: str
+    label: str
+
+
+class PathwayPriority(Contract):
+    codes: list[str]
+    kind: Literal["lowest_cost"]
+    explanation: str
 
 
 class EmergencyConfig(Contract):
@@ -103,6 +133,9 @@ class EmergencyConfig(Contract):
 class PathwaysResource(Contract):
     pathways: list[PathwayConfig]
     emergency: EmergencyConfig
+    service_types: list[PathwayService] = Field(default_factory=list)
+    help_text: str = "Jelaskan kebutuhan layanan non-darurat; sistem tidak memberi diagnosis."
+    priority_rules: list[PathwayPriority] = Field(default_factory=list)
 
 
 class CountryKB(Contract):
@@ -210,6 +243,9 @@ class VerificationStepConfig(Contract):
     code: str
     label: str
     steps: list[str]
+    field_key: str | None = None
+    known_values: list[str] = Field(default_factory=list)
+    impact: str | None = None
 
 
 class RedFlagConfig(Contract):

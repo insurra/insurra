@@ -25,6 +25,7 @@ from app.schemas.valen import (
     EmergencyInfo,
     NumericFact,
     ServiceChoice,
+    VerificationQuestion,
     WorkspaceContext,
 )
 
@@ -225,6 +226,7 @@ class HomeSummary(Contract):
     question_examples: list[str] = Field(default_factory=list, max_length=4)
     service_types: list[ServiceChoice] = Field(default_factory=list)
     triage_available: bool = False
+    pathway_help: str = "Jelaskan kebutuhan layanan non-darurat."
 
 
 class AskRequest(Contract):
@@ -328,6 +330,14 @@ class PathwayComparisonRequest(Contract):
     complaint: str = Field(min_length=1, max_length=300)
     service_type: ShortCode
     city: str | None = Field(default=None, max_length=100)
+    timeframe: Literal["today", "this_week", "unknown"] = "unknown"
+
+    @field_validator("complaint", "service_type")
+    @classmethod
+    def not_blank(cls, value):
+        if not value.strip():
+            raise ValueError("Must not be blank")
+        return value.strip()
 
 
 class MoneyEstimate(Contract):
@@ -335,6 +345,7 @@ class MoneyEstimate(Contract):
     maximum: Money
     currency: CurrencyCode
     source_reference: RuleSource
+    synthetic: bool = False
 
     @model_validator(mode="after")
     def valid_amount_range(self):
@@ -355,10 +366,21 @@ class PathwayOption(Contract):
     docs: list[str]
     uncertainties: list[str]
     sources: list[RuleSource]
+    description: str = ""
+    coverage_label: str | None = None
+    coverage_status: Literal["MATCHED", "NEEDS_CHECK"] = "NEEDS_CHECK"
+    emergency: bool = False
+    best_for_priority: bool = False
+    priority_reason: str | None = None
+    direct_billing: bool | None = None
 
 
 class PathwayComparison(Contract):
-    paths: list[PathwayOption]
+    paths: list[PathwayOption] = Field(max_length=3)
+    comparison_id: UUID | None = None
+    uncertainties: list[VerificationQuestion] = Field(default_factory=list, max_length=5)
+    warnings: list[str] = Field(default_factory=list)
+    context_country_code: CountryCode | None = None
 
 
 class TriageRequest(Contract):

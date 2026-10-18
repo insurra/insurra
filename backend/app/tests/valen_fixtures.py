@@ -106,6 +106,7 @@ def reviewed_triage(app, monkeypatch):
     import copy
     from datetime import date
 
+    from app.schemas.common import VerificationStatus
     from app.schemas.kb import RedFlagConfig
 
     loader = app.state.kb_loader
@@ -116,7 +117,7 @@ def reviewed_triage(app, monkeypatch):
         resource = country.resources.red_flags
         resource.source_url = "https://synthetic.example.test/triage-contract"
         resource.checked_at = date(2026, 10, 18)
-        resource.verification_status = "VERIFIED"
+        resource.verification_status = VerificationStatus.VERIFIED
         resource.data = [
             RedFlagConfig(
                 id="test_breathing",

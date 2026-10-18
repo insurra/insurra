@@ -88,6 +88,7 @@ class VerificationQuestion(Contract):
     code: str
     label: str
     steps: list[str]
+    impact: str | None = None
 
 
 class SourcePage(Contract):

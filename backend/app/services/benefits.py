@@ -9,7 +9,7 @@ from app.services.workspace import CoverageView, FieldValue, parsed_date
 
 SUFFIXES = (
     "limit_amount|used_amount|currency|period_start|period_end|excess|"
-    "network_only|requires_referral|claim_mode|coverage_status|exclusion_quote"
+    "network_only|requires_referral|claim_mode|coverage_status|exclusion_quote|coverage_rate"
 )
 
 

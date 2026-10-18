@@ -1,5 +1,131 @@
 import { test, expect } from "@playwright/test";
 import { accountWorkspace } from "./helpers/workspace";
+import type { components } from "../src/lib/api/types.gen";
+
+type Comparison = components["schemas"]["PathwayComparison"];
+
+async function pathwayFixture(page: import("@playwright/test").Page) {
+  const fixture = await accountWorkspace(page);
+  await page.route("**/api/v1/home/summary", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      json: { ...(await response.json()), triage_available: true },
+    });
+  });
+  const comparison: Comparison = {
+    comparison_id: crypto.randomUUID(),
+    context_country_code: "AU",
+    paths: ["Dokter umum (GP)", "Klinik urgent care"].map((name, i) => ({
+      pathway_code: i ? "URGENT_CARE" : "GP",
+      name,
+      coverage_id: fixture.coverage_id,
+      coverage_label: "OSHC · Fictional Test Provider",
+      coverage_status: "MATCHED",
+      description: "Test UI fixture only; not actual eligibility guidance.",
+      emergency: false,
+      best_for_priority: false,
+      steps: [
+        "Periksa kepesertaan",
+        "Konfirmasi prosedur",
+        "Cek jadwal atau booking online",
+      ],
+      requirements: ["Konfirmasi provider dalam jaringan"],
+      docs: ["Ringkasan polis bila diminta"],
+      uncertainties: [],
+      sources: [],
+      est_out_of_pocket: null,
+    })),
+    uncertainties: [
+      {
+        code: "provider_network",
+        label: "Apakah provider dalam jaringan?",
+        steps: ["Tanya fasilitas tentang jaringan dan pembayaran."],
+      },
+    ],
+    warnings: ["Tarif belum tersedia; bukan jaminan pembayaran."],
+  };
+  await page.route("**/api/v1/pathways/compare", (route) =>
+    route.fulfill({ json: comparison }),
+  );
+  return { ...fixture, comparison };
+}
+
+test("SC-07 live screen fails closed while triage data is unreviewed", async ({
+  page,
+}) => {
+  await accountWorkspace(page);
+  await page.goto("/pathways");
+  await expect(
+    page.getByRole("heading", { name: "Mau berobat ke mana?" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Basis tanda bahaya negara ini belum terverifikasi.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("textbox", { name: "Ceritakan keluhanmu" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Bandingkan jalur", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Dokter umum (GP)", exact: true }),
+  ).toBeVisible();
+});
+
+test("SC-07 comparison form, unknown costs and copy questions work with a synthetic dependency seam", async ({
+  page,
+  context,
+}) => {
+  await pathwayFixture(page);
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/pathways");
+  const submit = page.getByRole("button", {
+    name: "Bandingkan jalur",
+    exact: true,
+  });
+  await expect(submit).toBeDisabled();
+  await page
+    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
+    .fill("Kebutuhan layanan non-darurat");
+  await expect(submit).toBeDisabled();
+  await page
+    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
+    .click();
+  await expect(
+    page.getByRole("textbox", { name: "Kota", exact: true }),
+  ).toHaveValue("Melbourne");
+  const sent = page.waitForRequest((r) =>
+    r.url().endsWith("/pathways/compare"),
+  );
+  await submit.click();
+  expect((await sent).postDataJSON().timeframe).toBe("unknown");
+  const cards = page
+    .getByRole("region", { name: "Perbandingan jalur" })
+    .getByRole("article");
+  await expect(cards).toHaveCount(2);
+  await expect(cards.first()).toContainText("Belum diketahui");
+  await expect(
+    page.getByRole("textbox", { name: "Ceritakan keluhanmu" }),
+  ).toHaveValue("");
+  await page
+    .getByRole("button", { name: "Salin pertanyaan untuk klinik" })
+    .click();
+  await expect(page.getByText("Pertanyaan tersalin.")).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
+    "Apakah provider dalam jaringan?",
+  );
+  await expect(
+    page.getByRole("button", { name: "Buat pengingat cek" }),
+  ).toBeDisabled();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
 
 test("SC-05 account home shows deterministic counts, canonical links and visible emergency fallback", async ({
   page,
@@ -264,7 +390,9 @@ test("SC-06 cancellation and retry keep incomplete answers out of history", asyn
   await page.getByRole("button", { name: "Kirim", exact: true }).click();
   await request;
   await page.getByRole("button", { name: "Batalkan", exact: true }).click();
-  await expect(page.locator(".vn").getByRole("alert")).toContainText("Permintaan dibatalkan");
+  await expect(page.locator(".vn").getByRole("alert")).toContainText(
+    "Permintaan dibatalkan",
+  );
   await expect(page.getByRole("log").locator("article")).toHaveCount(0);
   slow = false;
   await page.getByRole("button", { name: "Coba lagi", exact: true }).click();

@@ -922,23 +922,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/pathways/compare": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Compare Pathways */
-        post: operations["compare_pathways_api_v1_pathways_compare_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/triage": {
         parameters: {
             query?: never;
@@ -1139,6 +1122,23 @@ export interface paths {
         get: operations["coverage_needs_api_v1_coverage_needs_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pathways/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compare Pathways */
+        post: operations["compare_pathways_api_v1_pathways_compare_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2539,6 +2539,11 @@ export interface components {
              * @default false
              */
             triage_available: boolean;
+            /**
+             * Pathway Help
+             * @default Jelaskan kebutuhan layanan non-darurat.
+             */
+            pathway_help: string;
         };
         /** InsurancePolicy */
         InsurancePolicy: {
@@ -2609,6 +2614,11 @@ export interface components {
             /** Currency */
             currency: string;
             source_reference: components["schemas"]["RuleSource"];
+            /**
+             * Synthetic
+             * @default false
+             */
+            synthetic: boolean;
         };
         /** NumericFact */
         NumericFact: {
@@ -2668,6 +2678,14 @@ export interface components {
         PathwayComparison: {
             /** Paths */
             paths: components["schemas"]["PathwayOption"][];
+            /** Comparison Id */
+            comparison_id?: string | null;
+            /** Uncertainties */
+            uncertainties?: components["schemas"]["VerificationQuestion"][];
+            /** Warnings */
+            warnings?: string[];
+            /** Context Country Code */
+            context_country_code?: string | null;
         };
         /** PathwayComparisonRequest */
         PathwayComparisonRequest: {
@@ -2677,6 +2695,12 @@ export interface components {
             service_type: string;
             /** City */
             city?: string | null;
+            /**
+             * Timeframe
+             * @default unknown
+             * @enum {string}
+             */
+            timeframe: "today" | "this_week" | "unknown";
         };
         /** PathwayOption */
         PathwayOption: {
@@ -2697,6 +2721,33 @@ export interface components {
             uncertainties: string[];
             /** Sources */
             sources: components["schemas"]["RuleSource"][];
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Coverage Label */
+            coverage_label?: string | null;
+            /**
+             * Coverage Status
+             * @default NEEDS_CHECK
+             * @enum {string}
+             */
+            coverage_status: "MATCHED" | "NEEDS_CHECK";
+            /**
+             * Emergency
+             * @default false
+             */
+            emergency: boolean;
+            /**
+             * Best For Priority
+             * @default false
+             */
+            best_for_priority: boolean;
+            /** Priority Reason */
+            priority_reason?: string | null;
+            /** Direct Billing */
+            direct_billing?: boolean | null;
         };
         /** PolicyAnswer */
         PolicyAnswer: {
@@ -3247,6 +3298,17 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** VerificationQuestion */
+        VerificationQuestion: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
+            /** Steps */
+            steps: string[];
+            /** Impact */
+            impact?: string | null;
+        };
         /** VerificationRequest */
         VerificationRequest: {
             /**
@@ -3481,12 +3543,67 @@ export interface components {
             /** Source Url */
             source_url: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /**
+             * Checked At
+             * @default null
+             */
+            checked_at: string | null;
+            /** Service Types */
+            service_types?: string[];
+            /** Policy Types */
+            policy_types?: string[];
+            /** Steps */
+            steps?: string[];
+            /** Requirements */
+            requirements?: string[];
+            /**
+             * Benefit Category
+             * @default outpatient
+             */
+            benefit_category: string;
+            /** Verification Codes */
+            verification_codes?: string[];
+            /**
+             * Emergency
+             * @default false
+             */
+            emergency: boolean;
+            /** @default null */
+            tariff: components["schemas"]["ReferenceTariff"] | null;
+        };
+        /** PathwayPriority */
+        PathwayPriority: {
+            /** Codes */
+            codes: string[];
+            /**
+             * Kind
+             * @constant
+             */
+            kind: "lowest_cost";
+            /** Explanation */
+            explanation: string;
+        };
+        /** PathwayService */
+        PathwayService: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
         };
         /** PathwaysResource */
         PathwaysResource: {
             /** Pathways */
             pathways: components["schemas"]["PathwayConfig"][];
             emergency: components["schemas"]["EmergencyConfig"];
+            /** Service Types */
+            service_types?: components["schemas"]["PathwayService"][];
+            /**
+             * Help Text
+             * @default Jelaskan kebutuhan layanan non-darurat; sistem tidak memberi diagnosis.
+             */
+            help_text: string;
+            /** Priority Rules */
+            priority_rules?: components["schemas"]["PathwayPriority"][];
         };
         /** RecommendationRuleConfig */
         RecommendationRuleConfig: {
@@ -3551,6 +3668,28 @@ export interface components {
             phrases_en: string[];
             /** Destination Code */
             destination_code: string;
+        };
+        /** ReferenceTariff */
+        ReferenceTariff: {
+            /** Minimum */
+            minimum: string;
+            /** Maximum */
+            maximum: string;
+            /** Currency */
+            currency: string;
+            /** Source Url */
+            source_url: string;
+            /**
+             * Checked At
+             * Format: date
+             */
+            checked_at: string;
+            verification_status: components["schemas"]["VerificationStatus"];
+            /**
+             * Synthetic
+             * @default false
+             */
+            synthetic: boolean;
         };
         /** RequiredFieldConfig */
         RequiredFieldConfig: {
@@ -3626,6 +3765,18 @@ export interface components {
             label: string;
             /** Steps */
             steps: string[];
+            /**
+             * Field Key
+             * @default null
+             */
+            field_key: string | null;
+            /** Known Values */
+            known_values?: string[];
+            /**
+             * Impact
+             * @default null
+             */
+            impact: string | null;
         };
         /** VersionedResource[EmergencyConfig] */
         VersionedResource_EmergencyConfig_: {
@@ -9985,104 +10136,6 @@ export interface operations {
             };
         };
     };
-    compare_pathways_api_v1_pathways_compare_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "x-demo-session"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PathwayComparisonRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PathwayComparison"] | components["schemas"]["EmergencyRedirect"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Not Implemented */
-            501: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-        };
-    };
     triage_api_v1_triage_post: {
         parameters: {
             query?: never;
@@ -11368,6 +11421,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CoverageNeed"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    compare_pathways_api_v1_pathways_compare_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PathwayComparisonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathwayComparison"] | components["schemas"]["EmergencyRedirect"];
                 };
             };
             /** @description Unauthorized */
