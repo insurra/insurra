@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
   ArrowRight,
+  ChevronRight,
   ExternalLink,
   FileText,
   Filter,
@@ -83,13 +84,26 @@ export default function PoliciesPage() {
 
   return (
     <div className="policy-wallet-page protection-screen">
+      <nav aria-label="Breadcrumb" className="protection-breadcrumb">
+        <Link href="/protection">My Protection</Link>
+        <ChevronRight size={14} className="breadcrumb-separator" />
+        <span aria-current="page">Policy Wallet</span>
+      </nav>
+
       <div className="page-heading">
         <div>
-          <div className="eyebrow">MY PROTECTION</div>
+          <div className="eyebrow">PERSONAL COVERAGE</div>
           <h1>Policy Wallet</h1>
-          <p>Kelola catatan polis dan tinjau informasi perlindungan dari dokumen yang kamu unggah.</p>
+          <p>Manage insurance policies and review detailed clauses extracted from your uploaded documents.</p>
         </div>
-        <div className="policy-heading-actions"><Wallet size={34} /><Button asChild><Link href="/documents"><FileText size={16}/>Tambah polis</Link></Button></div>
+        <div className="policy-heading-actions">
+          <Wallet size={34} />
+          <Button asChild>
+            <Link href="/documents">
+              <FileText size={16} /> Add Policy
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -111,15 +125,22 @@ export default function PoliciesPage() {
             ))}
           </select>
         </div>
-        <label className="policy-search"><span className="sr-only">Cari polis</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari provider atau jenis perlindungan…" /></label>
+        <label className="policy-search">
+          <span className="sr-only">Search policies</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search provider or coverage type..."
+          />
+        </label>
       </div>
 
       {!policies.length ? (
         <div className="card account-empty">
           <Shield size={40} />
-          <h2>No policies in wallet yet.</h2>
-            <p>
-            Unggah booklet, sertifikat, atau kartu asuransi untuk meninjau informasi yang terbaca.
+          <h2>No policies in wallet yet</h2>
+          <p>
+            Upload a booklet, policy schedule, or insurance card in Documents to inspect extracted benefits and limits.
           </p>
           <Button asChild>
             <Link href="/documents">
@@ -128,75 +149,120 @@ export default function PoliciesPage() {
           </Button>
         </div>
       ) : (
-        filteredPolicies.length === 0 ? <div className="card account-empty"><h2>Tidak ada polis yang cocok</h2><p>Coba kata kunci atau jenis perlindungan lain.</p></div> :
-        <div className="policy-grid">
-          {filteredPolicies.map((policy) => {
-            const statusClass =
-              policy.status === "ACTIVE"
-                ? "status-active"
-                : policy.status === "EXPIRING_SOON"
-                ? "status-expiring"
-                : "status-expired";
-            return (
-              <article key={policy.id} className={`card policy-card ${selectedPolicyId === policy.id ? "selected" : ""}`}>
-                <div className="policy-card-header">
-                  <div>
-                    <span className="policy-kind-tag">{policy.kind.replaceAll("_", " ")} · {policy.country_code}</span>
-                    <h3>{policy.provider || "Penyedia belum teridentifikasi"}</h3>
+        filteredPolicies.length === 0 ? (
+          <div className="card account-empty">
+            <h2>No matching policies found</h2>
+            <p>Try searching with another keyword or selecting a different coverage filter.</p>
+          </div>
+        ) : (
+          <div className="policy-grid">
+            {filteredPolicies.map((policy) => {
+              const statusClass =
+                policy.status === "ACTIVE"
+                  ? "status-active"
+                  : policy.status === "EXPIRING_SOON"
+                  ? "status-expiring"
+                  : "status-expired";
+              return (
+                <article key={policy.id} className={`card policy-card ${selectedPolicyId === policy.id ? "selected" : ""}`}>
+                  <div className="policy-card-header">
+                    <div>
+                      <span className="policy-kind-tag">{policy.kind.replaceAll("_", " ")} · {policy.country_code}</span>
+                      <h3>{policy.provider || "Unidentified Provider"}</h3>
+                    </div>
+                    <span className={`badge ${statusClass}`}>
+                      {policy.status.replaceAll("_", " ")}
+                    </span>
                   </div>
-                  <span className={`badge ${statusClass}`}>
-                    {policy.status.replaceAll("_", " ")}
-                  </span>
-                </div>
 
-                <div className="policy-card-body">
-                  <div className="policy-meta-row">
-                    <span>Policy Number:</span>
-                    <strong>{policy.policy_number_masked || "Not found in document"}</strong>
+                  <div className="policy-card-body">
+                    <div className="policy-meta-row">
+                      <span>Policy Number:</span>
+                      <strong>{policy.policy_number_masked || "Not found in document"}</strong>
+                    </div>
+                    <div className="policy-meta-row">
+                      <span>Country:</span>
+                      <strong>{policy.country_code}</strong>
+                    </div>
+                    <div className="policy-meta-row">
+                      <span>Coverage Period:</span>
+                      <strong>
+                        {policy.start_date || "Unknown"} to {policy.end_date || "Unknown"}
+                      </strong>
+                    </div>
                   </div>
-                  <div className="policy-meta-row">
-                    <span>Country:</span>
-                    <strong>{policy.country_code}</strong>
-                  </div>
-                  <div className="policy-meta-row">
-                    <span>Coverage Period:</span>
-                    <strong>
-                      {policy.start_date || "Belum diketahui"} — {policy.end_date || "Belum diketahui"}
-                    </strong>
-                  </div>
-                </div>
 
-                <div className="policy-card-footer">
-                  <Button size="sm" onClick={() => selectedPolicyId === policy.id ? setSelectedPolicyId(null) : void openPolicy(policy.id)}>
-                    {selectedPolicyId === policy.id ? "Tutup detail" : "Tinjau detail"} <ArrowRight size={14} />
-                  </Button>
-                  {policy.document_id && (
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href={`/documents/${policy.document_id}`}>
-                        Source Doc <ExternalLink size={13} />
-                      </Link>
+                  <div className="policy-card-footer">
+                    <Button size="sm" onClick={() => selectedPolicyId === policy.id ? setSelectedPolicyId(null) : void openPolicy(policy.id)}>
+                      {selectedPolicyId === policy.id ? "Close details" : "Review details"} <ArrowRight size={14} />
                     </Button>
-                  )}
-                </div>
-                {selectedPolicyId === policy.id && (
-                  <div className="policy-inline-detail">
-                    {loadingDetail ? <p role="status">Memuat detail…</p> : policyDetail ? <>
-                      <div className="policy-detail-caption"><Shield size={18}/><strong>Ringkasan dari dokumen</strong></div>
-                      <p>Informasi berikut berasal dari hasil pembacaan dokumen dan perlu dicocokkan dengan sumber aslinya.</p>
-                      <div className="policy-inline-facts">
-                        {(policyDetail.benefits ?? []).length ? policyDetail.benefits!.map((benefit, index) => <div key={index}><span>{String(benefit.field_key).replaceAll("_", " ")}</span><strong>{String(benefit.value)}</strong>{benefit.source_page ? <small>Sumber: halaman {String(benefit.source_page)}</small> : null}</div>) : <small>Belum ada manfaat/limit yang berhasil diidentifikasi.</small>}
-                      </div>
-                      <div className="policy-inline-facts"><div><span>Pengecualian</span><strong>{policyDetail.exclusions?.length ? policyDetail.exclusions.join(" · ") : "Belum ditemukan"}</strong></div><div><span>Masa tunggu</span><strong>{policyDetail.waiting_periods?.length ? policyDetail.waiting_periods.join(" · ") : "Belum ditemukan"}</strong></div></div>
-                      {policyDetail.country_code === "ID" && <small>Status KAPJ: {policyDetail.bpjs_coordination ?? "Belum diketahui"}</small>}
-                    </> : <p>Detail belum tersedia.</p>}
+                    {policy.document_id && (
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/documents/${policy.document_id}`}>
+                          Source Doc <ExternalLink size={13} />
+                        </Link>
+                      </Button>
+                    )}
                   </div>
-                )}
-              </article>
-            );
-          })}
-        </div>
-      )}
 
+                  {selectedPolicyId === policy.id && (
+                    <div className="policy-inline-detail">
+                      {loadingDetail ? (
+                        <p role="status">Loading policy clauses and evidence...</p>
+                      ) : policyDetail ? (
+                        <>
+                          <div className="policy-detail-caption">
+                            <Shield size={18} />
+                            <strong>Document Evidence Summary</strong>
+                          </div>
+                          <p>
+                            Information below is extracted from your document evidence and should be verified against original sources.
+                          </p>
+                          <div className="policy-inline-facts">
+                            {(policyDetail.benefits ?? []).length ? (
+                              policyDetail.benefits!.map((benefit, index) => (
+                                <div key={index}>
+                                  <span>{String(benefit.field_key).replaceAll("_", " ")}</span>
+                                  <strong>{String(benefit.value)}</strong>
+                                  {benefit.source_page ? <small>Source: Page {String(benefit.source_page)}</small> : null}
+                                </div>
+                              ))
+                            ) : (
+                              <small>No specific benefits or limits identified in document yet.</small>
+                            )}
+                          </div>
+                          <div className="policy-inline-facts">
+                            <div>
+                              <span>Exclusions</span>
+                              <strong>{policyDetail.exclusions?.length ? policyDetail.exclusions.join(" · ") : "None found"}</strong>
+                            </div>
+                            <div>
+                              <span>Waiting periods</span>
+                              <strong>{policyDetail.waiting_periods?.length ? policyDetail.waiting_periods.join(" · ") : "None found"}</strong>
+                            </div>
+                          </div>
+                          {policyDetail.country_code === "ID" && (
+                            <small>BPJS Coordination (KAPJ): {policyDetail.bpjs_coordination ?? "Unknown"}</small>
+                          )}
+                          <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid #dfeee9" }}>
+                            <Button asChild variant="outline" size="sm">
+                              <Link href="/documents">
+                                Correct Information in Documents <ArrowRight size={13} />
+                              </Link>
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <p>Policy details not available.</p>
+                      )}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )
+      )}
     </div>
   );
 }

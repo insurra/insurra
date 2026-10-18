@@ -23,7 +23,7 @@ export function HomeNav({ onSelectPersona }: HomeNavProps) {
       <Link href="#top" className="brand" aria-label="INSURRA home">
         <Image
           src="/mascot-logo.png"
-          alt="Insurra — Your AI Insurance Companion"
+          alt="Insurra · Your AI Insurance Companion"
           width={1774}
           height={887}
           className="brand-lockup"

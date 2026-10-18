@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ArrowRight,
   CheckCircle2,
+  ChevronRight,
   FileText,
   Heart,
   Plus,
@@ -117,13 +118,23 @@ export default function FamilyPage() {
 
   return (
     <div className="family-page protection-screen">
+      <nav aria-label="Breadcrumb" className="protection-breadcrumb">
+        <Link href="/protection">My Protection</Link>
+        <ChevronRight size={14} className="breadcrumb-separator" />
+        <span aria-current="page">Family Coverage</span>
+      </nav>
+
       <div className="page-heading">
         <div>
-          <div className="eyebrow">MY PROTECTION</div>
+          <div className="eyebrow">FAMILY PROTECTION</div>
           <h1>Family Coverage</h1>
-          <p>Kelola anggota keluarga dan catat jumlah polis yang tertaut ke masing-masing anggota.</p>
+          <p>Manage family members and track linked insurance policies across your household.</p>
         </div>
-        {!showAddForm && <Button onClick={() => setShowAddForm(true)}><Plus size={16}/>Tambah anggota keluarga</Button>}
+        {!showAddForm && (
+          <Button onClick={() => setShowAddForm(true)} disabled={members.length >= 6}>
+            <Plus size={16} /> Add Family Member
+          </Button>
+        )}
       </div>
 
       {error && (
@@ -138,26 +149,42 @@ export default function FamilyPage() {
       )}
 
       <section className="card family-overview">
-        <Image src="/protection-family-illustration.png" alt="Ilustrasi keluarga" width={240} height={150}/>
-        <div className="family-overview-copy"><span className="eyebrow">RINGKASAN KELUARGA</span><h2>Perlindungan keluarga dalam satu tempat</h2><p>Data ini mencatat anggota keluarga dan jumlah polis tertaut. Status manfaat keluarga tidak dapat disimpulkan sebelum polis benar-benar ditautkan.</p><div className="family-overview-stats"><span><strong>{members.length}</strong>Total anggota</span><span><strong>{members.reduce((sum, member) => sum + member.active_coverage_count, 0)}</strong>Polis tertaut</span></div></div>
+        <Image src="/protection-family-illustration.png" alt="Family illustration" width={240} height={150} />
+        <div className="family-overview-copy">
+          <span className="eyebrow">HOUSEHOLD OVERVIEW</span>
+          <h2>Family protection in one place</h2>
+          <p>
+            This record tracks household dependents and linked policy counts. Dependent benefits cannot be inferred until policies are explicitly linked.
+          </p>
+          <div className="family-overview-stats">
+            <span>
+              <strong>{members.length} / 6</strong>Total Members
+            </span>
+            <span>
+              <strong>{members.reduce((sum, member) => sum + member.active_coverage_count, 0)}</strong>Linked Policies
+            </span>
+          </div>
+        </div>
       </section>
 
       <div className="policy-controls card">
         <div className="filter-group">
           <Heart size={18} />
-          <span>Anggota keluarga terdaftar ({members.length})</span>
+          <span>Registered Family Members ({members.length})</span>
         </div>
         {!showAddForm && (
-          <Button onClick={() => setShowAddForm(true)}><Plus size={16} /> Tambah anggota</Button>
+          <Button onClick={() => setShowAddForm(true)} disabled={members.length >= 6}>
+            <Plus size={16} /> Add Member
+          </Button>
         )}
       </div>
 
       {showAddForm && (
         <section className="card family-add-card">
           <div className="section-heading">
-            <h2>Tambah anggota keluarga</h2>
+            <h2>Add Family Member</h2>
             <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
-              Batal
+              Cancel
             </Button>
           </div>
           <p className="account-note">
@@ -206,7 +233,7 @@ export default function FamilyPage() {
             </div>
 
             <div className="wizard-actions">
-              <Button type="submit" disabled={busy || !name || !consentConfirmed}>
+              <Button type="submit" disabled={busy || !name || !consentConfirmed || members.length >= 6}>
                 {busy ? "Saving..." : "Save Family Member"}
                 <ArrowRight size={16} />
               </Button>
@@ -218,10 +245,10 @@ export default function FamilyPage() {
       {!members.length && !showAddForm ? (
         <div className="card account-empty">
           <UserPlus size={40} />
-            <h2>Belum ada anggota keluarga</h2>
-            <p>Tambahkan anggota keluarga hanya jika kamu memiliki izin untuk mengelola datanya.</p>
+          <h2>No family members added yet</h2>
+          <p>Add family members only if you have permission to manage their records.</p>
           <Button onClick={() => setShowAddForm(true)}>
-            <Plus size={16} /> Tambah anggota pertama
+            <Plus size={16} /> Add First Family Member
           </Button>
         </div>
       ) : (
@@ -241,29 +268,39 @@ export default function FamilyPage() {
               <div className="family-card-body">
                 {member.birth_date && (
                   <div className="policy-meta-row">
-                    <span>Tanggal lahir:</span>
+                    <span>Date of Birth:</span>
                     <strong>{member.birth_date}</strong>
                   </div>
                 )}
                 <div className="policy-meta-row">
-                  <span>Izin dicatat:</span>
-                  <strong>{new Date(member.consent_at).toLocaleDateString("id-ID")}</strong>
+                  <span>Consent Recorded:</span>
+                  <strong>{new Date(member.consent_at).toLocaleDateString()}</strong>
                 </div>
                 <div className="policy-meta-row">
-                  <span>Polis tertaut:</span>
-                  <strong>{member.active_coverage_count}</strong>
+                  <span>Linked Policies:</span>
+                  <strong>{member.active_coverage_count} Active</strong>
                 </div>
               </div>
 
               <div className="family-card-foot">
-                <span className="family-coverage-status">{member.active_coverage_count > 0 ? <CheckCircle2 size={15}/> : <FileText size={15}/>} {member.active_coverage_count > 0 ? "Ada polis tertaut" : "Belum ada polis tertaut"}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => void handleDeleteMember(member.id, member.name)}
-                >
-                  <Trash2 size={14} /> Remove
-                </Button>
+                <span className="family-coverage-status">
+                  {member.active_coverage_count > 0 ? <CheckCircle2 size={15} /> : <FileText size={15} />}
+                  {member.active_coverage_count > 0 ? `${member.active_coverage_count} policies linked` : "No linked policies recorded"}
+                </span>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/documents?owner=${member.id}`}>
+                      <FileText size={13} /> Upload Doc
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void handleDeleteMember(member.id, member.name)}
+                  >
+                    <Trash2 size={14} /> Remove
+                  </Button>
+                </div>
               </div>
             </article>
           ))}
