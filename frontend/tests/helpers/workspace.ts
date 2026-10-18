@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export async function accountWorkspace(
   page: Page,
@@ -9,7 +9,7 @@ export async function accountWorkspace(
   const root = path.resolve(__dirname, "../../..");
   const raw = execFileSync(
     path.join(root, ".tools/bin/uv"),
-    ["run", "python", "-m", "app.tests.seed_valen_e2e"],
+    ["run", "python", "-m", "app.tests.seed_workspace_e2e"],
     {
       cwd: path.join(root, "backend"),
       encoding: "utf8",
@@ -42,6 +42,12 @@ export async function accountWorkspace(
     sessionStorage.setItem("insurra.account-session", token);
   }, session.access_token);
   await page.goto("/home");
+  // Wait for account restoration before a test starts another full-page navigation.
+  await expect(
+    page.getByRole("heading", {
+      name: country === "ID" ? "Halo, Sinta." : "Halo, Raka.",
+    }),
+  ).toBeVisible();
   return {
     ...fixture,
     headers: { Authorization: `Bearer ${session.access_token}` },

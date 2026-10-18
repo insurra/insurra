@@ -10,7 +10,7 @@ from app.core.errors import AppError
 from app.models import RecommendationStateRow
 from app.schemas.common import RuleSource
 from app.schemas.foundation import HomeSummary, Recommendation
-from app.schemas.valen import CoverageCard, EmergencyInfo, ServiceChoice, WorkspaceContext
+from app.schemas.workspace import CoverageCard, EmergencyInfo, ServiceChoice, WorkspaceContext
 from app.services.audit_logger import log_actor_event
 from app.services.workspace import (
     FieldValue,

@@ -12,7 +12,7 @@ from app.schemas.actor import Actor
 from app.schemas.kb import RecommendationRuleConfig
 from app.services.command_center import summary
 from app.tests.test_account_workspace import account_headers, profile_payload
-from app.tests.valen_fixtures import workspace
+from app.tests.workspace_fixtures import workspace
 
 
 @pytest.mark.parametrize("country", ["AU", "ID"])

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/lib/api/client";
 import { useWorkspace } from "@/lib/workspace";
-import { EmergencyNotice, WorkspaceState } from "@/components/valen/workspace";
+import { EmergencyNotice, WorkspaceState } from "@/components/workspace/workspace";
 
 export default function HomePage() {
   const workspace = useWorkspace();

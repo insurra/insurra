@@ -21,7 +21,7 @@ from app.schemas.actor import Actor
 from app.schemas.foundation import AskRequest
 from app.services.policy_qa import ModelAnswer, answer
 from app.tests.test_account_workspace import account_headers, grant
-from app.tests.valen_fixtures import POLICY_TEXT, reviewed_triage, workspace
+from app.tests.workspace_fixtures import POLICY_TEXT, reviewed_triage, workspace
 
 
 class GatewayFixture:

@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useWorkspace } from "@/lib/workspace";
-import { PathwayConfirmation } from "@/components/valen/pathway-confirmation";
+import { PathwayConfirmation } from "@/components/workspace/pathway-confirmation";
 import {
   ConsentNotice,
   EmergencyNotice,
   WorkspaceState,
-} from "@/components/valen/workspace";
+} from "@/components/workspace/workspace";
 
 type Comparison = components["schemas"]["PathwayComparison"];
 type Request = components["schemas"]["PathwayComparisonRequest"];

@@ -1,4 +1,4 @@
-"""Canonical Valen operations with the existing account or demo identity."""
+"""Canonical workspace operations with the existing account or demo identity."""
 
 from typing import Annotated
 
@@ -14,14 +14,14 @@ from app.schemas.foundation import (
     PathwayComparison,
     PathwayComparisonRequest,
 )
-from app.schemas.valen import RecommendationDecision, SavedDecision
+from app.schemas.workspace import RecommendationDecision, SavedDecision
 from app.services.care_pathways import compare
 from app.services.command_center import save_recommendation, summary
 from app.services.coverage_matching import match_needs
 from app.services.pathway_cases import create_case
 from app.services.workspace import WorkspaceActor, require_grants
 
-router = APIRouter(tags=["Valen workspace"])
+router = APIRouter(tags=["Workspace"])
 
 
 @router.get("/home/summary", response_model=HomeSummary)

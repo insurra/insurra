@@ -13,7 +13,7 @@ from app.core.dependencies import DB, KB
 from app.core.errors import AppError
 from app.schemas.common import ApiError
 from app.schemas.foundation import AskAnswer, AskRequest, ChatHistory, EmergencyRedirect
-from app.schemas.valen import AnswerFeedback, SavedDecision, SourcePage
+from app.schemas.workspace import AnswerFeedback, SavedDecision, SourcePage
 from app.services.evidence import retained_page
 from app.services.policy_qa import answer, owned_chat, prepare, save_answer
 from app.services.workspace import (

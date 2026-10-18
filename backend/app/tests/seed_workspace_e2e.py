@@ -9,7 +9,7 @@ from app.api.auth import _hash_password
 from app.core.config import ROOT, Settings
 from app.main import create_app
 from app.models import AccountRow
-from app.tests.valen_fixtures import workspace
+from app.tests.workspace_fixtures import workspace
 
 
 def main():

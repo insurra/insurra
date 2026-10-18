@@ -9,8 +9,8 @@ from sqlalchemy import select
 
 from app.models import AccountAuditRow, AccountCoverageRow, ClaimCaseRow, PathwayDecisionRow
 from app.tests.test_account_workspace import grant
-from app.tests.test_valen_pathways import request
-from app.tests.valen_fixtures import reviewed_triage, workspace
+from app.tests.test_care_pathways import request
+from app.tests.workspace_fixtures import reviewed_triage, workspace
 
 
 def prepared(app, client, monkeypatch, code="AU"):

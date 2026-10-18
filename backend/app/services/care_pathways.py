@@ -12,7 +12,7 @@ from app.schemas.foundation import (
     PathwayComparison,
     PathwayOption,
 )
-from app.schemas.valen import VerificationQuestion
+from app.schemas.workspace import VerificationQuestion
 from app.services.approval import payload_sha256
 from app.services.audit_logger import log_actor_event
 from app.services.benefits import amount, benefit_fields, financial_facts

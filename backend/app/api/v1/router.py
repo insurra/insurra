@@ -17,7 +17,7 @@ from app.api.v1 import (
     policy_qa,
     profiles,
     sessions,
-    valen,
+    workspace,
 )
 from app.core.errors import ERROR_RESPONSES
 
@@ -39,7 +39,7 @@ for module in (
     actions,
     audit,
     foundation,
-    valen,
+    workspace,
     policy_qa,
 ):
     router.include_router(module.router)

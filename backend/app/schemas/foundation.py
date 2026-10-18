@@ -20,7 +20,7 @@ from app.schemas.common import (
     RuleSource,
 )
 from app.schemas.document import ProcessingStatus, SourceEvidence
-from app.schemas.valen import (
+from app.schemas.workspace import (
     CoverageCard,
     EmergencyInfo,
     NumericFact,

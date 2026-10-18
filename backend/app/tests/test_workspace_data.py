@@ -17,7 +17,7 @@ from app.models import AccountFieldRow, ClauseChunkRow
 from app.schemas.actor import Actor
 from app.services.benefits import financial_facts
 from app.services.workspace import coverages, grants, profile
-from app.tests.valen_fixtures import workspace
+from app.tests.workspace_fixtures import workspace
 
 
 def test_account_adapter_uses_existing_fields_without_copying_or_cross_actor_data(app, client):
@@ -164,7 +164,7 @@ def test_ingestion_without_retention_does_not_store_raw_pages(app, client, monke
     assert detail["pages"] == [] and detail["original_file_status"] == "DELETED"
 
 
-def test_valen_tables_compile_for_postgresql():
+def test_workspace_tables_compile_for_postgresql():
     for name in [
         "clause_chunks",
         "recommendation_states",

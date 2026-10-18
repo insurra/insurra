@@ -10,7 +10,7 @@ from app.models import AccountAuditRow, AccountFieldRow
 from app.schemas.actor import Actor
 from app.services.coverage_matching import match_needs
 from app.tests.test_account_workspace import grant, profile_payload
-from app.tests.valen_fixtures import POLICY_TEXT, workspace
+from app.tests.workspace_fixtures import POLICY_TEXT, workspace
 
 
 def by_code(client, headers):

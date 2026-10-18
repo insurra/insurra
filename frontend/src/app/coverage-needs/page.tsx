@@ -9,7 +9,7 @@ import {
   ConsentNotice,
   EmergencyNotice,
   WorkspaceState,
-} from "@/components/valen/workspace";
+} from "@/components/workspace/workspace";
 
 type Need = components["schemas"]["CoverageNeed"];
 const statusLabel = {

@@ -9,7 +9,7 @@ from app.models import AccountAuditRow, AccountCoverageRow, AccountFieldRow, Pat
 from app.schemas.common import VerificationStatus
 from app.schemas.kb import ReferenceTariff
 from app.services.kb_loader import CountryKBLoader
-from app.tests.valen_fixtures import reviewed_triage, workspace
+from app.tests.workspace_fixtures import reviewed_triage, workspace
 
 
 def request(client, h, country="AU", **changes):

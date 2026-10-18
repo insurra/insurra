@@ -10,8 +10,8 @@ import {
   ConsentNotice,
   EmergencyNotice,
   WorkspaceState,
-} from "@/components/valen/workspace";
-import { SourceDrawer } from "@/components/valen/source-drawer";
+} from "@/components/workspace/workspace";
+import { SourceDrawer } from "@/components/workspace/source-drawer";
 
 type Answer = components["schemas"]["AskAnswer"];
 type Citation = components["schemas"]["AnswerCitation"];

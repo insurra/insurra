@@ -4,7 +4,7 @@ import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
-from app.schemas.valen import NumericFact
+from app.schemas.workspace import NumericFact
 from app.services.workspace import CoverageView, FieldValue, parsed_date
 
 SUFFIXES = (

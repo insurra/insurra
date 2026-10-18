@@ -8202,7 +8202,7 @@
       },
       "post": {
         "tags": [
-          "Valen workspace"
+          "Workspace"
         ],
         "summary": "Create Claim Case",
         "operationId": "create_claim_case_api_v1_claims_post",
@@ -9413,7 +9413,7 @@
     "/api/v1/home/summary": {
       "get": {
         "tags": [
-          "Valen workspace"
+          "Workspace"
         ],
         "summary": "Home Summary",
         "operationId": "home_summary_api_v1_home_summary_get",
@@ -9550,7 +9550,7 @@
     "/api/v1/home/recommendations/decision": {
       "post": {
         "tags": [
-          "Valen workspace"
+          "Workspace"
         ],
         "summary": "Recommendation Decision",
         "operationId": "recommendation_decision_api_v1_home_recommendations_decision_post",
@@ -9697,7 +9697,7 @@
     "/api/v1/coverage-needs": {
       "get": {
         "tags": [
-          "Valen workspace"
+          "Workspace"
         ],
         "summary": "Coverage Needs",
         "operationId": "coverage_needs_api_v1_coverage_needs_get",
@@ -9838,7 +9838,7 @@
     "/api/v1/pathways/compare": {
       "post": {
         "tags": [
-          "Valen workspace"
+          "Workspace"
         ],
         "summary": "Compare Pathways",
         "operationId": "compare_pathways_api_v1_pathways_compare_post",

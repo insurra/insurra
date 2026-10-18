@@ -17,7 +17,7 @@ from app.models.entities import (
     PersonaRow,
     ProfileRow,
 )
-from app.models.valen import (
+from app.models.workspace_state import (
     AskLimitRow,
     ChatSessionRow,
     ClauseChunkRow,
