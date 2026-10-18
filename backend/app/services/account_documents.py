@@ -198,29 +198,29 @@ def _conservative_fields(pages: list[PageText], allowed: set[str]) -> Extraction
     }
     text_labels = {
         "policy_number": (
-            r"(?:policy no|policy number|certificate no|no polis|nomor polis|"
-            r"保险单号|凭证号|保单号)[^\w\n]{0,15}([A-Za-z0-9\-_]{5,32})"
+            r"(?:保单号|保单号码|凭证号|policy\s*(?:no|number)|certificate\s*no|nomor\s*polis)"
+            r"(?:[^\w\n]*\([^)]*\))?[\s\S]{1,40}?([A-Z]{2}-[A-Za-z0-9\-_]{5,32}|[0-9]{8,25})"
         ),
         "nomor_kartu": (r"(?:nomor kartu|no\.? kartu|kartu bpjs|nik)[^\w\n]{0,15}([0-9]{11,16})"),
         "receipt_number": (
-            r"(?:receipt no|invoice no|kwitansi no|fapiao no|发票号码|发票号)"
-            r"[^\w\n]{0,15}([A-Za-z0-9\-_]{5,32})"
+            r"(?:发票号码|发票号|receipt\s*no|invoice\s*no|kwitansi\s*no|fapiao\s*no)"
+            r"(?:[^\w\n]*\([^)]*\))?[:：\s]{1,10}([A-Za-z0-9\-_]{6,32})"
         ),
         "provider": (
-            r"(?:insurer|provider|insurance company|penanggung|perusahaan asuransi|"
-            r"保险人|承保公司)[^\w\n]{0,15}([A-Za-z0-9\s\u4e00-\u9fa5]{3,50})"
+            r"(?:承保公司|保险人|insurer|provider|insurance\s*company|penanggung)"
+            r"(?:\s*\([^)]*\))?[:：\s]{1,10}([A-Za-z0-9\s\u4e00-\u9fa5]{4,40}?)(?:\s*\(|\n|\t)"
         ),
         "insured_name": (
-            r"(?:insured|member name|policyholder|nama tertanggung|nama peserta|"
-            r"被保险人|姓名)[^\w\n]{0,15}([A-Za-z0-9\s\u4e00-\u9fa5]{2,40})"
+            r"(?:被保险人(?:姓名)?|insured(?:\s*name)?|nama\s*(?:tertanggung|peserta))"
+            r"(?:\s*\([^)]*\))?[:：\s]{1,10}([A-Za-z\s\u4e00-\u9fa5]{2,30}?)(?:\s*\(|\n|\t)"
         ),
         "plan_type": (
-            r"(?:plan|scheme|scheme name|jenis paket|produk|险种名称|方案名称)"
-            r"[^\w\n]{0,15}([A-Za-z0-9\s\u4e00-\u9fa5]{3,50})"
+            r"(?:险种名称|方案名称|plan(?:\s*type)?|scheme\s*name)"
+            r"(?:\s*\([^)]*\))?[:：\s]{1,10}([A-Za-z0-9\s\u4e00-\u9fa5]{3,40}?)(?:\s*\(|\n|\t)"
         ),
         "hospital_name": (
-            r"(?:hospital|clinic|rumah sakit|rs|医院|医疗机构)"
-            r"[^\w\n]{0,15}([A-Za-z0-9\s\u4e00-\u9fa5]{4,50})"
+            r"(?:就诊(?:指定)?医院|医疗机构|hospital(?:\s*name)?|rumah\s*sakit)"
+            r"(?:\s*\([^)]*\))?[:：\s]{1,10}([A-Za-z0-9\s\u4e00-\u9fa5]{4,40}?)(?:\s*\(|\n|\t)"
         ),
     }
     result: list[CandidateField] = []

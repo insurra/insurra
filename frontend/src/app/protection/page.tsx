@@ -217,35 +217,35 @@ export default function MyProtectionParentPage() {
   }, [family, inventory?.documents, isDemo, policies, query, userContext.declaredCoverages]);
 
   if (authLoading || demoLoading) {
-    return <main className="figma-page-shell"><p role="status">Memuat My Protection…</p></main>;
+    return <main className="figma-page-shell"><p role="status">Loading My Protection…</p></main>;
   }
 
   const hubCards = [
     {
       title: "Policy Wallet",
-      description: "Lihat catatan polis dan informasi yang tercatat.",
+      description: "View your policies and recorded information.",
       href: "/policies",
       icon: <Wallet size={21} />,
       tone: "mint",
       image: "/protection-policy-stack.png",
       imageAlt: "",
-      pill: `${policyCount} polis tercatat`,
+      pill: `${policyCount} policies recorded`,
       pillTone: "success",
     },
     {
-      title: "Dokumen",
-      description: "Unggah dan tinjau dokumen perlindunganmu.",
+      title: "Documents",
+      description: "Upload and review your protection documents.",
       href: "/documents",
       icon: <FileText size={21} />,
       tone: "blue",
       image: "/protection-documents.png",
       imageAlt: "",
-      pill: `${documentCount} dokumen tersimpan`,
+      pill: `${documentCount} documents stored`,
       pillTone: "success",
     },
     {
       title: "Data Completeness",
-      description: "Periksa informasi yang belum ditemukan atau diverifikasi.",
+      description: "Check for information that is missing or unverified.",
       href: "/completeness",
       icon: <ListChecks size={21} />,
       tone: "green",
@@ -253,44 +253,44 @@ export default function MyProtectionParentPage() {
       imageAlt: "",
       pill: hasCompleteness
         ? missingItems.length
-          ? `${missingItems.length} informasi belum ditemukan`
+          ? `${missingItems.length} items not found`
           : unverifiedItems.length
-            ? `${unverifiedItems.length} perlu diverifikasi`
-            : "Informasi wajib ditemukan"
-        : "Belum diperiksa",
+            ? `${unverifiedItems.length} need verification`
+            : "Required information found"
+        : "Not checked yet",
       pillTone: missingItems.length ? "danger" : unverifiedItems.length ? "warning" : "success",
     },
     {
       title: "Coverage Needs",
-      description: "Analisis kebutuhan perlindungan belum tersedia.",
+      description: "Protection needs analysis is not available yet.",
       href: null,
       icon: <BarChart3 size={21} />,
       tone: "purple",
       image: "/protection-coverage-checklist.png",
       imageAlt: "",
-      pill: "Belum tersedia",
+      pill: "Not available yet",
       pillTone: "neutral",
     },
     {
       title: "Family Coverage",
-      description: "Kelola anggota keluarga dan catat polis yang tertaut.",
+      description: "Manage family members and record linked policies.",
       href: "/family",
       icon: <Users size={21} />,
       tone: "amber",
       image: "/protection-family.png",
       imageAlt: "",
-      pill: `${familyCount} anggota keluarga`,
+      pill: `${familyCount} family members`,
       pillTone: "warning",
     },
     {
       title: "Key Dates",
-      description: "Pantau tanggal yang tercatat pada profil dan polis.",
+      description: "Track dates recorded in your profile and policies.",
       href: "/completeness",
       icon: <CalendarDays size={21} />,
       tone: "red",
       image: "/protection-calendar.png",
       imageAlt: "",
-      pill: dateCount ? `${dateCount} tanggal tercatat` : "Belum ada tanggal",
+      pill: dateCount ? `${dateCount} dates recorded` : "No dates recorded",
       pillTone: "warning",
     },
   ] as const;
@@ -300,17 +300,17 @@ export default function MyProtectionParentPage() {
       <header className="figma-page-header my-protection-header">
         <div>
           <h1>My Protection</h1>
-          <p>Kelola polis, dokumen, dan informasi perlindunganmu.</p>
+          <p>View and manage your insurance, documents, and important information.</p>
         </div>
         <div className="figma-search-input-wrap my-protection-search-wrap">
           <Search size={17} aria-hidden="true" />
           <input
             type="search"
             className="figma-search-input"
-            placeholder="Cari polis, dokumen, atau anggota…"
+            placeholder="Search policies, documents, or members…"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            aria-label="Cari polis, dokumen, atau anggota"
+            aria-label="Search policies, documents, or members"
           />
           {query && (
             <div className="protection-search-results" role="listbox">
@@ -318,15 +318,15 @@ export default function MyProtectionParentPage() {
                 <Link key={`${item.href}-${item.label}`} href={item.href} role="option">
                   <span>{item.label}<small>{item.hint}</small></span><ArrowRight size={15} />
                 </Link>
-              )) : <p>Tidak ada hasil yang cocok.</p>}
+              )) : <p>No matching results.</p>}
             </div>
           )}
         </div>
       </header>
 
-      <section className="figma-protection-hero my-protection-hero" aria-label="Status kelengkapan perlindungan">
+      <section className="figma-protection-hero my-protection-hero" aria-label="Protection completeness status">
         <div className="figma-hero-left my-protection-hero-copy">
-          <span className="figma-hero-tag">STATUS KELENGKAPAN</span>
+          <span className="figma-hero-tag">OVERALL PROTECTION STATUS</span>
           <div className="figma-hero-title-row">
             <Image src="/protection-shield.png" alt="" width={68} height={68} className="my-protection-shield" />
             <div>
@@ -335,23 +335,23 @@ export default function MyProtectionParentPage() {
             </div>
           </div>
           <div className="figma-hero-progress-row">
-            <div className="figma-progress-track" role="progressbar" aria-label="Kelengkapan data" aria-valuemin={0} aria-valuemax={100} aria-valuenow={readyPercent ?? undefined}>
+            <div className="figma-progress-track" role="progressbar" aria-label="Data completeness" aria-valuemin={0} aria-valuemax={100} aria-valuenow={readyPercent ?? undefined}>
               <div className="figma-progress-fill" style={{ width: `${readyPercent ?? 0}%` }} />
             </div>
-            <span className="figma-progress-label">{readyPercent === null ? "Belum diperiksa" : `${readyPercent}% · data ditemukan`}</span>
+            <span className="figma-progress-label">{readyPercent === null ? "Not checked yet" : `${readyPercent}% · data found`}</span>
           </div>
-          <small className="my-protection-disclaimer">Kelengkapan data bukan konfirmasi bahwa polis aktif atau manfaat dijamin.</small>
+          <small className="my-protection-disclaimer">Data completeness does not confirm active coverage or guaranteed benefits.</small>
         </div>
         <Image
           src="/protection-hero-checklist.png"
-          alt="Ilustrasi pemeriksaan informasi perlindungan"
+          alt="Illustration of a person reviewing protection information"
           width={190}
           height={190}
           className="figma-hero-illustration my-protection-hero-art"
           priority
         />
         <Link href={nextStep.href} className="figma-hero-next-step my-protection-next-step">
-          <span className="figma-next-step-badge">LANGKAH BERIKUTNYA</span>
+          <span className="figma-next-step-badge">NEXT STEP</span>
           <div className="figma-next-step-content">
             <div className="figma-next-step-icon"><AlertCircle size={18} /></div>
             <div className="figma-next-step-text"><h4>{nextStep.title}</h4><p>{nextStep.description}</p></div>
@@ -360,7 +360,7 @@ export default function MyProtectionParentPage() {
         </Link>
       </section>
 
-      <section className="figma-protection-grid my-protection-grid" aria-label="Fitur My Protection">
+      <section className="figma-protection-grid my-protection-grid" aria-label="My Protection features">
         {hubCards.map((card) => {
           const content = (
             <>
@@ -386,7 +386,7 @@ export default function MyProtectionParentPage() {
 
       <footer className="my-protection-footer">
         <ShieldCheck size={15} aria-hidden="true" />
-        <span>Informasi dirangkum dari profil dan dokumen yang tersedia. Tinjau sumber asli sebelum mengambil keputusan.</span>
+        <span>Information is summarized from your available profile and documents. Review original sources before making decisions.</span>
         {displayName && <span className="my-protection-account-label">{displayName}</span>}
       </footer>
     </main>

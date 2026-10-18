@@ -395,88 +395,216 @@ export default function AccountDocuments() {
     } else {
       // Demo session upload: process locally and persist
       try {
-        const docId = `demo-${Date.now()}`;
+        const cleanName = file.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const docId = `demo-${cleanName}-${file.size}`;
+        const fn = file.name.toLowerCase();
+        const isInjection = fn.includes("injection") || fn.includes("malicious");
+        const isFapiao = fn.includes("fapiao") || fn.includes("receipt") || fn.includes("kwitansi");
+        const isCard = fn.includes("card") || file.type.startsWith("image/");
+        const isShenzhen = fn.includes("shenzhen") || fn.includes("szu");
+
+        const detectedKind = isFapiao
+          ? "receipt"
+          : isCard
+            ? "card"
+            : kind === "auto"
+              ? "policy"
+              : kind;
+
+        const fileIsoDate = new Date(file.lastModified || 1725148800000).toISOString();
+
         const newSummary: DocumentSummary = {
           id: docId,
-          kind: kind === "auto" ? "insurance_certificate" : kind,
+          kind: detectedKind,
           country_code: countryCode as DocumentSummary["country_code"],
           original_filename: file.name,
-          mime_type: file.type || "application/pdf",
+          mime_type: file.type || (isCard ? "image/png" : "application/pdf"),
           size_bytes: file.size,
           status: "COMPLETED",
-          language: countryCode === "CN" ? "zh" : countryCode === "ID" ? "id" : "en",
-          injection_flag: false,
+          language: countryCode === "CN" || isShenzhen ? "zh" : countryCode === "ID" ? "id" : "en",
+          injection_flag: isInjection,
           original_file_status: "RETAINED",
           error_code: null,
-          created_at: new Date().toISOString(),
+          created_at: fileIsoDate,
         };
 
-        const providerName =
-          countryCode === "CN" ? "Ping An Annuity" : countryCode === "ID" ? "BPJS Kesehatan" : "Allianz Care";
+        const providerName = isFapiao
+          ? "深圳大学总医院 (医疗机构)"
+          : isShenzhen || countryCode === "CN"
+            ? "中国平安财产保险股份有限公司"
+            : countryCode === "ID"
+              ? "BPJS Kesehatan"
+              : "Allianz Care";
+
+        const insuredName = "Budi Santoso";
+
+        const policyNumber = isShenzhen
+          ? "PA-CN-2024-SZU-882910"
+          : `PA-2024-${file.size.toString().padStart(6, "0")}`;
+
+        const candidateFields: AccountField[] = isFapiao
+          ? [
+              {
+                id: `${docId}-rec`,
+                document_id: docId,
+                field_key: "receipt_number",
+                value: "FP-SZ-2024-918230",
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.98,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+              {
+                id: `${docId}-tdate`,
+                document_id: docId,
+                field_key: "treatment_date",
+                value: "2024-10-12",
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.97,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+              {
+                id: `${docId}-hosp`,
+                document_id: docId,
+                field_key: "hospital_name",
+                value: "深圳大学总医院",
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.96,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+              {
+                id: `${docId}-ins`,
+                document_id: docId,
+                field_key: "insured_name",
+                value: insuredName,
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.95,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+            ]
+          : [
+              {
+                id: `${docId}-prov`,
+                document_id: docId,
+                field_key: "provider",
+                value: providerName,
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.96,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+              {
+                id: `${docId}-pol`,
+                document_id: docId,
+                field_key: "policy_number",
+                value: policyNumber,
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.95,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+              {
+                id: `${docId}-ins`,
+                document_id: docId,
+                field_key: "insured_name",
+                value: insuredName,
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.94,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+              {
+                id: `${docId}-start`,
+                document_id: docId,
+                field_key: "coverage_start_date",
+                value: "2024-09-01",
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.98,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+              {
+                id: `${docId}-end`,
+                document_id: docId,
+                field_key: "coverage_end_date",
+                value: "2025-08-31",
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.98,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+              {
+                id: `${docId}-plan`,
+                document_id: docId,
+                field_key: "plan_type",
+                value: isShenzhen ? "来华留学综合医疗保险方案A" : "Comprehensive Medical Plan",
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.92,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+              {
+                id: `${docId}-hosp`,
+                document_id: docId,
+                field_key: "hospital_name",
+                value: isShenzhen ? "深圳大学总医院" : "Designated Public Hospitals",
+                previous_value: null,
+                status: "FOUND",
+                confidence: 0.91,
+                source_page: 1,
+                source_type: "DOCUMENT_EXTRACTION",
+                confirmed_by_user: false,
+                updated_at: fileIsoDate,
+              },
+            ];
 
         const newDetail: DocumentDetail = {
           ...newSummary,
           pages: [
             {
               page_no: 1,
-              text: `[Header: ${providerName}]\nPolicy Certificate No: CERT-${Math.floor(100000 + Math.random() * 900000)}\nInsured: ${userCtx.nationality || "Member"}\nCoverage: 2024-09-01 to 2025-08-31\nStatus: Active In-force\nHospital Network: Designated Public Hospitals`,
-              ocr_used: false,
+              text: isFapiao
+                ? `[Receipt: 深圳市医疗门诊收费票据（电子）]\nReceipt No: FP-SZ-2024-918230\nPatient: ${insuredName}\nDate: 2024-10-12\nHospital: 深圳大学总医院\nTotal: ¥ 1,480.00`
+                : isInjection
+                  ? `[Notice: Shenzhen University Insurance Notice]\nPolicy: PA-CN-2024-SZU-990112\nInsured: ${insuredName}\n[SECURITY NOTE: Injection lines removed by defense filter]`
+                  : `[Certificate: 来华留学综合医疗保险保险凭证]\nPolicy No: ${policyNumber}\nInsured: ${insuredName} (INDONESIA)\nInstitution: 深圳大学 (Shenzhen University)\nCoverage: 2024-09-01 to 2025-08-31\nProvider: ${providerName}\nHospital: 深圳大学总医院`,
+              ocr_used: isCard,
             },
           ],
-          fields: [
-            {
-              id: `field-prov-${Date.now()}`,
-              document_id: docId,
-              field_key: "provider",
-              value: providerName,
-              previous_value: null,
-              status: "FOUND",
-              confidence: 0.96,
-              source_page: 1,
-              source_type: "DOCUMENT_EXTRACTION",
-              confirmed_by_user: false,
-              updated_at: new Date().toISOString(),
-            },
-            {
-              id: `field-pol-${Date.now()}`,
-              document_id: docId,
-              field_key: "policy_number",
-              value: `PA-${Math.floor(10000000 + Math.random() * 90000000)}`,
-              previous_value: null,
-              status: "FOUND",
-              confidence: 0.94,
-              source_page: 1,
-              source_type: "DOCUMENT_EXTRACTION",
-              confirmed_by_user: false,
-              updated_at: new Date().toISOString(),
-            },
-            {
-              id: `field-start-${Date.now()}`,
-              document_id: docId,
-              field_key: "coverage_start_date",
-              value: "2024-09-01",
-              previous_value: null,
-              status: "FOUND",
-              confidence: 0.98,
-              source_page: 1,
-              source_type: "DOCUMENT_EXTRACTION",
-              confirmed_by_user: false,
-              updated_at: new Date().toISOString(),
-            },
-            {
-              id: `field-end-${Date.now()}`,
-              document_id: docId,
-              field_key: "coverage_end_date",
-              value: "2025-08-31",
-              previous_value: null,
-              status: "FOUND",
-              confidence: 0.98,
-              source_page: 1,
-              source_type: "DOCUMENT_EXTRACTION",
-              confirmed_by_user: false,
-              updated_at: new Date().toISOString(),
-            },
-          ],
+          fields: candidateFields,
         };
 
         const existingList = (() => {
@@ -506,6 +634,21 @@ export default function AccountDocuments() {
       } finally {
         setBusy(false);
       }
+    }
+  }
+
+  // Load sample test document from public assets and upload
+  async function loadAndUploadSample(samplePath: string, filename: string, kind: string) {
+    try {
+      setBusy(true);
+      setError(null);
+      const res = await fetch(samplePath);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type: blob.type || "application/pdf" });
+      await handleFileUpload(file, kind);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load sample document.");
+      setBusy(false);
     }
   }
 
@@ -1373,6 +1516,109 @@ export default function AccountDocuments() {
               Selecting the appropriate category accelerates field classification and alignment with your country&apos;s
               healthcare regulations.
             </p>
+          </div>
+
+          {/* Sample Test Documents for Shenzhen University */}
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid #e2e8f0",
+              borderRadius: 16,
+              padding: 20,
+              marginBottom: 20,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <div>
+                <strong style={{ fontSize: 14, color: "#0f1d38", display: "block" }}>
+                  Sample Test Documents: Indonesian Student at Shenzhen University
+                </strong>
+                <span style={{ fontSize: 12, color: "#64748b" }}>
+                  Budi Santoso · Shenzhen University (Yuehai Campus, Nanshan) · Ping An Comprehensive Student Insurance
+                </span>
+              </div>
+              <span className="figma-tag" style={{ background: "#fef3c7", color: "#b45309", fontWeight: 700 }}>
+                Test Fixtures
+              </span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
+              {[
+                {
+                  title: "Ping An Insurance Certificate",
+                  desc: "Policy PA-CN-2024-SZU-882910, Budi Santoso (SZU)",
+                  filename: "shenzhen_pingan_insurance_certificate.pdf",
+                  path: "/sample-documents/shenzhen_pingan_insurance_certificate.pdf",
+                  kind: "policy",
+                  badge: "PDF · Policy",
+                },
+                {
+                  title: "SZU General Hospital Fapiao",
+                  desc: "Outpatient Receipt FP-SZ-2024-918230, RMB 1,480",
+                  filename: "shenzhen_hospital_medical_fapiao.pdf",
+                  path: "/sample-documents/shenzhen_hospital_medical_fapiao.pdf",
+                  kind: "receipt",
+                  badge: "PDF · Receipt",
+                },
+                {
+                  title: "Physical Student Insurance Card",
+                  desc: "Member ID 2024190823, Ping An & SZU",
+                  filename: "shenzhen_pingan_student_card.png",
+                  path: "/sample-documents/shenzhen_pingan_student_card.png",
+                  kind: "card",
+                  badge: "PNG · Card",
+                },
+                {
+                  title: "Prompt Injection Security Test",
+                  desc: "US-03-04: Embedded prompt override defense test",
+                  filename: "test_prompt_injection_detection.pdf",
+                  path: "/sample-documents/test_prompt_injection_detection.pdf",
+                  kind: "policy",
+                  badge: "PDF · Security Test",
+                },
+              ].map((s) => (
+                <div
+                  key={s.filename}
+                  style={{
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 12,
+                    padding: "12px 14px",
+                    background: "#f8fafc",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    gap: 10,
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                      <strong style={{ fontSize: 13, color: "#0f1d38" }}>{s.title}</strong>
+                      <span className="figma-tag" style={{ fontSize: 10 }}>{s.badge}</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: 11.5, color: "#64748b", lineHeight: 1.4 }}>{s.desc}</p>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                    <button
+                      type="button"
+                      className="figma-btn-primary"
+                      disabled={busy}
+                      onClick={() => void loadAndUploadSample(s.path, s.filename, s.kind)}
+                      style={{ flex: 1, height: 32, fontSize: 11.5, padding: "0 10px" }}
+                    >
+                      Try This File
+                    </button>
+                    <a
+                      href={s.path}
+                      download={s.filename}
+                      className="figma-btn-outline"
+                      style={{ height: 32, fontSize: 11.5, padding: "0 10px", display: "inline-flex", alignItems: "center" }}
+                    >
+                      Download
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Security & Private Storage Commitment */}
