@@ -24,6 +24,9 @@ export type SegmentDetails = {
   studyPeriod?: string;
   residencePermitExpiry?: string;
   employerName?: string;
+  registeredBusinessName?: string;
+  industry?: string;
+  businessRole?: string;
   socialInsuranceStatus?: string;
   visaType?: string;
   travelDestination?: string;

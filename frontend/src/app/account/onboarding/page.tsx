@@ -489,6 +489,15 @@ function AccountOnboardingContent() {
     userCtx.segmentDetails?.residencePermitExpiry || "2026-09-30"
   );
   const [employerName, setEmployerName] = useState<string>(userCtx.segmentDetails?.employerName || "");
+  const [registeredBusinessName, setRegisteredBusinessName] = useState<string>(
+    userCtx.segmentDetails?.registeredBusinessName || userCtx.segmentDetails?.employerName || ""
+  );
+  const [industry, setIndustry] = useState<string>(
+    userCtx.segmentDetails?.industry || "Technology, IT & Software"
+  );
+  const [businessRole, setBusinessRole] = useState<string>(
+    userCtx.segmentDetails?.businessRole || ""
+  );
   const [socialInsuranceStatus, setSocialInsuranceStatus] = useState<string>(
     userCtx.segmentDetails?.socialInsuranceStatus || "Enrolled in Social Medical Insurance (医保)"
   );
@@ -578,11 +587,15 @@ function AccountOnboardingContent() {
 
   // Handle Step 2 Submit
   function handleStep2Submit() {
+    const finalBusinessName = (registeredBusinessName.trim() || employerName.trim()) || undefined;
     const segDetails: SegmentDetails = {
       institutionName: institutionName.trim() || undefined,
       studyPeriod: studyPeriod.trim() || undefined,
       residencePermitExpiry: residencePermitExpiry.trim() || undefined,
-      employerName: employerName.trim() || undefined,
+      employerName: finalBusinessName,
+      registeredBusinessName: finalBusinessName,
+      industry: industry.trim() || undefined,
+      businessRole: businessRole.trim() || undefined,
       socialInsuranceStatus: socialInsuranceStatus || undefined,
       visaType: visaType.trim() || undefined,
       travelDestination: travelDestination.trim() || undefined,
@@ -947,7 +960,7 @@ function AccountOnboardingContent() {
             </div>
             <div>
               <h3>INSURRA Insurance Companion</h3>
-              <p>Context-aware guidance for your insurance decisions</p>
+              <p>Personalized guidance for your insurance decisions</p>
             </div>
           </div>
 
@@ -1100,10 +1113,10 @@ function AccountOnboardingContent() {
                       })}
                     </div>
 
-                    {/* Context-driven conditional questions */}
+                    {/* Situation-driven conditional questions */}
                     {segment === "student" && residenceCountry === "CN" && (
                       <div className="conditional-group-card">
-                        <span className="conditional-tag">International Student in China Context</span>
+                        <span className="conditional-tag">International Student in China</span>
                         <div className="field-row">
                           <label className="field-label">University / Institution</label>
                           <input
@@ -1140,7 +1153,7 @@ function AccountOnboardingContent() {
 
                     {segment === "student" && residenceCountry === "AU" && (
                       <div className="conditional-group-card">
-                        <span className="conditional-tag">International Student in Australia Context</span>
+                        <span className="conditional-tag">International Student in Australia</span>
                         <div className="field-row">
                           <label className="field-label">Educational Institution</label>
                           <input
@@ -1174,23 +1187,114 @@ function AccountOnboardingContent() {
                       </div>
                     )}
 
-                    {segment === "employee" && (
+                    {segment === "student" && residenceCountry !== "CN" && residenceCountry !== "AU" && (
                       <div className="conditional-group-card">
-                        <span className="conditional-tag">Employment Context</span>
+                        <span className="conditional-tag">Student Details in {activeCountryObj.name}</span>
                         <div className="field-row">
-                          <label className="field-label">Employer / Company Name</label>
+                          <label className="field-label">University / Institution</label>
                           <input
                             type="text"
                             className="text-input-field"
-                            placeholder="e.g. Tech Enterprise, Multinational, Local firm..."
-                            value={employerName}
-                            onChange={(e) => setEmployerName(e.target.value)}
+                            placeholder="e.g. University Name..."
+                            value={institutionName}
+                            onChange={(e) => setInstitutionName(e.target.value)}
                           />
+                        </div>
+                        <div className="field-grid-2">
+                          <div>
+                            <label className="field-label">Study Duration</label>
+                            <input
+                              type="text"
+                              className="text-input-field"
+                              placeholder="e.g. 2024 - 2026"
+                              value={studyPeriod}
+                              onChange={(e) => setStudyPeriod(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <label className="field-label">Permit / Visa Expiry</label>
+                            <input
+                              type="date"
+                              className="text-input-field"
+                              value={residencePermitExpiry}
+                              onChange={(e) => setResidencePermitExpiry(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {(segment === "employee" || segment === "self_employed") && (
+                      <div className="conditional-group-card">
+                        <span className="conditional-tag">
+                          {segment === "self_employed"
+                            ? "Registered Business & Venture Profile"
+                            : "Employment & Corporate Profile"}
+                        </span>
+                        <div className="field-row">
+                          <label className="field-label">
+                            {segment === "self_employed"
+                              ? "Registered Business / Entity Name"
+                              : "Registered Employer / Company Name"}
+                          </label>
+                          <input
+                            type="text"
+                            className="text-input-field"
+                            placeholder={
+                              segment === "self_employed"
+                                ? "e.g. PT Mandiri Nusantara, Shenzhen Qianhai Tech Ltd., Studio Design"
+                                : "e.g. Tech Enterprise, Multinational Bank, Local firm"
+                            }
+                            value={registeredBusinessName || employerName}
+                            onChange={(e) => {
+                              setRegisteredBusinessName(e.target.value);
+                              setEmployerName(e.target.value);
+                            }}
+                          />
+                        </div>
+                        <div className="field-grid-2">
+                          <div>
+                            <label className="field-label">Industry Sector</label>
+                            <select
+                              className="text-input-field"
+                              value={industry}
+                              onChange={(e) => setIndustry(e.target.value)}
+                            >
+                              <option value="Technology, IT & Software">Technology, IT & Software</option>
+                              <option value="Manufacturing, Trade & Logistics">Manufacturing, Trade & Logistics</option>
+                              <option value="Finance, Banking & Consulting">Finance, Banking & Consulting</option>
+                              <option value="Healthcare, Medical & Biotech">Healthcare, Medical & Biotech</option>
+                              <option value="Education, Academia & EdTech">Education, Academia & EdTech</option>
+                              <option value="Retail, E-commerce & Consumer">Retail, E-commerce & Consumer</option>
+                              <option value="Hospitality, Tourism & F&B">Hospitality, Tourism & F&B</option>
+                              <option value="Creative, Media & Entertainment">Creative, Media & Entertainment</option>
+                              <option value="Construction, Real Estate & Energy">Construction, Real Estate & Energy</option>
+                              <option value="Other Industry">Other Industry</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="field-label">
+                              {segment === "self_employed" ? "Business Role / Ownership" : "Position / Role"}
+                            </label>
+                            <input
+                              type="text"
+                              className="text-input-field"
+                              placeholder={
+                                segment === "self_employed"
+                                  ? "e.g. Founder, Managing Director, Freelance Consultant"
+                                  : "e.g. Software Engineer, Operations Manager"
+                              }
+                              value={businessRole}
+                              onChange={(e) => setBusinessRole(e.target.value)}
+                            />
+                          </div>
                         </div>
                         <div className="field-row">
                           <label className="field-label">
                             {residenceCountry === "CN"
-                              ? "Social Medical Insurance Status (医保)"
+                              ? "Public Social Medical Insurance Status (医保)"
+                              : residenceCountry === "ID"
+                              ? "BPJS Ketenagakerjaan & BPJS Kesehatan Status"
                               : "Social Health / Group Status"}
                           </label>
                           <select
@@ -1198,8 +1302,9 @@ function AccountOnboardingContent() {
                             value={socialInsuranceStatus}
                             onChange={(e) => setSocialInsuranceStatus(e.target.value)}
                           >
-                            <option value="Enrolled">Enrolled in basic public/social medical insurance</option>
-                            <option value="Not enrolled">Not enrolled / Rely on commercial coverage</option>
+                            <option value="Enrolled">Enrolled in basic public / social medical insurance</option>
+                            <option value="Corporate Group Only">Corporate group health policy only</option>
+                            <option value="Not enrolled">Not enrolled / Rely on personal commercial coverage</option>
                             <option value="Not sure">Not sure / Needs verification</option>
                           </select>
                         </div>
@@ -1208,7 +1313,7 @@ function AccountOnboardingContent() {
 
                     {segment === "traveler" && (
                       <div className="conditional-group-card">
-                        <span className="conditional-tag">Travel Context</span>
+                        <span className="conditional-tag">Travel & Mobility Details</span>
                         <div className="field-row">
                           <label className="field-label">Primary Destination</label>
                           <input
@@ -1237,7 +1342,10 @@ function AccountOnboardingContent() {
                   <div className="chat-user-bubble">
                     <span>
                       {SITUATION_OPTIONS.find((s) => s.id === segment)?.label}
-                      {institutionName ? ` · ${institutionName}` : ""}
+                      {segment === "student" && institutionName ? ` · ${institutionName}` : ""}
+                      {(segment === "employee" || segment === "self_employed") && (registeredBusinessName || employerName)
+                        ? ` · ${registeredBusinessName || employerName} (${industry})`
+                        : ""}
                     </span>
                     <button
                       type="button"
@@ -1637,11 +1745,11 @@ function AccountOnboardingContent() {
           </div>
         </section>
 
-        {/* Right Column: Live Context Profile & Dynamic Suggested Docs */}
-        <aside className="onboarding-live-panel" aria-label="Live Context Profile">
+        {/* Right Column: Live Profile Summary & Suggested Documents */}
+        <aside className="onboarding-live-panel" aria-label="Live Profile Summary">
           <div className="live-panel-header">
             <span className="live-dot-pulse" />
-            <h3>Live Context Profile</h3>
+            <h3>Live Profile Summary</h3>
           </div>
 
           {/* Metric Split: Profile Setup vs Coverage Verification */}
@@ -1665,7 +1773,7 @@ function AccountOnboardingContent() {
             </div>
           </div>
 
-          {/* Live Context Summary Cards */}
+          {/* Live Profile Summary Cards */}
           <div className="live-context-section">
             <div className="live-context-card">
               <div className="context-card-head">
@@ -1710,13 +1818,10 @@ function AccountOnboardingContent() {
             </div>
           </div>
 
-          {/* Dynamic Suggested Documents Generator: f(Country, User Type, Coverage, Goal) */}
+          {/* Dynamic Suggested Documents */}
           <div className="suggested-docs-container">
             <div className="suggested-docs-head">
               <h4>Suggested Documents</h4>
-              <span className="formula-badge">
-                f({activeCountryObj.code}, {segment})
-              </span>
             </div>
             <p className="suggested-docs-sub">
               Tailored to your location, situation, and declared coverage categories.

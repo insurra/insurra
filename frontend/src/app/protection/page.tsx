@@ -366,7 +366,7 @@ export default function MyProtectionParentPage() {
             </div>
           </div>
           <span className="figma-hub-card-pill success">
-            <CheckCircle2 size={13} /> Context analyzed
+            <CheckCircle2 size={13} /> Profile analyzed
           </span>
         </Link>
 
