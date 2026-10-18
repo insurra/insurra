@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": [
+    {
+      "code": "STUDENT_COMPREHENSIVE",
+      "label": "Comprehensive Medical Insurance for Foreigners"
+    },
+    {
+      "code": "SOCIAL_MEDICAL",
+      "label": "Social Basic Medical Insurance (医保)"
+    },
+    {
+      "code": "COMMERCIAL_HEALTH",
+      "label": "Commercial Health and Inpatient Insurance"
+    },
+    {
+      "code": "EMPLOYER_GROUP",
+      "label": "Employer Group Medical Benefits"
+    },
+    {
+      "code": "ACCIDENT",
+      "label": "Personal Accident and Disability"
+    },
+    {
+      "code": "TRAVEL",
+      "label": "Travel Medical Insurance"
+    },
+    {
+      "code": "LIFE",
+      "label": "Life and Critical Illness"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": {
+    "pathways": [
+      {
+        "pathway_code": "PUBLIC_TERTIARY_HOSPITAL",
+        "label": "Public Secondary & Tertiary Hospitals (二级及以上公立医院)",
+        "description": "Standard designated care network for students under Ping An Foreign Student Scheme. Inpatient and general outpatient departments.",
+        "required_documents": [
+          "insurance_certificate",
+          "medical_fapiao",
+          "diagnosis_certificate",
+          "cost_breakdown"
+        ],
+        "estimated_out_of_pocket": null,
+        "currency": "CNY",
+        "uncertainties": [
+          "Outpatient deductible threshold applies (typically RMB 650); special VIP wards and foreign patient wings are excluded."
+        ],
+        "source_url": null,
+        "verification_status": "UNVERIFIED"
+      },
+      {
+        "pathway_code": "CAMPUS_HEALTH_CLINIC",
+        "label": "University Health Center & Campus Clinic (校医院)",
+        "description": "Primary consultations, triage, first-aid, and routine prescription services on university campus.",
+        "required_documents": [
+          "admission_notice"
+        ],
+        "estimated_out_of_pocket": null,
+        "currency": "CNY",
+        "uncertainties": [
+          "Direct billing and referral protocols depend on university arrangements."
+        ],
+        "source_url": null,
+        "verification_status": "UNVERIFIED"
+      }
+    ],
+    "emergency": {
+      "label": "Medical Emergency Ambulance in mainland China: Dial 120 immediately.",
+      "phone_number": "120",
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED"
+    }
+  }
+}

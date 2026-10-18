@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": {
+    "Ping An Scheme": "Comprehensive Medical Insurance & Protection Scheme for Foreigners Staying in China underwritten by Ping An Annuity.",
+    "lxbx.net": "Official service and claim verification platform for international students in China.",
+    "Fapiao": "Official computerized tax/medical invoice (医疗收费票据/电子票据) required for all medical reimbursement in China.",
+    "Public Tertiary Hospital": "Class 3A or designated public hospital (二级及以上公立医院) standard outpatient and inpatient departments.",
+    "Outpatient Deductible": "Standard threshold (typically RMB 650) above which reasonable outpatient medical fees are reimbursed at coinsurance rate.",
+    "Residence Permit": "Foreigner residence permit for study (居留许可 - 学习) issued by PRC Exit-Entry Administration."
+  }
+}

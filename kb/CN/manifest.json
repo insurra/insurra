@@ -1,0 +1,14 @@
+{
+  "country_code": "CN",
+  "label": "China",
+  "version": "0.2.0",
+  "checked_at": null,
+  "sources": [],
+  "supported_features": [
+    "coverage_vocabulary",
+    "care_placeholders",
+    "student_medical_scheme"
+  ],
+  "verification_status": "UNVERIFIED",
+  "schema_version": "1.5"
+}

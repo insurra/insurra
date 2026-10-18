@@ -37,7 +37,7 @@ def test_health_and_docs(client):
 
 def test_country_discovery_and_personas(client):
     countries = client.get("/api/v1/countries").json()
-    assert {c["country_code"] for c in countries} == {"AU", "ID"}
+    assert {c["country_code"] for c in countries} == {"AU", "CN", "ID"}
     assert all(c["verification_status"] == "UNVERIFIED" for c in countries)
     assert {p["persona_id"] for p in client.get("/api/v1/demo/personas").json()} == {
         "raka",

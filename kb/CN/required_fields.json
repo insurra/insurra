@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": [
+    {
+      "task_code": "student_outpatient_claim",
+      "field_key": "insured_name",
+      "label": "Insured person name",
+      "suggested_doc": "insurance_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "student_outpatient_claim",
+      "field_key": "passport_number",
+      "label": "Passport number",
+      "suggested_doc": "insurance_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "student_outpatient_claim",
+      "field_key": "policy_number",
+      "label": "Policy certificate number",
+      "suggested_doc": "insurance_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "student_outpatient_claim",
+      "field_key": "receipt_amount",
+      "label": "Medical receipt total amount (Fapiao)",
+      "suggested_doc": "medical_fapiao",
+      "applicable": true
+    },
+    {
+      "task_code": "student_outpatient_claim",
+      "field_key": "diagnosis_details",
+      "label": "Clinical diagnosis statement",
+      "suggested_doc": "diagnosis_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "student_inpatient_claim",
+      "field_key": "policy_number",
+      "label": "Policy certificate number",
+      "suggested_doc": "insurance_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "student_inpatient_claim",
+      "field_key": "admission_date",
+      "label": "Hospital admission date",
+      "suggested_doc": "diagnosis_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "student_inpatient_claim",
+      "field_key": "discharge_date",
+      "label": "Hospital discharge date",
+      "suggested_doc": "diagnosis_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "student_inpatient_claim",
+      "field_key": "inpatient_cost_breakdown",
+      "label": "Hospitalized fee itemization",
+      "suggested_doc": "cost_breakdown",
+      "applicable": true
+    },
+    {
+      "task_code": "campus_insurance_verification",
+      "field_key": "institution_name",
+      "label": "Enrolled educational institution",
+      "suggested_doc": "admission_notice",
+      "applicable": true
+    },
+    {
+      "task_code": "campus_insurance_verification",
+      "field_key": "coverage_valid_period",
+      "label": "Insurance effective date range",
+      "suggested_doc": "insurance_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "social_medical_care",
+      "field_key": "social_card_number",
+      "label": "Social medical voucher or card number",
+      "suggested_doc": "social_insurance_voucher",
+      "applicable": true
+    }
+  ]
+}
