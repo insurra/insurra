@@ -17,6 +17,7 @@ from app.models import (
     AccountDocumentRow,
     AccountFieldRow,
     AccountProfileRow,
+    ClaimCaseRow,
     FamilyMemberRow,
 )
 from app.schemas.account_workspace import (
@@ -40,6 +41,7 @@ from app.schemas.account_workspace import (
 from app.schemas.common import CompletenessStatus
 from app.schemas.consent import POLICY_VERSION, ConsentPurpose, PurposeConsentUpdate
 from app.schemas.profile import ProfileData, ProfileUpdate, UserProfile
+from app.services.workspace_privacy import purge_content, purge_workspace
 
 router = APIRouter(prefix="/account", tags=["Authenticated workspace"])
 
@@ -163,6 +165,8 @@ def update_consent(body: PurposeConsentUpdate, db: DB, account: ActiveAccount):
             select(AccountDocumentRow).where(AccountDocumentRow.account_id == account.id)
         ):
             document.content = None
+    if not body.granted:
+        purge_content(db, account.id, pages=body.purpose == ConsentPurpose.RETENTION)
     audit(db, account.id, "CONSENT_CHANGED", purpose=body.purpose.value, granted=body.granted)
     db.commit()
     return get_consents(db, account)
@@ -192,6 +196,8 @@ def decide_consents(body: BulkConsentDecision, db: DB, account: ActiveAccount):
                 select(AccountDocumentRow).where(AccountDocumentRow.account_id == account.id)
             ):
                 document.content = None
+    if not all(decisions.values()):
+        purge_content(db, account.id, pages=not decisions[ConsentPurpose.RETENTION.value])
     audit(db, account.id, "CONSENTS_DECIDED", skip=body.skip, **decisions)
     db.commit()
     return get_consents(db, account)
@@ -494,7 +500,10 @@ def inventory(db: DB, account: ActiveAccount):
         document_count=len(documents),
         structured_field_count=fields or 0,
         coverage_count=coverages or 0,
-        claim_case_count=0,
+        claim_case_count=db.scalar(
+            select(func.count(ClaimCaseRow.id)).where(ClaimCaseRow.account_id == account.id)
+        )
+        or 0,
         action_count=0,
         documents=[document_summary(row) for row in documents],
     )
@@ -503,6 +512,7 @@ def inventory(db: DB, account: ActiveAccount):
 @router.delete("/data", response_model=Deleted)
 def delete_all_data(body: DeleteRequest, db: DB, account: ActiveAccount):
     current_consents = consent_rows(db, account.id)
+    purge_workspace(db, account.id)
     document_count = (
         db.scalar(
             select(func.count(AccountDocumentRow.id)).where(

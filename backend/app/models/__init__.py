@@ -17,6 +17,13 @@ from app.models.entities import (
     PersonaRow,
     ProfileRow,
 )
+from app.models.valen import (
+    AskLimitRow,
+    ChatSessionRow,
+    ClauseChunkRow,
+    PathwayDecisionRow,
+    RecommendationStateRow,
+)
 
 __all__ = [
     "AccountRow",
@@ -47,3 +54,12 @@ from app.models.foundation import (
 )
 
 __all__ += ["ActionRow", "ClaimCaseRow", "DocumentRow", "ExtractedFieldRow", "PurposeConsentRow"]
+
+
+__all__ += [
+    "AskLimitRow",
+    "ChatSessionRow",
+    "ClauseChunkRow",
+    "PathwayDecisionRow",
+    "RecommendationStateRow",
+]

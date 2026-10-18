@@ -139,6 +139,7 @@ class VersionedResource(ResourceMetadata, Generic[T]):
 class VocabularyEntry(Contract):
     code: str = Field(min_length=1)
     label: str = Field(min_length=1)
+    aliases: list[str] = Field(default_factory=list)
 
 
 class TemplateField(Contract):

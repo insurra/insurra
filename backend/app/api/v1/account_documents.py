@@ -184,7 +184,7 @@ async def upload_document(
         )
         db.add(coverage)
         db.flush()
-    for page in pages:
+    for page in pages if retention else []:
         db.add(
             AccountDocumentPageRow(
                 document_id=document.id,

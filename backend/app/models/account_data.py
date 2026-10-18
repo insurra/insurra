@@ -9,6 +9,7 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     LargeBinary,
     String,
@@ -60,6 +61,7 @@ class AccountConsentRow(Base):
 class AccountDocumentRow(Base):
     __tablename__ = "account_documents"
     __table_args__ = (
+        Index("uq_account_document_actor", "id", "account_id", unique=True),
         UniqueConstraint("account_id", "sha256", name="uq_account_document_hash"),
         CheckConstraint("size_bytes > 0 AND size_bytes <= 10485760", name="ck_account_doc_size"),
     )
@@ -101,6 +103,7 @@ class AccountDocumentPageRow(Base):
 
 class AccountCoverageRow(Base):
     __tablename__ = "account_coverages"
+    __table_args__ = (Index("uq_account_coverage_actor", "id", "account_id", unique=True),)
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     account_id: Mapped[UUID] = mapped_column(
