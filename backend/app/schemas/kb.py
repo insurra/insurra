@@ -32,6 +32,8 @@ class CountryManifest(Contract):
 class Applicability(Contract):
     residence_context: list[ResidenceContext] = Field(default_factory=list)
     occupation: list[Occupation] = Field(default_factory=list)
+    has_dependents: bool | None = None
+    requires_visa_context: bool | None = None
 
 
 class RuleParameters(Contract):
@@ -61,6 +63,11 @@ class CoverageVocabulary(Contract):
 
     source_url: str | None = None
     checked_at: date | None = None
+    applicability: Applicability = Field(default_factory=Applicability)
+    benefit_categories: list[str] = Field(default_factory=list)
+    explanation: str = "Verifikasi kebutuhan sesuai situasi Anda."
+    verification_steps: list[str] = Field(default_factory=list)
+    task_code: str | None = None
 
     @model_validator(mode="after")
     def required_needs_verified_source(self):

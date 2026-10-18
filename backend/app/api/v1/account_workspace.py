@@ -437,7 +437,24 @@ def completeness(
     )
     visa_gap = None
     rule = next((item for item in country.rules if item.kind == "visa_coverage"), None)
-    if rule and profile.occupation.value == "STUDENT" and task == "visa_cover":
+    from app.schemas.actor import Actor
+    from app.services.coverage_matching import visa_assessment
+    from app.services.workspace import coverages
+
+    actor = Actor(actor_type="AUTHENTICATED_ACCOUNT", account_id=account.id)
+    normalized = coverages(db, actor, kb)
+    if task == "visa_cover" and normalized:
+        report = visa_assessment(db, actor, kb, profile, normalized)
+        source = report.rule_source
+        visa_gap = AccountVisaGap(
+            status=report.assessment_status.value,
+            gap_days=report.gap_days,
+            explanation=report.explanation,
+            source_url=source.source_url if source else None,
+            checked_at=source.checked_at.isoformat() if source and source.checked_at else None,
+            verification_status=source.verification_status if source else "UNVERIFIED",
+        )
+    elif rule and profile.occupation.value == "STUDENT" and task == "visa_cover":
         by_key = {item.field_key: item for item in items}
         needed = ("arrival_date", "visa_expiry_date", "coverage_start_date", "coverage_end_date")
         if not all(

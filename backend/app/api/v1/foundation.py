@@ -9,7 +9,6 @@ from app.core.dependencies import DB, ActiveActor, ActiveSession, AISession, Con
 from app.core.errors import AppError, not_implemented
 from app.repositories.ownership import approved_action, owned_resource
 from app.schemas.action import ProposedAction
-from app.schemas.assessment import CoverageNeed
 from app.schemas.audit import AuditEvent
 from app.schemas.foundation import (
     ActionExecutionRequest,
@@ -193,11 +192,6 @@ def data_inventory(session: ActiveSession):
 
 @router.delete("/data", response_model=DeletionResult)
 def delete_data(body: DeleteConfirmation, session: ActiveSession):
-    not_implemented()
-
-
-@router.get("/coverage-needs", response_model=list[CoverageNeed])
-def coverage_needs(session: ConsentedSession):
     not_implemented()
 
 

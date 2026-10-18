@@ -12,7 +12,11 @@
       "policy_types": [
         "BPJS"
       ],
-      "verification_status": "UNVERIFIED"
+      "verification_status": "UNVERIFIED",
+      "explanation": "Periksa status dan manfaat melalui dokumen atau kanal resmi terkait.",
+      "verification_steps": [
+        "Periksa masa berlaku dan status kepesertaan."
+      ]
     },
     {
       "need_code": "EMPLOYER",
@@ -21,7 +25,29 @@
       "policy_types": [
         "EMPLOYER"
       ],
-      "verification_status": "UNVERIFIED"
+      "verification_status": "UNVERIFIED",
+      "explanation": "Periksa status dan manfaat melalui dokumen atau kanal resmi terkait.",
+      "verification_steps": [
+        "Periksa masa berlaku dan status kepesertaan."
+      ],
+      "applicability": {
+        "occupation": [
+          "EMPLOYEE"
+        ]
+      }
+    },
+    {
+      "need_code": "LIFE",
+      "label": "Perlindungan untuk tanggungan",
+      "requirement_level": "RECOMMENDED",
+      "policy_types": [
+        "LIFE"
+      ],
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "has_dependents": true
+      },
+      "explanation": "Pertimbangkan kebutuhan tanggungan Anda; ini bukan rekomendasi produk."
     }
   ]
 }

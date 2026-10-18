@@ -9259,130 +9259,6 @@
         }
       }
     },
-    "/api/v1/coverage-needs": {
-      "get": {
-        "tags": [
-          "Phase 1.5 contracts (501)"
-        ],
-        "summary": "Coverage Needs",
-        "operationId": "coverage_needs_api_v1_coverage_needs_get",
-        "parameters": [
-          {
-            "name": "x-demo-session",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "maxLength": 128
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Demo-Session"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CoverageNeed"
-                  },
-                  "title": "Response Coverage Needs Api V1 Coverage Needs Get"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "501": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Implemented"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
     "/api/v1/audit/{event_id}": {
       "get": {
         "tags": [
@@ -9980,6 +9856,147 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SavedDecision"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/coverage-needs": {
+      "get": {
+        "tags": [
+          "Valen workspace"
+        ],
+        "summary": "Coverage Needs",
+        "operationId": "coverage_needs_api_v1_coverage_needs_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CoverageNeed"
+                  },
+                  "title": "Response Coverage Needs Api V1 Coverage Needs Get"
                 }
               }
             }
@@ -12709,6 +12726,51 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RuleSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requirement_confirmed": {
+            "type": "boolean",
+            "title": "Requirement Confirmed",
+            "default": false
+          },
+          "coverage_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Coverage Ids"
+          },
+          "verification_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Verification Steps"
+          },
+          "action_url": {
+            "type": "string",
+            "title": "Action Url",
+            "default": "/documents"
+          },
+          "visa_assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VisaCoverageAssessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exclusion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceEvidence"
               },
               {
                 "type": "null"
@@ -15694,6 +15756,30 @@
             },
             "title": "Occupation",
             "type": "array"
+          },
+          "has_dependents": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Has Dependents"
+          },
+          "requires_visa_context": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Requires Visa Context"
           }
         },
         "title": "Applicability",
@@ -15814,6 +15900,40 @@
             ],
             "default": null,
             "title": "Checked At"
+          },
+          "applicability": {
+            "$ref": "#/components/schemas/Applicability"
+          },
+          "benefit_categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Benefit Categories",
+            "type": "array"
+          },
+          "explanation": {
+            "default": "Verifikasi kebutuhan sesuai situasi Anda.",
+            "title": "Explanation",
+            "type": "string"
+          },
+          "verification_steps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Verification Steps",
+            "type": "array"
+          },
+          "task_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Task Code"
           }
         },
         "required": [

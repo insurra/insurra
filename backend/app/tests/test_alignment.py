@@ -297,7 +297,7 @@ def test_remaining_scoped_contract_routes(client, demo, method, path, body, need
     _, h = demo()
     url = "/api/v1" + path
     assert client.request(method, url, json=body).status_code == 401
-    implemented = path == "/home/summary"
+    implemented = path in {"/home/summary", "/coverage-needs"}
     assert client.request(method, url, headers=h, json=body).status_code == (
         403 if needs_consent else 200 if implemented else 501
     )

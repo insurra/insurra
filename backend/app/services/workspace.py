@@ -115,6 +115,7 @@ class CoverageView:
     open_ended_confirmed: bool = False
     injection_flag: bool = False
     processing_failed: bool = False
+    processing_complete: bool = True
 
     def active(self, today: date) -> bool:
         if self.start is not None and self.start > today:
@@ -138,7 +139,7 @@ def parsed_date(value: object) -> date | None:
 def coverages(db: Session, actor: Actor, kb: CountryKBLoader) -> list[CoverageView]:
     if actor.session_id:
         record = UnifiedInsuranceRecord.model_validate(insurance_row(db, actor.session_id).payload)
-        return [
+        result = [
             CoverageView(
                 id=p.id,
                 country_code=record.country_code,
@@ -148,9 +149,22 @@ def coverages(db: Session, actor: Actor, kb: CountryKBLoader) -> list[CoverageVi
                 end=p.coverage_end_date,
                 document_ids=p.source_document_ids,
                 verified=p.verification_status == "VERIFIED",
+                processing_complete=bool(p.source_document_ids)
+                and all(
+                    any(
+                        d.id == doc_id and d.processing_status == "COMPLETED"
+                        for d in record.documents
+                    )
+                    for doc_id in p.source_document_ids
+                ),
             )
             for p in record.policies
         ]
+        for policy, item in zip(record.policies, result, strict=True):
+            for benefit in policy.coverage_items:
+                key = "benefit_" + benefit.coverage_code.lower() + "_coverage_status"
+                item.fields[key] = FieldValue(benefit.coverage_status.value, "UNVERIFIED")
+        return result
     fields = list(
         db.scalars(select(AccountFieldRow).where(AccountFieldRow.account_id == actor.account_id))
     )
@@ -229,6 +243,7 @@ def coverages(db: Session, actor: Actor, kb: CountryKBLoader) -> list[CoverageVi
                 open_confirmed,
                 bool(doc and doc.injection_flag),
                 bool(doc and doc.status == "FAILED"),
+                bool(doc and doc.status == "COMPLETED"),
             )
         )
     return result
