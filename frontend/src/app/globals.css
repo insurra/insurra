@@ -2082,7 +2082,7 @@ html {
   margin-top: 18px;
 }
 
-/* Auth journey — intentionally separate from the onboarding wizard. */
+/* Auth journey - intentionally separate from the onboarding wizard. */
 .journey-auth-page {
   width: min(1480px, calc(100% - 48px));
   min-height: calc(100vh - 48px);
@@ -3079,10 +3079,228 @@ html {
 .family-avatar { width:46px; height:46px; display:grid; place-items:center; border-radius:50%; color:#087f70; background:#e7f7f2; font-weight:750; font-size:18px; }
 .family-coverage-status { display:inline-flex; align-items:center; gap:6px; color:#6a7b8c; font-size:11px; }
 .family-card-foot { justify-content:space-between; flex-wrap:wrap; }
+/* Protection Hub & Navigation Breadcrumbs */
+.protection-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #718395;
+  margin-bottom: 14px;
+}
+.protection-breadcrumb a {
+  color: #556c80;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.protection-breadcrumb a:hover {
+  color: #0ea58a;
+}
+.protection-breadcrumb .breadcrumb-separator {
+  color: #a4b4c2;
+}
+.protection-breadcrumb span[aria-current="page"] {
+  color: #102336;
+  font-weight: 750;
+}
+
+/* PRT-03: Priority Alert Card */
+.priority-alert-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff7ed 0%, #fffbf5 100%);
+  border: 1.5px solid #fed7aa;
+  box-shadow: 0 4px 18px rgba(234, 88, 12, 0.06);
+  margin-bottom: 22px;
+}
+.priority-alert-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #ffedd5;
+  color: #ea580c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.priority-alert-content {
+  flex: 1;
+  min-width: 0;
+}
+.priority-alert-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #c2410c;
+  margin-bottom: 3px;
+}
+.priority-alert-content h2 {
+  margin: 0 0 3px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #9a3412;
+}
+.priority-alert-content p {
+  margin: 0;
+  font-size: 13.5px;
+  color: #7c2d12;
+  line-height: 1.4;
+}
+.priority-alert-action {
+  flex-shrink: 0;
+}
+
+/* Protection Overview Stats Strip */
+.protection-overview-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e1ebed;
+  box-shadow: 0 6px 20px rgba(18, 40, 58, 0.04);
+  margin-bottom: 26px;
+}
+.overview-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.overview-metric-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6a7c8e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.overview-metric-val {
+  font-size: 26px;
+  font-weight: 850;
+  color: #102336;
+  line-height: 1.15;
+}
+.overview-metric small {
+  font-size: 12px;
+  color: #0ea58a;
+  font-weight: 600;
+}
+.overview-metric-divider {
+  width: 1px;
+  height: 44px;
+  background: #e8f0f2;
+}
+
+/* Protection Hub Grid */
+.protection-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.protection-feature-card {
+  padding: 22px 24px;
+  border-radius: 18px;
+  border: 1px solid #e2ecee;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(18, 40, 58, 0.03);
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 190px;
+}
+.protection-feature-card:hover {
+  transform: translateY(-3px);
+  border-color: #8cd8c7;
+  box-shadow: 0 12px 30px rgba(14, 165, 138, 0.12);
+}
+.feature-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.feature-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wallet-icon { background: #eaf8f4; color: #0b806d; }
+.completeness-icon { background: #e8f3fe; color: #1565c0; }
+.documents-icon { background: #f3e8ff; color: #7e22ce; }
+.family-icon { background: #fef3c7; color: #b45309; }
+.coverage-icon { background: #dcfce7; color: #15803d; }
+.employer-icon { background: #f1f5f9; color: #475569; }
+
+.protection-feature-card h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #102336;
+}
+.protection-feature-card p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #556c80;
+  line-height: 1.5;
+  flex: 1;
+}
+.feature-card-foot {
+  border-top: 1px solid #f0f4f6;
+  padding-top: 12px;
+}
+.feature-link-label {
+  font-size: 13px;
+  font-weight: 750;
+  color: #0ea58a;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: gap 0.2s;
+}
+.protection-feature-card:hover .feature-link-label {
+  gap: 10px;
+}
+
+/* Compliance Disclaimer */
+.protection-disclaimer-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: #f8fafb;
+  border: 1px solid #e5eff2;
+  font-size: 12px;
+  color: #5c7083;
+  line-height: 1.5;
+}
+.disclaimer-icon {
+  color: #0ea58a;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 @media (max-width:850px) {
   .documents-workspace,.completeness-layout { grid-template-columns:1fr; }
   .documents-upload-panel { min-height:0; }
-  .policy-grid,.family-grid { grid-template-columns:1fr; }
+  .policy-grid,.family-grid,.protection-hub-grid { grid-template-columns:1fr; }
+  .protection-overview-strip { flex-direction:column; align-items:flex-start; gap:16px; }
+  .overview-metric-divider { display:none; }
+  .priority-alert-card { flex-direction:column; align-items:flex-start; }
 }
 @media (max-width:600px) {
   .protection-screen .page-heading { align-items:flex-start; }
@@ -3223,7 +3441,7 @@ html {
   margin-bottom: 16px;
 }
 
-/* Account onboarding — standalone guided journey */
+/* Account onboarding - standalone guided journey */
 .journey-onboarding-page {
   min-height: 100vh;
   display: grid;
