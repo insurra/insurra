@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, FileText, Info, UploadCloud } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileText, Info, UploadCloud } from "lucide-react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useAuth } from "@/lib/auth";
@@ -88,18 +88,18 @@ export default function AccountDocuments() {
   }
 
   return (
-    <div className="account-documents">
+    <div className="account-documents protection-screen documents-screen">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">POLICY EVIDENCE</div>
-          <h1>My Documents</h1>
-          <p>Files and extraction results are isolated strictly to your account.</p>
+          <div className="eyebrow">PENGELOLAAN DOKUMEN</div>
+          <h1>Documents</h1>
+          <p>Unggah dokumen perlindungan dan tinjau informasi yang berhasil dibaca.</p>
         </div>
         <Image
-          src="/Winking%20Kangaroo%20Mascot%20with%20Document.png"
-          width={140}
-          height={94}
-          alt="Insurra Kangaroo Mascot with Document"
+          src="/protection-mascot.png"
+          width={84}
+          height={84}
+          alt="Maskot Insurra"
         />
       </div>
 
@@ -108,13 +108,14 @@ export default function AccountDocuments() {
         Extracted fields remain unverified until reviewed and confirmed by you.
       </div>
 
-      <section className="card account-upload">
+      <div className="documents-workspace">
+      <section className="card account-upload documents-upload-panel">
         <div className="upload-icon">
           <UploadCloud />
         </div>
         <div>
-          <h2>Upload Insurance Document</h2>
-          <p>Supported: PDF, JPG, PNG. Maximum 10 MB. PDF up to 30 pages.</p>
+          <h2>Upload &amp; Extract</h2>
+          <p>PDF, JPG, atau PNG hingga 10 MB per file.</p>
         </div>
         {!setup && (
           <div className="alert warning">
@@ -142,14 +143,40 @@ export default function AccountDocuments() {
             />
           </label>
         </div>
+        {file && <div className="selected-file"><FileText size={18} /><span>{file.name}<small>{(file.size / 1024 / 1024).toFixed(2)} MB</small></span></div>}
         <Button disabled={!file || !setup || busy} onClick={() => void upload()}>
-          {busy ? "Processing Document..." : "Upload and Extract"}
+          {busy ? "Sedang memproses…" : "Unggah & mulai ekstraksi"}
           <ArrowRight size={16} />
         </Button>
         <small>
-          Requires document processing and external AI consent grants. Original files are retained only if file retention consent is active.
+          Memerlukan persetujuan pemrosesan dokumen dan AI eksternal. File asli disimpan hanya jika persetujuan retensi aktif.
         </small>
       </section>
+
+      <section className="documents-results">
+        <div className="documents-results-head"><div><span className="eyebrow">ARSIP PRIBADI</span><h2>My Documents</h2></div><span className="badge neutral">{documents.length} dokumen</span></div>
+        {!documents.length && (
+          <div className="card account-empty">
+            <FileText />
+            <h2>Belum ada dokumen</h2>
+            <p>Dokumen yang kamu unggah akan tampil di sini bersama status pembacaannya.</p>
+          </div>
+        )}
+        <div className="document-list">
+          {documents.map((document) => (
+            <Link href={`/documents/${document.id}`} key={document.id} className="card document-row account-document-row">
+              <span className="policy-icon"><FileText /></span>
+              <span><strong>{document.original_filename}</strong><small>{document.kind.replaceAll("_", " ")} · {document.country_code} · {(document.size_bytes / 1024).toFixed(0)} KB</small></span>
+              <span className={`badge ${document.status === "COMPLETED" ? "warning" : "neutral"}`}>
+                {document.status === "COMPLETED" ? "Perlu ditinjau" : "Ekstraksi gagal"}
+              </span>
+              <ArrowRight size={16} />
+            </Link>
+          ))}
+        </div>
+        <div className="documents-trust-note"><CheckCircle2 size={17} /> Hasil pembacaan adalah kandidat informasi—periksa sumber dan konfirmasi sendiri sebelum digunakan.</div>
+      </section>
+      </div>
 
       {error && (
         <div className="alert error" role="alert">
@@ -162,42 +189,6 @@ export default function AccountDocuments() {
         </div>
       )}
 
-      <div className="section-heading">
-        <h2>Ingested Documents</h2>
-        <span className="badge neutral">{documents.length} files</span>
-      </div>
-
-      {!documents.length && (
-        <div className="card account-empty">
-          <FileText />
-          <h2>No documents uploaded yet.</h2>
-          <p>Upload your policy certificate, member card, or visa grant notice to begin.</p>
-        </div>
-      )}
-
-      <div className="document-list">
-        {documents.map((document) => (
-          <Link
-            href={`/documents/${document.id}`}
-            key={document.id}
-            className="card document-row account-document-row"
-          >
-            <span className="policy-icon">
-              <FileText />
-            </span>
-            <span>
-              <strong>{document.original_filename}</strong>
-              <small>
-                {document.kind.replaceAll("_", " ")} ({document.country_code}) {(document.size_bytes / 1024).toFixed(0)} KB
-              </small>
-            </span>
-            <span className={`badge ${document.status === "COMPLETED" ? "warning" : "neutral"}`}>
-              {document.status === "COMPLETED" ? "NEEDS REVIEW" : "PROCESSING FAILED"}
-            </span>
-            <ArrowRight size={16} />
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }
