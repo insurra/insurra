@@ -4,5 +4,14 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
-  "data": []
+  "data": [
+    {
+      "code": "policy_no_match",
+      "label": "Periksa manfaat yang belum ditemukan",
+      "steps": [
+        "Periksa bagian manfaat dan pengecualian pada dokumen terbaru.",
+        "Tanyakan kepada penyedia atau HR apakah manfaat dan syarat yang dimaksud tercantum."
+      ]
+    }
+  ]
 }

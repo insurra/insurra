@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import Field, JsonValue, SecretStr, StrictBool, model_validator
+from pydantic import Field, JsonValue, SecretStr, StrictBool, field_validator, model_validator
 
 from app.schemas.actor import Actor, ActorType
 from app.schemas.chat import AnswerCertainty
@@ -20,7 +20,13 @@ from app.schemas.common import (
     RuleSource,
 )
 from app.schemas.document import ProcessingStatus, SourceEvidence
-from app.schemas.valen import CoverageCard, EmergencyInfo, ServiceChoice, WorkspaceContext
+from app.schemas.valen import (
+    CoverageCard,
+    EmergencyInfo,
+    NumericFact,
+    ServiceChoice,
+    WorkspaceContext,
+)
 
 ShortCode = Annotated[str, Field(min_length=1, max_length=100)]
 Email = Annotated[str, Field(max_length=254, pattern=r"^[^\s@]+@[^\s@]+\.[^\s@]+$")]
@@ -224,9 +230,18 @@ class HomeSummary(Contract):
 class AskRequest(Contract):
     question: str = Field(min_length=1, max_length=500)
     coverage_id: UUID | None = None
+    chat_session_id: UUID | None = None
+
+    @field_validator("question")
+    @classmethod
+    def meaningful_question(cls, value):
+        if not value.strip():
+            raise ValueError("Question must not be blank")
+        return value.strip()
 
 
 class AnswerCitation(Contract):
+    document_name: str | None = None
     doc: UUID
     page: int = Field(ge=1)
     quote: str = Field(min_length=1)
@@ -247,6 +262,23 @@ class AnswerPoint(Contract):
 class AskAnswer(Contract):
     answer_points: list[AnswerPoint] = Field(max_length=5)
     warnings: list[str] = Field(default_factory=list)
+    numeric_facts: list[NumericFact] = Field(default_factory=list, max_length=5)
+    verification_steps: list[str] = Field(default_factory=list)
+    context_country_code: CountryCode | None = None
+    disposition: Literal["answered", "no_match", "declined"] = "answered"
+    chat_session_id: UUID | None = None
+    answer_id: UUID | None = None
+
+
+class ChatTurn(Contract):
+    id: UUID
+    question: str
+    answer: AskAnswer
+
+
+class ChatHistory(Contract):
+    chat_session_id: UUID
+    turns: list[ChatTurn] = Field(max_length=10)
 
 
 class EmergencyRedirect(Contract):
@@ -273,8 +305,21 @@ class StreamErrorEvent(Contract):
     data: ApiError
 
 
+class ProgressData(Contract):
+    stage: Literal["retrieving", "validating"]
+
+
+class AskProgressEvent(Contract):
+    event: Literal["progress"]
+    data: ProgressData
+
+
 AskStreamEvent = Annotated[
-    AnswerPointEvent | AnswerCompleteEvent | EmergencyRedirectEvent | StreamErrorEvent,
+    AnswerPointEvent
+    | AnswerCompleteEvent
+    | EmergencyRedirectEvent
+    | StreamErrorEvent
+    | AskProgressEvent,
     Field(discriminator="event"),
 ]
 

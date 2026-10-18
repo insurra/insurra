@@ -99,3 +99,41 @@ def workspace(app, client, country="AU", suffix=None, retention=True):
             )
         db.commit()
         return headers, account_id, coverage.id, doc.id
+
+
+def reviewed_triage(app, monkeypatch):
+    """In-memory dependency fixture, never promoted to the shipped medical KB."""
+    import copy
+    from datetime import date
+
+    from app.schemas.kb import RedFlagConfig
+
+    loader = app.state.kb_loader
+    original = loader.load
+    countries = {code: copy.deepcopy(original(code)) for code in ("AU", "ID")}
+    for country in countries.values():
+        country.manifest.official_source_hosts.append("synthetic.example.test")
+        resource = country.resources.red_flags
+        resource.source_url = "https://synthetic.example.test/triage-contract"
+        resource.checked_at = date(2026, 10, 18)
+        resource.verification_status = "VERIFIED"
+        resource.data = [
+            RedFlagConfig(
+                id="test_breathing",
+                category="synthetic",
+                phrases_id=["sesak napas", "sulit bernapas"],
+                phrases_en=["shortness of breath", "difficulty breathing"],
+                destination_code="emergency",
+            ),
+            RedFlagConfig(
+                id="test_chest",
+                category="synthetic",
+                phrases_id=["nyeri dada"],
+                phrases_en=["chest pain"],
+                destination_code="emergency",
+            ),
+        ]
+    monkeypatch.setattr(
+        loader, "load", lambda code: countries[code] if code in countries else original(code)
+    )
+    return countries

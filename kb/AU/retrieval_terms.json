@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.5",
+  "version": "0.3.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": {
+    "dental": [
+      "gigi",
+      "dental",
+      "dentist"
+    ],
+    "gp": [
+      "gp",
+      "dokter umum",
+      "general practitioner"
+    ],
+    "outpatient": [
+      "rawat jalan",
+      "outpatient"
+    ],
+    "hospital": [
+      "rawat inap",
+      "inpatient",
+      "hospital"
+    ],
+    "limits": [
+      "sisa",
+      "remaining",
+      "limit",
+      "terpakai",
+      "used"
+    ],
+    "network": [
+      "jaringan",
+      "network"
+    ],
+    "pharmacy": [
+      "obat",
+      "medicine",
+      "pharmacy"
+    ]
+  }
+}

@@ -230,3 +230,24 @@
     font-size: 30px;
   }
 }
+.vn-source-dialog {
+  width: min(680px, calc(100vw - 24px));
+  max-height: 85vh;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  color: var(--foreground);
+}
+.vn-source-dialog::backdrop {
+  background: #102a4377;
+}
+.vn-source-dialog pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.vn-source-dialog blockquote {
+  white-space: pre-wrap;
+  border-left: 3px solid var(--brand-teal);
+  padding: 12px;
+  background: var(--background);
+}

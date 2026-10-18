@@ -99,6 +99,7 @@ class FieldValue:
     confirmed: bool = False
     document_id: UUID | None = None
     page: int | None = None
+    source_type: str | None = None
 
 
 @dataclass
@@ -204,6 +205,7 @@ def coverages(db: Session, actor: Actor, kb: CountryKBLoader) -> list[CoverageVi
                 f.confirmed_by_user,
                 f.document_id,
                 f.source_page,
+                f.source_type,
             )
         vocab = kb.load(row.country_code).resources.coverage_types.data
         explicit = values.get("coverage_type", FieldValue())

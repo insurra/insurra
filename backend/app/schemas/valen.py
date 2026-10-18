@@ -12,6 +12,8 @@ from app.schemas.common import Contract, CountryCode, CurrencyCode, Money
 
 class NumericFact(Contract):
     category: str
+    coverage_id: UUID | None = None
+    policy_label: str | None = None
     currency: CurrencyCode | None = None
     limit: Money | None = None
     used: Money | None = None
@@ -82,18 +84,13 @@ class AnswerFeedback(Contract):
     reason: Literal["unclear", "incorrect_source", "missing_detail", "other"] | None = None
 
 
-class ChatTurn(Contract):
-    id: UUID
-    question: str
-    answer: dict
-
-
-class ChatHistory(Contract):
-    chat_session_id: UUID
-    turns: list[ChatTurn] = Field(max_length=10)
-
-
 class VerificationQuestion(Contract):
     code: str
     label: str
     steps: list[str]
+
+
+class SourcePage(Contract):
+    document_id: UUID
+    page: int = Field(ge=1)
+    text: str

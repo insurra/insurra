@@ -70,6 +70,7 @@ export function useWorkspace() {
     return () => window.removeEventListener("focus", refresh);
   }, [refresh]);
   return {
+    identityKey: auth.account?.id ?? demoId ?? null,
     summary,
     headers,
     accountMode,

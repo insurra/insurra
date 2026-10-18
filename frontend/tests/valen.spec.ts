@@ -112,3 +112,166 @@ test("SC-14 account needs share the visa result and refresh after profile change
     ),
   ).toBe(true);
 });
+
+test("SC-06 live dependency fallback locks chat and exposes privacy and document guidance", async ({
+  page,
+}) => {
+  const fixture = await accountWorkspace(page);
+  await page.goto("/ask");
+  await expect(
+    page.getByRole("heading", { name: "Tanya polis", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      /Pemeriksaan tanda bahaya belum tersedia\. Tanya polis dihentikan/,
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("textbox", { name: "Pertanyaan Anda" }),
+  ).toBeDisabled();
+  expect(
+    (
+      await page.request.post("http://localhost:8000/api/v1/account/consents", {
+        headers: fixture.headers,
+        data: { purpose: "external_ai", granted: false },
+      })
+    ).status(),
+  ).toBe(200);
+  await page.reload();
+  await expect(
+    page.getByRole("link", { name: "Privasi & Data Saya", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Kirim", exact: true }),
+  ).toBeDisabled();
+});
+
+test("SC-06 mocked validated SSE opens a real owned source page and original document", async ({
+  page,
+}) => {
+  // Only the provider/triage availability seam is mocked. Auth, ownership and source access use the real backend.
+  const fixture = await accountWorkspace(page);
+  const source = await page.request.get(
+    `http://localhost:8000/api/v1/ask/sources/${fixture.document_id}/1`,
+    { headers: fixture.headers },
+  );
+  expect(source.status()).toBe(200);
+  const original = await source.json();
+  const quote: string = original.text.split("\n")[1];
+  await page.route("**/api/v1/home/summary", async (route) => {
+    const response = await route.fetch();
+    const body = await response.json();
+    await route.fulfill({
+      response,
+      json: { ...body, triage_available: true },
+    });
+  });
+  await page.route("**/api/v1/ask", async (route) => {
+    const point = {
+      text: "Perawatan gigi umum dikecualikan dalam polis fiktif ini.",
+      label: "FROM_DOCUMENT",
+      citations: [
+        {
+          doc: fixture.document_id,
+          page: 1,
+          quote,
+          document_name: "fictional-policy.pdf",
+        },
+      ],
+    };
+    const answer = {
+      answer_points: [point],
+      warnings: ["Keputusan pembayaran ada pada penyedia."],
+      disposition: "answered",
+      context_country_code: "AU",
+    };
+    const event = (name: string, data: unknown) =>
+      `event: ${name}\ndata: ${JSON.stringify({ event: name, data })}\n\n`;
+    await route.fulfill({
+      contentType: "text/event-stream",
+      body:
+        event("progress", { stage: "retrieving" }) +
+        event("answer_point", point) +
+        event("complete", answer),
+    });
+  });
+  await page.goto("/ask");
+  await page
+    .getByRole("combobox", { name: "Tanya tentang" })
+    .selectOption(fixture.coverage_id);
+  await page
+    .getByRole("textbox", { name: "Pertanyaan Anda" })
+    .fill("Periksa gigi ditanggung nggak?");
+  const start = Date.now();
+  await page.getByRole("button", { name: "Kirim", exact: true }).click();
+  await expect(
+    page.getByText("Perawatan gigi umum dikecualikan dalam polis fiktif ini.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  expect(Date.now() - start).toBeLessThan(5000);
+  await page
+    .getByRole("button", { name: "fictional-policy.pdf · hal. 1", exact: true })
+    .click();
+  const drawer = page.getByRole("dialog");
+  await expect(drawer).toContainText(quote);
+  await expect(drawer).toContainText(
+    "Kutipan cocok dengan halaman sumber saat ini",
+  );
+  await drawer.getByRole("link", { name: "Buka dokumen · halaman 1" }).click();
+  await expect(page).toHaveURL(
+    new RegExp(`/documents/${fixture.document_id}#page-1`),
+  );
+  await expect(page.locator("#page-1")).toHaveAttribute("open", "");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test("SC-06 cancellation and retry keep incomplete answers out of history", async ({
+  page,
+}) => {
+  await accountWorkspace(page);
+  await page.route("**/api/v1/home/summary", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      json: { ...(await response.json()), triage_available: true },
+    });
+  });
+  let slow = true;
+  await page.route("**/api/v1/ask", async (route) => {
+    if (slow) await new Promise((resolve) => setTimeout(resolve, 500));
+    const data = {
+      answer_points: [],
+      warnings: ["Tidak ditemukan di dokumen."],
+      disposition: "no_match",
+    };
+    await route
+      .fulfill({
+        contentType: "text/event-stream",
+        body: `event: complete\ndata: ${JSON.stringify({ event: "complete", data })}\n\n`,
+      })
+      .catch(() => undefined);
+  });
+  await page.goto("/ask");
+  await page
+    .getByRole("textbox", { name: "Pertanyaan Anda" })
+    .fill("Manfaat yang belum ditemukan?");
+  const request = page.waitForRequest((r) => r.url().endsWith("/api/v1/ask"));
+  await page.getByRole("button", { name: "Kirim", exact: true }).click();
+  await request;
+  await page.getByRole("button", { name: "Batalkan", exact: true }).click();
+  await expect(page.locator(".vn").getByRole("alert")).toContainText("Permintaan dibatalkan");
+  await expect(page.getByRole("log").locator("article")).toHaveCount(0);
+  slow = false;
+  await page.getByRole("button", { name: "Coba lagi", exact: true }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Tidak ditemukan di dokumen",
+      exact: true,
+    }),
+  ).toBeVisible();
+});

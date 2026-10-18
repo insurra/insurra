@@ -29,3 +29,15 @@ Inspected baseline: `3fa80ce`; origin/master refreshed on 18 October 2026. Clean
 Pydantic remains the domain authority. Extend HomeSummary/AskRequest/AskAnswer/PathwayComparison/CoverageNeed additively, preserving required PRD fields. Only Valen canonical operations become live; no parallel auth or /api layer. Existing demo dashboards and account workspaces stay reachable. No claim submission, checklist generation, emergency-screen implementation or action execution belongs in this change.
 
 Where a 501 route is now implemented, update its old stub-specific expectation to the exact new behavior and add security/domain regressions. Keep every existing test; never relax a security assertion or claim an unavailable dependency passed.
+
+## Policy Q&A implementation boundary
+
+Canonical `/api/v1/ask` now supports bearer accounts and demo sessions, JSON or named SSE (`progress`, `answer_point`, `complete`, `redirect`, `error`, with comment heartbeats). Additive fields carry conversation IDs, context country, deterministic numeric facts and verification steps. Source/history/feedback helpers live beneath `/ask`; none provides authentication or bypasses ownership. The existing `/chat/ask` stub remains unchanged.
+
+Every proposed point is revalidated against owned retained page text. Numeric facts are recomputed from existing fields and separated by policy; unverified/corrected field provenance lowers certainty. No embeddings are required: a bounded ID/EN lexical reader returns at most five excerpts. A failed/no-match response does not become a coverage denial. Current reviewed red-flag content is unavailable, so the live chat is locked and its API returns TRIAGE_UNAVAILABLE before any provider call. Provider calls use the existing configured gateway, store=false, bounded transport timeout, SDK retries disabled and at most one structured-output retry. CI uses in-memory provider and triage fixtures only.
+
+Raw pages are only retained with retention consent. Source/history access rechecks current grants; document deletion or purpose revocation clears derived chunks/history. Account source pages receive stable page anchors so existing document views can open the exact cited page. Frontend-only production deployments without NEXT_PUBLIC_API_BASE_URL show BACKEND_NOT_CONFIGURED and never silently call localhost.
+
+Explicit optional connectivity check (one provider call, never CI): `cd backend && ../.tools/bin/uv run python ../scripts/check_live_ai.py --live`. It uses server OPENAI_API_KEY/OPENAI_MODEL and sends a synthetic schema check only. It is not a test of real insurance answers, source adequacy or a hosted deployment. Not run during this implementation.
+
+Remaining source dependency: the shipped extraction templates are empty. Valen's normalized benefit/date reader can only use coverage-linked reviewed fields already supplied by Rere's interface. It never fills missing fields or associates country-free manual values with arbitrary policies. Missing data remains visible and blocks ownership/cost certainty. Original Raka/Sinta files remain metadata placeholders, not dental policy evidence.

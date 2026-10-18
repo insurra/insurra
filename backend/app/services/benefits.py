@@ -49,13 +49,21 @@ def financial_facts(coverage: CoverageView, today: date) -> list[NumericFact]:
             else None
         )
         relevant = ["limit_amount", "used_amount", "currency", "period_start", "period_end"]
-        verified = all(fields.get(k, FieldValue()).status == "FOUND" for k in relevant)
+        verified = all(
+            fields.get(k, FieldValue()).status == "FOUND"
+            and fields[k].source_type in {"DOCUMENT_EXTRACTION", "USER_CONFIRMED"}
+            and fields[k].document_id
+            and fields[k].page
+            for k in relevant
+        )
         label = "FROM_DOCUMENT" if verified and remaining is not None else "ESTIMATE"
         if remaining is None:
             label = "NEEDS_CONFIRMATION"
         output.append(
             NumericFact(
                 category=category,
+                coverage_id=coverage.id,
+                policy_label=f"{coverage.kind} · {coverage.provider or 'penyedia belum diisi'}",
                 currency=currency,
                 limit=format(limit, "f") if limit is not None else None,
                 used=format(used, "f") if used is not None else None,

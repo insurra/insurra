@@ -35,7 +35,8 @@ def test_purposes_are_explicit_independent_and_revocable(client, app, demo):
     assert ask().status_code == 403
     processing = grant(client, h, "process_documents")
     assert processing["granted_at"] and processing["policy_version"] == "1.5"
-    assert ask().status_code == 501
+    assert ask().status_code == 503
+    assert ask().json()["code"] == "TRIAGE_UNAVAILABLE"
     revoked = grant(client, h, "external_ai", False)
     assert revoked["revoked_at"] and revoked["granted_at"]
     assert ask().status_code == 403

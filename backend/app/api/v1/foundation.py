@@ -12,8 +12,6 @@ from app.schemas.action import ProposedAction
 from app.schemas.audit import AuditEvent
 from app.schemas.foundation import (
     ActionExecutionRequest,
-    AskAnswer,
-    AskRequest,
     AuthMessage,
     AuthSession,
     ClaimCaseCreate,
@@ -112,26 +110,6 @@ def check_completeness(
 ):
     if coverage_id:
         owned_resource(db, actor, "coverage", coverage_id)
-    not_implemented()
-
-
-@router.post(
-    "/ask",
-    response_model=AskAnswer | EmergencyRedirect,
-    responses={
-        200: {
-            "content": {
-                "text/event-stream": {
-                    "schema": {"type": "string"},
-                    "description": "Named SSE events; data is JSON matching AskStreamEvent.",
-                }
-            }
-        }
-    },
-)
-def ask_policy(body: AskRequest, session: AISession, actor: ActiveActor, db: DB):
-    if body.coverage_id:
-        owned_resource(db, actor, "coverage", body.coverage_id)
     not_implemented()
 
 

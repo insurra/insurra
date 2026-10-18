@@ -14,6 +14,7 @@ from app.api.v1 import (
     documents,
     foundation,
     insurance,
+    policy_qa,
     profiles,
     sessions,
     valen,
@@ -39,5 +40,6 @@ for module in (
     audit,
     foundation,
     valen,
+    policy_qa,
 ):
     router.include_router(module.router)

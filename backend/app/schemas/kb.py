@@ -242,6 +242,7 @@ class CountryResources(Contract):
     red_flags: VersionedResource[list[RedFlagConfig]]
     emergency: VersionedResource[EmergencyConfig]
     example_questions: VersionedResource[list[str]]
+    retrieval_terms: VersionedResource[dict[str, list[str]]]
 
     @model_validator(mode="after")
     def consistent_references(self):
