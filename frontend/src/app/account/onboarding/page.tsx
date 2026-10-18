@@ -9,17 +9,21 @@ import {
   Building,
   Check,
   CheckCircle2,
+  ChevronDown,
   Edit2,
   FileText,
   Globe2,
   GraduationCap,
   Info,
+  MapPin,
   Plane,
+  Search,
   Shield,
   ShieldCheck,
   Sparkles,
   User,
   Users,
+  X,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth";
@@ -30,15 +34,26 @@ import {
 } from "@/lib/user-context";
 import "@/app/onboarding/onboarding.css";
 
-// Supported countries with priority
+// Clean supported countries with flags (no demo notes or subtitles)
 const COUNTRIES = [
-  { code: "CN", name: "China", flag: "🇨🇳", note: "Primary demo: Students & employees in China" },
-  { code: "ID", name: "Indonesia", flag: "🇮🇩", note: "BPJS Kesehatan & domestic coverage" },
-  { code: "AU", name: "Australia", flag: "🇦🇺", note: "OSHC, OVHC & private health" },
-  { code: "SG", name: "Singapore", flag: "🇸🇬", note: "Integrated Shield & work passes" },
-  { code: "MY", name: "Malaysia", flag: "🇲🇾", note: "Public & private medical coverage" },
-  { code: "US", name: "United States", flag: "🇺🇸", note: "ACA & university health plans" },
-  { code: "GB", name: "United Kingdom", flag: "🇬🇧", note: "NHS & private health insurance" },
+  { code: "CN", name: "China", flag: "🇨🇳" },
+  { code: "ID", name: "Indonesia", flag: "🇮🇩" },
+  { code: "AU", name: "Australia", flag: "🇦🇺" },
+  { code: "SG", name: "Singapore", flag: "🇸🇬" },
+  { code: "MY", name: "Malaysia", flag: "🇲🇾" },
+  { code: "US", name: "United States", flag: "🇺🇸" },
+  { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
+  { code: "JP", name: "Japan", flag: "🇯🇵" },
+  { code: "KR", name: "South Korea", flag: "🇰🇷" },
+  { code: "DE", name: "Germany", flag: "🇩🇪" },
+  { code: "FR", name: "France", flag: "🇫🇷" },
+  { code: "NL", name: "Netherlands", flag: "🇳🇱" },
+  { code: "CA", name: "Canada", flag: "🇨🇦" },
+  { code: "NZ", name: "New Zealand", flag: "🇳🇿" },
+  { code: "TH", name: "Thailand", flag: "🇹🇭" },
+  { code: "VN", name: "Vietnam", flag: "🇻🇳" },
+  { code: "PH", name: "Philippines", flag: "🇵🇭" },
+  { code: "IN", name: "India", flag: "🇮🇳" },
 ];
 
 const NATIONALITIES = [
@@ -52,15 +67,228 @@ const NATIONALITIES = [
   { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
   { code: "JP", name: "Japan", flag: "🇯🇵" },
   { code: "KR", name: "South Korea", flag: "🇰🇷" },
+  { code: "DE", name: "Germany", flag: "🇩🇪" },
+  { code: "FR", name: "France", flag: "🇫🇷" },
+  { code: "NL", name: "Netherlands", flag: "🇳🇱" },
+  { code: "CA", name: "Canada", flag: "🇨🇦" },
+  { code: "NZ", name: "New Zealand", flag: "🇳🇿" },
+  { code: "TH", name: "Thailand", flag: "🇹🇭" },
+  { code: "VN", name: "Vietnam", flag: "🇻🇳" },
+  { code: "PH", name: "Philippines", flag: "🇵🇭" },
 ];
 
 const CITY_PRESETS: Record<string, string[]> = {
-  CN: ["Shenzhen", "Beijing", "Shanghai", "Guangzhou", "Hangzhou", "Chengdu", "Wuhan"],
-  ID: ["Jakarta", "Surabaya", "Bandung", "Medan", "Yogyakarta", "Bali", "Semarang"],
-  AU: ["Melbourne", "Sydney", "Brisbane", "Perth", "Adelaide", "Canberra"],
-  SG: ["Singapore"],
-  MY: ["Kuala Lumpur", "Penang", "Johor Bahru"],
+  CN: ["Shenzhen", "Beijing", "Shanghai", "Guangzhou", "Hangzhou", "Chengdu", "Wuhan", "Nanjing", "Xi'an"],
+  ID: ["Jakarta", "Surabaya", "Bandung", "Medan", "Yogyakarta", "Bali", "Semarang", "Makassar"],
+  AU: ["Melbourne", "Sydney", "Brisbane", "Perth", "Adelaide", "Canberra", "Gold Coast"],
+  SG: ["Singapore", "Jurong", "Woodlands", "Tampines"],
+  MY: ["Kuala Lumpur", "Penang", "Johor Bahru", "Petaling Jaya", "Kuching"],
+  US: ["New York", "San Francisco", "Los Angeles", "Chicago", "Boston", "Seattle"],
+  GB: ["London", "Manchester", "Edinburgh", "Birmingham", "Oxford", "Cambridge"],
+  JP: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Fukuoka"],
+  KR: ["Seoul", "Busan", "Incheon", "Daegu"],
+  DE: ["Berlin", "Munich", "Frankfurt", "Hamburg"],
+  FR: ["Paris", "Lyon", "Marseille", "Toulouse"],
+  NL: ["Amsterdam", "Rotterdam", "Utrecht", "The Hague"],
+  CA: ["Toronto", "Vancouver", "Montreal", "Calgary"],
+  NZ: ["Auckland", "Wellington", "Christchurch"],
+  TH: ["Bangkok", "Chiang Mai", "Phuket"],
+  VN: ["Ho Chi Minh City", "Hanoi", "Da Nang"],
+  PH: ["Manila", "Cebu City", "Davao City"],
+  IN: ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai"],
 };
+
+interface DropdownOption {
+  id: string;
+  label: string;
+  flag?: string;
+  icon?: React.ReactNode;
+}
+
+function SearchableDropdown({
+  id,
+  label,
+  value,
+  options,
+  placeholder,
+  searchPlaceholder,
+  allowCustomInput,
+  onSelect,
+}: {
+  id: string;
+  label?: string;
+  value: string;
+  options: DropdownOption[];
+  placeholder?: string;
+  searchPlaceholder?: string;
+  allowCustomInput?: boolean;
+  onSelect: (val: string, option?: DropdownOption) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  function handleClose() {
+    setIsOpen(false);
+    setQuery("");
+  }
+
+  function toggleOpen() {
+    setIsOpen((prev) => {
+      if (prev) setQuery("");
+      return !prev;
+    });
+  }
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        handleClose();
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  const selectedOption = options.find((o) => o.id === value || o.label === value);
+
+  const filteredOptions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return options;
+    return options.filter(
+      (o) =>
+        o.label.toLowerCase().includes(q) ||
+        o.id.toLowerCase().includes(q)
+    );
+  }, [options, query]);
+
+  const hasExactMatch = options.some(
+    (o) => o.label.toLowerCase() === query.trim().toLowerCase()
+  );
+
+  return (
+    <div className="searchable-dropdown-wrapper" ref={dropdownRef} id={`wrapper-${id}`}>
+      {label && <label className="field-label">{label}</label>}
+
+      {/* Trigger Button */}
+      <button
+        type="button"
+        id={`trigger-${id}`}
+        className={`searchable-dropdown-trigger ${isOpen ? "open" : ""}`}
+        onClick={toggleOpen}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <div className="trigger-content">
+          {selectedOption?.flag && <span className="trigger-flag">{selectedOption.flag}</span>}
+          {selectedOption?.icon && <span className="trigger-icon">{selectedOption.icon}</span>}
+          <span className="trigger-label">
+            {selectedOption ? selectedOption.label : value || placeholder || "Select option..."}
+          </span>
+        </div>
+        <ChevronDown size={18} className={`trigger-chevron ${isOpen ? "rotated" : ""}`} />
+      </button>
+
+      {/* Popover */}
+      {isOpen && (
+        <div className="searchable-dropdown-popover" role="listbox" id={`popover-${id}`}>
+          <div className="dropdown-search-box">
+            <Search size={15} className="dropdown-search-icon" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              className="dropdown-search-input"
+              placeholder={searchPlaceholder || "Search..."}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (allowCustomInput && query.trim()) {
+                    onSelect(query.trim());
+                    handleClose();
+                  } else if (filteredOptions.length > 0) {
+                    onSelect(filteredOptions[0].id, filteredOptions[0]);
+                    handleClose();
+                  }
+                } else if (e.key === "Escape") {
+                  handleClose();
+                }
+              }}
+            />
+            {query && (
+              <button
+                type="button"
+                className="dropdown-clear-btn"
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          <div className="dropdown-options-list">
+            {allowCustomInput && query.trim() && !hasExactMatch && (
+              <button
+                type="button"
+                className="dropdown-option-item custom-option"
+                onClick={() => {
+                  onSelect(query.trim());
+                  handleClose();
+                }}
+              >
+                <MapPin size={15} className="option-icon" />
+                <span className="option-label">Use &ldquo;{query.trim()}&rdquo;</span>
+                <span className="custom-badge">Custom</span>
+              </button>
+            )}
+
+            {filteredOptions.length === 0 && (!allowCustomInput || !query.trim()) ? (
+              <div className="dropdown-no-results">No matches found</div>
+            ) : (
+              filteredOptions.map((opt) => {
+                const isSelected = opt.id === value || opt.label === value;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    className={`dropdown-option-item ${isSelected ? "selected" : ""}`}
+                    onClick={() => {
+                      onSelect(opt.id, opt);
+                      handleClose();
+                    }}
+                    role="option"
+                    aria-selected={isSelected}
+                  >
+                    {opt.flag && <span className="option-flag">{opt.flag}</span>}
+                    {opt.icon && <span className="option-icon">{opt.icon}</span>}
+                    <span className="option-label">{opt.label}</span>
+                    {isSelected && <Check size={16} className="option-check" />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const SITUATION_OPTIONS = [
   {
@@ -670,8 +898,8 @@ function AccountOnboardingContent() {
         <Link href="/" className="onboarding-brand">
           <Image
             src="/Inssura%20Kangaroo%20Shield%20Logo.png"
-            width={120}
-            height={52}
+            width={180}
+            height={76}
             alt="INSURRA"
             className="onboarding-brand-logo"
             priority
@@ -735,78 +963,66 @@ function AccountOnboardingContent() {
 
               {activeStep === 1 && (
                 <div className="chat-form-interactive">
+                  {/* Nationality Dropdown */}
                   <div className="form-group-card">
-                    <label className="field-label">Your Nationality</label>
-                    <div className="country-chip-grid">
-                      {NATIONALITIES.map((nat) => (
-                        <button
-                          key={nat.code}
-                          type="button"
-                          className={`country-chip ${nationality === nat.name ? "selected" : ""}`}
-                          onClick={() => {
-                            setNationality(nat.name);
-                            setNationalityCode(nat.code);
-                          }}
-                        >
-                          <span>{nat.flag}</span>
-                          <span>{nat.name}</span>
-                        </button>
-                      ))}
-                    </div>
+                    <SearchableDropdown
+                      id="nationality-select"
+                      label="Your Nationality"
+                      value={nationality}
+                      placeholder="Select your nationality"
+                      searchPlaceholder="Search nationality..."
+                      options={NATIONALITIES.map((n) => ({
+                        id: n.name,
+                        label: n.name,
+                        flag: n.flag,
+                      }))}
+                      onSelect={(selectedName) => {
+                        setNationality(selectedName);
+                        const match = NATIONALITIES.find((n) => n.name === selectedName);
+                        if (match) setNationalityCode(match.code);
+                      }}
+                    />
                   </div>
 
+                  {/* Current Residence Country Dropdown */}
                   <div className="form-group-card">
-                    <label className="field-label">Current Residence Country</label>
-                    <div className="country-select-list">
-                      {COUNTRIES.slice(0, 3).map((c) => (
-                        <div
-                          key={c.code}
-                          className={`country-option-item ${residenceCountry === c.code ? "selected" : ""}`}
-                          onClick={() => {
-                            setResidenceCountry(c.code);
-                            const defaultCity = CITY_PRESETS[c.code]?.[0] || "";
-                            setCity(defaultCity);
-                            setCityInput(defaultCity);
-                          }}
-                        >
-                          <span className="country-flag-large">{c.flag}</span>
-                          <div className="country-option-info">
-                            <h4>{c.name}</h4>
-                            <p>{c.note}</p>
-                          </div>
-                          {residenceCountry === c.code && (
-                            <CheckCircle2 size={18} color="#0ea58a" className="country-check" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    <SearchableDropdown
+                      id="country-select"
+                      label="Current Residence Country"
+                      value={residenceCountry}
+                      placeholder="Select residence country"
+                      searchPlaceholder="Search country..."
+                      options={COUNTRIES.map((c) => ({
+                        id: c.code,
+                        label: c.name,
+                        flag: c.flag,
+                      }))}
+                      onSelect={(code) => {
+                        setResidenceCountry(code);
+                        const defaultCity = CITY_PRESETS[code]?.[0] || "";
+                        setCity(defaultCity);
+                        setCityInput(defaultCity);
+                      }}
+                    />
                   </div>
 
+                  {/* City / Region in Country Dropdown */}
                   <div className="form-group-card">
-                    <label className="field-label">City / Region in {activeCountryObj.name}</label>
-                    <div className="city-chip-row">
-                      {(CITY_PRESETS[residenceCountry] || []).map((presetCity) => (
-                        <button
-                          key={presetCity}
-                          type="button"
-                          className={`city-pill ${city === presetCity ? "active" : ""}`}
-                          onClick={() => {
-                            setCity(presetCity);
-                            setCityInput(presetCity);
-                          }}
-                        >
-                          {presetCity}
-                        </button>
-                      ))}
-                    </div>
-                    <input
-                      type="text"
-                      className="text-input-field"
-                      placeholder={`Or type custom city (e.g. ${CITY_PRESETS[residenceCountry]?.[0] || "City"})...`}
-                      value={cityInput}
-                      onChange={(e) => {
-                        setCityInput(e.target.value);
-                        setCity(e.target.value);
+                    <SearchableDropdown
+                      id="city-select"
+                      label={`City / Region in ${activeCountryObj.name}`}
+                      value={city}
+                      placeholder="Select or enter your city"
+                      searchPlaceholder={`Search or type city (e.g. ${CITY_PRESETS[residenceCountry]?.[0] || "City"})...`}
+                      allowCustomInput={true}
+                      options={(CITY_PRESETS[residenceCountry] || []).map((cName) => ({
+                        id: cName,
+                        label: cName,
+                        icon: <MapPin size={15} />,
+                      }))}
+                      onSelect={(selectedCity) => {
+                        setCity(selectedCity);
+                        setCityInput(selectedCity);
                       }}
                     />
                   </div>

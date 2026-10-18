@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, LockKeyhole } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 
@@ -24,7 +24,16 @@ export default function LoginPage() {
 
 function LoginContent() {
   const { account, googleLoginUrl } = useAuth();
-  const failed = useSearchParams().get("error") === "google";
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const failed = searchParams.get("error") === "google";
+
+  useEffect(() => {
+    // A prior OAuth failure can leave its query string behind after an existing
+    // account session is restored. Do not show a failure beside a signed-in state.
+    if (account && failed) router.replace("/login");
+  }, [account, failed, router]);
+
   return (
     <main className="auth-page">
       <section className="auth-story">
