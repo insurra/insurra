@@ -46,10 +46,15 @@ Remaining source dependency: the shipped extraction templates are empty. Valen's
 
 `POST /api/v1/pathways/compare` consumes current processing consent and the same reviewed triage seam, with no model call. It accepts the existing complaint/service/city contract plus an optional timeframe. Symptoms are neither persisted in comparisons nor audit. Two or three configured procedure cards retain null costs whenever reference prices, current-period benefit amounts, currency, excess/rate, network, referral or claim mode cannot be established. Cost calculations use Decimal and no conversion; the priority badge requires comparable sourced estimates. Synthetic tariffs are refused for authenticated accounts.
 
-The response includes a short-lived owned comparison proof bound to current profile, policy fields and KB. Future case creation can use that proof without retaining complaint text. Uncertainties and questions come from country verification configuration and are capped at five. Reminder creation remains visibly unavailable while SC-10 is absent. Reviewed descriptive pathway sources are recorded in KB_SOURCES.md; unchecked sources never receive invented dates or payment assurances.
+The response includes a short-lived owned comparison proof bound to current profile, policy fields and KB. Case creation uses that proof without retaining complaint text. Uncertainties and questions come from country verification configuration and are capped at five. Reminder creation remains visibly unavailable while SC-10 is absent. Reviewed descriptive pathway sources are recorded in KB_SOURCES.md; unchecked sources never receive invented dates or payment assurances.
 
 ## DRAFT case creation
 
 Canonical `POST /api/v1/claims` now creates real account/demo-owned rows in the existing claim_cases table. The optional contract field `comparison_id` and `Idempotency-Key` header are required by the implemented creation service after coverage ownership checks. A comparison expires after 15 minutes and is bound to the current profile, policy fields and KB. A changed choice with the same key or comparison is a 409 conflict; identical retries return the same case ID. Database uniqueness protects simultaneous confirmations, and the audit event commits with the case.
 
 Only a generic masked complaint summary is stored, never the original symptoms. The confirmation dialog shows documents, direct-billing caveats and the SC-09 limitation. Cancellation sends no POST; retries reuse the key. Emergency options never create cases. The real created ID is shown with an honest unavailable-checklist message because SC-09 is absent. No claim readiness, action queue, submission or execution was implemented. Existing GET claim/detail/evidence/draft contracts and Joshua's ownership boundaries remain unchanged.
+
+
+## Resume integration review
+
+Canonical policy vocabulary references and original-country display labels were corrected in 467e23f. The responsibility-based naming refactor is b924568: workspace_state models, workspace schemas/API/UI components, domain test names and unchanged table DDL. Current shared master remains 3fa80ce with AU/ID only; no CN content was merged or substituted. Full verification, the baseline demo consent navigation issue, and all acceptance blockers are recorded in VERIFICATION.md and VALEN_TRACEABILITY.md.

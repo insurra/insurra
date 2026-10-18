@@ -161,27 +161,27 @@ The following story descriptions and acceptance criteria are copied from `PRD - 
 ### US-05-01 — Kartu ringkasan perlindungan (P0, SC-05)
 
 Command Center menampilkan kondisi perlindungan user dalam tiga angka utama dan badge konteks negara, agar user yang baru tiba di negara baru (atau baru punya perlindungan di Indonesia) langsung tahu posisinya.
- 
+
  Components:
  - Salam "Halo, <nama depan>" dan badge konteks, misalnya "Australia · Melbourne · Pelajar" atau "Indonesia · Jakarta".
  - Untuk konteks luar negeri: teks kecil "Hari ke-<n> sejak tiba" dan "Visa berakhir <tanggal>".
  - Tiga kartu angka: "Perlindungan aktif", "Berakhir ≤ 30 hari", "Perlu verifikasi"; masing-masing berisi angka besar, label, dan sub-teks.
  - Klik kartu membuka daftar ringkas: nama penyelenggara, jenis perlindungan, negara, tanggal berakhir.
  - Empty state: "Belum ada perlindungan tersimpan" dan tombol "Unggah dokumen pertama".
- 
+
  Cara kerja sistem (rules_engine):
  - Aktif: tanggal mulai ≤ hari ini ≤ tanggal berakhir.
  - Berakhir ≤ 30 hari: aktif dan selisih tanggal berakhir dengan hari ini 0–30 hari.
  - Perlu verifikasi: perlindungan dengan minimal satu data wajib berstatus Belum terverifikasi atau Hilang.
  - Perlindungan tanpa tanggal berakhir (misalnya BPJS) dihitung aktif hanya jika statusnya sudah dikonfirmasi user di SC-04; jika belum, masuk "Perlu verifikasi".
  - Perlindungan dari negara lain tetap dihitung, tetapi diberi label negara (contoh: BPJS berlabel "Indonesia" saat konteks aktif Australia).
- 
+
  Constraint:
  - Semua angka dihitung kode, tidak dari LLM.
  - Perhitungan tanggal memakai zona waktu kota konteks aktif (contoh: Australia/Melbourne, Asia/Jakarta).
  - Nomor polis dan nomor member selalu tersamar di screen ini.
  - Command Center tidak menampilkan detail manfaat polis (itu P1 di SC-13).
- 
+
  Post Condition:
  Angka-angka ini menjadi pemicu rekomendasi tindakan (US-05-02) di halaman yang sama.
 
@@ -199,12 +199,12 @@ Command Center menampilkan kondisi perlindungan user dalam tiga angka utama dan 
 ### US-05-02 — Rekomendasi tindakan berikutnya (P0, SC-05)
 
 Sistem menampilkan maksimal 3 langkah berikutnya yang paling penting, berdasarkan aturan yang jelas. Untuk user yang baru tiba di luar negeri, rekomendasi teratas biasanya terkait kewajiban asuransi visa, karena risiko terbesarnya ada di sana.
- 
+
  Components:
  - Section "Langkah berikutnya" berisi maksimal 3 kartu.
  - Setiap kartu: ikon, judul, 1–2 kalimat alasan, tautan sumber aturan (jika aturan berasal dari regulasi), tombol aksi, dan tombol "Abaikan".
  - Empty state: "Semua beres untuk saat ini."
- 
+
  Cara kerja sistem (urutan prioritas aturan; aturan per negara dari /kb/{negara}/recommendation_rules.json):
  1. [AU] Belum ada asuransi wajib visa tersimpan → "Unggah sertifikat OSHC kamu" → SC-03.
  2. [AU] Masa cover tidak menutup seluruh masa visa → "Ada jeda <n> hari antara asuransi dan visa" → SC-04 tugas visa_cover.
@@ -214,14 +214,14 @@ Sistem menampilkan maksimal 3 langkah berikutnya yang paling penting, berdasarka
  6. Dokumen ber-flag injection → "Periksa dokumen <nama>" → SC-03.
  7. Dokumen gagal diproses → "Unggah ulang <nama>" → SC-03.
  Aturan berlabel [AU] atau [ID] hanya aktif pada konteks negara tersebut. Sistem mengambil 3 rekomendasi teratas.
- 
+
  Constraint:
  - Setiap rekomendasi wajib berasal dari aturan dan menyimpan rule_id; LLM tidak boleh menambah rekomendasi.
  - Aturan yang bersumber dari regulasi (contoh: kewajiban asuransi pelajar di Australia) wajib menyimpan source_url dan checked_at di basis pengetahuan.
  - Teks rekomendasi memakai template; LLM opsional hanya untuk merapikan kalimat.
  - "Abaikan" menyembunyikan rekomendasi selama 7 hari, kecuali aturan nomor 1 dan 2 (kewajiban visa) yang tidak bisa diabaikan, hanya bisa ditandai "Sudah saya urus" dengan konfirmasi.
  - Tidak ada rekomendasi membeli produk asuransi tertentu di P0.
- 
+
  Post Condition:
  Tombol aksi membuka screen tujuan dengan konteks yang sudah terisi (tugas, polis, atau dokumen terkait).
 
@@ -239,19 +239,19 @@ Sistem menampilkan maksimal 3 langkah berikutnya yang paling penting, berdasarka
 ### US-05-03 — Pintasan situasi dan nomor darurat lokal (P0, SC-05)
 
 Command Center menyediakan pintasan situasi agar user bisa langsung menuju bantuan yang dibutuhkan, termasuk nomor darurat yang sesuai negara tempat ia berada.
- 
+
  Components:
  - Tiga tombol besar dengan ikon: "Tanya polis" (→ /ask), "Saya perlu berobat" (→ /pathways), "Siapkan klaim" (→ /claims).
  - Tombol keempat "Perlindungan apa yang aku butuhkan?" (→ /coverage-needs, fitur PM2).
  - Teks di bawah tombol "Saya perlu berobat": "Darurat? Hubungi <nomor>". Nomor diambil dari /kb/{negara}/emergency.json (contoh: 000 untuk Australia, 119 untuk Indonesia). Teks ini membuka SC-08.
  - Navigasi utama (sidebar desktop / bottom nav mobile): Home, Dokumen, Tanya, Klaim, Lainnya.
- 
+
  Constraint:
  - Tidak ada input chat, form keluhan, atau perbandingan di Command Center; screen ini hanya menautkan.
  - Nomor darurat tidak boleh ditulis langsung di kode.
  - "Siapkan klaim" disabled jika user belum memiliki perlindungan, dengan tooltip "Unggah polis terlebih dulu".
  - Tautan darurat selalu terlihat tanpa scroll di layar mobile.
- 
+
  Post Condition:
  User berpindah ke screen tujuan; isi dan logika screen tujuan diatur oleh PRD fitur terkait (PM2).
 
@@ -268,7 +268,7 @@ Command Center menyediakan pintasan situasi agar user bisa langsung menuju bantu
 ### US-06-01 — Ajukan pertanyaan tentang manfaat (P0, SC-06)
 
 User bertanya tentang isi perlindungannya dengan bahasa sehari-hari (Bahasa Indonesia atau Inggris) di halaman /ask, dan bisa memilih polis yang ingin ditanyakan. Tujuannya agar user yang memegang polis berbahasa Inggris atau baru pertama kali punya asuransi bisa memahami haknya tanpa membaca seluruh policy booklet.
- 
+
  Components:
  - Halaman /ask dengan area chat, input teks (maksimal 500 karakter), dan tombol "Kirim".
  - Dropdown "Tanya tentang": "Semua perlindungan saya" (default) atau satu polis tertentu (nama penyedia + jenis, contoh "OSHC – <penyedia>").
@@ -276,7 +276,7 @@ User bertanya tentang isi perlindungannya dengan bahasa sehari-hari (Bahasa Indo
  - Riwayat percakapan dalam sesi dan tombol "Mulai percakapan baru".
  - Teks kecil di bawah input: "Jawaban berdasarkan dokumen yang kamu unggah, bukan nasihat medis."
  - Empty state jika belum ada polis tersimpan: "Unggah polis dulu supaya aku bisa menjawab" dengan tombol ke SC-03.
- 
+
  Constraint:
  - Input dan chip terkunci jika persetujuan process_documents atau external_ai belum aktif, dengan banner ke SC-12 (mengikuti US-01-03).
  - Setiap pertanyaan melewati triage_check (US-06-04) sebelum dikirim ke LLM.
@@ -285,7 +285,7 @@ User bertanya tentang isi perlindungannya dengan bahasa sehari-hari (Bahasa Indo
  - Batas 20 pertanyaan per jam per user (hemat biaya AI) dengan pesan yang jelas saat batas tercapai.
  - Contoh pertanyaan diambil dari basis pengetahuan per negara, tidak ditulis di kode.
  - Isi pertanyaan di audit disimpan dalam bentuk tersamar (input_summary).
- 
+
  Post Condition:
  Pertanyaan diteruskan ke orkestrator (US-06-02), atau dialihkan ke SC-08 jika terdeteksi tanda bahaya. Satu entri audit bertipe answer tercatat setelah jawaban selesai.
 
@@ -303,14 +303,14 @@ User bertanya tentang isi perlindungannya dengan bahasa sehari-hari (Bahasa Indo
 ### US-06-02 — Jawaban dengan kutipan klausul (P0, SC-06)
 
 Agen menjawab berdasarkan klausul polis milik user dalam Bahasa Indonesia, dengan kutipan asli (bisa berbahasa Inggris) dan nomor halaman yang bisa diklik. Ini inti K2: jawaban bisa diperiksa sendiri dan tidak dikarang.
- 
+
  Components:
  - Jawaban berbentuk poin (maksimal 5). Setiap poin berisi penjelasan Bahasa Indonesia, label kepastian (US-06-03), dan chip kutipan "<nama dokumen> · hal. <n>".
  - Klik chip kutipan membuka panel samping berisi potongan klausul asli (bahasa asli) dengan bagian relevan disorot, plus tombol "Buka dokumen" ke halaman sumber.
  - Istilah lokal ditampilkan asli dengan penjelasan dari glosarium, contoh "excess (biaya yang kamu tanggung sendiri per klaim)".
  - Blok "Tidak ditemukan di dokumen" jika klausul tidak ada, berisi langkah verifikasi dari /kb/{negara}/verification_steps.json (contoh: hubungi penyedia OSHC, tanya HR).
  - Tombol umpan balik per jawaban: "Membantu" / "Kurang tepat" (dengan pilihan alasan).
- 
+
  Constraint:
  - Orkestrator wajib memanggil retrieve_clause (maksimal 5 potongan, lintas bahasa) hanya pada clause_chunks milik user. Pengetahuan umum tidak boleh disajikan seolah isi polis.
  - Policy layer membuang setiap poin tanpa minimal satu kutipan valid (doc, page, dan quote yang benar-benar ada di clause_chunks). Penolakan dicatat di audit sebagai guardrail subtipe uncited_answer.
@@ -319,7 +319,7 @@ Agen menjawab berdasarkan klausul polis milik user dalam Bahasa Indonesia, denga
  - Tidak menjanjikan klaim pasti dibayar. Jika user bertanya "pasti dibayar?", jawaban menyebut keputusan ada di penyedia.
  - Output LLM berupa JSON {answer_points[{text, label, citations[]}]} yang divalidasi Zod. Gagal validasi → retry sekali → pesan "Belum bisa menjawab, coba ulangi".
  - Jawaban di-stream; token pertama tampil ≤ 5 detik pada data demo.
- 
+
  Post Condition:
  Jawaban tersimpan di riwayat sesi, dan satu entri audit (event_type answer) mencatat tool yang dipanggil, jumlah kutipan, dan label.
 
@@ -337,19 +337,19 @@ Agen menjawab berdasarkan klausul polis milik user dalam Bahasa Indonesia, denga
 ### US-06-03 — Label kepastian dan angka dari rules engine (P0, SC-06)
 
 Setiap poin jawaban diberi label kepastian, dan semua angka (limit, sisa limit, tanggal, persentase tanggungan, excess) diambil dari rules_engine, bukan dihitung LLM. User tahu mana yang pasti dari dokumen dan mana yang perlu dikonfirmasi.
- 
+
  Components:
  - Badge per poin: "Dari dokumen" (hijau), "Estimasi" (kuning), "Perlu konfirmasi" (abu-abu), masing-masing dengan tooltip penjelasan.
  - Angka ditampilkan dalam mata uang asli dokumen (AUD/Rp) dengan ikon info "Dihitung sistem dari data polis kamu".
  - Kartu angka ringkas (jika relevan): Limit, Terpakai, Sisa, Berlaku sampai.
- 
+
  Constraint:
  - Aturan label. Dari dokumen: poin didukung kutipan dan angkanya berasal dari field berstatus Ditemukan. Estimasi: angka hasil perhitungan rules_engine (misalnya perkiraan biaya pribadi) atau berasal dari field Belum terverifikasi. Perlu konfirmasi: klausul ambigu, bergantung pada kondisi yang tidak diketahui (misalnya jaringan provider), atau data Hilang.
  - Label ditentukan policy layer dari sumber angka dan status field. LLM hanya mengusulkan label, dan policy layer boleh menurunkannya.
  - Prompt tidak boleh meminta LLM menghitung. Angka di teks jawaban harus sama persis dengan output rules_engine; jika berbeda, angka diganti nilai rules_engine dan dicatat sebagai guardrail subtipe number_mismatch.
  - Sisa limit = limit_amount − used_amount pada periode berjalan. Jika used_amount tidak diketahui, tampilkan "Sisa: tidak diketahui" dengan label Perlu konfirmasi.
  - Nominal tidak dikonversi kurs.
- 
+
  Post Condition:
  Setiap poin jawaban memiliki tepat satu label kepastian, dan semua angka dapat ditelusuri ke rules_engine.
 
@@ -367,19 +367,19 @@ Setiap poin jawaban diberi label kepastian, dan semua angka (limit, sisa limit, 
 ### US-06-04 — Deteksi tanda bahaya di chat (P0, SC-06)
 
 Sebelum pertanyaan diproses LLM, triage_check memeriksa apakah teks berisi tanda bahaya medis (contoh: sesak napas, nyeri dada). Jika ya, chat tidak menjawab apa pun tentang polis dan langsung mengalihkan user ke arahan darurat (SC-08). Ini guardrail keselamatan yang harus terlihat bekerja di demo.
- 
+
  Components:
  - Redirect otomatis ke /emergency dengan parameter asal (from=ask).
  - Pesan singkat di riwayat chat: "Kamu menyebut gejala yang bisa darurat. Aku arahkan ke bantuan darurat dulu."
  - Tombol "Bukan darurat, kembali" di SC-08 (US-08-01) untuk kembali ke chat.
- 
+
  Constraint:
  - triage_check berjalan di server sebelum panggilan LLM, berbasis /kb/{negara}/red_flags.json (US-08-02). Pencocokannya memakai kata kunci dan sinonim Bahasa Indonesia dan Inggris, tidak bergantung pada LLM.
  - Klasifikasi LLM (opsional) hanya boleh menjadi lapisan kedua yang menambah deteksi, tidak boleh membatalkan hasil kata kunci.
  - Jika terpicu, giliran itu tidak menampilkan jawaban polis, perbandingan, atau angka biaya.
  - Negasi ("tidak sesak napas") tetap dianggap pemicu, sesuai prinsip lebih aman.
  - Setiap pemicu dicatat di audit sebagai guardrail subtipe red_flag, berisi id tanda bahaya dan versi red_flags.json, tanpa isi pesan lengkap.
- 
+
  Post Condition:
  User berada di SC-08 dengan nomor darurat sesuai negara, dan peristiwanya tampil di SC-11 sebagai sorotan guardrail.
 
@@ -397,7 +397,7 @@ Sebelum pertanyaan diproses LLM, triage_check memeriksa apakah teks berisi tanda
 ### US-07-01 — Ceritakan keluhan non-darurat (P0, SC-07)
 
 User mengisi form singkat tentang kebutuhan berobat non-darurat agar agen bisa membandingkan jalur layanan yang tersedia di negaranya. Form dibuat sesingkat mungkin karena biasanya diisi saat sedang tidak enak badan.
- 
+
  Components:
  - Halaman /pathways dengan judul "Mau berobat ke mana?" dan banner "Darurat? Hubungi <nomor>" (dari emergency.json) yang membuka SC-08.
  - Field "Ceritakan keluhanmu" (teks bebas, maksimal 300 karakter) dengan placeholder "Sakit tenggorokan 3 hari, demam ringan".
@@ -405,7 +405,7 @@ User mengisi form singkat tentang kebutuhan berobat non-darurat agar agen bisa m
  - Field Kota (terisi otomatis dari profil, bisa diubah).
  - Pilihan "Kapan ingin berobat?": Hari ini, Minggu ini, Belum tahu.
  - Tombol "Bandingkan jalur".
- 
+
  Constraint:
  - Keluhan melewati triage_check sebelum diproses; tanda bahaya → SC-08 (sama dengan US-06-04).
  - Tombol "Bandingkan jalur" disabled sampai keluhan dan jenis layanan terisi.
@@ -413,7 +413,7 @@ User mengisi form singkat tentang kebutuhan berobat non-darurat agar agen bisa m
  - Keluhan hanya dipakai untuk memilih jalur. Agen tidak mendiagnosis dan tidak mengomentari gejala.
  - Keluhan disimpan tersamar (ringkasan maksimal 80 karakter) di claim_cases.complaint_summary dan audit.
  - Jenis layanan dan teks bantuan diambil dari basis pengetahuan negara, tidak ditulis di kode.
- 
+
  Post Condition:
  Data form dikirim ke /api/pathways/compare dan hasil perbandingan tampil (US-07-02).
 
@@ -430,13 +430,13 @@ User mengisi form singkat tentang kebutuhan berobat non-darurat agar agen bisa m
 ### US-07-02 — Kartu perbandingan jalur (P0, SC-07)
 
 Agen menampilkan 2–3 jalur layanan yang relevan dalam bentuk kartu yang mudah dibandingkan: langkah, syarat, perkiraan biaya pribadi, dan dokumen yang perlu disiapkan. Jalur diambil dari basis pengetahuan negara lalu dicocokkan dengan perlindungan aktif user.
- 
+
  Components:
  - 2–3 kartu, berdampingan di desktop dan bertumpuk di mobile. Contoh AU: "Dokter umum (GP)", "Klinik urgent care", "IGD rumah sakit (jika memburuk)". Contoh ID: "BPJS (faskes 1 → rujukan)", "Asuransi kantor", "Polis pribadi".
  - Isi setiap kartu: nama jalur, perlindungan yang dipakai (contoh "OSHC – <penyedia>"), 3–5 langkah bernomor, syarat (rujukan, provider dalam jaringan, bayar dulu lalu klaim atau langsung ditagih ke penyedia), perkiraan biaya pribadi (rentang, label Estimasi), dokumen yang perlu disimpan, serta tautan sumber dan tanggal cek.
  - Badge "Paling sesuai prioritasmu" pada satu kartu, berdasarkan prioritas di profil, beserta alasannya.
  - Tombol "Pilih jalur ini" di setiap kartu (US-07-04).
- 
+
  Constraint:
  - compare_paths membaca jalur dari /kb/{negara}/pathways.json; kode tidak berisi nama jalur.
  - Perkiraan biaya pribadi dihitung rules_engine dari benefits user (limit, excess, claim_mode) dan tarif acuan di pathways.json. LLM hanya merangkai kalimat.
@@ -444,7 +444,7 @@ Agen menampilkan 2–3 jalur layanan yang relevan dalam bentuk kartu yang mudah 
  - Tidak menampilkan angka waktu tunggu; diganti langkah "Cek jadwal atau booking online".
  - Badge prioritas berbasis aturan prioritas profil, bukan penilaian medis.
  - Setiap perbandingan dicatat di audit dengan event_type compare.
- 
+
  Post Condition:
  User melihat perbandingan jalur dan dapat memilih satu jalur.
 
@@ -462,20 +462,20 @@ Agen menampilkan 2–3 jalur layanan yang relevan dalam bentuk kartu yang mudah 
 ### US-07-03 — Daftar hal yang belum pasti (P0, SC-07)
 
 Di bawah kartu jalur, agen menampilkan hal-hal yang belum bisa dipastikan dari dokumen, beserta cara memastikannya. Tujuannya agar user tidak mengira semuanya sudah pasti dan tidak kaget di klinik.
- 
+
  Components:
  - Section "Belum pasti" berisi maksimal 5 item.
  - Setiap item berisi pernyataan singkat (contoh "Apakah klinik ini termasuk provider dalam jaringan OSHC-mu"), dampaknya ("Jika di luar jaringan, kamu mungkin bayar penuh dulu"), dan langkah memastikan (contoh "Tanya resepsionis: bisa direct billing ke <penyedia>?").
  - Tombol "Salin pertanyaan untuk klinik" yang menyalin daftar pertanyaan ke clipboard.
  - Tombol "Buat pengingat cek" yang membuat draf pengingat ke SC-10.
- 
+
  Constraint:
  - Item berasal dari tiga sumber: field Hilang atau Belum terverifikasi yang memengaruhi jalur; syarat jalur yang tidak bisa dicek sistem (jaringan provider, status kepesertaan); dan kapj_status unknown pada konteks ID.
  - Langkah memastikan diambil dari /kb/{negara}/verification_steps.json, tidak dikarang LLM.
  - Pada konteks ID, koordinasi manfaat BPJS dan asuransi kantor (KAPJ) yang tidak tertulis di polis selalu muncul sebagai item "perlu dikonfirmasi".
  - Jika tidak ada hal yang belum pasti, tampilkan "Semua syarat utama sudah terverifikasi dari dokumenmu."
  - "Buat pengingat cek" hanya membuat draf berstatus Menunggu.
- 
+
  Post Condition:
  User tahu apa saja yang harus dicek sebelum berangkat berobat.
 
@@ -492,19 +492,19 @@ Di bawah kartu jalur, agen menampilkan hal-hal yang belum bisa dipastikan dari d
 ### US-07-04 — Pilih jalur dan buat kasus klaim (P0, SC-07)
 
 Setelah user memilih jalur, sistem membuat kasus klaim yang menyimpan jalur, perlindungan yang dipakai, dan ringkasan keluhan, lalu membuka Kesiapan Klaim. User tidak perlu mengulang input saat menyiapkan klaim.
- 
+
  Components:
  - Tombol "Pilih jalur ini" di setiap kartu.
  - Dialog konfirmasi berisi ringkasan jalur, perlindungan yang dipakai, dan dokumen yang perlu disimpan, dengan tombol "Buat kasus klaim" dan "Batal".
  - Untuk jalur yang langsung ditagih ke penyedia (direct billing/cashless), dialog menambahkan catatan "Kamu mungkin tidak perlu klaim sendiri, tapi tetap simpan dokumen ini."
  - Toast "Kasus klaim dibuat" lalu redirect ke /claims/[id].
- 
+
  Constraint:
  - Satu konfirmasi membuat satu kasus; tombol disabled selama proses untuk mencegah kasus ganda.
  - Kasus menyimpan country_code, path (id dari pathways.json), coverage_id, complaint_summary (tersamar), dan status Draft.
  - Kartu IGD tidak membuat kasus dari screen ini; tombolnya membuka SC-08.
  - Pembuatan kasus dicatat di audit (event_type action, subtipe claim_case_created).
- 
+
  Post Condition:
  Kasus klaim berstatus Draft tercipta dan SC-09 terbuka dengan checklist jalur tersebut (US-09-01).
 
@@ -521,21 +521,21 @@ Setelah user memilih jalur, sistem membuat kasus klaim yang menyimpan jalur, per
 ### US-14-01 — Daftar kebutuhan perlindungan sesuai konteks (P0, SC-14)
 
 User melihat daftar perlindungan yang wajib dan disarankan untuk situasinya (negara, status pelajar/pekerja, tanggungan), sehingga pertanyaan "aku butuh asuransi apa di sini?" terjawab di satu halaman.
- 
+
  Components:
  - Halaman /coverage-needs dengan judul "Perlindungan yang kamu butuhkan di <negara>" dan badge konteks (contoh "Australia · Pelajar").
  - Dua grup: "Wajib" (contoh: OSHC untuk pemegang visa pelajar di Australia) dan "Disarankan" (contoh AU: extras gigi dan optik, asuransi perjalanan saat keluar Australia; contoh ID: BPJS Kesehatan, asuransi jiwa jika punya tanggungan).
  - Kartu kebutuhan: nama (istilah lokal dan penjelasannya), satu kalimat alasan, label Wajib/Disarankan, tautan sumber aturan dengan tanggal cek, dan status kepemilikan (US-14-02).
  - Ringkasan di atas halaman, contoh "2 dari 4 sudah punya".
  - Tombol "Ubah situasi saya" yang membuka edit profil (SC-02).
- 
+
  Constraint:
  - Daftar kebutuhan berasal dari aturan di /kb/{negara}/coverage_needs.json berdasarkan status, tanggungan, dan visa. LLM tidak boleh menambah kebutuhan.
  - Label "Wajib" hanya boleh dipakai untuk kebutuhan yang memiliki source_url regulasi resmi.
  - Tidak merekomendasikan produk atau penyedia tertentu di P0; perbandingan produk ada di SC-17 (P1).
  - Teks dalam Bahasa Indonesia, dengan istilah lokal ditulis asli.
  - Negara selain AU dan ID ditandai "Segera hadir".
- 
+
  Post Condition:
  User melihat semua kebutuhan sesuai konteksnya beserta status kepemilikan masing-masing.
 
@@ -553,20 +553,20 @@ User melihat daftar perlindungan yang wajib dan disarankan untuk situasinya (neg
 ### US-14-02 — Status kepemilikan dan alasan tiap kebutuhan (P0, SC-14)
 
 Setiap kebutuhan dicocokkan dengan perlindungan yang sudah dimiliki user, lalu diberi status Sudah punya · Belum punya · Perlu dicek beserta alasannya. Untuk kewajiban visa, hasil cek jeda antara masa cover dan masa visa ikut ditampilkan.
- 
+
  Components:
  - Badge status di setiap kartu kebutuhan: Sudah punya (hijau), Belum punya (merah untuk Wajib, kuning untuk Disarankan), Perlu dicek (abu-abu).
  - Alasan satu kalimat, contoh "Ditemukan: Sertifikat OSHC <penyedia>, berlaku 01-02-2026 s.d. 31-03-2027" atau "Kategori gigi tidak ditemukan di polis yang kamu unggah".
  - Untuk OSHC: ringkasan hasil aturan visa dari SC-04 (contoh "Ada jeda 76 hari") dan tautan ke SC-04?task=visa_cover.
  - Tombol aksi per status. Belum punya → "Pelajari pilihan" (SC-17 jika tersedia, atau langkah dari verification_steps). Perlu dicek → "Cek sekarang" (SC-04/SC-03). Sudah punya → "Lihat polis" (SC-13).
- 
+
  Constraint:
  - Pencocokan dilakukan rules_engine (kebutuhan ↔ coverages.type dan benefits.category), tanpa LLM.
  - Status Sudah punya hanya diberikan jika coverage aktif dan data kuncinya berstatus Ditemukan. Jika data kunci Belum terverifikasi atau Hilang, statusnya Perlu dicek.
  - Teks wajib membedakan "tidak ditemukan di dokumen" dan "dikecualikan di polis". "Dikecualikan" hanya dipakai jika ada kutipan klausul pengecualian.
  - Jeda visa memakai hasil rules_engine yang sama dengan SC-04, tidak dihitung ulang dengan cara lain.
  - Setiap hasil pencocokan dicatat di audit dengan event_type compare.
- 
+
  Post Condition:
  User tahu kebutuhan mana yang sudah terpenuhi dan langkah berikutnya untuk yang belum.
 
@@ -583,7 +583,7 @@ Setiap kebutuhan dicocokkan dengan perlindungan yang sudah dimiliki user, lalu d
 ### US-16-01 — Input perjalanan (P1, SC-16)
 
 User memasukkan rencana perjalanan atau kepindahan (liburan, studi, atau kerja) agar agen bisa mengecek perlindungan yang sudah dimiliki dan kebutuhan di negara tujuan. Contoh skenario: mahasiswa di Australia yang akan liburan ke Eropa, atau karyawan di Indonesia yang akan pindah kerja ke negara lain.
- 
+
  Components:
  - Form /travel dengan chip tujuan: Liburan/perjalanan singkat, Studi, Kerja.
  - Negara tujuan (multi-pilih untuk liburan, satu negara untuk studi/kerja), tanggal berangkat, dan tanggal kembali (opsional untuk studi/kerja).
@@ -591,13 +591,13 @@ User memasukkan rencana perjalanan atau kepindahan (liburan, studi, atau kerja) 
  - Aktivitas khusus (opsional, chip): Olahraga berisiko (ski, diving), Menyetir kendaraan, Tidak ada.
  - Tombol "Cek perlindungan saya".
  - Daftar rencana tersimpan (maksimal 5) dengan tombol Edit dan Hapus.
- 
+
  Constraint:
  - Tanggal kembali harus setelah tanggal berangkat; validasi tampil inline.
  - Tidak meminta nomor paspor, nomor visa, maupun data tiket.
  - Rencana disimpan per user (perlu tabel trips baru di Skema Data).
  - Untuk tujuan studi atau kerja ke negara yang belum punya basis pengetahuan, form tetap menerima input dan hasilnya memakai panduan umum (US-16-03).
- 
+
  Post Condition:
  Rencana tersimpan, lalu hasil cek polis (US-16-02) dan kebutuhan di negara tujuan (US-16-03) tampil.
 
@@ -613,19 +613,19 @@ User memasukkan rencana perjalanan atau kepindahan (liburan, studi, atau kerja) 
 ### US-16-02 — Cek perlindungan yang ada (P1, SC-16)
 
 Sistem mengecek apakah polis yang sudah dimiliki berlaku untuk wilayah dan tanggal perjalanan, lalu menandai celahnya.
- 
+
  Components:
  - Tabel per polis: nama polis, "Berlaku di wilayah tujuan?" (Ya / Tidak / Perlu konfirmasi), "Menutup seluruh tanggal?" (Ya / Ada jeda <n> hari), dan kutipan klausul wilayah atau pengecualian.
  - Ringkasan di atas tabel, contoh "Perjalananmu belum sepenuhnya terlindungi: 2 celah".
  - Tombol "Lihat kebutuhan di negara tujuan" (US-16-03) dan "Bandingkan asuransi perjalanan" (SC-17).
  - Tombol "Buat pengingat sebelum berangkat" yang membuat draf ke SC-10.
- 
+
  Constraint:
  - Cek tanggal dilakukan rules_engine (masa berlaku coverage vs tanggal perjalanan).
  - Cek wilayah memakai field wilayah hasil ekstraksi dan kutipan klausul. Status "Tidak" hanya boleh diberikan jika ada kutipan; tanpa kutipan, statusnya Perlu konfirmasi.
  - Aktivitas khusus dicocokkan ke klausul pengecualian bila ada, dengan label kepastian seperti di US-06-03.
  - Pengingat hanya dibuat sebagai draf berstatus Menunggu.
- 
+
  Post Condition:
  User tahu polis mana yang berlaku untuk perjalanannya dan di mana celahnya.
 
@@ -641,20 +641,20 @@ Sistem mengecek apakah polis yang sudah dimiliki berlaku untuk wilayah dan tangg
 ### US-16-03 — Kebutuhan perlindungan di negara tujuan (studi/kerja/travel) (P1, SC-16)
 
 Untuk rencana studi, kerja, atau perjalanan dengan syarat visa, agen menampilkan perlindungan yang wajib dan disarankan di negara tujuan. Fitur ini memakai mesin yang sama dengan Cek Kebutuhan Perlindungan (SC-14), hanya untuk negara tujuan. Ia menjawab pertanyaan seperti "aku mau kerja di <negara>, asuransi apa yang aku butuhkan?" tanpa merekomendasikan produk tertentu.
- 
+
  Components:
  - Section "Yang kamu butuhkan di <negara tujuan>": grup Wajib dan Disarankan, masing-masing dengan alasan, sumber, dan tanggal cek.
  - Status kepemilikan terhadap polis yang dimiliki: Sudah punya / Belum punya / Perlu dicek.
  - Untuk negara yang belum punya basis pengetahuan: label "Panduan umum – belum spesifik negara" dengan checklist generik (kesehatan, perjalanan dan evakuasi medis, cek syarat asuransi di situs resmi imigrasi negara tujuan).
  - Tombol "Bandingkan produk" (SC-17) dan "Tanya agen" (SC-06 dengan konteks rencana).
- 
+
  Constraint:
  - Kebutuhan diambil dari /kb/{negara_tujuan}/coverage_needs.json dengan logika yang sama seperti US-14-01 dan US-14-02 (dipakai ulang, bukan dibangun lagi).
  - Syarat visa hanya ditampilkan sebagai "Wajib" jika ada source_url resmi. Jika tidak ada, tampilkan "Cek ke situs resmi imigrasi negara tujuan".
  - Panduan umum tidak boleh menyebut angka minimum pertanggungan tanpa sumber.
  - Tidak merekomendasikan penyedia atau produk tertentu.
  - Di MVP, hanya AU dan ID yang spesifik; negara lain memakai panduan umum.
- 
+
  Post Condition:
  User tahu perlindungan yang dibutuhkan di negara tujuan dan langkah berikutnya.
 

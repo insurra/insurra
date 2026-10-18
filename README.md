@@ -4,11 +4,11 @@
 
 Insurra helps Indonesian speakers understand unfamiliar health insurance systems. The intended product connects document evidence, policy questions, coverage checks, care pathways, and claim preparation in one workspace.
 
-This repository implements **Phase 1.5: Shared Foundation Alignment** of a 48-hour hackathon MVP. Its working demo uses entirely synthetic data for Raka, a student in Melbourne, and Sinta, a new employee in Jakarta. No real policy documents, personal identifiers, provider integrations, or paid credentials are required.
+This repository contains the shared foundation, existing authenticated account workspace, and Valen’s P0 implementation for `/home`, `/ask`, `/pathways` and `/coverage-needs`. Original Raka/Sinta fixtures remain explicitly synthetic. **P0 is not acceptance-complete:** shared triage/emergency data and downstream claim/action screens are unavailable. See [criterion results](docs/prd/VALEN_TRACEABILITY.md) and [verification](docs/agent-tasks/valen/VERIFICATION.md).
 
 ## Hackathon Scope
 
-Phase 1.5 aligns the existing foundation with the complete PRD while preserving the working demo. It adds contracts, minimal shared storage, security boundaries, KB structures and tests. Product workflows and screen implementations remain deferred. Future routes return `501 NOT_IMPLEMENTED` after identity, purpose and object-scope checks. No team ownership, feature branches or deployments are assigned or created.
+Valen’s authorized scope adds deterministic home recommendations, contextual protection needs, evidence-grounded policy Q&A, KB procedure comparisons and idempotent DRAFT case creation. It reuses current account/demo identities and normalized document fields. Shared triage, emergency UI, claim readiness, action approval/execution and Travel P1 remain deferred. No deployment, push or merge is performed.
 
 ## Features
 
@@ -16,21 +16,24 @@ Implemented:
 
 - Backend-backed, isolated demo sessions with opaque tokens, hashed at rest, expiring after 24 hours.
 - Independent `process_documents`, `external_ai`, and `retention` grants, false by default, with policy versions and grant/revocation timestamps. The existing demo control manages document-processing consent only; the canonical API manages all three purposes.
-- Session-scoped profile read/update, optional PRD profile metadata, seeded insurance records, and filtered audit history with optional pagination. Actor contracts distinguish demo sessions from future authenticated accounts.
+- Session-scoped profile read/update, optional PRD profile metadata, seeded insurance records, and filtered audit history with optional pagination. Demo sessions remain distinct from existing authenticated bearer accounts.
 - Versioned, validated AU/ID country configuration and idempotent fixture seeding.
 - Deterministic, inclusive interval calculation: Raka has a **potential 76-day gap**, 16 April–30 June 2027. Because rules/policies are unverified, status is `NEEDS_VERIFICATION`, not a legal finding. Sinta returns `NOT_APPLICABLE`.
 - Responsive Indonesian application shell, persona selection, onboarding, dashboard, document metadata and audit pages.
-- Public cover, Google OAuth sign-in, revocable seven-day account sessions, and a guest/demo path.
+- Existing public cover, Google/password account sign-in, account onboarding/documents/privacy, revocable bearer sessions, and the guest/demo path.
+- Account/demo-aware home and protection-needs services; original record countries/currencies are preserved.
+- Bounded multilingual clause retrieval, owned source pages, validated citations, deterministic numeric facts, consent-rechecked JSON/SSE Q&A, rate limits, cancellation and feedback.
+- KB-driven non-medical pathway cards and verification questions; unknown tariffs stay null. Confirmed choices create one owned DRAFT case with a masked summary and audit event.
 - Generated TypeScript/OpenAPI contracts, contract-drift checks, typed GET/POST/PUT/PATCH/DELETE and multipart/no-content/stream transport, additive migrations, scope/approval primitives, and automated verification.
 
-Contract-only (`501`): password registration/login/recovery, document upload/detail/delete and field review, completeness, home summary, policy Q&A/SSE, pathway comparison, triage, claim cases/evidence/draft, action decisions/execution, data inventory/deletion, coverage needs, audit detail and sandbox submission. These are shared interfaces, not implemented product features. P1/bonus features and the full nineteen-screen PRD remain deferred; current pages are preserved.
+Live Valen routes and UI are implemented, but Q&A/care fail closed with `TRIAGE_UNAVAILABLE` while shipped red flags are empty/unverified. Emergency numbers remain null. CI exercises reviewed synthetic triage/provider fixtures without promoting them to production facts. Source-backed answers need retained owned pages and reviewed coverage-linked fields; shipped extraction templates are empty. Claim detail/checklist, reminders/actions, triage HTTP endpoint and legacy foundation processing routes remain `501`. Existing account endpoints under `/account` are separate live interfaces.
 
 ## Tech Stack
 
 - Frontend: Next.js 16 App Router, React 19, TypeScript 5 strict mode, Tailwind CSS 4, initialized shadcn/ui Radix Button, Lucide, native fetch, React Context.
 - Backend: Python 3.11+, uv, FastAPI, Pydantic v2/Settings, SQLAlchemy 2, Alembic, Uvicorn, pytest, httpx, Ruff.
 - Persistence: SQLite locally; PostgreSQL through psycopg and `DATABASE_URL`. Supabase PostgreSQL is a future deployment option; Storage is not integrated.
-- AI seam: OpenAI Python SDK, Responses API and Pydantic Structured Outputs. Models default to `gpt-6.1-sol` and `gpt-6-luna`, both configurable. No Phase 1.5 route calls AI; account/model availability is not tested.
+- AI seam: OpenAI Python SDK, Responses API and Pydantic Structured Outputs. Models default to `gpt-6.1-sol` and `gpt-6-luna`, both configurable. Q&A uses the existing gateway only after current consent, triage and source checks. Real account/model availability is not tested; CI never calls a provider.
 - Contracts: OpenAPI → openapi-typescript. Browser smoke tests: Playwright/Chromium.
 - Deployment targets only: Vercel frontend and Railway backend. No deployment configuration or deployment is performed.
 
@@ -42,12 +45,12 @@ Exact dependency versions are pinned by `backend/uv.lock` and `frontend/package-
 
 ```mermaid
 flowchart LR
-  Web[Next.js frontend] -->|Typed fetch + X-Demo-Session| API[FastAPI /api/v1]
+  Web[Next.js frontend] -->|Typed fetch + bearer/demo token| API[FastAPI /api/v1]
   API --> Guard[Session dependencies + Policy Guard]
   Guard --> Services[Repositories and deterministic services]
   Services --> DB[(SQLite / PostgreSQL)]
   Services --> KB[Versioned country KB]
-  Services -. Phase 2 only .-> AI[ResponsesGateway / OpenAI]
+  Services -. consent + triage + evidence .-> AI[ResponsesGateway / OpenAI]
 ```
 
 The backend owns domain contracts, calculations, consent and ownership. The frontend owns presentation and explicitly displays uncertainty. Requests use a shared `ApiError` envelope, request IDs, and `Cache-Control: no-store`.
@@ -85,7 +88,7 @@ The backend owns domain contracts, calculations, consent and ownership. The fron
 
 ## Prerequisites
 
-Python 3.11+, Node.js 20.9+ (verified with Node 24.21.0), npm, and `make`. An installed `uv` is preferred; `make setup` bootstraps a repository-local uv into ignored `.tools/` when absent. Initial package/browser downloads require internet access. Guest/demo mode needs no OAuth credential; Google sign-in requires a Google OAuth client and PostgreSQL database.
+Python 3.11+, Node.js 20.9+ (verified with Node 24.21.0), npm, and `make`. An installed `uv` is preferred; `make setup` bootstraps a repository-local uv into ignored `.tools/` when absent. Initial package/browser downloads require internet access. Guest/demo and local account tests need no paid credentials. Google sign-in requires configured server-side OAuth credentials and callback URL. SQLite is supported locally.
 
 ## Quick Start
 
@@ -111,7 +114,7 @@ In another:
 make dev-frontend
 ```
 
-Open **http://localhost:3000**. Choose Raka or Sinta, grant consent (or explicitly view seeded data without it), and visit the dashboard. Consent can be revoked under Privacy & Consent; audit history records changes. Selecting a different persona creates a fresh session and clears the previous frontend state.
+Open **http://localhost:3000**. Use the existing account login/onboarding or cover’s demo wizard. For Valen screens open `/home`; account consent is managed under `/settings/privacy`. Seeded demo records remain accessible without processing consent; protected processing requires explicit purpose grants. Selecting a different persona creates a fresh session and clears the previous frontend state.
 
 Backend: **http://localhost:8000**. Interactive API docs: **http://localhost:8000/docs**. Verify:
 
@@ -123,7 +126,7 @@ make check-contracts
 make test-client
 ```
 
-Next uses Webpack for dev/build to avoid Turbopack worker-port restrictions in some local sandboxes. Fonts use a local system stack; builds need no Google Fonts network access.
+Next uses Webpack for dev/build to avoid Turbopack worker-port restrictions in some local sandboxes. Fonts are installed locally through locked npm packages; builds need no Google Fonts network access.
 
 ## Environment Variables
 
@@ -134,7 +137,7 @@ Copy the root `.env.example` to `.env`. Pydantic and Next's configuration read t
 | `DATABASE_URL` | `sqlite:///./dev.db`; resolves in `backend/` with Make commands |
 | `FRONTEND_ORIGIN` | `http://localhost:3000`; one explicit CORS origin, wildcard rejected |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000`; browser-visible backend URL |
-| `OPENAI_API_KEY` | Empty; optional server-only Phase 2 credential |
+| `OPENAI_API_KEY` | Empty; optional server-only provider credential |
 | `OPENAI_MODEL` | `gpt-6.1-sol`; configurable primary model |
 | `OPENAI_FAST_MODEL` | `gpt-6-luna`; configurable lightweight model |
 | `ENVIRONMENT` | `development` |
@@ -146,7 +149,7 @@ Copy the root `.env.example` to `.env`. Pydantic and Next's configuration read t
 | `SESSION_SECRET` | Random server-only secret reserved for session hardening |
 | `ACCOUNT_SESSION_TTL_DAYS` | Account session lifetime; defaults to `7` |
 
-Never prefix secrets with `NEXT_PUBLIC_`. In future hosted builds, supply the public base URL at frontend build time and backend credentials through server environment configuration.
+Never prefix secrets with `NEXT_PUBLIC_`. In hosted builds, supply the public base URL at frontend build time and backend credentials through server environment configuration. A production frontend without NEXT_PUBLIC_API_BASE_URL displays BACKEND_NOT_CONFIGURED instead of calling localhost. A frontend-only deployment cannot provide these backend features.
 
 ## Demo Personas
 
@@ -161,7 +164,7 @@ Benefit coverage stays `UNKNOWN`, amounts stay null, and policies remain `UNVERI
 
 ## API Documentation
 
-OpenAPI UI: `/docs`; machine schema: `/openapi.json`; health: `/health`. Domain endpoints use `/api/v1` and `X-Demo-Session`. Session creation returns the token once; subsequent responses do not return it.
+OpenAPI UI: `/docs`; machine schema: `/openapi.json`; health: `/health`. Domain endpoints use `/api/v1`. Existing demo routes use `X-Demo-Session`; account routes use `Authorization: Bearer`. Valen routes accept either, rejecting ambiguous credentials. Session creation returns the token once; subsequent responses do not return it.
 
 | Method | Path | Behavior |
 | --- | --- | --- |
@@ -177,23 +180,33 @@ OpenAPI UI: `/docs`; machine schema: `/openapi.json`; health: `/health`. Domain 
 | GET | `/api/v1/assessments/visa-gap` | Deterministic calculation; audit event |
 | GET | `/api/v1/audit?event_type=CONSENT_GRANTED` | Scoped array; also supports type=consent, optional limit/offset and X-Total-Count |
 
-Canonical P0 future contracts return **501**; the complete method/path/schema/consent matrix is in [API_CONTRACTS.md](docs/prd/API_CONTRACTS.md). The PRD `/api/...` paths map to `/api/v1/...`. Existing `/chat/ask`, `/care/compare`, `/claims/draft`, `/documents/upload`, `/assessments/completeness` and `/assessments/coverage-needs` foundation stubs remain compatible aliases with their original response shapes; canonical PRD routes use `/ask`, `/pathways/compare`, `/claims`, `/documents`, `/completeness` and `/coverage-needs`.
+Canonical Valen operations:
 
-Identity failures return 401, missing required purposes return 403, and foreign/missing object IDs return the same 404. Owned deferred operations return 501. Body references (coverage/claim/document/action IDs) are scoped as well. Invalid input returns 422 without echoing raw values. Every error uses `ApiError(code,message,details,request_id)`. Privacy deletion requires identity and exact `confirm: "HAPUS"`, never processing permission, and always returns 501 until complete cleanup exists.
+| Method/path under `/api/v1` | Behavior / purpose |
+| --- | --- |
+| GET `/home/summary` | Counts, context, configured recommendations and source availability; authenticated read |
+| POST `/home/recommendations/decision` | Persist seven-day dismissal or confirmed handled state |
+| GET `/coverage-needs` | Typed need list, current context and shared visa calculation; process_documents |
+| POST `/ask` | Owned policy Q&A JSON or named SSE; process_documents + external_ai; reviewed triage required |
+| GET/DELETE `/ask/sessions/{id}` | Scoped retained history / conversation deletion |
+| POST `/ask/sessions/{id}/feedback` | Scoped helpful/incorrect feedback without raw answer text |
+| GET `/ask/sources/{document_id}/{page}` | Owned retained source page; current processing + external_ai grants |
+| POST `/pathways/compare` | KB procedures, bounded questions, null or sourced Decimal costs; process_documents + reviewed triage |
+| POST `/claims` | Owned DRAFT creation only; process_documents, current comparison_id and Idempotency-Key |
+
+The complete method/schema matrix and exact additive changes are in [API_CONTRACTS.md](docs/prd/API_CONTRACTS.md). Existing legacy stubs keep their original response shapes. Identity failures return 401; missing purposes 403; absent/foreign owned IDs 404; stale choices 409; invalid input 422; missing source/provider dependencies 503. Every failure uses ApiError with a request ID and no raw private input. Account privacy deletion remains available without processing consent, using exact confirmation HAPUS.
 
 Canonical PUT `/profile` now returns `{profile,suggested_docs}`; PUT consumers must read `.profile`. Existing GET/demo behavior remains unchanged. Full legacy update bodies and partial PRD bodies are accepted; same-country omitted fields are preserved, country switches reset omitted destination metadata, and merged dates are validated before saving. Suggestions only project a VERIFIED versioned country KB resource (max six); shipped unverified resources return an empty list.
 
 New generic claim-list contracts use `items` (each containing `case`, `checklist`, `consistency_checks`) plus `pagination(limit,offset,total)` with limits 1–100. Existing audit list stays an array and remains unbounded if limit is omitted, preserving old callers; new callers should request `limit=20&offset=0`. Optional `type` values are answer, compare, action, guardrail, deletion and consent. Exact `event_type` continues to work.
 
-The client retains static `get/post/put` convenience calls. Use `api.request(method, pathTemplate, { token, params, query, body, signal })` for generated dynamic routes, `api.patch/delete` for those methods, and `api.stream` for future native byte-stream transport. Browser FormData sets its own boundary. No stream parser or AI response engine is active; all corresponding server routes still return ApiError/501.
+The client retains static `get/post/put` convenience calls. Use `api.request(method, pathTemplate, { token, params, query, body, signal })` for generated dynamic routes, `api.patch/delete` for those methods, and `api.stream` for future native byte-stream transport. Browser FormData sets its own boundary. The Q&A stream parser validates UTF-8 framing, event order, citations, terminal completion and error/cancellation states. Provider/dependency failures never become fabricated answers.
 
 ## Database & Migrations
 
-`make migrate` applies `0001` → `0002` → `0003` without resetting data. `0001` is unchanged. `0002` adds purpose grants plus owner-scoped document, extracted-field, claim-case and action primitives; it backfills the historical boolean into process_documents only. It retains legacy rows, timestamps and audit history. **external_ai and retention are never inferred from that boolean.** `0003` adds canonical server action payload storage for approval-hash binding; it does not approve/execute actions or promote statuses.
+`make migrate` applies released revisions 0001–0007 plus additive `0008_valen_workspace`. Released migration bytes remain unchanged. Existing account tables, demo JSON records and claim/action links are preserved. Revision 0008 adds content-free clause offsets/hashes, recommendation state, rolling question limits, bounded chat state and comparison proofs; it extends the existing claim_cases table with account ownership and uniqueness. No duplicate benefits table is created: reviewed AccountFieldRow values remain the authority.
 
-`0002` must run against an online database because it reads historical rows for its portable UUID/timestamp-preserving backfill; `alembic --sql` is deliberately rejected for that revision. SQLite fresh and populated upgrade tests pass. New table DDL compiles for PostgreSQL, but no live PostgreSQL/Supabase upgrade was run. Use `make migrate` for both local and configured PostgreSQL environments.
-
-Original tables remain: demo_sessions, profiles, consents, insurance_records, audit_events, persona_templates. Added shared tables: purpose_consents, documents, extracted_fields, claim_cases, actions. Every new table has a specific identifier/consent/provenance purpose; these are not functioning product workflows. Composite owner foreign keys prevent cross-session document→field and claim→action links. Coverages remain validated insurance-record JSON and are scoped at API boundaries. Deeper feature storage, pages/OCR, benefits/chunks, claim histories, P1 and bonus tables are deferred. See [SCHEMA_MAPPING.md](docs/prd/SCHEMA_MAPPING.md).
+SQLite fresh/populated upgrade and privacy/foreign-key regressions are tested. PostgreSQL DDL compiles, but no live PostgreSQL/Supabase upgrade was run. Revision 0002 needs online execution for its historical consent backfill; 0008 is deliberately forward-only pending a reviewed data-preserving downgrade. Never reset a populated database to install this work. See [ingestion contract](docs/agent-tasks/valen/INGESTION_CONTRACT.md) and [schema mapping](docs/prd/SCHEMA_MAPPING.md).
 
 Startup never creates tables automatically. `make seed` inserts missing validated templates and leaves existing sessions untouched; repeat runs insert zero templates. Profiles use validated JSON with optional timezone/employment/dependents/coverage/priorities/budget/currency metadata, so existing rows require no destructive rewrite.
 
@@ -203,29 +216,29 @@ UUID/JSON types are portable; SQLite foreign keys are enabled. `postgres://` and
 
 Country edits select the new KB without rewriting original insurance/documents. On a country change, omitted city, timezone, institution, visa dates and budget/currency are cleared from the profile; explicit destination values remain accepted. Other same-country partial updates retain omitted values. A record/profile country mismatch returns NEEDS_VERIFICATION with no numerical gap; switching back cannot reuse old visa dates unless explicitly supplied again. Demo policy/document labels show the original record country. API shapes, purpose guards and migrations are unchanged.
 
-[SCREEN_ROUTES.md](docs/prd/SCREEN_ROUTES.md) maps every existing demo URL to its intended PRD screen: dashboard→home, ask-policy→ask, care→pathways, coverage→coverage-needs; documents/audit keep their paths. The consent-only onboarding page is not the planned profile wizard, and the claims placeholder has no detail case ID. No links, redirects or screens are added. [COUNTRY_INTEGRATION.md](docs/prd/COUNTRY_INTEGRATION.md) records US-02-02 behavior, future profile/cache coordination and exact unverified/missing KB prerequisites for SC-04, SC-07, SC-08 and SC-14.
+[SCREEN_ROUTES.md](docs/prd/SCREEN_ROUTES.md) records canonical routes and legacy compatibility. `/dashboard` remains the existing demo dashboard; `/ask-policy`, `/care` and `/coverage` reuse the new canonical Valen pages. Existing account onboarding/documents/privacy remain reachable through their current wrappers. Claim creation shows its real ID and the unavailable SC-09 checklist boundary rather than navigating to a missing detail screen.
 
 ## Country Knowledge Base
 
-AU and ID resources now use schema version `1.5` and country version `0.2.0`. Each resource file has `schema_version`, `version`, `source_url`, `checked_at`, `verification_status`, and typed `data`. Resource versions must match the manifest. The manifest retains its sources list. The loader exposes the existing `.rules`, `.coverage_needs`, `.pathways` and `.glossary` views, plus validated `.resources`. Direct JSON consumers must now unwrap `data` instead of treating files as bare arrays/objects.
+AU and ID resources now use schema version `1.5` and country version `0.3.0`. Each resource file has `schema_version`, `version`, `source_url`, `checked_at`, `verification_status`, and typed `data`. Resource versions must match the manifest. The manifest retains its sources list. The loader exposes the existing `.rules`, `.coverage_needs`, `.pathways` and `.glossary` views, plus validated `.resources`. Direct JSON consumers must now unwrap `data` instead of treating files as bare arrays/objects.
 
-Resources: rules, coverage_needs, pathways, glossary, coverage_types, document_types, extraction_templates, suggested_docs, tasks, required_fields, recommendation_rules, verification_steps, red_flags and emergency. The root injection_patterns resource is also versioned. Structural references/duplicates and verified-source metadata are validated. Add countries through folders, without country-specific service branches.
+Resources: rules, coverage_needs, pathways, glossary, coverage_types, document_types, extraction_templates, suggested_docs, tasks, required_fields, recommendation_rules, verification_steps, red_flags, emergency, example_questions and retrieval_terms. The root injection_patterns resource is also versioned. Structural references/duplicates and verified-source metadata are validated. Add countries through folders, without country-specific service branches.
 
-Unknown resources are empty UNVERIFIED placeholders with null official sources/review dates. Existing vocabulary and synthetic interval configuration are retained; no legal requirements, medical trigger lists, emergency numbers, prices or policy facts are invented. There is no triage, injection detector, recommender or extraction pipeline activated by these files. Source verification and meaningful content remain future work.
+Regulatory activation requires checked official sources. The AU student-cover recommendation/need uses a reviewed Ombudsman source with explicit exceptions and uncertainty; descriptive urgent-care/JKN references do not establish policy eligibility or prices. Other needs and proposed verification questions stay explicitly unverified. Emergency/red_flags, extraction templates, task matrices and suggestions still lack reviewed content. Tariffs are null. See [KB sources and limits](docs/agent-tasks/valen/KB_SOURCES.md).
 
 The deterministic engine still unions matching policy intervals and counts inclusive uncovered calendar days once. Raka remains 76 potential gap days, never an automatic visa-violation finding. Missing dates/context return NEEDS_VERIFICATION with null counts; invalid ranges fail validation. Money remains a decimal string; no float money arithmetic or currency conversion occurs.
 
 ## Consent & Security
 
-Google OAuth account authentication and guest/demo sessions are separate. Google uses authorization code + PKCE and provider state cookies; the backend stores accounts, provider identities, and only SHA-256 hashes of revocable seven-day session tokens. Browser account tokens stay in per-tab `sessionStorage` and are returned from the callback in a URL fragment so they are not sent in HTTP referrers or server logs. Password auth remains 501. Demo sessions continue to use hashed opaque `X-Demo-Session` tokens and synthetic data only.
+Google OAuth account authentication and guest/demo sessions are separate. Google uses authorization code + PKCE and provider state cookies; the backend stores accounts, provider identities, and only SHA-256 hashes of revocable seven-day session tokens. Browser account tokens stay in per-tab `sessionStorage` and are returned from the callback in a URL fragment so they are not sent in HTTP referrers or server logs. Existing password account auth is preserved; canonical foundation password stubs retain their existing status. Demo sessions continue to use hashed opaque `X-Demo-Session` tokens and synthetic data only.
 
 Consent defaults false for all three purposes. Canonical GET/POST `/consents` reads/changes explicit purposes; policy_version is `1.5` for new decisions. The retained `/consent` API mirrors process_documents only. The existing screen grants/revokes documents only; it never silently enables AI or retention. Google sign-in does not grant processing consent.
 
-Every protected call rechecks current database grants. Upload/external extraction/Q&A/claim-evidence stubs require process_documents AND external_ai; local processing stubs require process_documents. Seeded profile/record reads, audit and deterministic date checks remain available without those grants. Optional retention is not a processing prerequisite. Revocation blocks subsequent protected processing, but does not imply successful storage cleanup. No uploaded originals are stored by the current application; real retention cleanup must be implemented before storage is enabled.
+Every protected call rechecks current database grants. Upload/external extraction/Q&A/claim-evidence stubs require process_documents AND external_ai; local processing stubs require process_documents. Seeded profile/record reads, audit and deterministic date checks remain available without those grants. Optional retention is not a processing prerequisite. Account retention revocation removes retained originals/pages, derived chunks and history; processing/AI revocation blocks access and purges derived content. Regrant cannot restore removed sources. Reviewed structured fields remain separate from optional raw retention. Account data deletion includes Valen state/cases.
 
 Consent does not authorize an action. Execution/sandbox stubs require an owned persisted APPROVED action, timestamp and exact canonical server payload SHA-256, with matching request context, before returning 501. They execute nothing. Future effects must also implement idempotency and lifecycle checks; approval/execute endpoints currently never return success.
 
-Audit metadata uses an allow-list of operational values; raw tokens, questions, document content and identifiers are excluded. Request IDs are generated by the server. CORS uses explicit frontend origins. Password authentication, medical triage, injection detection and full page/citation verification are not complete; guard extension points fail closed.
+Audit metadata uses an allow-list of operational values; raw tokens, questions, document content and identifiers are excluded. Request IDs are generated by the server. CORS uses explicit frontend origins. Medical triage data remains unavailable. Retrieval excludes flagged documents and instruction-like/identifier lines; every returned citation must match an owned retained page. These checks do not establish real insurance eligibility or payment.
 
 ## Development Commands
 
@@ -255,29 +268,24 @@ The CI workflow runs checks and browser smoke tests on locked dependencies; it h
 
 ## Testing
 
-Country-context integration verification on 17 October 2026: **134 backend tests, 7 typed-client tests and 4 desktop/mobile browser cases passed.** Ruff, ESLint, strict TypeScript, production build, migration/seed commands and generated-contract drift checks passed. No dependency upgrades were needed.
+Current exact commands/results, fixture boundaries, baseline browser failures and live-service omissions are recorded in [Valen verification](docs/agent-tasks/valen/VERIFICATION.md). Historical foundation reports remain historical. `make test` uses isolated migrated databases; `make test-client` covers HTTP/SSE framing; `make check` runs Ruff, ESLint, TypeScript and production build. PostgreSQL DDL compilation is not a live database migration.
 
-Baseline stabilization commands and limitations are recorded in [FOUNDATION_VERIFICATION.md](docs/FOUNDATION_VERIFICATION.md). Current focused integration checks and decisions are in [COUNTRY_INTEGRATION.md](docs/prd/COUNTRY_INTEGRATION.md).
-
-Verification includes backend API/rules tests, fresh/populated migrations without data loss, idempotent fixtures, independent consent grant/revocation, owner-IDOR guards, composite foreign keys, persisted approval/hash validation, audit redaction/query pagination, OpenAPI references/snapshot and TypeScript artifact drift. No OpenAI key or live call is required.
-
-`make test-client` runs typed transport tests for query encoding, multipart boundaries, PATCH/DELETE path/body handling, 204, future streaming/error responses, cancellation and compile-time contract misuse. `make check` covers Ruff, ESLint, strict TypeScript and the production build. PostgreSQL DDL is compiled in tests; a live database migration remains untested.
-
-For browser tests, with ports 3000/8000 available:
+Run every browser test, including preserved legacy assertions:
 
 ```sh
 cd frontend
 npx playwright install chromium
-npm run test:e2e
+CI=1 npm run test:e2e
 ```
 
-Playwright starts both local services, migrates/seeds a separate `.cache/e2e.db`, and runs the complete flow at desktop and mobile widths. With `CI=1`, it builds and serves the production frontend so assertions do not depend on development-route compilation; local runs use the development server. It checks consent, Raka's backend result, reload persistence, documents, audit filtering, revocation, persona switching, Sinta isolation, runtime errors and horizontal overflow. When services already run, Playwright reuses them; use `CI=1` to require fresh servers and the production frontend. A custom `PLAYWRIGHT_BROWSERS_PATH` may be used in restricted environments.
+Playwright starts backend/frontend services against `.cache/e2e.db`. New account fixtures are CLI-only, fictional, and refuse any other database; real account login, ownership and page access remain in browser checks. Provider/triage-dependent UI branches use explicit synthetic mocks. Full legacy demo tests are retained even where baseline UI changes make their selectors fail. No paid key is required. Optional connectivity check only: `cd backend && ../.tools/bin/uv run python ../scripts/check_live_ai.py --live`; this is never run by CI and does not prove real policy accuracy.
 
 ## Known Limitations
 
-- All future product/auth/privacy/streaming routes are deliberate 501s; no actual uploads/storage, parsing/OCR, retrieval, chat, care advice, benefit assessment, claim draft or execution is enabled.
-- Source validation and approval checks are conservative foundations, not completed citation/injection/triage/execution safeguards. File size/MIME enforcement, cleanup, upload deduplication/cache and rate limiting remain feature implementation work.
-- KB configuration is unchecked demo material, not regulatory guidance. No emergency-number or legal-compliance claims are made.
+- P0 is blocked by empty/unverified triage and emergency resources; chat/care remain locked in the shipped configuration. SC-08, SC-09 detail, SC-10 reminders/actions and account audit display are external dependencies.
+- Normalized benefit/date provenance must be supplied by existing ingestion/review interfaces. Current empty extraction templates and metadata-only demo fixtures cannot establish policy clauses or benefit amounts.
+- GP/employer guidance and tariff/eligibility data remain incomplete. Unknowns stay visible; no invented costs, diagnoses, exclusions or emergency numbers.
+- Existing demo browser assertions predate the current landing/onboarding UI. See the exact full-suite result in the verification report; no test was removed or weakened.
 - No live PostgreSQL, Supabase, OpenAI model availability, deployment or real provider integration was tested.
 - The installed Starlette/FastAPI test client emits a deprecation notice for httpx; tests still pass with the requested httpx dependency.
 - `npm audit` reports five high findings in the development lint chain (`braces` → `micromatch` → `fast-glob` → Next ESLint tooling). No patched compatible `braces` version was available when installed. `npm audit --omit=dev` reports zero findings. Recheck upstream before publishing; do not blindly downgrade Next or use `audit fix --force`.
@@ -297,6 +305,6 @@ Original CSVs and the local alignment prompt remain reference material; CSVs are
 
 ## Next Steps
 
-Verified country content, password auth, extraction/retrieval, medical routing, claim workflows, privacy cleanup, remaining feature screens and P1/bonus work require separate reviewed scope. No task is assigned to a person or team here, and no feature branch is created.
+Reviewed shared triage/emergency content, normalized ingestion evidence, claim readiness/actions/account audit and remaining screen integrations are needed before P0 acceptance can finish. Travel P1 has not started because its P0 gate is not met. Existing teammate interfaces and Git history are preserved; nothing is pushed or merged.
 
 **No team ownership has been assigned. Foundation is ready for a separate feature split only after maintainer review.** Read root, frontend and backend AGENTS.md before extending the repository.
