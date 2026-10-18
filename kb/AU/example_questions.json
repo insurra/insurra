@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.5",
+  "version": "0.3.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "data": [
+    "Periksa gigi ditanggung OSHC saya?",
+    "Kalau ke GP harus bayar dulu?",
+    "Apa yang perlu dicek sebelum klaim?",
+    "Berapa sisa limit pada dokumen saya?"
+  ]
+}

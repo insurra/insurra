@@ -33,7 +33,6 @@ from app.schemas.foundation import (
     EmergencyRedirect,
     EvidenceMatchResult,
     FieldReviewRequest,
-    HomeSummary,
     LoginRequest,
     PathwayComparison,
     PathwayComparisonRequest,
@@ -114,11 +113,6 @@ def check_completeness(
 ):
     if coverage_id:
         owned_resource(db, actor, "coverage", coverage_id)
-    not_implemented()
-
-
-@router.get("/home/summary", response_model=HomeSummary)
-def home_summary(session: ActiveSession):
     not_implemented()
 
 

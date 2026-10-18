@@ -1,8 +1,116 @@
 {
   "schema_version": "1.5",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
-  "data": []
+  "data": [
+    {
+      "rule_id": "ID_MISSING_FIELD",
+      "priority": 3,
+      "conditions": {
+        "trigger": "missing_field",
+        "policy_types": []
+      },
+      "text_template": "Lengkapi data {kind}",
+      "task_code": null,
+      "action_url": "/completeness?coverage={coverage_id}",
+      "explanation_template": "Periksa data dokumen sebelum mengambil keputusan.",
+      "visa_related": false,
+      "regulatory": false,
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [],
+        "residence_context": []
+      }
+    },
+    {
+      "rule_id": "ID_EXPIRING",
+      "priority": 4,
+      "conditions": {
+        "trigger": "expiring",
+        "policy_types": []
+      },
+      "text_template": "Tinjau perpanjangan {kind}",
+      "task_code": null,
+      "action_url": "/documents?coverage={coverage_id}",
+      "explanation_template": "Pengingat belum tersedia dari layanan tindakan. Tinjau dokumen; tidak ada pengingat yang dibuat.",
+      "visa_related": false,
+      "regulatory": false,
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [],
+        "residence_context": []
+      }
+    },
+    {
+      "rule_id": "ID_MEMBERSHIP_UNKNOWN",
+      "priority": 5,
+      "conditions": {
+        "trigger": "membership_unknown",
+        "policy_types": [
+          "BPJS"
+        ]
+      },
+      "text_template": "Cek status BPJS kamu",
+      "task_code": null,
+      "action_url": "/completeness?task=bpjs&coverage={coverage_id}",
+      "explanation_template": "Periksa data dokumen sebelum mengambil keputusan.",
+      "visa_related": false,
+      "regulatory": false,
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [],
+        "residence_context": []
+      }
+    },
+    {
+      "rule_id": "ID_INJECTION",
+      "priority": 6,
+      "conditions": {
+        "trigger": "injection",
+        "policy_types": []
+      },
+      "text_template": "Periksa dokumen {kind}",
+      "task_code": null,
+      "action_url": "/documents",
+      "explanation_template": "Periksa data dokumen sebelum mengambil keputusan.",
+      "visa_related": false,
+      "regulatory": false,
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [],
+        "residence_context": []
+      }
+    },
+    {
+      "rule_id": "ID_FAILED",
+      "priority": 7,
+      "conditions": {
+        "trigger": "failed",
+        "policy_types": []
+      },
+      "text_template": "Unggah ulang dokumen {kind}",
+      "task_code": null,
+      "action_url": "/documents",
+      "explanation_template": "Periksa data dokumen sebelum mengambil keputusan.",
+      "visa_related": false,
+      "regulatory": false,
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [],
+        "residence_context": []
+      }
+    }
+  ]
 }

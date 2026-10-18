@@ -41,6 +41,7 @@ from app.schemas.account_workspace import (
 from app.schemas.common import CompletenessStatus
 from app.schemas.consent import POLICY_VERSION, ConsentPurpose, PurposeConsentUpdate
 from app.schemas.profile import ProfileData, ProfileUpdate, UserProfile
+from app.services.rules_engine import uncovered_interval
 from app.services.workspace_privacy import purge_content, purge_workspace
 
 router = APIRouter(prefix="/account", tags=["Authenticated workspace"])
@@ -454,7 +455,7 @@ def completeness(
             visa_end = date.fromisoformat(str(by_key["visa_expiry_date"].value))
             cover_start = date.fromisoformat(str(by_key["coverage_start_date"].value))
             cover_end = date.fromisoformat(str(by_key["coverage_end_date"].value))
-            gap = max((cover_start - arrival).days, 0) + max((visa_end - cover_end).days, 0)
+            gap, _ = uncovered_interval(arrival, visa_end, [(cover_start, cover_end)])
             visa_gap = AccountVisaGap(
                 status="GAP_FOUND" if gap else "PASS",
                 gap_days=gap,

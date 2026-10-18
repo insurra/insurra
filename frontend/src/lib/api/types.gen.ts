@@ -922,23 +922,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/home/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Home Summary */
-        get: operations["home_summary_api_v1_home_summary_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/ask": {
         parameters: {
             query?: never;
@@ -1139,6 +1122,40 @@ export interface paths {
         put?: never;
         /** Sandbox Claim */
         post: operations["sandbox_claim_api_v1_sandbox_insurer_claims_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/home/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Home Summary */
+        get: operations["home_summary_api_v1_home_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/home/recommendations/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recommendation Decision */
+        post: operations["recommendation_decision_api_v1_home_recommendations_decision_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2013,6 +2030,41 @@ export interface components {
             /** Supported Features */
             supported_features: string[];
             verification_status: components["schemas"]["VerificationStatus"];
+            /**
+             * Default Timezone
+             * @default UTC
+             */
+            default_timezone: string;
+            /** City Timezones */
+            city_timezones?: {
+                [key: string]: string;
+            };
+            /** Official Source Hosts */
+            official_source_hosts?: string[];
+        };
+        /** CoverageCard */
+        CoverageCard: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Provider */
+            provider: string | null;
+            /** Kind */
+            kind: string;
+            /** Country Code */
+            country_code: string;
+            /** Start Date */
+            start_date: string | null;
+            /** End Date */
+            end_date: string | null;
+            /** Active */
+            active: boolean;
+            /** Expiring 30D */
+            expiring_30d: boolean;
+            /** Needs Verification */
+            needs_verification: boolean;
         };
         /** CoverageItem */
         CoverageItem: {
@@ -2235,6 +2287,25 @@ export interface components {
             /** Email */
             email: string;
         };
+        /** EmergencyInfo */
+        EmergencyInfo: {
+            /** Phone Number */
+            phone_number?: string | null;
+            /**
+             * Label
+             * @default Darurat? Periksa layanan darurat setempat.
+             */
+            label: string;
+            /** Source Url */
+            source_url?: string | null;
+            /** Checked At */
+            checked_at?: string | null;
+            /**
+             * Available
+             * @default false
+             */
+            available: boolean;
+        };
         /** EmergencyRedirect */
         EmergencyRedirect: {
             /**
@@ -2332,6 +2403,21 @@ export interface components {
             needs_verification: number;
             /** Recommendations */
             recommendations: components["schemas"]["Recommendation"][];
+            context?: components["schemas"]["WorkspaceContext"] | null;
+            /** Coverages */
+            coverages?: components["schemas"]["CoverageCard"][];
+            emergency?: components["schemas"]["EmergencyInfo"];
+            /** Warnings */
+            warnings?: string[];
+            /** Question Examples */
+            question_examples?: string[];
+            /** Service Types */
+            service_types?: components["schemas"]["ServiceChoice"][];
+            /**
+             * Triage Available
+             * @default false
+             */
+            triage_available: boolean;
         };
         /** InsurancePolicy */
         InsurancePolicy: {
@@ -2641,6 +2727,53 @@ export interface components {
             /** Explanation */
             explanation: string;
             source?: components["schemas"]["RuleSource"] | null;
+            /**
+             * Priority
+             * @default 0
+             */
+            priority: number;
+            /**
+             * Subject
+             * @default context
+             */
+            subject: string;
+            /**
+             * Action Url
+             * @default /documents
+             */
+            action_url: string;
+            /**
+             * Dismissible
+             * @default true
+             */
+            dismissible: boolean;
+            /**
+             * Handled
+             * @default false
+             */
+            handled: boolean;
+            /**
+             * Visa Related
+             * @default false
+             */
+            visa_related: boolean;
+        };
+        /** RecommendationDecision */
+        RecommendationDecision: {
+            /** Rule Id */
+            rule_id: string;
+            /** Subject */
+            subject: string;
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "dismiss" | "handled";
+            /**
+             * Confirmed
+             * @default false
+             */
+            confirmed: boolean;
         };
         /** RegisterRequest */
         RegisterRequest: {
@@ -2772,6 +2905,22 @@ export interface components {
              * @constant
              */
             sandbox: true;
+        };
+        /** SavedDecision */
+        SavedDecision: {
+            /**
+             * Saved
+             * @default true
+             * @constant
+             */
+            saved: true;
+        };
+        /** ServiceChoice */
+        ServiceChoice: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
         };
         /** SessionCreate */
         SessionCreate: {
@@ -2962,6 +3111,40 @@ export interface components {
             explanation: string;
             rule_source?: components["schemas"]["RuleSource"] | null;
         };
+        /** WorkspaceContext */
+        WorkspaceContext: {
+            /** First Name */
+            first_name: string;
+            /** Country Code */
+            country_code: string;
+            /** Country Label */
+            country_label: string;
+            /** City */
+            city: string | null;
+            /** Occupation Label */
+            occupation_label: string;
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /** Timezone */
+            timezone: string;
+            /** Days Since Arrival */
+            days_since_arrival?: number | null;
+            /** Arrival Date */
+            arrival_date?: string | null;
+            /** Visa Expiry Date */
+            visa_expiry_date?: string | null;
+            /** Synthetic */
+            synthetic: boolean;
+            /** Process Documents */
+            process_documents: boolean;
+            /** External Ai */
+            external_ai: boolean;
+            /** Retention */
+            retention: boolean;
+        };
         /** AnswerCompleteEvent */
         AnswerCompleteEvent: {
             /**
@@ -3118,6 +3301,39 @@ export interface components {
              * @default null
              */
             task_code: string | null;
+            /**
+             * Explanation Template
+             * @default Periksa data dan sumber sebelum mengambil keputusan.
+             */
+            explanation_template: string;
+            /**
+             * Action Url
+             * @default /documents
+             */
+            action_url: string;
+            /**
+             * Visa Related
+             * @default false
+             */
+            visa_related: boolean;
+            /**
+             * Regulatory
+             * @default false
+             */
+            regulatory: boolean;
+            /**
+             * Source Url
+             * @default null
+             */
+            source_url: string | null;
+            /**
+             * Checked At
+             * @default null
+             */
+            checked_at: string | null;
+            /** @default UNVERIFIED */
+            verification_status: components["schemas"]["VerificationStatus"];
+            applicability?: components["schemas"]["Applicability"];
         };
         /** RedFlagConfig */
         RedFlagConfig: {
@@ -3428,6 +3644,23 @@ export interface components {
             /** Data */
             data: components["schemas"]["VocabularyEntry"][];
         };
+        /** VersionedResource[list[str]] */
+        VersionedResource_list_str__: {
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "1.5";
+            /** Version */
+            version: string;
+            /** Source Url */
+            source_url: string | null;
+            /** Checked At */
+            checked_at: string | null;
+            verification_status: components["schemas"]["VerificationStatus"];
+            /** Data */
+            data: string[];
+        };
         /** VocabularyEntry */
         VocabularyEntry: {
             /** Code */
@@ -3453,6 +3686,7 @@ export interface components {
             verification_steps: components["schemas"]["VersionedResource_list_VerificationStepConfig__"];
             red_flags: components["schemas"]["VersionedResource_list_RedFlagConfig__"];
             emergency: components["schemas"]["VersionedResource_EmergencyConfig_"];
+            example_questions: components["schemas"]["VersionedResource_list_str__"];
         };
     };
     responses: never;
@@ -9527,100 +9761,6 @@ export interface operations {
             };
         };
     };
-    home_summary_api_v1_home_summary_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                "x-demo-session"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HomeSummary"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Unprocessable Entity */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Not Implemented */
-            501: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-        };
-    };
     ask_policy_api_v1_ask_post: {
         parameters: {
             query?: never;
@@ -10909,6 +11049,200 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SandboxClaimResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    home_summary_api_v1_home_summary_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomeSummary"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    recommendation_decision_api_v1_home_recommendations_decision_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecommendationDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedDecision"];
                 };
             };
             /** @description Unauthorized */

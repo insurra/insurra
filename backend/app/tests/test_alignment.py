@@ -297,11 +297,14 @@ def test_remaining_scoped_contract_routes(client, demo, method, path, body, need
     _, h = demo()
     url = "/api/v1" + path
     assert client.request(method, url, json=body).status_code == 401
+    implemented = path == "/home/summary"
     assert client.request(method, url, headers=h, json=body).status_code == (
-        403 if needs_consent else 501
+        403 if needs_consent else 200 if implemented else 501
     )
     grant(client, h, "process_documents")
-    assert client.request(method, url, headers=h, json=body).status_code == 501
+    assert client.request(method, url, headers=h, json=body).status_code == (
+        200 if implemented else 501
+    )
 
 
 def test_upload_and_evidence_stubs_need_both_purposes(client, resources):

@@ -1,8 +1,147 @@
 {
   "schema_version": "1.5",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
-  "data": []
+  "data": [
+    {
+      "rule_id": "AU_MISSING_STUDENT_COVER",
+      "priority": 1,
+      "conditions": {
+        "trigger": "missing_coverage",
+        "policy_types": [
+          "OSHC"
+        ]
+      },
+      "text_template": "Unggah sertifikat OSHC kamu",
+      "task_code": null,
+      "action_url": "/documents",
+      "explanation_template": "OSHC berlaku untuk visa pelajar dengan pengecualian tertentu. Periksa syarat visa dan sumber resmi.",
+      "visa_related": true,
+      "regulatory": true,
+      "source_url": "https://www.ombudsman.gov.au/__data/assets/pdf_file/0025/88324/Factsheet_student_OSHC.pdf",
+      "checked_at": "2026-10-18",
+      "verification_status": "VERIFIED",
+      "applicability": {
+        "occupation": [
+          "STUDENT"
+        ],
+        "residence_context": [
+          "ABROAD"
+        ]
+      }
+    },
+    {
+      "rule_id": "AU_VISA_GAP",
+      "priority": 2,
+      "conditions": {
+        "trigger": "visa_gap",
+        "policy_types": [
+          "OSHC"
+        ]
+      },
+      "text_template": "Ada jeda {gap_days} hari antara asuransi dan visa",
+      "task_code": null,
+      "action_url": "/completeness?task=visa_cover&coverage={coverage_id}",
+      "explanation_template": "Hasil kalender bersifat potensi jeda; verifikasi tanggal dan syarat visa. Ini bukan putusan kepatuhan.",
+      "visa_related": true,
+      "regulatory": true,
+      "source_url": "https://www.ombudsman.gov.au/__data/assets/pdf_file/0025/88324/Factsheet_student_OSHC.pdf",
+      "checked_at": "2026-10-18",
+      "verification_status": "VERIFIED",
+      "applicability": {
+        "occupation": [
+          "STUDENT"
+        ],
+        "residence_context": [
+          "ABROAD"
+        ]
+      }
+    },
+    {
+      "rule_id": "AU_MISSING_FIELD",
+      "priority": 3,
+      "conditions": {
+        "trigger": "missing_field",
+        "policy_types": []
+      },
+      "text_template": "Lengkapi data {kind}",
+      "task_code": null,
+      "action_url": "/completeness?coverage={coverage_id}",
+      "explanation_template": "Periksa data dokumen sebelum mengambil keputusan.",
+      "visa_related": false,
+      "regulatory": false,
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [],
+        "residence_context": []
+      }
+    },
+    {
+      "rule_id": "AU_EXPIRING",
+      "priority": 4,
+      "conditions": {
+        "trigger": "expiring",
+        "policy_types": []
+      },
+      "text_template": "Tinjau perpanjangan {kind}",
+      "task_code": null,
+      "action_url": "/documents?coverage={coverage_id}",
+      "explanation_template": "Pengingat belum tersedia dari layanan tindakan. Tinjau dokumen; tidak ada pengingat yang dibuat.",
+      "visa_related": false,
+      "regulatory": false,
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [],
+        "residence_context": []
+      }
+    },
+    {
+      "rule_id": "AU_INJECTION",
+      "priority": 6,
+      "conditions": {
+        "trigger": "injection",
+        "policy_types": []
+      },
+      "text_template": "Periksa dokumen {kind}",
+      "task_code": null,
+      "action_url": "/documents",
+      "explanation_template": "Periksa data dokumen sebelum mengambil keputusan.",
+      "visa_related": false,
+      "regulatory": false,
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [],
+        "residence_context": []
+      }
+    },
+    {
+      "rule_id": "AU_FAILED",
+      "priority": 7,
+      "conditions": {
+        "trigger": "failed",
+        "policy_types": []
+      },
+      "text_template": "Unggah ulang dokumen {kind}",
+      "task_code": null,
+      "action_url": "/documents",
+      "explanation_template": "Periksa data dokumen sebelum mengambil keputusan.",
+      "visa_related": false,
+      "regulatory": false,
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [],
+        "residence_context": []
+      }
+    }
+  ]
 }

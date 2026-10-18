@@ -16,6 +16,7 @@ from app.api.v1 import (
     insurance,
     profiles,
     sessions,
+    valen,
 )
 from app.core.errors import ERROR_RESPONSES
 
@@ -37,5 +38,6 @@ for module in (
     actions,
     audit,
     foundation,
+    valen,
 ):
     router.include_router(module.router)

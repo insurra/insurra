@@ -16,6 +16,9 @@ class CountryManifest(Contract):
     sources: list[str]
     supported_features: list[str]
     verification_status: VerificationStatus
+    default_timezone: str = "UTC"
+    city_timezones: dict[str, str] = Field(default_factory=dict)
+    official_source_hosts: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def verified_manifest_requires_sources(self):
@@ -186,6 +189,14 @@ class RecommendationRuleConfig(Contract):
     conditions: dict[str, JsonValue]
     text_template: str
     task_code: str | None = None
+    explanation_template: str = "Periksa data dan sumber sebelum mengambil keputusan."
+    action_url: str = "/documents"
+    visa_related: bool = False
+    regulatory: bool = False
+    source_url: str | None = None
+    checked_at: date | None = None
+    verification_status: VerificationStatus = VerificationStatus.UNVERIFIED
+    applicability: Applicability = Field(default_factory=Applicability)
 
 
 class VerificationStepConfig(Contract):
@@ -223,6 +234,7 @@ class CountryResources(Contract):
     verification_steps: VersionedResource[list[VerificationStepConfig]]
     red_flags: VersionedResource[list[RedFlagConfig]]
     emergency: VersionedResource[EmergencyConfig]
+    example_questions: VersionedResource[list[str]]
 
     @model_validator(mode="after")
     def consistent_references(self):

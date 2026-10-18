@@ -20,6 +20,7 @@ from app.schemas.common import (
     RuleSource,
 )
 from app.schemas.document import ProcessingStatus, SourceEvidence
+from app.schemas.valen import CoverageCard, EmergencyInfo, ServiceChoice, WorkspaceContext
 
 ShortCode = Annotated[str, Field(min_length=1, max_length=100)]
 Email = Annotated[str, Field(max_length=254, pattern=r"^[^\s@]+@[^\s@]+\.[^\s@]+$")]
@@ -198,6 +199,12 @@ class Recommendation(Contract):
     title: str
     explanation: str
     source: RuleSource | None = None
+    priority: int = 0
+    subject: str = "context"
+    action_url: str = "/documents"
+    dismissible: bool = True
+    handled: bool = False
+    visa_related: bool = False
 
 
 class HomeSummary(Contract):
@@ -205,6 +212,13 @@ class HomeSummary(Contract):
     expiring_30d: int = Field(ge=0)
     needs_verification: int = Field(ge=0)
     recommendations: list[Recommendation] = Field(max_length=3)
+    context: WorkspaceContext | None = None
+    coverages: list[CoverageCard] = Field(default_factory=list)
+    emergency: EmergencyInfo = Field(default_factory=EmergencyInfo)
+    warnings: list[str] = Field(default_factory=list)
+    question_examples: list[str] = Field(default_factory=list, max_length=4)
+    service_types: list[ServiceChoice] = Field(default_factory=list)
+    triage_available: bool = False
 
 
 class AskRequest(Contract):
