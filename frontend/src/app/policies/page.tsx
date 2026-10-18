@@ -3,33 +3,49 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
-  Bed,
   Calendar,
-  CheckCircle2,
   ChevronRight,
   Clock,
   FileText,
-  Filter,
-  Heart,
-  MoreHorizontal,
-  Pill,
+  HelpCircle,
+  Info,
   Plus,
   Search,
-  ShieldCheck,
+  Upload,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useAuth } from "@/lib/auth";
+import { useUserContext } from "@/lib/user-context";
 
 type PolicySummary = components["schemas"]["AccountPolicySummary"];
 
+interface DisplayPolicy {
+  id: string;
+  provider: string;
+  title: string;
+  category: string;
+  tags: string[];
+  status: "ACTIVE" | "EXPIRING_SOON" | "SELF_REPORTED";
+  statusLabel: string;
+  dateRange: string;
+  policyNumber: string;
+  planType: string;
+  region: string;
+  logoBadge: string;
+  isEmployer: boolean;
+  evidenceStatus: "Self-Reported" | "Document Uploaded" | "Extracted" | "Source Verified";
+}
+
 export default function PoliciesPage() {
   const { token } = useAuth();
+  const userCtx = useUserContext();
+
   const [policies, setPolicies] = useState<PolicySummary[]>([]);
-  const [activeTab, setActiveTab] = useState<"ALL" | "ACTIVE" | "EXPIRING" | "EMPLOYER">("ALL");
+  const [activeTab, setActiveTab] = useState<"ALL" | "SELF_REPORTED" | "EMPLOYER">("ALL");
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string>("1");
-  const [detailTab, setDetailTab] = useState<"Overview" | "Benefits" | "Coverage Details" | "Documents" | "Notes">("Overview");
+  const [selectedId, setSelectedId] = useState<string>("0");
+  const [detailTab, setDetailTab] = useState<"Overview" | "Benefits" | "Coverage Details" | "Documents">("Overview");
 
   const refreshPolicies = useCallback(async () => {
     if (!token) return;
@@ -39,7 +55,7 @@ export default function PoliciesPage() {
       });
       setPolicies(list);
     } catch {
-      // Ignore
+      // Handled gracefully
     }
   }, [token]);
 
@@ -47,161 +63,144 @@ export default function PoliciesPage() {
     void Promise.resolve().then(refreshPolicies);
   }, [refreshPolicies]);
 
-  // Design-aligned mock policies if none loaded from backend yet
-  const defaultPolicies = [
-    {
-      id: "1",
-      provider: "AIA",
-      title: "Student Insurance Plan",
-      tags: ["Health", "International", "Student"],
-      status: "ACTIVE",
-      statusLabel: "Active",
-      dateRange: "1 Aug 2024 - 31 Jul 2027",
-      policyNumber: "HP123456789",
-      planType: "Student Plan",
-      region: "Singapore",
-      logoBadge: "aia",
-      isEmployer: false,
-    },
-    {
-      id: "2",
-      provider: "AXA",
-      title: "AXA Travel Insurance",
-      tags: ["Travel", "International", "Short-term"],
-      status: "ACTIVE",
-      statusLabel: "Active",
-      dateRange: "1 Feb 2026 - 28 Feb 2026",
-      policyNumber: "AX98234112",
-      planType: "Travel Emergency",
-      region: "International",
-      logoBadge: "axa",
-      isEmployer: false,
-    },
-    {
-      id: "3",
-      provider: "IMEC (Employer)",
-      title: "Group Health Insurance",
-      tags: ["Health", "Employer", "Group Plan"],
-      status: "EXPIRING_SOON",
-      statusLabel: "Expiring Soon",
-      dateRange: "1 Jan 2025 - 31 Dec 2026",
-      policyNumber: "GH4412098",
-      planType: "Corporate Health",
-      region: "Singapore",
-      logoBadge: "imec",
-      isEmployer: true,
-    },
-  ];
+  // Construct policies based on actual state and onboarding declarations
+  const declaredList = userCtx.declaredCoverages || [];
+  const countryName = userCtx.residenceCountry || "China";
+  const city = userCtx.residenceCity || "Shenzhen";
 
-  const allDisplayPolicies = policies.length > 0
-    ? policies.map((p, idx) => ({
+  const allDisplayPolicies: DisplayPolicy[] = policies.length > 0
+    ? policies.map((p) => ({
         id: p.id,
-        provider: p.provider || (idx === 0 ? "AIA" : idx === 1 ? "AXA" : "IMEC (Employer)"),
-        title: p.kind ? p.kind.replaceAll("_", " ") : (idx === 0 ? "Student Insurance Plan" : idx === 1 ? "AXA Travel Insurance" : "Group Health Insurance"),
-        tags: [p.kind || "Health", "International"],
-        status: p.status || "ACTIVE",
-        statusLabel: p.status === "EXPIRING_SOON" ? "Expiring Soon" : "Active",
-        dateRange: p.end_date ? `Valid until ${p.end_date}` : "1 Aug 2024 - 31 Jul 2027",
-        policyNumber: p.policy_number_masked || "HP123456789",
-        planType: "Comprehensive Plan",
-        region: p.country_code === "AU" ? "Australia" : p.country_code === "ID" ? "Indonesia" : "Singapore",
-        logoBadge: idx === 0 ? "aia" : idx === 1 ? "axa" : "imec",
+        provider: p.provider || "Insurance Provider",
+        title: p.kind ? p.kind.replaceAll("_", " ") : "Medical Policy",
+        category: p.kind || "Health",
+        tags: [p.kind || "Health", countryName],
+        status: p.status === "ACTIVE" ? "ACTIVE" : "SELF_REPORTED",
+        statusLabel: p.status === "ACTIVE" ? "Verified Active" : "Self-Reported",
+        dateRange: p.end_date ? `Valid until ${p.end_date}` : "Verification pending",
+        policyNumber: p.policy_number_masked || "Masked for privacy",
+        planType: "Policy Record",
+        region: `${countryName} (${city})`,
+        logoBadge: "generic",
         isEmployer: p.kind?.includes("EMPLOYER") ?? false,
+        evidenceStatus: p.status === "ACTIVE" ? "Source Verified" : "Self-Reported",
       }))
-    : defaultPolicies;
+    : declaredList.map((cov, idx) => ({
+        id: String(idx),
+        provider: cov.provider || cov.category,
+        title: cov.label || cov.category,
+        category: cov.category,
+        tags: [cov.category, countryName, "Self-Reported"],
+        status: "SELF_REPORTED",
+        statusLabel: "Self-Reported",
+        dateRange: userCtx.segmentDetails?.studyPeriod
+          ? `Expected period: ${userCtx.segmentDetails.studyPeriod}`
+          : "Dates pending document upload",
+        policyNumber: "Pending document upload",
+        planType: cov.policyName || cov.category,
+        region: `${countryName} (${city})`,
+        logoBadge: cov.provider?.toLowerCase().includes("ping")
+          ? "pingan"
+          : cov.provider?.toLowerCase().includes("bpjs")
+          ? "bpjs"
+          : "generic",
+        isEmployer: cov.category.toLowerCase().includes("employer") || cov.category.toLowerCase().includes("group"),
+        evidenceStatus: "Self-Reported",
+      }));
 
   const filtered = allDisplayPolicies.filter((p) => {
-    if (activeTab === "ACTIVE" && p.status !== "ACTIVE") return false;
-    if (activeTab === "EXPIRING" && p.status !== "EXPIRING_SOON") return false;
+    if (activeTab === "SELF_REPORTED" && p.status !== "SELF_REPORTED") return false;
     if (activeTab === "EMPLOYER" && !p.isEmployer) return false;
     if (query.trim()) {
       const q = query.toLowerCase();
-      return p.title.toLowerCase().includes(q) || p.provider.toLowerCase().includes(q);
+      return (
+        p.title.toLowerCase().includes(q) ||
+        p.provider.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+      );
     }
     return true;
   });
 
-  const selectedPolicy = allDisplayPolicies.find((p) => p.id === selectedId) || allDisplayPolicies[0];
+  const selectedPolicy =
+    filtered.find((p) => p.id === selectedId) || filtered[0] || allDisplayPolicies[0];
 
   return (
     <div className="figma-page-shell">
-      {/* ---------------- Back Link ---------------- */}
-      <Link href="/protection" className="figma-back-link">
-        ← My Protection
-      </Link>
+      {/* ---------------- Breadcrumb Navigation ---------------- */}
+      <nav aria-label="Breadcrumb" className="figma-breadcrumb">
+        <Link href="/protection">My Protection</Link>
+        <span className="figma-breadcrumb-separator">/</span>
+        <strong>Policy Wallet</strong>
+      </nav>
 
       {/* ---------------- Page Header ---------------- */}
       <header className="figma-page-header">
         <div>
           <h1>Policy Wallet</h1>
-          <p>Manage all your insurance policies in one place. View coverage details, benefits, and important dates.</p>
-        </div>
-        <Link href="/documents" className="figma-btn-primary">
-          <Plus size={16} /> Add Policy
-        </Link>
-      </header>
-
-      {/* ---------------- Toolbar: Tabs & Search ---------------- */}
-      <div className="figma-wallet-toolbar">
-        <div className="figma-filter-pills">
-          <button
-            type="button"
-            className={`figma-pill-btn ${activeTab === "ALL" ? "active" : ""}`}
-            onClick={() => setActiveTab("ALL")}
-          >
-            All Policies ({allDisplayPolicies.length})
-          </button>
-          <button
-            type="button"
-            className={`figma-pill-btn ${activeTab === "ACTIVE" ? "active" : ""}`}
-            onClick={() => setActiveTab("ACTIVE")}
-          >
-            Active (2)
-          </button>
-          <button
-            type="button"
-            className={`figma-pill-btn ${activeTab === "EXPIRING" ? "active" : ""}`}
-            onClick={() => setActiveTab("EXPIRING")}
-          >
-            Expiring Soon (1) <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b", display: "inline-block", marginLeft: 4 }} />
-          </button>
-          <button
-            type="button"
-            className={`figma-pill-btn ${activeTab === "EMPLOYER" ? "active" : ""}`}
-            onClick={() => setActiveTab("EMPLOYER")}
-          >
-            From Employer (1)
-          </button>
+          <p>
+            Manage and view declared and verified insurance policies in{" "}
+            <strong>
+              {userCtx.countryFlag} {city}, {countryName}
+            </strong>
+            .
+          </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div className="figma-search-input-wrap" style={{ width: 280 }}>
-            <Search size={15} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="figma-search-input-wrap">
+            <Search size={16} />
             <input
               type="text"
               className="figma-search-input"
-              placeholder="Search policy, provider, or type..."
+              placeholder="Search policy name, provider, or category..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <button
-            type="button"
-            className="figma-btn-outline"
-            style={{ width: 42, height: 42, padding: 0, justifyContent: "center" }}
-            title="Filter options"
+
+          <Link
+            href="/documents"
+            className="figma-btn-primary"
+            style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}
           >
-            <Filter size={16} color="#64748b" />
-          </button>
+            <Upload size={16} />
+            <span>Upload Document</span>
+          </Link>
         </div>
+      </header>
+
+      {/* ---------------- Filter Tabs ---------------- */}
+      <div className="figma-tabs-bar">
+        <button
+          type="button"
+          className={`figma-tab-btn ${activeTab === "ALL" ? "active" : ""}`}
+          onClick={() => setActiveTab("ALL")}
+        >
+          All Policies ({allDisplayPolicies.length})
+        </button>
+        <button
+          type="button"
+          className={`figma-tab-btn ${activeTab === "SELF_REPORTED" ? "active" : ""}`}
+          onClick={() => setActiveTab("SELF_REPORTED")}
+        >
+          Self-Reported ({allDisplayPolicies.filter((p) => p.status === "SELF_REPORTED").length})
+        </button>
+        <button
+          type="button"
+          className={`figma-tab-btn ${activeTab === "EMPLOYER" ? "active" : ""}`}
+          onClick={() => setActiveTab("EMPLOYER")}
+        >
+          Employer / Group ({allDisplayPolicies.filter((p) => p.isEmployer).length})
+        </button>
       </div>
 
-      {/* ---------------- Two Column Main Layout ---------------- */}
+      {/* ---------------- Main Wallet Grid (2 columns) ---------------- */}
       <div className="figma-wallet-grid">
         {/* Left Column: Policies List */}
         <div className="figma-policy-list">
           {filtered.map((policy) => {
-            const isSelected = policy.id === selectedPolicy.id;
+            const isSelected = selectedPolicy && policy.id === selectedPolicy.id;
             return (
               <div
                 key={policy.id}
@@ -212,7 +211,7 @@ export default function PoliciesPage() {
               >
                 <div className="figma-policy-card-top">
                   <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <div className={`figma-provider-logo-badge ${policy.logoBadge}`}>
+                    <div className="figma-provider-logo-badge generic">
                       {policy.provider.slice(0, 3).toUpperCase()}
                     </div>
                     <div>
@@ -224,15 +223,9 @@ export default function PoliciesPage() {
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    {policy.status === "EXPIRING_SOON" ? (
-                      <span className="figma-hub-card-pill warning">
-                        <Clock size={12} /> {policy.statusLabel}
-                      </span>
-                    ) : (
-                      <span className="figma-hub-card-pill success">
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#0ea58a" }} /> {policy.statusLabel}
-                      </span>
-                    )}
+                    <span className="figma-hub-card-pill neutral">
+                      <Clock size={12} /> {policy.statusLabel}
+                    </span>
                     <ChevronRight size={18} color="#94a3b8" />
                   </div>
                 </div>
@@ -257,18 +250,29 @@ export default function PoliciesPage() {
           <Link
             href="/documents"
             className="figma-policy-card"
-            style={{ borderStyle: "dashed", background: "#fcfdfd" }}
+            style={{ borderStyle: "dashed", background: "#fcfdfd", textDecoration: "none" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#eaf8f4", color: "#0ea58a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  background: "#eaf8f4",
+                  color: "#0ea58a",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <Plus size={20} />
               </div>
               <div style={{ flex: 1 }}>
                 <strong style={{ display: "block", fontSize: 14, fontWeight: 750, color: "#0f1d38" }}>
-                  Add Another Policy
+                  Add Another Policy Document
                 </strong>
                 <span style={{ fontSize: 12, color: "#64748b" }}>
-                  Upload your insurance document or enter details manually.
+                  Upload your insurance certificate to extract and verify benefits.
                 </span>
               </div>
               <ChevronRight size={18} color="#94a3b8" />
@@ -277,174 +281,190 @@ export default function PoliciesPage() {
         </div>
 
         {/* Right Column: Policy Detail Panel */}
-        <div className="figma-policy-detail">
-          {/* Header of Detail */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div className={`figma-provider-logo-badge ${selectedPolicy.logoBadge}`}>
-                {selectedPolicy.provider.slice(0, 3).toUpperCase()}
-              </div>
-              <div>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0f1d38", margin: "0 0 3px" }}>
-                  {selectedPolicy.title}
-                </h2>
-                <span style={{ fontSize: 13, color: "#64748b" }}>{selectedPolicy.provider}</span>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span className="figma-hub-card-pill success">
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#0ea58a" }} /> Active
-              </span>
-              <button
-                type="button"
-                style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", padding: 4 }}
-                title="Options"
-              >
-                <MoreHorizontal size={18} />
-              </button>
-            </div>
-          </div>
-
-          <div className="figma-tag-row">
-            {selectedPolicy.tags.map((tag, idx) => (
-              <span key={idx} className="figma-tag">
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          {/* Sub Navigation Tabs */}
-          <div className="figma-detail-tabs">
-            {(["Overview", "Benefits", "Coverage Details", "Documents", "Notes"] as const).map((tab) => (
-              <span
-                key={tab}
-                className={`figma-tab-link ${detailTab === tab ? "active" : ""}`}
-                onClick={() => setDetailTab(tab)}
-              >
-                {tab}
-              </span>
-            ))}
-          </div>
-
-          {/* Active Banner */}
-          <div className="figma-alert-banner">
-            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#0ea58a", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <ShieldCheck size={16} />
-            </div>
-            <div>
-              <strong style={{ display: "block", fontSize: 13.5, color: "#065f46" }}>Your coverage is active</strong>
-              <span style={{ fontSize: 12, color: "#047857" }}>
-                This policy covers you from 1 Aug 2024 to 31 Jul 2027.
-              </span>
-            </div>
-          </div>
-
-          {/* 4 Info Tiles */}
-          <div className="figma-info-tiles-grid">
-            <div className="figma-info-tile">
-              <small>Policy number</small>
-              <strong>{selectedPolicy.policyNumber}</strong>
-            </div>
-            <div className="figma-info-tile">
-              <small>Coverage period</small>
-              <strong>{selectedPolicy.dateRange}</strong>
-            </div>
-            <div className="figma-info-tile">
-              <small>Plan type</small>
-              <strong>{selectedPolicy.planType}</strong>
-            </div>
-            <div className="figma-info-tile">
-              <small>Region</small>
-              <strong>{selectedPolicy.region}</strong>
-            </div>
-          </div>
-
-          {/* Coverage Summary */}
-          <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <strong style={{ fontSize: 14, color: "#0f1d38" }}>Coverage summary</strong>
-              <Link href="/completeness" style={{ fontSize: 12, fontWeight: 700, color: "#0ea58a", textDecoration: "none" }}>
-                View full details →
-              </Link>
-            </div>
-
-            <div className="figma-benefits-cols">
-              <div className="figma-benefit-item" style={{ background: "#f8fafc", padding: "10px 12px", borderRadius: 10 }}>
-                <div className="figma-benefit-icon" style={{ background: "#fee2e2", color: "#dc2626" }}>
-                  <Heart size={15} />
+        {selectedPolicy ? (
+          <div className="figma-policy-detail">
+            <div className="figma-policy-detail-header">
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div className="figma-provider-logo-badge large generic">
+                  {selectedPolicy.provider.slice(0, 3).toUpperCase()}
                 </div>
                 <div>
-                  <strong style={{ fontSize: 12 }}>Outpatient Care</strong>
-                  <span style={{ fontSize: 11, color: "#64748b" }}>Up to SGD 1,000 / yr</span>
+                  <h2>{selectedPolicy.title}</h2>
+                  <span style={{ fontSize: 13, color: "#64748b" }}>{selectedPolicy.provider}</span>
                 </div>
               </div>
 
-              <div className="figma-benefit-item" style={{ background: "#f8fafc", padding: "10px 12px", borderRadius: 10 }}>
-                <div className="figma-benefit-icon" style={{ background: "#e0f2fe", color: "#0284c7" }}>
-                  <Bed size={15} />
-                </div>
-                <div>
-                  <strong style={{ fontSize: 12 }}>Inpatient Care</strong>
-                  <span style={{ fontSize: 11, color: "#64748b" }}>Up to SGD 100,000 / yr</span>
-                </div>
-              </div>
-
-              <div className="figma-benefit-item" style={{ background: "#f8fafc", padding: "10px 12px", borderRadius: 10 }}>
-                <div className="figma-benefit-icon" style={{ background: "#e8f8f3", color: "#0ea58a" }}>
-                  <Pill size={15} />
-                </div>
-                <div>
-                  <strong style={{ fontSize: 12 }}>Prescription Drugs</strong>
-                  <span style={{ fontSize: 11, color: "#64748b" }}>Up to SGD 500 / yr</span>
-                </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span className="figma-hub-card-pill neutral">
+                  <Clock size={12} /> {selectedPolicy.evidenceStatus}
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* Documents Section */}
-          <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <strong style={{ fontSize: 14, color: "#0f1d38" }}>Documents (2)</strong>
-              <Link href="/documents" style={{ fontSize: 12, fontWeight: 700, color: "#0ea58a", textDecoration: "none" }}>
-                View all →
-              </Link>
+            {/* Unverified Policy Caution Box */}
+            <div
+              style={{
+                background: "#f8fafc",
+                border: "1px dashed #cbd5e1",
+                borderRadius: 12,
+                padding: "14px 16px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 12,
+                margin: "16px 0",
+              }}
+            >
+              <Info size={18} color="#0ea58a" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div style={{ fontSize: 12.5, color: "#475569", lineHeight: 1.5 }}>
+                <strong>Self-reported insurance declaration:</strong> This policy was entered during onboarding.
+                Specific benefits, hospital coverage networks, and deductible thresholds will be verified once
+                your policy certificate or booklet is uploaded in <strong>Documents</strong>.
+              </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: "#f8fafc", borderRadius: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <FileText size={18} color="#dc2626" />
-                  <div>
-                    <strong style={{ display: "block", fontSize: 12.5, color: "#0f1d38" }}>
-                      Student Insurance Policy.pdf
-                    </strong>
-                    <span style={{ fontSize: 11, color: "#94a3b8" }}>Uploaded 2 Aug 2024</span>
+            {/* Sub-tabs inside policy detail */}
+            <div className="figma-detail-subtabs">
+              {(["Overview", "Benefits", "Coverage Details", "Documents"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  className={`figma-detail-tab-btn ${detailTab === tab ? "active" : ""}`}
+                  onClick={() => setDetailTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab: Overview */}
+            {detailTab === "Overview" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <div className="figma-meta-grid">
+                  <div className="figma-meta-item">
+                    <span className="figma-meta-label">Plan Category</span>
+                    <strong className="figma-meta-value">{selectedPolicy.category}</strong>
+                  </div>
+                  <div className="figma-meta-item">
+                    <span className="figma-meta-label">Jurisdiction</span>
+                    <strong className="figma-meta-value">{selectedPolicy.region}</strong>
+                  </div>
+                  <div className="figma-meta-item">
+                    <span className="figma-meta-label">Policy / Certificate ID</span>
+                    <strong className="figma-meta-value">{selectedPolicy.policyNumber}</strong>
+                  </div>
+                  <div className="figma-meta-item">
+                    <span className="figma-meta-label">Coverage Period</span>
+                    <strong className="figma-meta-value">{selectedPolicy.dateRange}</strong>
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span className="figma-hub-card-pill success" style={{ padding: "3px 8px", fontSize: 10 }}>
-                    <CheckCircle2 size={11} /> Verified
-                  </span>
-                  <MoreHorizontal size={15} color="#94a3b8" />
-                </div>
-              </div>
 
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: "#f8fafc", borderRadius: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <FileText size={18} color="#0284c7" />
-                  <div>
-                    <strong style={{ display: "block", fontSize: 12.5, color: "#0f1d38" }}>
-                      Policy Summary.pdf
-                    </strong>
-                    <span style={{ fontSize: 11, color: "#94a3b8" }}>Uploaded 2 Aug 2024</span>
+                <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 18 }}>
+                  <h4 style={{ margin: "0 0 10px", fontSize: 13.5, fontWeight: 750, color: "#0f1d38" }}>
+                    Evidence & Verification Status
+                  </h4>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#64748b" }}>
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#d97706" }} />
+                    <span>Evidence pending: Upload document to enable AI policy extraction.</span>
+                  </div>
+                  <div style={{ marginTop: 14 }}>
+                    <Link
+                      href="/documents"
+                      className="figma-btn-primary"
+                      style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13 }}
+                    >
+                      <Upload size={14} />
+                      <span>Upload Certificate to Verify</span>
+                    </Link>
                   </div>
                 </div>
-                <MoreHorizontal size={15} color="#94a3b8" />
               </div>
-            </div>
+            )}
+
+            {/* Tab: Benefits */}
+            {detailTab === "Benefits" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <div style={{ padding: "20px 0", textAlign: "center", color: "#64748b" }}>
+                  <HelpCircle size={32} color="#cbd5e1" style={{ margin: "0 auto 8px" }} />
+                  <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#334155" }}>
+                    Benefits Awaiting Document Verification
+                  </h4>
+                  <p style={{ margin: "4px 0 16px", fontSize: 12.5 }}>
+                    INSURRA does not fabricate policy benefits or monetary limits. Upload your official policy
+                    wording to display verified room rates, outpatient limits, and surgical coverage.
+                  </p>
+                  <Link
+                    href="/documents"
+                    className="figma-btn-primary"
+                    style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13 }}
+                  >
+                    <Upload size={14} />
+                    <span>Upload Policy Document</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Coverage Details */}
+            {detailTab === "Coverage Details" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div className="figma-meta-grid">
+                  <div className="figma-meta-item">
+                    <span className="figma-meta-label">Hospital Network</span>
+                    <strong className="figma-meta-value">
+                      {countryName === "China"
+                        ? "Public secondary and tertiary hospitals (二级及以上公立医院)"
+                        : countryName === "Indonesia"
+                        ? "BPJS FKTP / FKRTL & Network Hospitals"
+                        : "Australian hospital network"}
+                    </strong>
+                  </div>
+                  <div className="figma-meta-item">
+                    <span className="figma-meta-label">Deductibles & Excess</span>
+                    <strong className="figma-meta-value">
+                      {countryName === "China"
+                        ? "Subject to scheme threshold (typically RMB 650 outpatient)"
+                        : "Pending document evidence"}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Documents */}
+            {detailTab === "Documents" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+                  Associated insurance certificates and evidence files for this policy:
+                </p>
+                <div
+                  style={{
+                    border: "1px dashed #cbd5e1",
+                    borderRadius: 12,
+                    padding: 24,
+                    textAlign: "center",
+                    background: "#fcfdfd",
+                  }}
+                >
+                  <FileText size={28} color="#94a3b8" style={{ margin: "0 auto 8px" }} />
+                  <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: "#1e293b" }}>
+                    No Document Linked Yet
+                  </h4>
+                  <p style={{ margin: "4px 0 14px", fontSize: 12, color: "#64748b" }}>
+                    Upload an insurance certificate or PDF policy to link evidence.
+                  </p>
+                  <Link
+                    href="/documents"
+                    className="figma-btn-primary"
+                    style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5 }}
+                  >
+                    <Upload size={14} />
+                    <span>Upload Document</span>
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

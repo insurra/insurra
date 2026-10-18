@@ -24,11 +24,13 @@ import {
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useAuth } from "@/lib/auth";
+import { useUserContext } from "@/lib/user-context";
 
 type Document = components["schemas"]["AccountDocumentSummary"];
 
 export default function AccountDocuments() {
   const { token } = useAuth();
+  const userCtx = useUserContext();
   const [, setDocuments] = useState<Document[]>([]);
   const [activeTab, setActiveTab] = useState<"UPLOAD" | "MY_DOCS" | "REQUIRED">("UPLOAD");
   const [selectedDocId, setSelectedDocId] = useState<string>("1");
@@ -36,19 +38,38 @@ export default function AccountDocuments() {
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form states for extracted data
-  const [docType, setDocType] = useState("Health Insurance Policy");
-  const [provider, setProvider] = useState("AIA");
-  const [policyNumber, setPolicyNumber] = useState("HP123456789");
-  const [period, setPeriod] = useState("1 Aug 2024 - 31 Jul 2027");
-  const [region, setRegion] = useState("Singapore");
-  const [planType, setPlanType] = useState("Student Plan");
+  const countryName = userCtx.residenceCountry || "China";
+  const defaultProvider = userCtx.declaredCoverages?.[0]?.provider || (userCtx.countryCode === "CN" ? "Ping An Annuity" : userCtx.countryCode === "ID" ? "BPJS Kesehatan" : "Allianz Care");
 
-  const [benefits, setBenefits] = useState([
-    { id: "1", type: "outpatient", name: "Outpatient Care", limit: "Up to SGD 1,000 per year" },
-    { id: "2", type: "inpatient", name: "Inpatient Care", limit: "Up to SGD 100,000 per year" },
-    { id: "3", type: "drugs", name: "Prescription Drugs", limit: "Up to SGD 500 per year" },
-  ]);
+  // Form states for extracted data
+  const [docType, setDocType] = useState(
+    userCtx.countryCode === "CN" ? "Student Insurance Certificate" : "Health Insurance Policy"
+  );
+  const [provider, setProvider] = useState(defaultProvider);
+  const [policyNumber, setPolicyNumber] = useState("HP123456789");
+  const [period, setPeriod] = useState("1 Aug 2024 - 31 Jul 2026");
+  const [region, setRegion] = useState(countryName);
+  const [planType, setPlanType] = useState(
+    userCtx.countryCode === "CN" ? "Comprehensive Scheme for Foreigners" : "Student Plan"
+  );
+
+  const [benefits, setBenefits] = useState(
+    userCtx.countryCode === "CN"
+      ? [
+          { id: "1", type: "outpatient", name: "Outpatient & Emergency", limit: "Per-visit RMB 600, 85% coinsurance" },
+          { id: "2", type: "inpatient", name: "Inpatient Hospitalization", limit: "Up to RMB 400,000" },
+          { id: "3", type: "accident", name: "Accidental Medical", limit: "Up to RMB 20,000" },
+        ]
+      : userCtx.countryCode === "ID"
+      ? [
+          { id: "1", type: "outpatient", name: "Primary Care (FKTP)", limit: "Covered per BPJS guidelines" },
+          { id: "2", type: "inpatient", name: "Hospital Referral (FKRTL)", limit: "Class 1 / Class 2 room" },
+        ]
+      : [
+          { id: "1", type: "outpatient", name: "Outpatient Care", limit: "100% MBS rate" },
+          { id: "2", type: "inpatient", name: "Inpatient Hospitalization", limit: "Public hospital accommodation" },
+        ]
+  );
 
   const refresh = useCallback(async () => {
     if (!token) return;
@@ -377,9 +398,10 @@ export default function AccountDocuments() {
                   onChange={(e) => setRegion(e.target.value)}
                   disabled={!isEditing}
                 >
-                  <option>Singapore</option>
-                  <option>Australia</option>
+                  <option>China</option>
                   <option>Indonesia</option>
+                  <option>Australia</option>
+                  <option>Singapore</option>
                 </select>
               </div>
 

@@ -20,6 +20,7 @@ import {
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useAuth } from "@/lib/auth";
+import { useUserContext } from "@/lib/user-context";
 
 type Setup = components["schemas"]["AccountSetup"];
 type Result = components["schemas"]["AccountCompleteness"];
@@ -32,57 +33,97 @@ interface MockChecklistItem {
   tagColor: "green" | "orange" | "gray";
 }
 
-const DEFAULT_CHECKLIST: MockChecklistItem[] = [
-  {
-    id: "student-insurance",
-    name: "Student Insurance Policy",
-    description: "Policy document showing coverage and benefits.",
-    status: "uploaded",
-    tagColor: "green",
-  },
-  {
-    id: "visa-approval",
-    name: "Visa Approval Letter (IPA)",
-    description: "Official letter from ICA.",
-    status: "uploaded",
-    tagColor: "green",
-  },
-  {
-    id: "passport",
-    name: "Passport (Identity Page)",
-    description: "Valid passport with personal details.",
-    status: "required",
-    tagColor: "orange",
-  },
-  {
-    id: "enrollment",
-    name: "Enrollment Letter",
-    description: "Letter from your educational institution.",
-    status: "uploaded",
-    tagColor: "green",
-  },
-  {
-    id: "accommodation",
-    name: "Proof of Accommodation",
-    description: "E.g. tenancy agreement or dormitory letter.",
-    status: "optional",
-    tagColor: "gray",
-  },
-  {
-    id: "flight",
-    name: "Flight Itinerary",
-    description: "Return or onward travel details.",
-    status: "optional",
-    tagColor: "gray",
-  },
-];
-
 export default function AccountCompleteness() {
   const { token } = useAuth();
+  const userCtx = useUserContext();
   const [setup, setSetup] = useState<Setup | null>(null);
   const [task, setTask] = useState("");
   const [result, setResult] = useState<Result | null>(null);
   const [activeTab, setActiveTab] = useState<"visa" | "dates">("visa");
+
+  const countryName = userCtx.residenceCountry || "China";
+  const countryFlag = userCtx.countryFlag || "🇨🇳";
+  const userSegment = userCtx.userSegment || "student";
+
+  // Dynamic context checklist
+  const dynamicChecklist: MockChecklistItem[] = userCtx.countryCode === "CN"
+    ? [
+        {
+          id: "student-cert",
+          name: "Student Insurance Certificate",
+          description: "Ping An Annuity or campus certificate confirming scheme enrollment.",
+          status: "required",
+          tagColor: "orange",
+        },
+        {
+          id: "policy-terms",
+          name: "Policy Terms & Benefit Booklet",
+          description: "Terms showing public secondary & tertiary hospital network and deductibles.",
+          status: "required",
+          tagColor: "orange",
+        },
+        {
+          id: "admission-notice",
+          name: "University Admission / Study Verification",
+          description: "JW202 / JW201 form or enrollment letter from university in Shenzhen.",
+          status: "optional",
+          tagColor: "gray",
+        },
+        {
+          id: "residence-permit",
+          name: "Passport & Foreigner Residence Permit",
+          description: "Identity and legal study stay duration issued by Exit-Entry Administration.",
+          status: "optional",
+          tagColor: "gray",
+        },
+      ]
+    : userCtx.countryCode === "ID"
+    ? [
+        {
+          id: "bpjs-card",
+          name: "BPJS Kesehatan Digital Card",
+          description: "Mobile JKN card screenshot or physical membership certificate.",
+          status: "required",
+          tagColor: "orange",
+        },
+        {
+          id: "private-policy",
+          name: "Private Health Policy Booklet",
+          description: "Table of benefits for hospitalization and coordination of benefit (CoB).",
+          status: "optional",
+          tagColor: "gray",
+        },
+        {
+          id: "employer-schedule",
+          name: "Corporate Benefit Handbook",
+          description: "Employee health benefits schedule and network clinic list.",
+          status: "optional",
+          tagColor: "gray",
+        },
+      ]
+    : [
+        {
+          id: "oshc-cert",
+          name: "OSHC Policy Certificate",
+          description: "Policy document showing Condition 8501 student visa health coverage.",
+          status: "required",
+          tagColor: "orange",
+        },
+        {
+          id: "visa-grant",
+          name: "Visa Grant Notice",
+          description: "Official letter from Australian Department of Home Affairs.",
+          status: "required",
+          tagColor: "orange",
+        },
+        {
+          id: "enrollment",
+          name: "Confirmation of Enrolment (CoE)",
+          description: "Official CoE from your registered educational provider.",
+          status: "optional",
+          tagColor: "gray",
+        },
+      ];
 
   useEffect(() => {
     if (!token) return;
@@ -378,7 +419,7 @@ export default function AccountCompleteness() {
         <div className="figma-checklist-card">
           <div className="figma-checklist-header">
             <div className="figma-checklist-header-title">
-              <span>Required Documents for Singapore (Student)</span>
+              <span>Required Documents for {countryName} ({userSegment})</span>
               <Info size={15} color="#94a3b8" />
             </div>
             <Link
@@ -396,7 +437,7 @@ export default function AccountCompleteness() {
 
           {/* Checklist Items */}
           <div>
-            {DEFAULT_CHECKLIST.map((doc) => {
+            {dynamicChecklist.map((doc) => {
               const isUploaded = doc.status === "uploaded";
               const isRequired = doc.status === "required";
 
@@ -531,12 +572,14 @@ export default function AccountCompleteness() {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "24px", lineHeight: 1 }}>🇸🇬</span>
+                <span style={{ fontSize: "24px", lineHeight: 1 }}>{countryFlag}</span>
                 <div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#0f1d38" }}>
-                    Singapore
+                    {countryName}
                   </div>
-                  <div style={{ fontSize: "11px", color: "#64748b" }}>Student</div>
+                  <div style={{ fontSize: "11px", color: "#64748b", textTransform: "capitalize" }}>
+                    {userSegment}
+                  </div>
                 </div>
               </div>
               <Link
@@ -561,10 +604,26 @@ export default function AccountCompleteness() {
                 lineHeight: "1.7",
               }}
             >
-              <li>Mandatory health insurance for international students</li>
-              <li>Minimum coverage requirements (e.g. inpatient, outpatient)</li>
-              <li>Valid for entire duration of stay</li>
-              <li>Accepted insurance providers in Singapore</li>
+              {userCtx.countryCode === "CN" ? (
+                <>
+                  <li>Comprehensive Medical Insurance Scheme for Foreigners required for study stays &gt; 6 months</li>
+                  <li>Inpatient hospitalization, accidental medical, and emergency treatment covered</li>
+                  <li>Designated public secondary &amp; tertiary hospitals (二级及以上公立医院) standard wards</li>
+                  <li>Official medical receipt (Fapiao) and clinical record required for claims</li>
+                </>
+              ) : userCtx.countryCode === "ID" ? (
+                <>
+                  <li>BPJS Kesehatan (JKN) covers primary (FKTP) and referral (FKRTL) medical care</li>
+                  <li>Private health policies coordinate benefits (CoB) for private hospital admission</li>
+                  <li>Surat rujukan berjenjang required for non-emergency specialist consultations</li>
+                </>
+              ) : (
+                <>
+                  <li>Overseas Student Health Cover (OSHC) required under Visa Condition 8501</li>
+                  <li>Medicare Benefits Schedule (MBS) coverage and emergency ambulance support</li>
+                  <li>Continuous coverage required from departure until visa expiry</li>
+                </>
+              )}
             </ul>
           </div>
 
