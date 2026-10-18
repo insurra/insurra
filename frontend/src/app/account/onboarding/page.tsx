@@ -50,74 +50,74 @@ const AUSTRALIA_CITIES = ["Melbourne", "Sydney", "Brisbane", "Perth", "Adelaide"
 const INDONESIA_CITIES = ["Jakarta", "Surabaya", "Bandung", "Medan", "Yogyakarta", "Bali"];
 
 const DEPENDENT_OPTIONS = [
-  { id: "None", label: "Hanya Saya Sendiri", sub: "Tidak ada tanggungan tambahan" },
-  { id: "Spouse", label: "Pasangan", sub: "Suami / Istri / Partner" },
-  { id: "Children", label: "Anak", sub: "Tanggungan anak di bawah 18 tahun" },
-  { id: "Parents", label: "Orang Tua", sub: "Orang tua atau tanggungan keluarga senior" },
+  { id: "None", label: "Just Myself", sub: "No additional family dependents" },
+  { id: "Spouse", label: "Spouse / Partner", sub: "Husband, wife, or de facto partner" },
+  { id: "Children", label: "Children", sub: "Dependent children under 18 years old" },
+  { id: "Parents", label: "Parents", sub: "Dependent parents or senior family members" },
 ];
 
 const COVERAGE_OPTIONS_AU = [
-  { id: "OSHC", label: "OSHC (Student Health Cover)", sub: "Wajib visa pelajar Australia (Condition 8501)" },
-  { id: "EMPLOYER", label: "Employer Corporate Health", sub: "Asuransi kesehatan kelompok dari kantor" },
-  { id: "PERSONAL_HEALTH", label: "Australian Private Health", sub: "Polis asuransi swasta Australia (Medibank, Bupa, dll)" },
-  { id: "TRAVEL", label: "Travel Insurance", sub: "Polis asuransi perjalanan internasional aktif" },
-  { id: "BPJS", label: "BPJS Kesehatan (Indonesia)", sub: "Keanggotaan aktif JKN dari Indonesia" },
-  { id: "NOT_SURE", label: "Belum Yakin / Perlu Dicek", sub: "Saya belum tahu persis rincian polis saya" },
+  { id: "OSHC", label: "OSHC (Student Health Cover)", sub: "Mandatory for Australian student visas (Condition 8501)" },
+  { id: "OVHC", label: "OVHC (Visitor & Graduate Visa)", sub: "Health cover for Subclass 482/485 graduates and working visitors" },
+  { id: "EMPLOYER", label: "Corporate / Employer Health", sub: "Company-sponsored group health insurance in Australia" },
+  { id: "PERSONAL_HEALTH", label: "Australian Private Health", sub: "Private hospital and extras cover (Medibank, Bupa, NIB, AHM)" },
+  { id: "TRAVEL", label: "International Travel Insurance", sub: "Active international emergency medical travel cover" },
+  { id: "NOT_SURE", label: "Not Sure / Needs Verification", sub: "Let Insurra inspect your policy documents to determine coverage" },
 ];
 
 const COVERAGE_OPTIONS_ID = [
-  { id: "BPJS", label: "BPJS Kesehatan (JKN)", sub: "Jaminan Kesehatan Nasional wajib Indonesia" },
-  { id: "EMPLOYER", label: "Asuransi Kantor / Korporat", sub: "Fasilitas rawat inap dan rawat jalan perusahaan" },
-  { id: "PERSONAL_HEALTH", label: "Asuransi Kesehatan Swasta", sub: "Polis individu murni atau unit link swasta" },
-  { id: "TRAVEL", label: "Asuransi Perjalanan", sub: "Asuransi proteksi perjalanan luar atau domestik" },
-  { id: "LIFE", label: "Asuransi Jiwa & Keluarga", sub: "Proteksi jiwa dan antisipasi risiko masa depan" },
-  { id: "NOT_SURE", label: "Belum Yakin / Perlu Dicek", sub: "Saya ingin Insurra memeriksa dokumen saya nanti" },
+  { id: "BPJS", label: "BPJS Kesehatan (JKN)", sub: "National mandatory health insurance program of Indonesia" },
+  { id: "EMPLOYER", label: "Corporate / Employer Health", sub: "Company group inpatient and outpatient health benefits" },
+  { id: "PERSONAL_HEALTH", label: "Private Health Insurance", sub: "Individual hospital cover (cashless or reimbursement plans)" },
+  { id: "LIFE", label: "Life & Critical Illness Cover", sub: "Term life, critical illness, or unit link family protection" },
+  { id: "TRAVEL", label: "Travel Insurance", sub: "Domestic or international journey emergency health coverage" },
+  { id: "NOT_SURE", label: "Not Sure / Needs Verification", sub: "Let Insurra review your insurance documents to identify policies" },
 ];
 
 const PRIORITY_OPTIONS = [
   {
     id: "low_cost",
-    label: "Biaya Lebih Hemat",
-    sub: "Meminimalkan out-of-pocket expenses dan biaya excess saat berobat",
+    label: "Lower Out-of-Pocket Costs",
+    sub: "Minimize excess fees, co-payments, and medical gap expenses",
   },
   {
     id: "speed",
-    label: "Kecepatan & Kemudahan",
-    sub: "Klaim kilat, direct billing di klinik/RS, dan proses serba digital",
+    label: "Speed & Convenience",
+    sub: "Instant hospital admission guarantees, fast digital claims, direct billing",
   },
   {
     id: "choice",
-    label: "Bebas Pilih Dokter & RS",
-    sub: "Bebas konsultasi dengan dokter spesialis dan rawat inap di RS swasta",
+    label: "Doctor & Hospital Choice",
+    sub: "Access to private hospital rooms, chosen specialists, and preferred clinics",
   },
   {
     id: "family",
-    label: "Keamanan Keluarga",
-    sub: "Jaminan kesehatan lengkap dan perlindungan terpadu untuk keluarga",
+    label: "Family Protection",
+    sub: "Comprehensive protection and shared coverage limits for household dependents",
   },
 ];
 
 const BUDGET_OPTIONS_AU = [
-  { id: "none", label: "Tidak ada anggaran tambahan", sub: "Hanya mengandalkan asuransi yang ada" },
-  { id: "low", label: "< $50 / bulan", sub: "Proteksi dasar untuk menutup celah selisih" },
-  { id: "mid", label: "$50 - $150 / bulan", sub: "Perlindungan seimbang rawat jalan dan gigi" },
-  { id: "high", label: "$150 - $300 / bulan", sub: "Asuransi komprehensif rawat inap RS swasta" },
-  { id: "top", label: "> $300 / bulan", sub: "Proteksi kelas premium dan limit tinggi" },
+  { id: "none", label: "No additional budget", sub: "Rely solely on existing insurance cover" },
+  { id: "low", label: "< $50 / month", sub: "Basic extras or medical gap buffer" },
+  { id: "mid", label: "$50 - $150 / month", sub: "Balanced extras, dental, optical, and ambulance cover" },
+  { id: "high", label: "$150 - $300 / month", sub: "Comprehensive private hospital and specialist cover" },
+  { id: "top", label: "> $300 / month", sub: "Premium health cover with zero excess and top limits" },
 ];
 
 const BUDGET_OPTIONS_ID = [
-  { id: "none", label: "Tidak ada anggaran tambahan", sub: "Hanya mengandalkan asuransi yang ada" },
-  { id: "low", label: "< Rp 250.000 / bulan", sub: "Proteksi dasar pelengkap BPJS" },
-  { id: "mid", label: "Rp 250.000 - Rp 750.000 / bulan", sub: "Perlindungan rawat jalan & gigi standar" },
-  { id: "high", label: "Rp 750.000 - Rp 1.500.000 / bulan", sub: "Asuransi kesehatan swasta reguler" },
-  { id: "top", label: "> Rp 1.500.000 / bulan", sub: "Proteksi kamar VIP & limit tahunan tinggi" },
+  { id: "none", label: "No additional budget", sub: "Rely solely on existing insurance cover" },
+  { id: "low", label: "< Rp 250,000 / month", sub: "Basic supplementary outpatient protection alongside BPJS" },
+  { id: "mid", label: "Rp 250,000 - Rp 750,000 / month", sub: "Standard outpatient, dental, and clinic top-up coverage" },
+  { id: "high", label: "Rp 750,000 - Rp 1,500,000 / month", sub: "Regular private inpatient hospital insurance" },
+  { id: "top", label: "> Rp 1,500,000 / month", sub: "VIP hospital room and high annual limit protection" },
 ];
 
 interface SuggestedDocItem {
   id: string;
   kind: string;
   title: string;
-  badge: "Wajib Visa" | "Wajib" | "Rekomendasi";
+  badge: "Visa Required" | "Mandatory" | "Recommended";
   badgeType: "visa-req" | "mandatory" | "recommended";
   description: string;
   sourceUrl?: string;
@@ -239,14 +239,14 @@ function AccountOnboardingContent() {
       setMaxCompletedStep(6);
       return true;
     } catch (cause: unknown) {
-      setError(cause instanceof Error ? cause.message : "Gagal menyimpan profil. Silakan coba lagi.");
+      setError(cause instanceof Error ? cause.message : "Failed to save profile. Please try again.");
       return false;
     } finally {
       setBusy(false);
     }
   }
 
-  // Derived suggested documents list based on profile
+  // Derived suggested documents list based on profile and country context
   const suggestedDocsList = useMemo<SuggestedDocItem[]>(() => {
     const list: SuggestedDocItem[] = [];
     const isAU = profile.country_code === "AU";
@@ -255,16 +255,16 @@ function AccountOnboardingContent() {
     const notSure = owned.includes("NOT_SURE");
 
     if (isAU) {
-      if (isStudent || owned.includes("OSHC")) {
+      if (isStudent || owned.includes("OSHC") || owned.includes("OVHC")) {
         list.push({
           id: "oshc_certificate",
           kind: "oshc_certificate",
-          title: "Sertifikat Polis OSHC",
-          badge: "Wajib Visa",
+          title: "OSHC / OVHC Policy Certificate",
+          badge: "Visa Required",
           badgeType: "visa-req",
-          description: "Dari provider OSHC Australia (Allianz, Medibank, Bupa, NIB, atau AHM)",
+          description: "From your Australian health insurer (Allianz Care, Medibank, Bupa, NIB, or AHM)",
           sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500#Eligibility",
-          sourceLabel: "Kepatuhan Visa Condition 8501",
+          sourceLabel: "Visa Condition 8501 Compliance",
         });
       }
 
@@ -272,19 +272,19 @@ function AccountOnboardingContent() {
         id: "visa_grant_notice",
         kind: "visa_grant_notice",
         title: "Visa Grant Notice",
-        badge: "Rekomendasi",
+        badge: "Recommended",
         badgeType: "recommended",
-        description: "Surat pemberitahuan resmi izin visa dari Department of Home Affairs Australia",
+        description: "Official visa grant notification letter from the Australian Department of Home Affairs",
       });
 
-      if (owned.includes("OSHC") || isStudent) {
+      if (owned.includes("OSHC") || isStudent || owned.includes("PERSONAL_HEALTH")) {
         list.push({
           id: "policy_booklet",
           kind: "policy_booklet",
-          title: "Buku Panduan Polis OSHC",
-          badge: "Rekomendasi",
+          title: "Policy Booklet & MBS Schedule",
+          badge: "Recommended",
           badgeType: "recommended",
-          description: "Memuat daftar jadwal manfaat (MBS), rincian limit, dan pengecualian rawat inap",
+          description: "Details Medicare Benefits Schedule (MBS) coverage, hospital excess, and waiting periods",
         });
       }
 
@@ -292,10 +292,10 @@ function AccountOnboardingContent() {
         list.push({
           id: "employer_policy",
           kind: "employer_policy",
-          title: "Sertifikat Polis Kantor (Employer)",
-          badge: "Rekomendasi",
+          title: "Corporate Health Policy Schedule",
+          badge: "Recommended",
           badgeType: "recommended",
-          description: "Dari portal HR atau buku manfaat asuransi korporat perusahaan",
+          description: "From your corporate HR portal or expatriate health benefits handbook",
         });
       }
 
@@ -303,10 +303,10 @@ function AccountOnboardingContent() {
         list.push({
           id: "other",
           kind: "other",
-          title: "Kartu Asuransi / Bukti Pendaftaran",
-          badge: "Rekomendasi",
+          title: "Insurance Card / Evidence Document",
+          badge: "Recommended",
           badgeType: "recommended",
-          description: "Foto atau kartu digital apa pun untuk diverifikasi oleh sistem Insurra",
+          description: "Any photo or policy certificate for Insurra to inspect and verify",
         });
       }
     } else {
@@ -314,22 +314,22 @@ function AccountOnboardingContent() {
       list.push({
         id: "bpjs_card",
         kind: "bpjs_card",
-        title: "Kartu BPJS Kesehatan",
-        badge: "Wajib",
+        title: "BPJS Kesehatan Digital Card",
+        badge: "Mandatory",
         badgeType: "mandatory",
-        description: "Dari aplikasi Mobile JKN (screenshot kartu digital) atau scan kartu fisik",
+        description: "Digital card screenshot from Mobile JKN app or scanned physical card",
         sourceUrl: "https://bpjs-kesehatan.go.id",
-        sourceLabel: "Portal Resmi BPJS Kesehatan",
+        sourceLabel: "Official BPJS Kesehatan Portal",
       });
 
       if (owned.includes("EMPLOYER")) {
         list.push({
           id: "employer_policy",
           kind: "employer_policy",
-          title: "Polis Asuransi Kantor / Korporat",
-          badge: "Rekomendasi",
+          title: "Corporate Group Health Policy",
+          badge: "Recommended",
           badgeType: "recommended",
-          description: "Dari portal HR perusahaan atau buku panduan manfaat karyawan",
+          description: "From company HR portal or employee benefits guidebook",
         });
       }
 
@@ -337,10 +337,10 @@ function AccountOnboardingContent() {
         list.push({
           id: "policy_booklet",
           kind: "policy_booklet",
-          title: "Buku Polis Asuransi Pribadi",
-          badge: "Rekomendasi",
+          title: "Private Health Policy Schedule",
+          badge: "Recommended",
           badgeType: "recommended",
-          description: "Dari aplikasi asuransi atau surat konfirmasi polis yang masih aktif",
+          description: "Table of benefits from your private insurer showing room rates, limits, and exclusions",
         });
       }
 
@@ -348,10 +348,10 @@ function AccountOnboardingContent() {
         list.push({
           id: "insurance_card",
           kind: "insurance_card",
-          title: "Kartu Asuransi / Bukti Kepesertaan",
-          badge: "Rekomendasi",
+          title: "Insurance Card / Participation Proof",
+          badge: "Recommended",
           badgeType: "recommended",
-          description: "Foto dokumen asuransi apa pun yang Anda miliki saat ini",
+          description: "Any insurance card or certificate for Insurra to review and categorize",
         });
       }
     }
@@ -386,7 +386,7 @@ function AccountOnboardingContent() {
       currency: isAbroad ? "AUD" : "IDR",
       timezone: isAbroad ? "Australia/Melbourne" : "Asia/Jakarta",
       owned_coverage: isAbroad ? ["OSHC"] : ["BPJS"],
-      budget_range: isAbroad ? "$50 - $150 / month" : "Rp 250.000 - Rp 750.000 / month",
+      budget_range: isAbroad ? "$50 - $150 / month" : "Rp 250,000 - Rp 750,000 / month",
     };
     advanceToStep(2, updated);
   }
@@ -395,17 +395,17 @@ function AccountOnboardingContent() {
   function handleSubmitStep2() {
     const finalCity = (customCity || profile.city || (profile.country_code === "AU" ? "Melbourne" : "Jakarta")).trim();
     if (!finalCity) {
-      setError("Silakan tentukan kota tempat tinggalmu.");
+      setError("Please specify your city of residence.");
       return;
     }
 
     if (profile.residence_context === "ABROAD" && profile.country_code === "AU") {
       if (!tempArrivalDate || !tempVisaExpiry) {
-        setError("Tanggal kedatangan dan masa berlaku visa wajib diisi untuk domisili luar negeri.");
+        setError("Arrival date and visa expiry date are required for Australian residence.");
         return;
       }
       if (tempVisaExpiry <= tempArrivalDate) {
-        setError("Masa berlaku visa harus lebih lama dari tanggal kedatangan.");
+        setError("Visa expiry date must be later than your arrival date.");
         return;
       }
     }
@@ -439,7 +439,7 @@ function AccountOnboardingContent() {
 
   function handleSubmitStep3() {
     if (!profile.dependents || profile.dependents.length === 0) {
-      setError("Silakan pilih siapa saja yang ikut dilindungi.");
+      setError("Please select who should be included in your coverage.");
       return;
     }
     setError(null);
@@ -465,7 +465,7 @@ function AccountOnboardingContent() {
 
   function handleSubmitStep4() {
     if (!profile.owned_coverage || profile.owned_coverage.length === 0) {
-      setError("Silakan pilih asuransi yang kamu miliki, atau pilih 'Belum yakin'.");
+      setError("Please select your current insurance, or choose 'Not Sure / Needs Verification'.");
       return;
     }
     setError(null);
@@ -511,7 +511,7 @@ function AccountOnboardingContent() {
   }
 
   // Display Name of User
-  const userName = profile.display_name || account?.display_name || "Sahabat Insurra";
+  const userName = profile.display_name || account?.display_name || "Companion Member";
   const isAU = profile.country_code === "AU";
 
   // Calculate live completion percentage
@@ -544,21 +544,21 @@ function AccountOnboardingContent() {
           <div className="chat-companion-info">
             <span className="chat-companion-name">Insurra AI Guide</span>
             <span className="chat-companion-status">
-              <span className="status-dot-pulse" /> Pendamping Aktif
+              <span className="status-dot-pulse" /> Active Companion
             </span>
           </div>
         </div>
 
         {/* Progress Tracker */}
         <div className="chat-progress-wrap">
-          <div className="chat-progress-track" title={`${completionPct}% Selesai`}>
+          <div className="chat-progress-track" title={`${completionPct}% Completed`}>
             <div className="chat-progress-fill" style={{ width: `${isCompleted ? 100 : Math.max(16, completionPct)}%` }} />
           </div>
           <span className="chat-step-label">
-            {isCompleted ? "Lengkap" : `Langkah ${Math.min(activeStep, 6)} dari 6`}
+            {isCompleted ? "Complete" : `Step ${Math.min(activeStep, 6)} of 6`}
           </span>
           <Link href="/dashboard" className="onboarding-exit-btn">
-            Lewati ke Dashboard
+            Skip to Dashboard
           </Link>
         </div>
       </header>
@@ -570,10 +570,10 @@ function AccountOnboardingContent() {
           <div className="chat-stream-header">
             <div className="chat-stream-title">
               <Compass size={17} color="#0ea58a" />
-              <span>Percakapan Konteks Perlindungan</span>
-              <span className="badge">Interaktif</span>
+              <span>Interactive Protection Context</span>
+              <span className="badge">Conversational</span>
             </div>
-            {draftSaved && <span className="autosave-pill"><Check size={12} /> Tersimpan otomatis</span>}
+            {draftSaved && <span className="autosave-pill"><Check size={12} /> Auto-saved</span>}
           </div>
 
           <div className="chat-messages-scroll" ref={chatScrollRef}>
@@ -585,13 +585,13 @@ function AccountOnboardingContent() {
                 </div>
                 <div className="assistant-bubble">
                   <p>
-                    Halo <strong>{userName}</strong>! 👋 Senang bertemu denganmu.
+                    Hello <strong>{userName}</strong>! 👋 Great to meet you.
                   </p>
                   <p>
-                    Saya adalah asisten AI yang akan mendampingi perlindungan asuransimu. Agar kita bisa menyesuaikan aturan visa, jenis dokumen, dan manfaat klaim tanpa ribet, yuk kita lengkapi profilmu lewat obrolan singkat ini.
+                    I am your personal AI insurance companion. To tailor visa rules, document requirements, and claim insights without confusion, let&apos;s map your profile through this quick chat.
                   </p>
                   <p>
-                    Pertama, <strong>di mana kamu tinggal saat ini?</strong>
+                    First, <strong>where are you currently living?</strong>
                   </p>
                 </div>
               </div>
@@ -599,7 +599,7 @@ function AccountOnboardingContent() {
               {/* Active Interactive Box for Step 1 */}
               {activeStep === 1 && (
                 <div className="chat-interactive-box">
-                  <div className="interactive-title">Pilih Wilayah Tempat Tinggalmu:</div>
+                  <div className="interactive-title">Select Your Residence Context:</div>
                   <div className="chat-options-grid">
                     <button
                       type="button"
@@ -608,8 +608,8 @@ function AccountOnboardingContent() {
                     >
                       <span className="chat-option-icon">🌏</span>
                       <div className="chat-option-text">
-                        <h4>Tinggal di Luar Negeri</h4>
-                        <p>Australia (OSHC, Visa Condition 8501, kepatuhan imigrasi internasional)</p>
+                        <h4>Living Abroad in Australia</h4>
+                        <p>Australia (OSHC / OVHC, Visa Condition 8501, international immigration compliance)</p>
                       </div>
                     </button>
                     <button
@@ -619,8 +619,8 @@ function AccountOnboardingContent() {
                     >
                       <span className="chat-option-icon">🏠</span>
                       <div className="chat-option-text">
-                        <h4>Tinggal di Indonesia</h4>
-                        <p>Domestik (Integrasi BPJS Kesehatan / JKN, koordinasi manfaat KAPJ, asuransi swasta)</p>
+                        <h4>Living in Indonesia</h4>
+                        <p>Domestic (BPJS Kesehatan / JKN integration, Coordination of Benefits / KAPJ, private health)</p>
                       </div>
                     </button>
                   </div>
@@ -634,11 +634,11 @@ function AccountOnboardingContent() {
                 <div className="user-message-row">
                   <div className="user-bubble">
                     <span>
-                      {profile.residence_context === "ABROAD" ? "🌏 Saya tinggal di Luar Negeri (Australia)" : "🏠 Saya tinggal di Indonesia"}
+                      {profile.residence_context === "ABROAD" ? "🌏 Living Abroad (Australia)" : "🏠 Living in Indonesia"}
                     </span>
                     <div className="user-bubble-actions">
                       <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(1)}>
-                        <Edit2 size={11} /> Ubah
+                        <Edit2 size={11} /> Edit
                       </button>
                     </div>
                   </div>
@@ -656,22 +656,22 @@ function AccountOnboardingContent() {
                   <div className="assistant-bubble">
                     <p>
                       {profile.residence_context === "ABROAD" ? (
-                        <>Bagus! Tinggal di luar negeri memerlukan perhatian ekstra pada ketentuan visa dan perlindungan medis. Di kota mana kamu berbasis di Australia?</>
+                        <>Excellent! Living abroad in Australia requires close attention to visa conditions and health coverage (Condition 8501). Which city in Australia are you based in?</>
                       ) : (
-                        <>Bagus! Untuk di Indonesia, sistem akan menyesuaikan koordinasi manfaat BPJS Kesehatan dan asuransi swasta. Di kota mana kamu berdomisili?</>
+                        <>Understood! For Indonesia, Insurra tailors BPJS Kesehatan integration, coordination of benefits (KAPJ), and private hospital networks. Which city are you based in?</>
                       )}
                     </p>
-                    <p>Silakan lengkapi kota dan status aktivitasmu di bawah ya:</p>
+                    <p>Please confirm your location and occupation status below:</p>
                   </div>
                 </div>
 
                 {activeStep === 2 && (
                   <div className="chat-interactive-box">
-                    <div className="interactive-title">Detail Lokasi & Status:</div>
+                    <div className="interactive-title">Location &amp; Occupation Details:</div>
 
                     {/* Country Toggle */}
                     <div className="chat-inline-field">
-                      <label>Negara Tempat Tinggal:</label>
+                      <label>Country of Residence:</label>
                       <div className="chat-pills-row">
                         <button
                           type="button"
@@ -698,7 +698,7 @@ function AccountOnboardingContent() {
 
                     {/* City quick pills + Input */}
                     <div className="chat-inline-field">
-                      <label>Kota Tempat Tinggal:</label>
+                      <label>City of Residence:</label>
                       <div className="chat-pills-row">
                         {(isAU ? AUSTRALIA_CITIES : INDONESIA_CITIES).map((c) => (
                           <button
@@ -716,7 +716,7 @@ function AccountOnboardingContent() {
                       </div>
                       <input
                         type="text"
-                        placeholder="Atau ketik nama kota lainnya..."
+                        placeholder="Or type another city name..."
                         className="chat-text-input"
                         value={customCity}
                         onChange={(e) => {
@@ -728,41 +728,69 @@ function AccountOnboardingContent() {
 
                     {/* Occupation Pills */}
                     <div className="chat-inline-field">
-                      <label>Status / Pekerjaan Utama:</label>
+                      <label>Primary Status / Occupation:</label>
                       <div className="chat-pills-row">
-                        <button
-                          type="button"
-                          className={`chat-pill-btn ${profile.occupation === "STUDENT" ? "active" : ""}`}
-                          onClick={() => setProfile({ ...profile, occupation: "STUDENT" })}
-                        >
-                          🎓 Pelajar / Mahasiswa (Student)
-                        </button>
-                        <button
-                          type="button"
-                          className={`chat-pill-btn ${profile.occupation === "EMPLOYEE" ? "active" : ""}`}
-                          onClick={() => setProfile({ ...profile, occupation: "EMPLOYEE" })}
-                        >
-                          💼 Profesional / Pekerja
-                        </button>
-                        <button
-                          type="button"
-                          className={`chat-pill-btn ${profile.occupation === "OTHER" ? "active" : ""}`}
-                          onClick={() => setProfile({ ...profile, occupation: "OTHER" })}
-                        >
-                          🧳 Working Holiday / Lainnya
-                        </button>
+                        {isAU ? (
+                          <>
+                            <button
+                              type="button"
+                              className={`chat-pill-btn ${profile.occupation === "STUDENT" ? "active" : ""}`}
+                              onClick={() => setProfile({ ...profile, occupation: "STUDENT" })}
+                            >
+                              🎓 International Student (Subclass 500)
+                            </button>
+                            <button
+                              type="button"
+                              className={`chat-pill-btn ${profile.occupation === "EMPLOYEE" ? "active" : ""}`}
+                              onClick={() => setProfile({ ...profile, occupation: "EMPLOYEE" })}
+                            >
+                              💼 Professional / Skilled Worker
+                            </button>
+                            <button
+                              type="button"
+                              className={`chat-pill-btn ${profile.occupation === "OTHER" ? "active" : ""}`}
+                              onClick={() => setProfile({ ...profile, occupation: "OTHER" })}
+                            >
+                              🧳 Graduate (485) / Working Holiday
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className={`chat-pill-btn ${profile.occupation === "EMPLOYEE" ? "active" : ""}`}
+                              onClick={() => setProfile({ ...profile, occupation: "EMPLOYEE" })}
+                            >
+                              💼 Corporate Employee / Professional
+                            </button>
+                            <button
+                              type="button"
+                              className={`chat-pill-btn ${profile.occupation === "STUDENT" ? "active" : ""}`}
+                              onClick={() => setProfile({ ...profile, occupation: "STUDENT" })}
+                            >
+                              🎓 Student / Higher Education
+                            </button>
+                            <button
+                              type="button"
+                              className={`chat-pill-btn ${profile.occupation === "OTHER" ? "active" : ""}`}
+                              onClick={() => setProfile({ ...profile, occupation: "OTHER" })}
+                            >
+                              🧳 Self-Employed / Freelancer
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
 
-                    {/* Visa Dates (if Abroad) */}
+                    {/* Visa Dates (if Abroad in AU) */}
                     {profile.residence_context === "ABROAD" && isAU && (
                       <div style={{ background: "#f8fafb", padding: "14px", borderRadius: "14px", border: "1px solid #e5eff2", marginBottom: "16px" }}>
                         <div style={{ fontSize: "12px", fontWeight: "750", color: "#16584a", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                          <Shield size={14} /> Tanggal Kedatangan & Masa Berlaku Visa (Kepatuhan Condition 8501):
+                          <Shield size={14} /> Arrival &amp; Visa Validity Dates (Condition 8501 Compliance):
                         </div>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                           <div>
-                            <label style={{ fontSize: "11px", color: "#556c80" }}>Tanggal Kedatangan di Australia:</label>
+                            <label style={{ fontSize: "11px", color: "#556c80" }}>Arrival Date in Australia:</label>
                             <input
                               type="date"
                               className="chat-text-input"
@@ -771,7 +799,7 @@ function AccountOnboardingContent() {
                             />
                           </div>
                           <div>
-                            <label style={{ fontSize: "11px", color: "#556c80" }}>Tanggal Berakhir Visa:</label>
+                            <label style={{ fontSize: "11px", color: "#556c80" }}>Visa Expiry Date:</label>
                             <input
                               type="date"
                               className="chat-text-input"
@@ -790,7 +818,7 @@ function AccountOnboardingContent() {
                     )}
 
                     <button type="button" className="chat-submit-btn" onClick={handleSubmitStep2}>
-                      Lanjut ke Tanggungan Keluarga <ArrowRight size={15} />
+                      Continue to Dependents <ArrowRight size={15} />
                     </button>
                   </div>
                 )}
@@ -806,11 +834,11 @@ function AccountOnboardingContent() {
                       📍 {profile.city}, {isAU ? "Australia 🇦🇺" : "Indonesia 🇮🇩"} · {profile.occupation}
                     </span>
                     {profile.residence_context === "ABROAD" && profile.visa_expiry_date && (
-                      <span className="user-subtext">Visa aktif hingga: {profile.visa_expiry_date}</span>
+                      <span className="user-subtext">Visa valid until: {profile.visa_expiry_date}</span>
                     )}
                     <div className="user-bubble-actions">
                       <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(2)}>
-                        <Edit2 size={11} /> Ubah
+                        <Edit2 size={11} /> Edit
                       </button>
                     </div>
                   </div>
@@ -827,17 +855,17 @@ function AccountOnboardingContent() {
                   </div>
                   <div className="assistant-bubble">
                     <p>
-                      Dicatat! Sekarang mengenai orang terdekatmu. <strong>Siapa saja yang ikut dilindungi dalam tanggunganmu?</strong>
+                      Noted! Next, let&apos;s look at your household. <strong>Who should be included in your protection circle?</strong>
                     </p>
                     <p>
-                      Kamu bisa memilih lebih dari satu jika ada pasangan, anak, atau orang tua yang tinggal bersamamu.
+                      You can select multiple options if your spouse, children, or parents live with you.
                     </p>
                   </div>
                 </div>
 
                 {activeStep === 3 && (
                   <div className="chat-interactive-box">
-                    <div className="interactive-title">Pilih Anggota Keluarga yang Dilindungi:</div>
+                    <div className="interactive-title">Select Household Dependents:</div>
                     <div className="chat-options-grid">
                       {DEPENDENT_OPTIONS.map((dep) => {
                         const isSelected = (profile.dependents || []).includes(dep.id);
@@ -862,7 +890,7 @@ function AccountOnboardingContent() {
 
                     <div style={{ marginTop: "16px" }}>
                       <button type="button" className="chat-submit-btn" onClick={handleSubmitStep3}>
-                        Konfirmasi Tanggungan <ArrowRight size={15} />
+                        Confirm Dependents <ArrowRight size={15} />
                       </button>
                     </div>
                   </div>
@@ -876,11 +904,11 @@ function AccountOnboardingContent() {
                 <div className="user-message-row">
                   <div className="user-bubble">
                     <span>
-                      👨‍👩‍👧 {(profile.dependents || []).map((d) => (d === "None" ? "Hanya saya sendiri" : d === "Spouse" ? "Pasangan" : d === "Children" ? "Anak" : "Orang tua")).join(", ")}
+                      👨‍👩‍👧 {(profile.dependents || []).map((d) => (d === "None" ? "Just Myself" : d === "Spouse" ? "Spouse" : d === "Children" ? "Children" : "Parents")).join(", ")}
                     </span>
                     <div className="user-bubble-actions">
                       <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(3)}>
-                        <Edit2 size={11} /> Ubah
+                        <Edit2 size={11} /> Edit
                       </button>
                     </div>
                   </div>
@@ -897,17 +925,17 @@ function AccountOnboardingContent() {
                   </div>
                   <div className="assistant-bubble">
                     <p>
-                      Sip! Berikutnya, <strong>asuransi apa saja yang sudah kamu miliki saat ini?</strong>
+                      Great! Next, <strong>what insurance policies do you currently hold?</strong>
                     </p>
                     <p>
-                      Pilih semua yang sedang aktif. Bila kamu belum yakin nomor atau jenis polisnya, pilih <em>Belum Yakin</em> dan Insurra akan membantumu memeriksa berkas nanti.
+                      Select all that are currently active. If you are unsure of your policy details or numbers, choose <em>Not Sure / Needs Verification</em> and Insurra will help inspect your files later.
                     </p>
                   </div>
                 </div>
 
                 {activeStep === 4 && (
                   <div className="chat-interactive-box">
-                    <div className="interactive-title">Pilih Asuransi yang Sudah Ada:</div>
+                    <div className="interactive-title">Select Current Insurance Coverage:</div>
                     <div className="chat-options-grid">
                       {(isAU ? COVERAGE_OPTIONS_AU : COVERAGE_OPTIONS_ID).map((cov) => {
                         const isSelected = (profile.owned_coverage || []).includes(cov.id);
@@ -932,7 +960,7 @@ function AccountOnboardingContent() {
 
                     <div style={{ marginTop: "16px" }}>
                       <button type="button" className="chat-submit-btn" onClick={handleSubmitStep4}>
-                        Simpan Asuransi & Lanjut <ArrowRight size={15} />
+                        Save Coverage &amp; Continue <ArrowRight size={15} />
                       </button>
                     </div>
                   </div>
@@ -950,7 +978,7 @@ function AccountOnboardingContent() {
                     </span>
                     <div className="user-bubble-actions">
                       <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(4)}>
-                        <Edit2 size={11} /> Ubah
+                        <Edit2 size={11} /> Edit
                       </button>
                     </div>
                   </div>
@@ -967,15 +995,15 @@ function AccountOnboardingContent() {
                   </div>
                   <div className="assistant-bubble">
                     <p>
-                      Hampir selesai! <strong>Apa prioritas utama kamu saat membutuhkan proteksi kesehatan?</strong>
+                      Almost done! <strong>What are your top health protection priorities?</strong>
                     </p>
-                    <p>Pilih hingga 2 hal yang paling krusial untukmu:</p>
+                    <p>Select up to 2 areas that matter most to you:</p>
                   </div>
                 </div>
 
                 {activeStep === 5 && (
                   <div className="chat-interactive-box">
-                    <div className="interactive-title">Pilih Hingga 2 Prioritas:</div>
+                    <div className="interactive-title">Select Up to 2 Priorities:</div>
                     <div className="chat-options-grid">
                       {PRIORITY_OPTIONS.map((prio) => {
                         const isSelected = (profile.priorities || []).includes(prio.id);
@@ -1000,7 +1028,7 @@ function AccountOnboardingContent() {
 
                     <div style={{ marginTop: "16px" }}>
                       <button type="button" className="chat-submit-btn" onClick={handleSubmitStep5}>
-                        Lanjut ke Anggaran <ArrowRight size={15} />
+                        Continue to Budget <ArrowRight size={15} />
                       </button>
                     </div>
                   </div>
@@ -1018,7 +1046,7 @@ function AccountOnboardingContent() {
                     </span>
                     <div className="user-bubble-actions">
                       <button type="button" className="btn-edit-answer" onClick={() => jumpToStep(5)}>
-                        <Edit2 size={11} /> Ubah
+                        <Edit2 size={11} /> Edit
                       </button>
                     </div>
                   </div>
@@ -1035,14 +1063,14 @@ function AccountOnboardingContent() {
                   </div>
                   <div className="assistant-bubble">
                     <p>
-                      Pertanyaan terakhir! <strong>Berapa perkiraan anggaran bulanan tambahan yang ingin kamu alokasikan</strong> untuk menutup celah perlindungan kesehatan?
+                      Last question! <strong>What estimated monthly budget would you consider</strong> to close your health protection gaps?
                     </p>
                   </div>
                 </div>
 
                 {activeStep === 6 && (
                   <div className="chat-interactive-box">
-                    <div className="interactive-title">Pilih Kisaran Anggaran Bulanan:</div>
+                    <div className="interactive-title">Select Monthly Budget Range:</div>
                     <div className="chat-options-grid">
                       {(isAU ? BUDGET_OPTIONS_AU : BUDGET_OPTIONS_ID).map((b) => {
                         const isSelected = profile.budget_range === b.label;
@@ -1069,9 +1097,9 @@ function AccountOnboardingContent() {
                       <button
                         type="button"
                         className="chat-submit-btn"
-                        onClick={() => void handleSelectBudget(profile.budget_range || (isAU ? "$50 - $150 / month" : "Rp 250.000 - Rp 750.000 / month"))}
+                        onClick={() => void handleSelectBudget(profile.budget_range || (isAU ? "$50 - $150 / month" : "Rp 250,000 - Rp 750,000 / month"))}
                       >
-                        Selesaikan Pemetaan & Rekomendasi <Sparkles size={15} />
+                        Complete Profile &amp; View Suggestions <Sparkles size={15} />
                       </button>
                     </div>
                   </div>
@@ -1115,10 +1143,10 @@ function AccountOnboardingContent() {
                   </div>
                   <div className="assistant-bubble" style={{ background: "#ffffff", border: "1.5px solid #a4ddce" }}>
                     <p>
-                      🎉 <strong>Profil Perlindunganmu Berhasil Dipetakan!</strong>
+                      🎉 <strong>Your Protection Profile is Ready!</strong>
                     </p>
                     <p>
-                      Semua data telah tersimpan aman di database. Berdasarkan status domisili di <strong>{profile.city}, {isAU ? "Australia" : "Indonesia"}</strong>, berikut adalah berkas dokumen yang disarankan untuk diunggah agar Insurra bisa menganalisis isi polis, limit, dan masa tunggu secara otomatis:
+                      All information has been saved securely to your workspace. Based on your residence in <strong>{profile.city}, {isAU ? "Australia" : "Indonesia"}</strong>, here are the recommended documents to upload so Insurra can extract policy limits, waiting periods, and benefit clauses:
                     </p>
 
                     {/* Suggested Docs List inside Chat Bubble */}
@@ -1137,7 +1165,7 @@ function AccountOnboardingContent() {
                             className="chat-submit-btn"
                             style={{ padding: "8px 14px", fontSize: "12px", whiteSpace: "nowrap" }}
                           >
-                            Unggah <ArrowRight size={13} />
+                            Upload <ArrowRight size={13} />
                           </Link>
                         </div>
                       ))}
@@ -1146,13 +1174,13 @@ function AccountOnboardingContent() {
                     {/* Action buttons */}
                     <div className="chat-completion-actions">
                       <Link href="/dashboard" className="chat-submit-btn">
-                        Lanjut ke Dashboard <ArrowRight size={15} />
+                        Continue to Dashboard <ArrowRight size={15} />
                       </Link>
                       <Link href="/documents" className="onboarding-exit-btn">
-                        Buka Ruang Dokumen (/documents)
+                        Open Documents Space (/documents)
                       </Link>
                       <button type="button" className="onboarding-exit-btn" onClick={() => jumpToStep(1)}>
-                        Ulangi Pertanyaan
+                        Retake Questions
                       </button>
                     </div>
                   </div>
@@ -1171,18 +1199,18 @@ function AccountOnboardingContent() {
               </div>
               <div className="live-user-text">
                 <h3>{userName}</h3>
-                <p>{account?.email || "Akun Terverifikasi"}</p>
+                <p>{account?.email || "Verified Account"}</p>
               </div>
             </div>
             <span className={`badge ${isCompleted ? "success" : "neutral"}`}>
-              {isCompleted ? "Lengkap" : "Draft"}
+              {isCompleted ? "Complete" : "Draft"}
             </span>
           </div>
 
           {/* Completion Progress Gauge */}
           <div className="live-completion-meter">
             <div className="meter-header">
-              <span>Kelengkapan Konteks</span>
+              <span>Context Completeness</span>
               <strong>{isCompleted ? "100%" : `${completionPct}%`}</strong>
             </div>
             <div className="meter-bar-track">
@@ -1194,16 +1222,16 @@ function AccountOnboardingContent() {
           <div className="live-facts-list">
             <div className="live-fact-item">
               <span className="live-fact-label">
-                <Globe2 size={15} /> Wilayah Domisili
+                <Globe2 size={15} /> Residence Area
               </span>
               <span className="live-fact-val">
-                {profile.residence_context === "ABROAD" ? "Luar Negeri (AU)" : "Domestik (ID)"}
+                {profile.residence_context === "ABROAD" ? "Living Abroad (AU)" : "Domestic (ID)"}
               </span>
             </div>
 
             <div className="live-fact-item">
               <span className="live-fact-label">
-                <MapPin size={15} /> Kota & Negara
+                <MapPin size={15} /> City &amp; Country
               </span>
               <span className="live-fact-val">
                 {profile.city || "-"}{isAU ? " 🇦🇺" : " 🇮🇩"}
@@ -1212,7 +1240,7 @@ function AccountOnboardingContent() {
 
             <div className="live-fact-item">
               <span className="live-fact-label">
-                <Briefcase size={15} /> Status / Profesi
+                <Briefcase size={15} /> Status / Occupation
               </span>
               <span className="live-fact-val">
                 {profile.occupation || "-"}
@@ -1221,7 +1249,7 @@ function AccountOnboardingContent() {
 
             <div className="live-fact-item">
               <span className="live-fact-label">
-                <Users size={15} /> Tanggungan
+                <Users size={15} /> Dependents
               </span>
               <span className="live-fact-val">
                 {(profile.dependents || []).length ? (profile.dependents || []).join(", ") : "-"}
@@ -1230,7 +1258,7 @@ function AccountOnboardingContent() {
 
             <div className="live-fact-item">
               <span className="live-fact-label">
-                <ShieldCheck size={15} /> Asuransi Dimiliki
+                <ShieldCheck size={15} /> Current Insurance
               </span>
               <span className="live-fact-val">
                 {(profile.owned_coverage || []).length ? (profile.owned_coverage || []).join(", ") : "-"}
@@ -1239,7 +1267,7 @@ function AccountOnboardingContent() {
 
             <div className="live-fact-item">
               <span className="live-fact-label">
-                <Heart size={15} /> Prioritas
+                <Heart size={15} /> Top Priorities
               </span>
               <span className="live-fact-val">
                 {(profile.priorities || []).length ? (profile.priorities || []).join(", ") : "-"}
@@ -1248,7 +1276,7 @@ function AccountOnboardingContent() {
 
             <div className="live-fact-item">
               <span className="live-fact-label">
-                <Wallet size={15} /> Anggaran
+                <Wallet size={15} /> Monthly Budget
               </span>
               <span className="live-fact-val">
                 {profile.budget_range || "-"}
@@ -1258,7 +1286,7 @@ function AccountOnboardingContent() {
 
           {/* Footer note */}
           <div className="live-card-footer">
-            <span>Privasi aman & data terenkripsi</span>
+            <span>Encrypted &amp; private data</span>
             <span className="autosave-pill">
               <Check size={12} /> Real-time
             </span>
@@ -1271,7 +1299,7 @@ function AccountOnboardingContent() {
 
 export default function AccountOnboarding() {
   return (
-    <Suspense fallback={<div className="narrow-page"><p>Memuat pendamping onboarding…</p></div>}>
+    <Suspense fallback={<div className="narrow-page"><p>Loading onboarding companion...</p></div>}>
       <AccountOnboardingContent />
     </Suspense>
   );
