@@ -5,31 +5,31 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
-  ArrowLeftRight,
-  ArrowUpRight,
+  Bell,
+  ChevronDown,
   ClipboardCheck,
   FileText,
   HeartPulse,
-  LayoutDashboard,
+  Home,
   LogOut,
-  MessageSquareText,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
-  LockKeyhole,
+  Settings,
+  User,
 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Home", icon: Home },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
   { href: "/documents", label: "Documents", icon: FileText },
   {
     href: "/ask-policy",
     label: "Ask INSURRA",
-    icon: MessageSquareText,
+    icon: Sparkles,
     soon: true,
   },
   { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
@@ -44,17 +44,17 @@ const navigation = [
     label: "Activity & Audit",
     icon: Activity,
   },
-  { href: "/settings/privacy", label: "Settings & Privacy", icon: LockKeyhole },
+  { href: "/settings/privacy", label: "Settings & Privacy", icon: Settings },
 ];
 
 const accountNavigation = [
-  { href: "/account", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/account", label: "Home", icon: Home },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
   { href: "/documents", label: "Documents", icon: FileText },
   {
     href: "/ask-policy",
     label: "Ask INSURRA",
-    icon: MessageSquareText,
+    icon: Sparkles,
     soon: true,
   },
   { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
@@ -69,7 +69,7 @@ const accountNavigation = [
     label: "Activity & Audit",
     icon: Activity,
   },
-  { href: "/settings/privacy", label: "Settings & Privacy", icon: LockKeyhole },
+  { href: "/settings/privacy", label: "Settings & Privacy", icon: Settings },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -208,32 +208,25 @@ function PrivateShell({
           )}
         </nav>
         <div className="sidebar-bottom">
-          <div className="help-card">
-            <Sparkles size={21} />
-            <strong>Understand your coverage.</strong>
-            <p>One place for insurance clarity, backed by document evidence.</p>
-            <Link href={accountMode ? "/settings/privacy" : "/onboarding"}>
-              Manage Consent <ArrowUpRight size={15} />
+          <div className="sidebar-bottom-nav" style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+            <Link
+              href="/dashboard"
+              className={cn("nav-item", pathname === "/notifications" && "active")}
+              style={{ display: "flex", alignItems: "center", gap: 10 }}
+            >
+              <Bell size={19} />
+              <span>Notifications</span>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", marginLeft: "auto" }} />
+            </Link>
+            <Link
+              href="/onboarding?mode=edit"
+              className={cn("nav-item", pathname.startsWith("/onboarding") && "active")}
+              style={{ display: "flex", alignItems: "center", gap: 10 }}
+            >
+              <User size={19} />
+              <span>Profile</span>
             </Link>
           </div>
-          {!accountMode && (
-            <Link
-              className={cn("nav-item", pathname === "/audit" && "active")}
-              href="/audit"
-            >
-              <Activity size={18} />
-              Audit History
-            </Link>
-          )}
-          {!accountMode && (
-            <Link
-              className={cn("nav-item", pathname === "/onboarding" && "active")}
-              href="/onboarding"
-            >
-              <SlidersHorizontal size={18} />
-              Privacy & Consent
-            </Link>
-          )}
           <div className="sidebar-foot">
             <span className="status-dot" />{" "}
             {accountMode ? "AUTHENTICATED ACCOUNT" : "SYNTHETIC DEMO"}{" "}
@@ -246,48 +239,40 @@ function PrivateShell({
           <div className="breadcrumb">
             Workspace <span>/</span> <strong>{pageTitle}</strong>
           </div>
-          <div className="topbar-right">
-            <span className="demo-badge">
-              {accountMode ? "AUTHENTICATED" : "DEMO SESSION"}
-            </span>
+          <div className="topbar-right" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {/* Country Selector as in design */}
+            <div className="figma-topbar-country" title="Active Country Region">
+              <span style={{ fontSize: 15 }}>🇸🇬</span>
+              <span>Singapore</span>
+              <ChevronDown size={14} color="#64748b" />
+            </div>
 
-            {accountMode ? (
-              <Link
-                href="/onboarding?mode=edit"
-                className="topbar-profile-btn"
-                title="My Profile"
+            {/* Notification Bell */}
+            <div className="figma-topbar-bell" title="Notifications">
+              <Bell size={17} />
+              <span className="dot" />
+            </div>
+
+            {/* User Profile Avatar */}
+            <Link href="/onboarding?mode=edit" title="User Profile">
+              <div
                 style={{
-                  display: "inline-flex",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  border: "1.5px solid #0ea58a",
+                  background: "#eaf8f4",
+                  color: "#08876f",
+                  display: "flex",
                   alignItems: "center",
-                  gap: 8,
-                  textDecoration: "none",
-                  padding: "4px 10px 4px 4px",
-                  borderRadius: 999,
-                  background: "#f0f6f8",
-                  border: "1px solid #dce7eb",
-                  transition: "all 0.15s ease",
+                  justifyContent: "center",
+                  fontWeight: 800,
+                  fontSize: 14,
                 }}
               >
-                <div
-                  className="avatar small"
-                  style={{ margin: 0 }}
-                  aria-label={account?.display_name ?? "User"}
-                >
-                  {(account?.display_name ?? "U").slice(0, 1)}
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 750, color: "#19354b" }}>
-                  My Profile
-                </span>
-              </Link>
-            ) : (
-              <div
-                className="avatar small"
-                title={data?.profile.display_name ?? "User"}
-                aria-label={data?.profile.display_name ?? "User"}
-              >
-                {(data?.profile.display_name ?? "U").slice(0, 1)}
+                {(account?.display_name ?? data?.profile.display_name ?? "U").slice(0, 1).toUpperCase()}
               </div>
-            )}
+            </Link>
 
             {accountMode ? (
               <button
@@ -303,24 +288,18 @@ function PrivateShell({
                 <span>Log out</span>
               </button>
             ) : (
-              <div className="demo-topbar-actions">
-                <Link href="/" className="persona-switch">
-                  <ArrowLeftRight size={14} />
-                  <span>Switch Persona</span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    clearSession();
-                    router.push("/");
-                  }}
-                  className="topbar-logout-btn"
-                  title="Exit demo session"
-                >
-                  <LogOut size={14} />
-                  <span>Exit Demo</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  clearSession();
+                  router.push("/");
+                }}
+                className="topbar-logout-btn"
+                title="Exit demo session"
+              >
+                <LogOut size={14} />
+                <span>Exit Demo</span>
+              </button>
             )}
           </div>
         </header>
