@@ -521,46 +521,32 @@ function AccountOnboardingContent() {
     <div className="chat-onboarding-shell">
       {/* ---------------- Topbar ---------------- */}
       <header className="chat-topbar">
-        <Link href="/" className="onboarding-brand">
-          <Image
-            src="/Inssura Kangaroo Shield Logo.png"
-            alt="Insurra"
-            width={120}
-            height={36}
-            className="onboarding-brand-logo"
-            priority
-          />
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+            <path d="M5 7C7 16 12 23 16 26C15 19 13 12 7 7H5Z" fill="#00b074" />
+            <path d="M27 7C25 16 20 23 16 26C17 19 19 12 25 7H27Z" fill="#00b074" />
+          </svg>
+          <span style={{ fontSize: "20px", fontWeight: 800, color: "#0f1d38", letterSpacing: "-0.01em" }}>
+            INSURRA
+          </span>
         </Link>
 
-        {/* Companion Online Badge */}
-        <div className="chat-companion-badge">
-          <Image
-            src="/protection-mascot.png"
-            alt="Insurra AI"
-            width={32}
-            height={32}
-            className="chat-companion-avatar"
-          />
-          <div className="chat-companion-info">
-            <span className="chat-companion-name">Insurra AI Guide</span>
-            <span className="chat-companion-status">
-              <span className="status-dot-pulse" /> Active Companion
-            </span>
-          </div>
-        </div>
-
-        {/* Progress Tracker */}
+        {/* Stepper Progress Tracker */}
         <div className="chat-progress-wrap">
-          <div className="chat-progress-track" title={`${completionPct}% Completed`}>
-            <div className="chat-progress-fill" style={{ width: `${isCompleted ? 100 : Math.max(16, completionPct)}%` }} />
-          </div>
           <span className="chat-step-label">
             {isCompleted ? "Complete" : `Step ${Math.min(activeStep, 6)} of 6`}
           </span>
-          <Link href="/dashboard" className="onboarding-exit-btn">
-            Skip to Dashboard
-          </Link>
+          <div className="chat-progress-track" title={`${completionPct}% Completed`}>
+            <div className="chat-progress-fill" style={{ width: `${isCompleted ? 100 : Math.max(16, completionPct)}%` }} />
+          </div>
+          <span style={{ fontSize: "12px", fontWeight: 700, color: "#00875a" }}>
+            {completionPct}%
+          </span>
         </div>
+
+        <Link href="/dashboard" className="onboarding-exit-btn">
+          Skip to Dashboard
+        </Link>
       </header>
 
       {/* ---------------- Main Content Grid ---------------- */}
@@ -581,9 +567,9 @@ function AccountOnboardingContent() {
             <div className="chat-turn assistant-turn">
               <div className="assistant-message-row">
                 <div className="assistant-avatar-wrap">
-                  <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                  <Image src="/protection-hero-person.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
                 </div>
-                <div className="assistant-bubble">
+                <div className="chat-assistant-bubble">
                   <p>
                     Hello <strong>{userName}</strong>! 👋 Great to meet you.
                   </p>
@@ -651,9 +637,9 @@ function AccountOnboardingContent() {
               <div className="chat-turn assistant-turn">
                 <div className="assistant-message-row">
                   <div className="assistant-avatar-wrap">
-                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                    <Image src="/protection-hero-person.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
                   </div>
-                  <div className="assistant-bubble">
+                  <div className="chat-assistant-bubble">
                     <p>
                       {profile.residence_context === "ABROAD" ? (
                         <>Excellent! Living abroad in Australia requires close attention to visa conditions and health coverage (Condition 8501). Which city in Australia are you based in?</>
@@ -851,9 +837,9 @@ function AccountOnboardingContent() {
               <div className="chat-turn assistant-turn">
                 <div className="assistant-message-row">
                   <div className="assistant-avatar-wrap">
-                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                    <Image src="/protection-hero-person.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
                   </div>
-                  <div className="assistant-bubble">
+                  <div className="chat-assistant-bubble">
                     <p>
                       Noted! Next, let&apos;s look at your household. <strong>Who should be included in your protection circle?</strong>
                     </p>
@@ -921,9 +907,9 @@ function AccountOnboardingContent() {
               <div className="chat-turn assistant-turn">
                 <div className="assistant-message-row">
                   <div className="assistant-avatar-wrap">
-                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                    <Image src="/protection-hero-person.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
                   </div>
-                  <div className="assistant-bubble">
+                  <div className="chat-assistant-bubble">
                     <p>
                       Great! Next, <strong>what insurance policies do you currently hold?</strong>
                     </p>
@@ -991,9 +977,9 @@ function AccountOnboardingContent() {
               <div className="chat-turn assistant-turn">
                 <div className="assistant-message-row">
                   <div className="assistant-avatar-wrap">
-                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                    <Image src="/protection-hero-person.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
                   </div>
-                  <div className="assistant-bubble">
+                  <div className="chat-assistant-bubble">
                     <p>
                       Almost done! <strong>What are your top health protection priorities?</strong>
                     </p>
@@ -1059,9 +1045,9 @@ function AccountOnboardingContent() {
               <div className="chat-turn assistant-turn">
                 <div className="assistant-message-row">
                   <div className="assistant-avatar-wrap">
-                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                    <Image src="/protection-hero-person.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
                   </div>
-                  <div className="assistant-bubble">
+                  <div className="chat-assistant-bubble">
                     <p>
                       Last question! <strong>What estimated monthly budget would you consider</strong> to close your health protection gaps?
                     </p>
@@ -1123,7 +1109,7 @@ function AccountOnboardingContent() {
               <div className="chat-turn assistant-turn">
                 <div className="assistant-message-row">
                   <div className="assistant-avatar-wrap">
-                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                    <Image src="/protection-hero-person.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
                   </div>
                   <div className="typing-bubble">
                     <div className="typing-dot" />
@@ -1139,9 +1125,9 @@ function AccountOnboardingContent() {
               <div className="chat-turn assistant-turn">
                 <div className="assistant-message-row">
                   <div className="assistant-avatar-wrap">
-                    <Image src="/protection-mascot.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
+                    <Image src="/protection-hero-person.png" alt="Insurra AI" width={40} height={40} className="assistant-avatar-img" />
                   </div>
-                  <div className="assistant-bubble" style={{ background: "#ffffff", border: "1.5px solid #a4ddce" }}>
+                  <div className="chat-assistant-bubble" style={{ background: "#ffffff", border: "1.5px solid #a4ddce" }}>
                     <p>
                       🎉 <strong>Your Protection Profile is Ready!</strong>
                     </p>

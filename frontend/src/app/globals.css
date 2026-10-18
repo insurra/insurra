@@ -1723,7 +1723,7 @@ html {
   color: var(--brand-navy);
   font-size: 16px;
 }
-.assistant-bubble {
+.hero-visual .assistant-bubble {
   position: absolute;
   right: -3px;
   bottom: 58px;
@@ -1739,7 +1739,7 @@ html {
   font-size: 11px;
   font-weight: 650;
 }
-.assistant-bubble svg {
+.hero-visual .assistant-bubble svg {
   width: 16px;
 }
 .cover-values {
@@ -1948,7 +1948,7 @@ html {
   .hero-visual {
     min-height: 400px;
   }
-  .assistant-bubble {
+  .hero-visual .assistant-bubble {
     right: 8%;
   }
   .cover-values {
@@ -2002,7 +2002,7 @@ html {
   .protection-card {
     padding: 24px;
   }
-  .assistant-bubble {
+  .hero-visual .assistant-bubble {
     right: 0;
     bottom: 28px;
   }
