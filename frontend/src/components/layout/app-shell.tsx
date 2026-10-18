@@ -200,13 +200,43 @@ function PrivateShell({
               {accountMode ? "AUTHENTICATED" : "DEMO SESSION"}
             </span>
 
-            <div
-              className="avatar small"
-              title={account?.display_name ?? data?.profile.display_name ?? "User"}
-              aria-label={account?.display_name ?? data?.profile.display_name ?? "User"}
-            >
-              {(account?.display_name ?? data?.profile.display_name ?? "U").slice(0, 1)}
-            </div>
+            {accountMode ? (
+              <Link
+                href="/onboarding?mode=edit"
+                className="topbar-profile-btn"
+                title="My Profile"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  textDecoration: "none",
+                  padding: "4px 10px 4px 4px",
+                  borderRadius: 999,
+                  background: "#f0f6f8",
+                  border: "1px solid #dce7eb",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <div
+                  className="avatar small"
+                  style={{ margin: 0 }}
+                  aria-label={account?.display_name ?? "User"}
+                >
+                  {(account?.display_name ?? "U").slice(0, 1)}
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 750, color: "#19354b" }}>
+                  My Profile
+                </span>
+              </Link>
+            ) : (
+              <div
+                className="avatar small"
+                title={data?.profile.display_name ?? "User"}
+                aria-label={data?.profile.display_name ?? "User"}
+              >
+                {(data?.profile.display_name ?? "U").slice(0, 1)}
+              </div>
+            )}
 
             {accountMode ? (
               <button

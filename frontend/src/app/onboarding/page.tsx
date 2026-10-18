@@ -22,12 +22,12 @@ export default function OnboardingPage() {
   const [checked, setChecked] = useState(false);
   const router = useRouter();
 
-  // If authenticated account session, show full 6-step context wizard
-  if (token && account) {
+  // If authenticated account session or guest preview, show full 6-step context wizard
+  if ((token && account) || (!data && !loading)) {
     return <AccountOnboarding />;
   }
 
-  // Fallback for demo session persona
+  // Fallback for demo session persona (preserves existing demo consent behavior)
   if (!data) return loading ? null : <SessionRequired />;
 
   async function grant() {
