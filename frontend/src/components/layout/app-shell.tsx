@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -37,6 +39,11 @@ const navigation = [
     label: "Claims Center",
     icon: ClipboardCheck,
     soon: true,
+  },
+  {
+    href: "/actions",
+    label: "Persetujuan Tindakan",
+    icon: ShieldCheck,
   },
   {
     href: "/audit",
@@ -61,6 +68,11 @@ const accountNavigation = [
     label: "Claims Center",
     icon: ClipboardCheck,
     soon: true,
+  },
+  {
+    href: "/actions",
+    label: "Persetujuan Tindakan",
+    icon: ShieldCheck,
   },
   {
     href: "/audit",
@@ -93,6 +105,50 @@ function PrivateShell({
   const router = useRouter();
   const { data, loading, error, clearSession } = useSession();
   const { account, token, logout } = useAuth();
+  const [pendingActionsCount, setPendingActionsCount] = useState<number>(0);
+
+  useEffect(() => {
+    const handleActionsUpdated = (e: Event) => {
+      const custom = e as CustomEvent<{ pendingCount?: number }>;
+      if (typeof custom.detail?.pendingCount === "number") {
+        setPendingActionsCount(custom.detail.pendingCount);
+      }
+    };
+    window.addEventListener("insurra:actions-updated", handleActionsUpdated);
+    return () => {
+      window.removeEventListener("insurra:actions-updated", handleActionsUpdated);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    async function syncPendingBadge() {
+      if (!data?.session.id || !data?.consent.processing_consent) {
+        if (active) setPendingActionsCount(0);
+        return;
+      }
+      const storedToken =
+        typeof window !== "undefined"
+          ? window.sessionStorage.getItem("insurra.demo-session")
+          : null;
+      if (!storedToken) return;
+      try {
+        const list = await api.request("get", "/api/v1/actions", {
+          headers: { "X-Demo-Session": storedToken },
+        });
+        if (active) {
+          setPendingActionsCount(list.filter((item) => item.status === "PENDING").length);
+        }
+      } catch {
+        // Ignore 501 when no actions exist yet in this session
+      }
+    }
+    void syncPendingBadge();
+    return () => {
+      active = false;
+    };
+  }, [data?.session.id, data?.consent.processing_consent, pathname]);
+
   const accountMode =
     Boolean(token && account) ||
     pathname.startsWith("/account") ||
@@ -139,6 +195,8 @@ function PrivateShell({
       ? "Coverage Needs"
       : pathname === "/employer-benefits"
       ? "Employer Benefits"
+      : pathname === "/actions"
+      ? "Persetujuan Tindakan"
       : pathname === "/audit"
       ? "Activity & Audit"
       : pathname === "/settings/privacy"
@@ -173,6 +231,15 @@ function PrivateShell({
             >
               <Icon size={19} />
               <span>{label}</span>
+              {href === "/actions" && pendingActionsCount > 0 && (
+                <span
+                  data-testid="nav-pending-actions-badge"
+                  aria-label={`${pendingActionsCount} tindakan menunggu`}
+                  className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-extrabold"
+                >
+                  {pendingActionsCount}
+                </span>
+              )}
               {"soon" in rest && Boolean(rest.soon) && (
                 <span className="nav-dot" aria-label="Upcoming phase" />
               )}

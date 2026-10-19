@@ -38,3 +38,15 @@ class ProposedAction(Contract):
     permission_level: ActionPermissionLevel | None = None
     source_screen: str | None = None
     approved_payload_sha256: str | None = None
+    title: str | None = None
+    is_stale: bool = False
+    stale_label: str | None = None
+
+
+class ActionProposeRequest(Contract):
+    action_type: str
+    title: str | None = None
+    reason: str | None = None
+    source_screen: str | None = None
+    permission_level: str | None = None
+    payload: dict[str, JsonValue] | None = None

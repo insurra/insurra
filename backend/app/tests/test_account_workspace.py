@@ -470,3 +470,82 @@ def test_action_approve_edit_reject_l2_and_unapproved_guardrail(client, demo):
     assert any(
         e["event_type"] == "ACTION_REJECTED" and e["reason"] == "Isi salah" for e in action_audits
     )
+
+
+def test_actions_queue_pending_cards_stale_masking_and_forbidden_tool_guardrail(client, demo):
+    _, headers = demo("raka")
+    assert (
+        client.put(
+            "/api/v1/consent", headers=headers, json={"processing_consent": True}
+        ).status_code
+        == 200
+    )
+
+    # 1. Empty queue when include_empty=true and no drafts exist yet
+    empty_res = client.get("/api/v1/actions?include_empty=true", headers=headers)
+    assert empty_res.status_code == 200
+    assert empty_res.json() == []
+
+    # 2. Seed 3 pending drafts -> all 3 have reason, source_screen, permission_level, masked policy number
+    seeded_res = client.get("/api/v1/actions?seed_demo=true", headers=headers)
+    assert seeded_res.status_code == 200
+    seeded = seeded_res.json()
+    assert len(seeded) == 3
+    assert all(item["status"] == "PENDING" for item in seeded)
+    for item in seeded:
+        assert item["reason"]
+        assert item["source_screen"]
+        assert item["permission_level"] in {"L1", "L2"}
+        assert "****1234" in str(item["payload"])
+
+    # Reminder created >14 days ago is marked stale with "Mungkin sudah tidak relevan"
+    reminder_card = next(item for item in seeded if item["action_type"] == "create_reminder")
+    assert reminder_card["reason"] == "Dibuat karena ada jeda 76 hari antara asuransi dan visa"
+    assert reminder_card["is_stale"] is True
+    assert reminder_card["stale_label"] == "Mungkin sudah tidak relevan"
+
+    # 3. Attempt to create an action with a forbidden tool type / L3 -> 403 + guardrail audit entry
+    forbidden_res = client.post(
+        "/api/v1/actions",
+        headers=headers,
+        json={
+            "action_type": "auto_pay_provider",
+            "permission_level": "L3",
+            "reason": "Otomatis bayar tagihan RS",
+            "source_screen": "SC-09 · Kesiapan Klaim",
+        },
+    )
+    assert forbidden_res.status_code == 403
+    assert forbidden_res.json()["code"] == "ACTION_TYPE_FORBIDDEN"
+
+    guardrail_audits = client.get("/api/v1/audit", headers=headers).json()
+    assert any(
+        e["event_type"] == "GUARDRAIL_UNAPPROVED_ACTION"
+        and e["subtype"] == "Tindakan tanpa persetujuan diblokir"
+        and "auto_pay_provider" in (e["input_summary"] or "")
+        for e in guardrail_audits
+    )
+
+    # 4. Propose a valid draft_claim_form with raw policy number -> server masks policy number to ****5678
+    propose_res = client.post(
+        "/api/v1/actions",
+        headers=headers,
+        json={
+            "action_type": "draft_claim_form",
+            "title": "Draf formulir klaim fisioterapi",
+            "reason": "Dibuat karena bukti fisioterapi telah diunggah di kesiapan klaim",
+            "source_screen": "SC-09 · Kesiapan Klaim",
+            "payload": {
+                "policy_number": "OSHC-9988775678",
+                "preview": "Draf formulir klaim untuk polis OSHC-9988775678",
+                "message": "Pengajuan klaim fisioterapi polis OSHC-9988775678.",
+            },
+        },
+    )
+    assert propose_res.status_code == 201
+    created = propose_res.json()
+    assert created["permission_level"] == "L1"
+    assert created["payload"]["policy_number"] == "****5678"
+    assert "****5678" in created["preview"]
+    assert "9988775678" not in created["preview"]
+    assert "9988775678" not in str(created["payload"])

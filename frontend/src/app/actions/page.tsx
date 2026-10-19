@@ -1,16 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   AlertTriangle,
+  Bell,
   CheckCircle2,
+  Clock,
   Edit3,
   ExternalLink,
   FileText,
+  Inbox,
   Lock,
+  Mail,
   Play,
   RefreshCw,
+  Send,
   Shield,
   ShieldAlert,
   ShieldCheck,
@@ -25,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { SessionRequired } from "@/components/session-required";
 
 type ProposedAction = components["schemas"]["ProposedAction"];
+type QueueTab = "PENDING" | "COMPLETED" | "REJECTED";
 
 const REJECT_REASONS = [
   "Tidak perlu",
@@ -34,14 +41,14 @@ const REJECT_REASONS = [
 ] as const;
 
 const FIELD_LABELS: Record<string, string> = {
-  message: "Isi Pesan",
+  message: "Isi Pesan / Email / Pengingat",
   reminder_date: "Tanggal Pengingat",
   bank_account_holder: "Nama Pemilik Rekening (Field Formulir Kosong)",
   additional_notes: "Catatan Tambahan Klaim (Field Formulir Kosong)",
   recipient_department: "Divisi Penerima (Field Formulir Kosong)",
   notification_channel: "Kanal Pengingat (Field Formulir Kosong)",
   provider: "Penyedia Asuransi",
-  policy_number: "Nomor Polis",
+  policy_number: "Nomor Polis (Tersamar)",
   diagnosis_code: "Kode Diagnosis",
   claim_amount: "Nominal Klaim",
   policy_end_date: "Tanggal Akhir Polis",
@@ -71,18 +78,85 @@ const STATUS_LABELS: Record<string, string> = {
   FAILED: "Gagal",
 };
 
-const ACTION_TYPE_LABELS: Record<string, string> = {
-  claim_submit: "Pengiriman Klaim ke Penyedia (Sandbox)",
-  draft_claim_form: "Penyusunan Formulir Klaim",
-  draft_message: "Draf Pesan ke Penyedia Asuransi",
-  create_reminder: "Pengingat Perpanjangan Perlindungan",
+const ACTION_TYPE_META: Record<
+  string,
+  {
+    categoryLabel: string;
+    title: string;
+    permissionBadge: string;
+    previewHeading: string;
+    icon: typeof FileText;
+  }
+> = {
+  create_reminder: {
+    categoryLabel: "Pengingat",
+    title: "Pengingat Perpanjangan Perlindungan",
+    permissionBadge: "L1 · Siapkan draf",
+    previewHeading: "Pratinjau Isi Pengingat Lengkap",
+    icon: Bell,
+  },
+  draft_message: {
+    categoryLabel: "Draf pesan",
+    title: "Draf Pesan ke Penyedia Asuransi",
+    permissionBadge: "L1 · Siapkan draf",
+    previewHeading: "Pratinjau Isi Email / Pesan Lengkap",
+    icon: Mail,
+  },
+  draft_claim_form: {
+    categoryLabel: "Formulir klaim",
+    title: "Penyusunan Formulir Klaim",
+    permissionBadge: "L1 · Siapkan draf",
+    previewHeading: "Pratinjau Isi Formulir Klaim Lengkap",
+    icon: FileText,
+  },
+  submit_claim_sandbox: {
+    categoryLabel: "Kirim klaim ke penyedia (sandbox)",
+    title: "Kirim Klaim ke Penyedia (Sandbox)",
+    permissionBadge: "L2 · Jalankan setelah persetujuan",
+    previewHeading: "Pratinjau Isi Formulir & Pengiriman Klaim (Sandbox)",
+    icon: Send,
+  },
+  claim_submit: {
+    categoryLabel: "Kirim klaim ke penyedia (sandbox)",
+    title: "Kirim Klaim ke Penyedia (Sandbox)",
+    permissionBadge: "L2 · Jalankan setelah persetujuan",
+    previewHeading: "Pratinjau Isi Formulir & Pengiriman Klaim (Sandbox)",
+    icon: Send,
+  },
 };
 
-export default function ActionsPage() {
+function formatRelativeDateId(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  const diffSec = Math.round((Date.now() - date.getTime()) / 1000);
+  if (diffSec < 60) return "Baru saja";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} menit lalu`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour} jam lalu`;
+  const diffDay = Math.floor(diffHour / 24);
+  return `${diffDay} hari lalu`;
+}
+
+function formatAbsoluteDateId(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+function ActionsPageContent() {
+  const searchParams = useSearchParams();
+  const forceEmpty = searchParams.get("empty") === "true";
+
   const { data: sessionData, loading: sessionLoading, setConsent } = useSession();
   const { account, token: authToken, loading: authLoading } = useAuth();
 
   const [actionsList, setActionsList] = useState<ProposedAction[]>([]);
+  const [activeTab, setActiveTab] = useState<QueueTab>("PENDING");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
@@ -126,12 +200,26 @@ export default function ActionsPage() {
             ? window.sessionStorage.getItem("insurra.demo-session")
             : null;
         if (storedToken) {
-          const items = await api.request("get", "/api/v1/actions", {
-            headers: { "X-Demo-Session": storedToken },
-            query: { seed_demo: true },
-          });
+          const items = forceEmpty
+            ? []
+            : await api.request("get", "/api/v1/actions", {
+                headers: { "X-Demo-Session": storedToken },
+                query: { seed_demo: true, include_empty: true },
+              });
           if (active) {
             setActionsList(items);
+            const pendingCount = items.filter((a) => a.status === "PENDING").length;
+            if (typeof window !== "undefined") {
+              window.sessionStorage.setItem(
+                "insurra.pending-actions-count",
+                String(pendingCount),
+              );
+              window.dispatchEvent(
+                new CustomEvent("insurra:actions-updated", {
+                  detail: { pendingCount },
+                }),
+              );
+            }
             setSelectedId((prev) =>
               prev && items.some((a) => a.id === prev) ? prev : (items[0]?.id ?? null),
             );
@@ -153,10 +241,26 @@ export default function ActionsPage() {
     return () => {
       active = false;
     };
-  }, [sessionId, hasDocumentConsent, isAccountMode, revision]);
+  }, [sessionId, hasDocumentConsent, isAccountMode, revision, forceEmpty]);
+
+  const pendingItems = actionsList.filter((item) => item.status === "PENDING");
+  const completedItems = actionsList.filter(
+    (item) => item.status === "APPROVED" || item.status === "COMPLETED",
+  );
+  const rejectedItems = actionsList.filter((item) => item.status === "REJECTED");
+
+  const filteredItems =
+    activeTab === "PENDING"
+      ? pendingItems
+      : activeTab === "COMPLETED"
+        ? completedItems
+        : rejectedItems;
 
   const selectedAction =
-    actionsList.find((item) => item.id === selectedId) ?? actionsList[0] ?? null;
+    filteredItems.find((item) => item.id === selectedId) ??
+    actionsList.find((item) => item.id === selectedId) ??
+    filteredItems[0] ??
+    null;
 
   const handleSelectAction = (action: ProposedAction) => {
     setSelectedId(action.id);
@@ -165,6 +269,22 @@ export default function ActionsPage() {
     setShowRejectModal(false);
     setFeedback(null);
     setDraftPayload({ ...(action.payload ?? {}) });
+  };
+
+  const handleTabChange = (tab: QueueTab) => {
+    setActiveTab(tab);
+    setIsEditing(false);
+    setL2Checked(false);
+    const listForTab =
+      tab === "PENDING"
+        ? pendingItems
+        : tab === "COMPLETED"
+          ? completedItems
+          : rejectedItems;
+    if (listForTab.length > 0 && !listForTab.some((i) => i.id === selectedId)) {
+      setSelectedId(listForTab[0].id);
+      setDraftPayload({ ...(listForTab[0].payload ?? {}) });
+    }
   };
 
   const handleStartEdit = () => {
@@ -324,6 +444,41 @@ export default function ActionsPage() {
     }
   };
 
+  const handleTestForbiddenActionType = async () => {
+    const storedToken =
+      typeof window !== "undefined"
+        ? window.sessionStorage.getItem("insurra.demo-session")
+        : null;
+    if (!storedToken) return;
+
+    setPending(true);
+    setError(null);
+    setFeedback(null);
+    try {
+      await api.request("post", "/api/v1/actions", {
+        headers: { "X-Demo-Session": storedToken },
+        body: {
+          action_type: "auto_pay_third_party",
+          permission_level: "L3",
+          reason: "Upaya otomatis membayar tagihan pihak ketiga tanpa izin",
+          source_screen: "SC-09 · Kesiapan Klaim",
+        },
+      });
+    } catch (err) {
+      if (err instanceof ApiClientError && err.status === 403) {
+        setFeedback({
+          type: "error",
+          message:
+            "Server menolak pembuatan tindakan di luar daftar yang diizinkan / tingkat L3 (403 ACTION_TYPE_FORBIDDEN). Peristiwa guardrail tercatat di Riwayat Audit (SC-11).",
+        });
+      } else {
+        setError(err instanceof Error ? err.message : "Gagal menguji guardrail tipe tindakan.");
+      }
+    } finally {
+      setPending(false);
+    }
+  };
+
   if (!sessionData && !isAccountMode) {
     if (sessionLoading || authLoading) return null;
     return <SessionRequired />;
@@ -331,20 +486,38 @@ export default function ActionsPage() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16">
-      {/* Header */}
+      {/* Header & Navigation Badge */}
       <div className="page-heading flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="eyebrow flex items-center gap-1.5 text-xs font-semibold tracking-wider text-emerald-700 uppercase">
-            <ShieldCheck size={14} /> Kendali Penuh di Tangan Pengguna (SC-10 · E8)
+          <div className="eyebrow flex items-center gap-2 text-xs font-semibold tracking-wider text-emerald-700 uppercase">
+            <ShieldCheck size={14} />
+            <span>Antrean Tindakan &amp; Persetujuan (SC-10 · E8)</span>
+            <span
+              data-testid="actions-nav-badge"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-950 border border-amber-300 text-[11px] font-extrabold"
+            >
+              Menunggu:{" "}
+              <strong data-testid="pending-actions-count">{pendingItems.length}</strong>
+            </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight mt-1">
-            Persetujuan Tindakan Agen
+            Antrean Tindakan Menunggu Persetujuan
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            Periksa, ubah isi draf, setujui dengan konfirmasi berlapis, atau tolak dengan alasan. Tidak ada tindakan yang dieksekusi tanpa persetujuan eksplisit di server.
+            Semua draf yang disiapkan agen (pengingat, draf pesan, formulir klaim, pengiriman klaim sandbox) berkumpul di satu tempat. Tidak ada tindakan yang dijalankan tanpa keputusan eksplisit Anda.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={pending}
+            onClick={() => void handleTestForbiddenActionType()}
+            className="text-xs border-amber-300 text-amber-950 hover:bg-amber-50 flex items-center gap-1.5"
+          >
+            <Shield size={13} />
+            Simulasi Tool Terlarang (L3)
+          </Button>
           <Link
             href="/audit"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50"
@@ -363,6 +536,26 @@ export default function ActionsPage() {
             <RefreshCw size={14} className={pending ? "animate-spin" : ""} />
             Muat Ulang
           </Button>
+        </div>
+      </div>
+
+      {/* Permission Levels Legend Banner (L0 - L3) */}
+      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+        <div className="p-2.5 rounded-lg bg-white border border-slate-200/80">
+          <span className="font-bold text-slate-700">L0 · Baca / Jelaskan:</span>{" "}
+          <span className="text-slate-600">Tanpa persetujuan, tidak masuk antrean.</span>
+        </div>
+        <div className="p-2.5 rounded-lg bg-white border border-blue-200">
+          <span className="font-bold text-blue-900">L1 · Siapkan Draf:</span>{" "}
+          <span className="text-slate-600">Masuk antrean, tanpa efek keluar aplikasi.</span>
+        </div>
+        <div className="p-2.5 rounded-lg bg-white border border-amber-300">
+          <span className="font-bold text-amber-950">L2 · Jalankan:</span>{" "}
+          <span className="text-slate-600">Hanya setelah persetujuan eksplisit &amp; cek isi.</span>
+        </div>
+        <div className="p-2.5 rounded-lg bg-white border border-rose-200">
+          <span className="font-bold text-rose-900">L3 · Dilarang Server:</span>{" "}
+          <span className="text-slate-600">Membayar/mengubah polis/kontak pihak ke-3 otomatis.</span>
         </div>
       </div>
 
@@ -438,64 +631,214 @@ export default function ActionsPage() {
         </div>
       )}
 
-      {/* Main Layout: Action Queue (Left) & Selected Action Detail (Right) */}
+      {/* Tabs: Menunggu (default), Selesai, Ditolak */}
+      <div
+        role="tablist"
+        aria-label="Filter status antrean tindakan"
+        className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "PENDING"}
+          data-testid="tab-menunggu"
+          onClick={() => handleTabChange("PENDING")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 ${
+            activeTab === "PENDING"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+          }`}
+        >
+          <span>Menunggu</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+              activeTab === "PENDING"
+                ? "bg-amber-400 text-slate-950"
+                : "bg-amber-100 text-amber-900"
+            }`}
+          >
+            {pendingItems.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "COMPLETED"}
+          data-testid="tab-selesai"
+          onClick={() => handleTabChange("COMPLETED")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 ${
+            activeTab === "COMPLETED"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+          }`}
+        >
+          <span>Selesai</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+              activeTab === "COMPLETED"
+                ? "bg-emerald-400 text-slate-950"
+                : "bg-slate-100 text-slate-700"
+            }`}
+          >
+            {completedItems.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "REJECTED"}
+          data-testid="tab-ditolak"
+          onClick={() => handleTabChange("REJECTED")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 ${
+            activeTab === "REJECTED"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+          }`}
+        >
+          <span>Ditolak</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+              activeTab === "REJECTED"
+                ? "bg-rose-400 text-slate-950"
+                : "bg-slate-100 text-slate-700"
+            }`}
+          >
+            {rejectedItems.length}
+          </span>
+        </button>
+      </div>
+
+      {/* Main Content: Empty State or Queue List + Detail Panel */}
       {loading ? (
         <div className="p-8 text-center text-slate-500 text-sm bg-white rounded-xl border border-slate-200">
           <RefreshCw className="animate-spin inline-block mr-2" size={16} />
           Memuat antrean tindakan...
         </div>
-      ) : actionsList.length > 0 ? (
+      ) : filteredItems.length === 0 ? (
+        <div
+          data-testid="actions-empty-state"
+          className="p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto">
+            <Inbox size={24} />
+          </div>
+          <h2 className="text-base font-bold text-slate-900">
+            Tidak ada tindakan yang menunggu.
+          </h2>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            {activeTab === "PENDING"
+              ? "Seluruh draf tindakan agen telah diputuskan atau belum ada draf baru dari pemeriksaan dokumen dan jalur layanan."
+              : activeTab === "COMPLETED"
+                ? "Belum ada tindakan yang disetujui atau selesai dijalankan pada sesi ini."
+                : "Belum ada tindakan yang ditolak pada sesi ini."}
+          </p>
+        </div>
+      ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Queue List */}
           <div className="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-xs divide-y divide-slate-100 overflow-hidden">
             <div className="p-4 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                Antrean Tindakan ({actionsList.length})
+                Daftar Kartu Tindakan ({filteredItems.length})
               </span>
               <span className="text-[11px] text-slate-500">
-                {actionsList.filter((a) => a.status === "PENDING").length} menunggu keputusan
+                Klik kartu untuk pratinjau lengkap
               </span>
             </div>
-            {actionsList.map((item) => {
+            {filteredItems.map((item) => {
               const isSelected = selectedAction?.id === item.id;
               const isL2 = item.permission_level === "L2";
+              const meta = ACTION_TYPE_META[item.action_type] ?? {
+                categoryLabel: item.action_type,
+                title: item.title ?? item.action_type,
+                permissionBadge: `Tingkat ${item.permission_level ?? "L1"}`,
+                previewHeading: "Pratinjau Payload Lengkap",
+                icon: FileText,
+              };
+              const TypeIcon = meta.icon;
+              const cardTitle = item.title ?? meta.title;
+              const cardReason =
+                item.reason ??
+                String(
+                  item.payload?.reason ??
+                    "Dibuat oleh agen berdasarkan pemeriksaan dokumen dan aturan polis",
+                );
+
               return (
                 <button
                   key={item.id}
                   type="button"
+                  data-testid="action-queue-card"
                   onClick={() => handleSelectAction(item)}
-                  className={`w-full text-left p-4 transition-colors flex flex-col gap-2 ${
+                  className={`w-full text-left p-4 transition-colors flex flex-col gap-2.5 ${
                     isSelected
                       ? "bg-emerald-50/60 border-l-4 border-l-emerald-700"
                       : "hover:bg-slate-50"
                   }`}
                 >
+                  {/* Top Badges: Type Icon + Label, Permission Level, Status */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded uppercase ${
-                        isL2
-                          ? "bg-amber-100 text-amber-900 border border-amber-300"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      Tingkat {item.permission_level ?? "L1"}
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800">
+                      <TypeIcon size={13} className="text-emerald-700 shrink-0" />
+                      <span>{meta.categoryLabel}</span>
                     </span>
-                    <span
-                      className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase ${
-                        item.status === "APPROVED"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : item.status === "REJECTED"
-                            ? "bg-rose-100 text-rose-800"
-                            : "bg-amber-100 text-amber-900"
-                      }`}
+
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded uppercase ${
+                          isL2
+                            ? "bg-amber-100 text-amber-950 border border-amber-300"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
+                        Izin {item.permission_level ?? "L1"}
+                      </span>
+                      <span
+                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase ${
+                          item.status === "APPROVED" || item.status === "COMPLETED"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : item.status === "REJECTED"
+                              ? "bg-rose-100 text-rose-800"
+                              : "bg-amber-100 text-amber-900"
+                        }`}
+                      >
+                        {STATUS_LABELS[item.status] ?? item.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stale > 14 days badge */}
+                  {item.is_stale && (
+                    <div
+                      data-testid="stale-action-badge"
+                      className="inline-flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-md bg-amber-50 border border-amber-300 text-amber-900 text-[11px] font-bold"
                     >
-                      {STATUS_LABELS[item.status] ?? item.status}
+                      <Clock size={12} className="text-amber-700 shrink-0" />
+                      <span>{item.stale_label ?? "Mungkin sudah tidak relevan"}</span>
+                    </div>
+                  )}
+
+                  {/* Card Title */}
+                  <div className="text-sm font-bold text-slate-900">{cardTitle}</div>
+
+                  {/* Card Reason */}
+                  <p className="text-xs text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-200/80">
+                    <span className="font-semibold text-slate-900">Alasan: </span>
+                    {cardReason}
+                  </p>
+
+                  {/* Footer Meta: Source Screen & Created Date */}
+                  <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 pt-0.5">
+                    <span className="font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                      {item.source_screen ?? "SC-04 · Cek Kelengkapan Data"}
+                    </span>
+                    <span title={item.created_at}>
+                      {formatRelativeDateId(item.created_at)} ·{" "}
+                      {formatAbsoluteDateId(item.created_at)}
                     </span>
                   </div>
-                  <div className="text-sm font-bold text-slate-900">
-                    {ACTION_TYPE_LABELS[item.action_type] ?? item.action_type}
-                  </div>
-                  <p className="text-xs text-slate-600 line-clamp-2">{item.preview}</p>
                 </button>
               );
             })}
@@ -505,7 +848,7 @@ export default function ActionsPage() {
           {selectedAction && (
             <div className="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
               <div className="p-5 bg-slate-50/70 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
+                <div className="space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
                       className={`text-xs font-bold px-2.5 py-0.5 rounded uppercase ${
@@ -522,7 +865,8 @@ export default function ActionsPage() {
                     <span
                       data-testid="action-detail-status"
                       className={`text-xs font-bold px-2.5 py-0.5 rounded-full uppercase ${
-                        selectedAction.status === "APPROVED"
+                        selectedAction.status === "APPROVED" ||
+                        selectedAction.status === "COMPLETED"
                           ? "bg-emerald-100 text-emerald-800"
                           : selectedAction.status === "REJECTED"
                             ? "bg-rose-100 text-rose-800"
@@ -531,10 +875,22 @@ export default function ActionsPage() {
                     >
                       {STATUS_LABELS[selectedAction.status] ?? selectedAction.status}
                     </span>
+                    {selectedAction.is_stale && (
+                      <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                        {selectedAction.stale_label ?? "Mungkin sudah tidak relevan"}
+                      </span>
+                    )}
                   </div>
-                  <h2 className="text-lg font-bold text-slate-900 mt-1.5">
-                    {ACTION_TYPE_LABELS[selectedAction.action_type] ?? selectedAction.action_type}
+                  <h2 className="text-lg font-bold text-slate-900">
+                    {selectedAction.title ??
+                      ACTION_TYPE_META[selectedAction.action_type]?.title ??
+                      selectedAction.action_type}
                   </h2>
+                  <p className="text-xs text-slate-600">
+                    <strong>Alasan pembuatan:</strong>{" "}
+                    {selectedAction.reason ??
+                      String(selectedAction.payload?.reason ?? "-")}
+                  </p>
                 </div>
               </div>
 
@@ -587,11 +943,33 @@ export default function ActionsPage() {
                   </div>
                 )}
 
+                {/* Pratinjau Payload Lengkap (Isi Email / Pengingat / Formulir) */}
+                <div
+                  data-testid="action-payload-preview"
+                  className="p-4 rounded-xl bg-slate-900 text-slate-100 space-y-2.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                      {ACTION_TYPE_META[selectedAction.action_type]?.previewHeading ??
+                        "Pratinjau Payload Lengkap (Data Pribadi Tersamar)"}
+                    </span>
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
+                      Polis: {String(selectedAction.payload?.policy_number ?? "****1234")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-mono">
+                    {String(
+                      (isEditing ? draftPayload.message : selectedAction.payload?.message) ??
+                        selectedAction.preview,
+                    )}
+                  </p>
+                </div>
+
                 {/* Payload Fields Viewer / Editor */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                      {isEditing ? "Mode Ubah — Edit Isi Payload" : "Detail Payload Tindakan"}
+                      {isEditing ? "Mode Ubah — Edit Isi Payload" : "Rincian Field Payload"}
                     </h3>
                     {isEditing && (
                       <button
@@ -811,7 +1189,7 @@ export default function ActionsPage() {
             </div>
           )}
         </div>
-      ) : null}
+      )}
 
       {/* Dialog Tolak Modal */}
       {showRejectModal && selectedAction && (
@@ -892,5 +1270,19 @@ export default function ActionsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ActionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center text-slate-500 text-sm">
+          Memuat antrean tindakan...
+        </div>
+      }
+    >
+      <ActionsPageContent />
+    </Suspense>
   );
 }

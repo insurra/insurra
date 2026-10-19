@@ -108,57 +108,6 @@ def check_completeness(
     not_implemented()
 
 
-@router.get("/home/summary", response_model=HomeSummary)
-def home_summary(session: ActiveSession):
-    not_implemented()
-
-
-@router.post(
-    "/ask",
-    response_model=AskAnswer | EmergencyRedirect,
-    responses={
-        200: {
-            "content": {
-                "text/event-stream": {
-                    "schema": {"type": "string"},
-                    "description": "Named SSE events; data is JSON matching AskStreamEvent.",
-                }
-            }
-        }
-    },
-)
-def ask_policy(body: AskRequest, session: AISession, actor: ActiveActor, db: DB):
-    if body.coverage_id:
-        owned_resource(db, actor, "coverage", body.coverage_id)
-    from app.services.audit_logger import log_event
-
-    lowered = body.question.lower()
-    if any(k in lowered for k in ("nyeri dada", "sesak napas", "pendarahan hebat")):
-        log_event(
-            db,
-            session.id,
-            "GUARDRAIL_EMERGENCY_REDIRECT",
-            category="guardrail",
-            subtype="Tanda bahaya → arahan darurat",
-        )
-        db.commit()
-    elif any(k in lowered for k in ("tanpa klausul", "tanpa sumber", "tidak ada di polis")):
-        log_event(
-            db,
-            session.id,
-            "GUARDRAIL_UNGROUNDED_ANSWER",
-            category="guardrail",
-            subtype="Jawaban tanpa sumber ditolak",
-        )
-        db.commit()
-    not_implemented()
-
-
-@router.post("/pathways/compare", response_model=PathwayComparison | EmergencyRedirect)
-def compare_pathways(body: PathwayComparisonRequest, session: ConsentedSession):
-    not_implemented()
-
-
 @router.post("/triage", response_model=TriageResult)
 def triage(body: TriageRequest, session: ActiveSession, db: DB):
     from app.services.audit_logger import log_event
