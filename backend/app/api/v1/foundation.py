@@ -209,8 +209,17 @@ def coverage_needs(session: ConsentedSession):
 
 @router.get("/audit/{event_id}", response_model=AuditEvent)
 def audit_detail(event_id: UUID, actor: ActiveActor, db: DB):
-    owned_resource(db, actor, "audit", event_id)
-    not_implemented()
+    row = owned_resource(db, actor, "audit", event_id)
+    from app.services.audit_logger import enrich_audit_event
+
+    return enrich_audit_event(
+        id=row.id,
+        session_id=row.session_id,
+        event_type=row.event_type,
+        outcome=row.outcome,
+        metadata=row.event_metadata,
+        created_at=row.created_at,
+    )
 
 
 @router.post("/actions/{action_id}/execute", response_model=ProposedAction)

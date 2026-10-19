@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from app.core.dependencies import DB, ActiveSession
 from app.models import AuditRow
 from app.schemas.audit import AuditEvent
+from app.services.audit_logger import enrich_audit_event
 
 router = APIRouter(prefix="/audit", tags=["Audit"])
 
@@ -59,7 +60,7 @@ def audit(
     if limit is not None:
         query = query.limit(limit)
     return [
-        AuditEvent(
+        enrich_audit_event(
             id=row.id,
             session_id=row.session_id,
             event_type=row.event_type,

@@ -242,3 +242,89 @@ def test_policy_wallet_and_family_management(app, client):
     # Policy wallet checks
     policies = client.get("/api/v1/account/policies", headers=mine).json()
     assert isinstance(policies, list)
+
+
+def test_audit_timeline_masking_tools_and_rls_isolation(app, client, demo):
+    from app.services.audit_logger import log_account_event, log_event
+
+    mine = account_headers(app, "audit_user_a")
+    other = account_headers(app, "audit_user_b")
+
+    # Trigger account events
+    assert (
+        client.put("/api/v1/account/profile", headers=mine, json=profile_payload()).status_code
+        == 200
+    )
+
+    # Also log an answer event with policy number in summary and verify masking + tools
+    me_id = client.get("/api/v1/auth/me", headers=mine).json()["id"]
+    from uuid import UUID
+
+    with app.state.session_factory() as db:
+        log_account_event(
+            db,
+            UUID(me_id),
+            "ANSWER_GENERATED",
+            category="answer",
+            source_screen="SC-06 · Tanya Polis",
+            input_summary="Pertanyaan manfaat rawat inap untuk polis POL-9876541234",
+            tools_called=["retrieve_clause", "rules_engine", "unknown_injected_tool"],
+            result_summary="Klausul manfaat ditemukan pada kartu 000188885678",
+            reason="Menjawab berdasarkan bukti klausul polis dan perhitungan rules engine.",
+            raw_document_text="PRIVATE_DOC_CONTENT_NEVER_SHOWN",
+            system_prompt="SECRET_SYSTEM_PROMPT_NEVER_SHOWN",
+        )
+        db.commit()
+
+    res_a = client.get("/api/v1/account/audit?limit=20&offset=0", headers=mine)
+    assert res_a.status_code == 200
+    events_a = res_a.json()
+    assert int(res_a.headers["X-Total-Count"]) >= 2
+
+    answer_events = [e for e in events_a if e["event_type"] == "ANSWER_GENERATED"]
+    assert len(answer_events) == 1
+    ans = answer_events[0]
+    assert ans["category"] == "answer"
+    assert ans["source_screen"] == "SC-06 · Tanya Polis"
+    assert ans["tools_called"] == ["retrieve_clause", "rules_engine"]
+    assert "****1234" in ans["input_summary"]
+    assert "9876541234" not in ans["input_summary"]
+    assert "****5678" in ans["result_summary"]
+    assert "000188885678" not in ans["result_summary"]
+    assert "PRIVATE_DOC_CONTENT_NEVER_SHOWN" not in str(ans)
+    assert "SECRET_SYSTEM_PROMPT_NEVER_SHOWN" not in str(ans)
+
+    # Detail endpoint & RLS check: User A can view own detail, User B gets 404
+    detail_a = client.get(f"/api/v1/account/audit/{ans['id']}", headers=mine)
+    assert detail_a.status_code == 200
+    assert detail_a.json()["id"] == ans["id"]
+    assert client.get(f"/api/v1/account/audit/{ans['id']}", headers=other).status_code == 404
+    assert client.get("/api/v1/account/audit", headers=other).json() == []
+
+    # Category filter works for account audit
+    filtered_ans = client.get("/api/v1/account/audit?type=answer", headers=mine).json()
+    assert any(e["id"] == ans["id"] for e in filtered_ans)
+
+    # Demo session audit enrichment & detail RLS
+    session_a, headers_a = demo("raka")
+    _, headers_b = demo("sinta")
+    with app.state.session_factory() as db:
+        log_event(
+            db,
+            UUID(session_a["id"]),
+            "ANSWER",
+            input_summary="Cek manfaat polis OSHC-5566771234",
+            tools_called=["retrieve_clause", "rules_engine"],
+            result_summary="Manfaat ditemukan untuk ****1234",
+        )
+        db.commit()
+
+    demo_ans = client.get("/api/v1/audit?type=answer", headers=headers_a).json()
+    assert len(demo_ans) >= 1
+    first_ans = demo_ans[0]
+    assert first_ans["category"] == "answer"
+    assert first_ans["tools_called"] == ["retrieve_clause", "rules_engine"]
+    assert "****1234" in first_ans["input_summary"]
+    assert "5566771234" not in first_ans["input_summary"]
+    assert client.get(f"/api/v1/audit/{first_ans['id']}", headers=headers_a).status_code == 200
+    assert client.get(f"/api/v1/audit/{first_ans['id']}", headers=headers_b).status_code == 404
