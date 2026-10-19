@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SandboxClaimStatus } from "@/components/claims/sandbox-status";
 import { useAuth } from "@/lib/auth";
 import { getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
 import "./claims.css";
@@ -225,6 +226,9 @@ export default function ClaimsPage() {
 
   return (
     <div className="claims-workspace">
+      <Suspense fallback={null}>
+        <SandboxClaimStatus accountToken={accountToken} />
+      </Suspense>
       {/* Top Hero Banner if action is awaiting approval (Matching Screenshot 1) */}
       {overview?.awaiting_approval_banner && (
         <div className="claims-hero-banner" role="alert">

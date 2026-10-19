@@ -6,11 +6,16 @@ from uuid import UUID
 from fastapi import APIRouter, File, Form, Query, UploadFile
 from sqlalchemy import func, select
 
+from app.api.v1.actions import (
+    export_sandbox_logs_endpoint,
+    get_or_advance_sandbox_claim_status,
+    submit_sandbox_claim_endpoint,
+)
 from app.core.dependencies import DB, KB, ActiveActor, ActiveSession, AISession, ConsentedSession
-from app.core.errors import AppError, not_implemented
+from app.core.errors import ERROR_RESPONSES, not_implemented
 from app.models import ClaimCaseRow
 from app.models.foundation import ClaimCaseEventRow
-from app.repositories.ownership import approved_action, owned_resource
+from app.repositories.ownership import owned_resource
 from app.repositories.session_data import profile_row
 from app.schemas.audit import AuditEvent
 from app.schemas.common import CountryCode, VerificationStatus
@@ -38,15 +43,16 @@ from app.schemas.foundation import (
     ReviewedField,
     SandboxClaimRequest,
     SandboxClaimResponse,
+    SandboxLogEntry,
     TriageRequest,
     TriageResult,
     VerificationRequest,
 )
 from app.schemas.kb import EmergencyDirectory
-from app.services.approval import payload_sha256
 from app.services.audit_logger import enrich_audit_event
 
 router = APIRouter(tags=["Phase 1.5 contracts (501)"])
+sandbox_alias_router = APIRouter(prefix="/api", responses=ERROR_RESPONSES, include_in_schema=False)
 
 
 @router.post("/auth/register", response_model=AuthSession, status_code=201)
@@ -247,17 +253,35 @@ def audit_detail(event_id: UUID, actor: ActiveActor, db: DB):
 
 
 @router.post("/sandbox/insurer/claims", response_model=SandboxClaimResponse)
-def sandbox_claim(body: SandboxClaimRequest, session: ConsentedSession, actor: ActiveActor, db: DB):
-    action = approved_action(db, actor, body.action_id, body.approved_payload_sha256)
-    owned_resource(db, actor, "claim", body.claim_case_id)
-    if action.claim_case_id != body.claim_case_id or action.type != "claim_submit":
-        raise AppError(403, "ACTION_CONTEXT_MISMATCH", "Persetujuan tidak berlaku untuk kasus ini.")
-    submitted = {
-        "claim_case_id": str(body.claim_case_id),
-        "attachments": [item.model_dump(mode="json") for item in body.attachments],
-    }
-    if payload_sha256(submitted) != action.approved_payload_sha256:
-        raise AppError(403, "APPROVED_PAYLOAD_MISMATCH", "Lampiran tidak cocok dengan persetujuan.")
-    for attachment in body.attachments:
-        owned_resource(db, actor, "document", attachment.document_id)
-    not_implemented()
+@sandbox_alias_router.post("/sandbox/insurer/claims", response_model=SandboxClaimResponse)
+def sandbox_claim(
+    body: SandboxClaimRequest,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+):
+    return submit_sandbox_claim_endpoint(body, session, actor, db)
+
+
+@router.get("/sandbox/insurer/claims/{claim_ref}", response_model=SandboxClaimResponse)
+@sandbox_alias_router.get(
+    "/sandbox/insurer/claims/{claim_ref}", response_model=SandboxClaimResponse
+)
+def sandbox_claim_status(
+    claim_ref: str,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+    advance: Annotated[bool, Query()] = False,
+):
+    return get_or_advance_sandbox_claim_status(claim_ref, session, actor, db, advance=advance)
+
+
+@router.get("/sandbox/insurer/logs", response_model=list[SandboxLogEntry])
+@sandbox_alias_router.get("/sandbox/insurer/logs", response_model=list[SandboxLogEntry])
+def sandbox_logs(
+    session: ConsentedSession,
+    db: DB,
+    format: Annotated[str, Query(pattern="^(json|csv|JSON|CSV)$")] = "json",
+):
+    return export_sandbox_logs_endpoint(session, db, fmt=format)
