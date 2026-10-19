@@ -42,10 +42,20 @@ class Settings(BaseSettings):
     agent_worker_enabled: bool = False
     agent_worker_interval_seconds: int = 15
     freeze_legacy_actions: bool = False
+    supabase_url: str = ""
+    supabase_anon_key: SecretStr = SecretStr("")
+
+    @property
+    def is_supabase_auth_active(self) -> bool:
+        return bool(self.supabase_url and self.supabase_url.strip())
 
     @property
     def is_email_delivery_active(self) -> bool:
-        return bool(self.email_delivery_enabled or (self.smtp_host and self.smtp_host.strip()))
+        return bool(
+            self.email_delivery_enabled
+            or (self.smtp_host and self.smtp_host.strip())
+            or self.is_supabase_auth_active
+        )
 
     @property
     def active_kb_country_codes(self) -> frozenset[str]:

@@ -157,6 +157,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/account/auth/supabase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Supabase Login */
+        post: operations["supabase_login_api_v1_account_auth_supabase_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/account/consents": {
         parameters: {
             query?: never;
@@ -4745,6 +4762,8 @@ export interface components {
              * Format: password
              */
             token: string;
+            /** Email */
+            email?: string | null;
             /**
              * Password
              * Format: password
@@ -5030,6 +5049,13 @@ export interface components {
             /** Source Url */
             source_url?: string | null;
         };
+        /** SupabaseAuthRequest */
+        SupabaseAuthRequest: {
+            /** Access Token */
+            access_token?: string | null;
+            /** Code */
+            code?: string | null;
+        };
         /** ToolStep */
         ToolStep: {
             /** Tool */
@@ -5255,6 +5281,8 @@ export interface components {
              * Format: password
              */
             token: string;
+            /** Email */
+            email?: string | null;
         };
         /**
          * VerificationStatus
@@ -7129,6 +7157,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthMessage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    supabase_login_api_v1_account_auth_supabase_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupabaseAuthRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthSession"];
                 };
             };
             /** @description Unauthorized */

@@ -71,10 +71,12 @@ class EmailRequest(Contract):
 
 class VerificationRequest(Contract):
     token: SecretStr = Field(min_length=1, max_length=4096)
+    email: Email | None = None
 
 
 class ResetPasswordRequest(Contract):
     token: SecretStr = Field(min_length=1, max_length=4096)
+    email: Email | None = None
     password: SecretStr = Field(min_length=1, max_length=128)
     password_confirmation: SecretStr = Field(min_length=1, max_length=128)
 
@@ -94,6 +96,17 @@ class ResetPasswordRequest(Contract):
 
 class AuthMessage(Contract):
     message: str
+
+
+class SupabaseAuthRequest(Contract):
+    access_token: SecretStr | None = None
+    code: str | None = None
+
+    @model_validator(mode="after")
+    def require_token_or_code(self):
+        if not self.access_token and not self.code:
+            raise ValueError("Either access_token or code is required")
+        return self
 
 
 class AuthCapabilities(Contract):

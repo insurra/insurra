@@ -92,6 +92,7 @@ function AuthContent() {
   // Verification cooldown (60 seconds)
   const [cooldown, setCooldown] = useState<number>(0);
   const [unverifiedEmail, setUnverifiedEmail] = useState<string>("");
+  const [otpCode, setOtpCode] = useState<string>("");
 
   // Consent Screen States (US-01-03)
   const [consentDocs, setConsentDocs] = useState(false);
@@ -299,6 +300,33 @@ function AuthContent() {
         setCooldown(result.retryAfter);
       }
       setFormError(result.error || "Failed to resend verification email.");
+    }
+  };
+
+  // Handle OTP Code Verification
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otpCode.trim();
+    if (!code) return;
+    setIsSubmitting(true);
+    setFormError(null);
+    setFormSuccess(null);
+    try {
+      const targetEmail = unverifiedEmail || email.trim();
+      const res = await verifyEmail(code, targetEmail || undefined);
+      if (res.success) {
+        setFormSuccess(res.message || "Email verified successfully! Please log in.");
+        setTimeout(() => {
+          setMode("login");
+          setFormSuccess("Email verified successfully! Please log in with your password.");
+        }, 1200);
+      } else {
+        setFormError(res.error || "Invalid or expired verification code.");
+      }
+    } catch {
+      setFormError("Failed to verify code. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -585,6 +613,33 @@ function AuthContent() {
                   <ShieldAlert className="w-4 h-4 flex-none" />
                   <span>{formError}</span>
                 </div>
+              )}
+
+              {emailDelivery && (
+                <form onSubmit={handleOtpSubmit} className="w-full my-4 text-left">
+                  <label htmlFor="otp-input" className="journey-label block mb-1.5 font-medium text-xs text-gray-700">
+                    Atau Masukkan Kode OTP / Verifikasi (6 digit)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="otp-input"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="Contoh: 123456"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                      className="journey-input text-center text-base tracking-widest font-mono flex-1"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || otpCode.length < 6}
+                      className="journey-primary-button px-4 flex-none text-sm font-semibold rounded-lg"
+                    >
+                      {isSubmitting ? "Memverifikasi…" : "Verifikasi"}
+                    </button>
+                  </div>
+                </form>
               )}
 
               <button

@@ -1,7 +1,10 @@
+import json
 import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from urllib.request import Request as UrlRequest
+from urllib.request import urlopen
 
 from app.core.config import Settings
 
@@ -60,8 +63,97 @@ def send_email(
         return False
 
 
+def send_supabase_otp_email(to_email: str, settings: Settings, is_signup: bool = True) -> bool:
+    """Send an OTP verification email via Supabase Auth API."""
+    if not settings.is_supabase_auth_active:
+        return False
+
+    url = f"{settings.supabase_url.rstrip('/')}/auth/v1/otp"
+    anon_key = settings.supabase_anon_key.get_secret_value() if settings.supabase_anon_key else ""
+    payload = json.dumps(
+        {
+            "email": to_email,
+            "create_user": is_signup,
+            "email_redirect_to": f"{settings.frontend_url.rstrip('/')}/auth?action=verify",
+        }
+    ).encode()
+
+    headers = {"Content-Type": "application/json"}
+    if anon_key:
+        headers["apikey"] = anon_key
+
+    try:
+        req = UrlRequest(url, data=payload, headers=headers, method="POST")
+        with urlopen(req, timeout=15) as resp:  # noqa: S310
+            logger.info("Supabase OTP email sent to %s (status=%d)", to_email, resp.status)
+            return True
+    except Exception as exc:
+        logger.error("Failed to send Supabase OTP email to %s: %s", to_email, exc)
+        return False
+
+
+def send_supabase_recovery_email(to_email: str, settings: Settings) -> bool:
+    """Send a password recovery email via Supabase Auth API."""
+    if not settings.is_supabase_auth_active:
+        return False
+
+    url = f"{settings.supabase_url.rstrip('/')}/auth/v1/recover"
+    anon_key = settings.supabase_anon_key.get_secret_value() if settings.supabase_anon_key else ""
+    payload = json.dumps(
+        {
+            "email": to_email,
+            "email_redirect_to": f"{settings.frontend_url.rstrip('/')}/auth?action=reset",
+        }
+    ).encode()
+
+    headers = {"Content-Type": "application/json"}
+    if anon_key:
+        headers["apikey"] = anon_key
+
+    try:
+        req = UrlRequest(url, data=payload, headers=headers, method="POST")
+        with urlopen(req, timeout=15) as resp:  # noqa: S310
+            logger.info("Supabase recovery email sent to %s (status=%d)", to_email, resp.status)
+            return True
+    except Exception as exc:
+        logger.error("Failed to send Supabase recovery email to %s: %s", to_email, exc)
+        return False
+
+
+def verify_supabase_otp(email: str, token: str, otp_type: str, settings: Settings) -> bool:
+    """Verify an OTP token against Supabase Auth API."""
+    if not settings.is_supabase_auth_active:
+        return False
+
+    url = f"{settings.supabase_url.rstrip('/')}/auth/v1/verify"
+    anon_key = settings.supabase_anon_key.get_secret_value() if settings.supabase_anon_key else ""
+    payload = json.dumps(
+        {
+            "type": otp_type,
+            "email": email,
+            "token": token,
+        }
+    ).encode()
+
+    headers = {"Content-Type": "application/json"}
+    if anon_key:
+        headers["apikey"] = anon_key
+
+    try:
+        req = UrlRequest(url, data=payload, headers=headers, method="POST")
+        with urlopen(req, timeout=15) as resp:  # noqa: S310
+            return resp.status == 200
+    except Exception as exc:
+        logger.warning("Supabase OTP verification failed for %s (%s): %s", email, otp_type, exc)
+        return False
+
+
 def send_verification_email(to_email: str, raw_token: str, settings: Settings) -> bool:
-    """Send an account verification email containing the verification link."""
+    """Send an account verification email containing the verification link or OTP."""
+    supabase_sent = False
+    if settings.is_supabase_auth_active:
+        supabase_sent = send_supabase_otp_email(to_email, settings, is_signup=True)
+
     base_url = settings.frontend_url.rstrip("/")
     verification_link = f"{base_url}/auth?action=verify&token={raw_token}"
 
@@ -92,11 +184,16 @@ def send_verification_email(to_email: str, raw_token: str, settings: Settings) -
         f"</div>"
     )
 
-    return send_email(to_email, subject, text_content, html_content, settings)
+    smtp_sent = send_email(to_email, subject, text_content, html_content, settings)
+    return supabase_sent or smtp_sent
 
 
 def send_password_reset_email(to_email: str, raw_token: str, settings: Settings) -> bool:
-    """Send a password reset email containing the reset link."""
+    """Send a password reset email containing the reset link or OTP."""
+    supabase_sent = False
+    if settings.is_supabase_auth_active:
+        supabase_sent = send_supabase_recovery_email(to_email, settings)
+
     base_url = settings.frontend_url.rstrip("/")
     reset_link = f"{base_url}/auth?action=reset&token={raw_token}"
 
@@ -128,4 +225,5 @@ def send_password_reset_email(to_email: str, raw_token: str, settings: Settings)
         f"</div>"
     )
 
-    return send_email(to_email, subject, text_content, html_content, settings)
+    smtp_sent = send_email(to_email, subject, text_content, html_content, settings)
+    return supabase_sent or smtp_sent

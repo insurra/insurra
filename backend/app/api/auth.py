@@ -28,11 +28,16 @@ from app.schemas.foundation import (
     LoginRequest,
     RegisterRequest,
     ResetPasswordRequest,
+    SupabaseAuthRequest,
     VerificationRequest,
 )
 from app.services.account_access import active_account
 from app.services.demo_access import reject_ambiguous_actor
-from app.services.email_delivery import send_password_reset_email, send_verification_email
+from app.services.email_delivery import (
+    send_password_reset_email,
+    send_verification_email,
+    verify_supabase_otp,
+)
 
 public_router = APIRouter(prefix="/auth", tags=["Authentication"])
 api_router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -56,7 +61,9 @@ def _oauth_ssl_context() -> ssl.SSLContext:
 
 def _oauth_settings(request: Request):
     settings = request.app.state.settings
-    if not settings.google_client_id or not settings.google_client_secret.get_secret_value():
+    if not settings.is_supabase_auth_active and (
+        not settings.google_client_id or not settings.google_client_secret.get_secret_value()
+    ):
         raise AppError(503, "OAUTH_NOT_CONFIGURED", "Google OAuth belum dikonfigurasi.")
     return settings
 
@@ -170,6 +177,17 @@ def _provider_json(request: UrlRequest, body: bytes | None = None) -> dict:
 @public_router.get("/google")
 def google_login(request: Request):
     settings = _oauth_settings(request)
+    if settings.is_supabase_auth_active:
+        callback_url = f"{settings.frontend_url.rstrip('/')}/auth/callback"
+        query = urlencode(
+            {
+                "provider": "google",
+                "redirect_to": callback_url,
+            }
+        )
+        supabase_auth_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/authorize?{query}"
+        return RedirectResponse(supabase_auth_url, status_code=303)
+
     state = secrets.token_urlsafe(32)
     verifier = secrets.token_urlsafe(64)
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=")
@@ -424,27 +442,57 @@ def _verification_expired(account: AccountRow, now: datetime) -> bool:
 
 
 @account_auth_router.post("/verify-email", response_model=AuthMessage)
-def verify_email(body: VerificationRequest, db: DB):
+def verify_email(body: VerificationRequest, db: DB, request: Request):
     token = body.token.get_secret_value().strip()
     account = db.scalar(
         select(AccountRow).where(AccountRow.verification_token.in_(_token_candidates(token)))
     )
     now = datetime.now(UTC)
-    if account is None or _verification_expired(account, now):
-        if account is not None:
-            # An expired token is single-use garbage; clear it so it cannot be retried.
-            account.verification_token = None
-            account.verification_token_expires_at = None
-            db.commit()
-        raise AppError(400, "INVALID_VERIFICATION_TOKEN", "Invalid or expired verification token.")
+    if account is not None and not _verification_expired(account, now):
+        account.email_verified = True
+        account.verification_token = None
+        account.verification_token_expires_at = None
+        account.verification_sent_at = None
+        account.updated_at = now
+        db.commit()
+        return AuthMessage(message="Email verified successfully. Please log in.")
 
-    account.email_verified = True
-    account.verification_token = None
-    account.verification_token_expires_at = None
-    account.verification_sent_at = None
-    account.updated_at = now
-    db.commit()
-    return AuthMessage(message="Email verified successfully. Please log in.")
+    # Check if this token is a Supabase OTP
+    settings = request.app.state.settings
+    email_clean = str(body.email).strip().lower() if body.email else None
+
+    if settings.is_supabase_auth_active and (email_clean or (len(token) == 6 and token.isdigit())):
+        target_account = (
+            db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
+            if email_clean
+            else None
+        )
+        candidates = (
+            [target_account]
+            if target_account
+            else db.scalars(
+                select(AccountRow)
+                .where(AccountRow.email_verified.is_(False))
+                .order_by(AccountRow.created_at.desc())
+                .limit(10)
+            ).all()
+        )
+
+        for cand in candidates:
+            if cand and verify_supabase_otp(cand.email, token, "email", settings):
+                cand.email_verified = True
+                cand.verification_token = None
+                cand.verification_token_expires_at = None
+                cand.verification_sent_at = None
+                cand.updated_at = now
+                db.commit()
+                return AuthMessage(message="Email verified successfully. Please log in.")
+
+    if account is not None:
+        account.verification_token = None
+        account.verification_token_expires_at = None
+        db.commit()
+    raise AppError(400, "INVALID_VERIFICATION_TOKEN", "Invalid or expired verification token.")
 
 
 @account_auth_router.post("/resend-verification", response_model=AuthMessage)
@@ -510,17 +558,28 @@ def forgot_password(body: EmailRequest, db: DB, request: Request):
 
 
 @account_auth_router.post("/reset-password", response_model=AuthMessage)
-def reset_password(body: ResetPasswordRequest, db: DB):
+def reset_password(body: ResetPasswordRequest, db: DB, request: Request):
     token = body.token.get_secret_value().strip()
     account = db.scalar(
         select(AccountRow).where(AccountRow.reset_token.in_(_token_candidates(token)))
     )
     now = datetime.now(UTC)
-    if (
-        account is None
-        or account.reset_token_expires_at is None
-        or _as_utc(account.reset_token_expires_at) < now
-    ):
+    is_valid = (
+        account is not None
+        and account.reset_token_expires_at is not None
+        and _as_utc(account.reset_token_expires_at) >= now
+    )
+
+    if not is_valid:
+        settings = request.app.state.settings
+        email_clean = str(body.email).strip().lower() if body.email else None
+        if settings.is_supabase_auth_active and email_clean:
+            cand = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
+            if cand and verify_supabase_otp(email_clean, token, "recovery", settings):
+                account = cand
+                is_valid = True
+
+    if not is_valid or account is None:
         raise AppError(400, "INVALID_RESET_TOKEN", "Password reset link is invalid or has expired.")
 
     raw_pw = body.password.get_secret_value()
@@ -534,13 +593,182 @@ def reset_password(body: ResetPasswordRequest, db: DB):
     return AuthMessage(message="Password reset successfully. Please log in with your new password.")
 
 
+def _resolve_supabase_user(body: SupabaseAuthRequest, settings) -> dict:
+    if not settings.is_supabase_auth_active:
+        raise AppError(503, "SUPABASE_NOT_CONFIGURED", "Supabase Auth belum dikonfigurasi.")
+
+    anon_key = settings.supabase_anon_key.get_secret_value() if settings.supabase_anon_key else ""
+    raw_token = body.access_token.get_secret_value().strip() if body.access_token else None
+    code = body.code.strip() if body.code else None
+
+    if not raw_token and code:
+        # Attempt PKCE exchange first, then authorization_code
+        token_endpoint = f"{settings.supabase_url.rstrip('/')}/auth/v1/token?grant_type=pkce"
+        token_payload = json.dumps({"auth_code": code}).encode()
+        headers = {"Content-Type": "application/json"}
+        if anon_key:
+            headers["apikey"] = anon_key
+
+        try:
+            req = UrlRequest(token_endpoint, data=token_payload, headers=headers, method="POST")
+            with urlopen(req, timeout=15, context=_oauth_ssl_context()) as resp:  # noqa: S310
+                res = json.loads(resp.read().decode("utf-8"))
+                raw_token = res.get("access_token")
+                if isinstance(res.get("user"), dict):
+                    return res["user"]
+        except HTTPError:
+            try:
+                auth_code_endpoint = f"{settings.supabase_url.rstrip('/')}/auth/v1/token?grant_type=authorization_code"
+                auth_payload = json.dumps({"code": code}).encode()
+                req = UrlRequest(
+                    auth_code_endpoint, data=auth_payload, headers=headers, method="POST"
+                )
+                with urlopen(req, timeout=15, context=_oauth_ssl_context()) as resp:  # noqa: S310
+                    res = json.loads(resp.read().decode("utf-8"))
+                    raw_token = res.get("access_token")
+                    if isinstance(res.get("user"), dict):
+                        return res["user"]
+            except HTTPError as exc:
+                try:
+                    err_data = json.loads(exc.read().decode("utf-8"))
+                except Exception:
+                    err_data = {}
+                msg = (
+                    err_data.get("msg")
+                    or err_data.get("error_description")
+                    or "Kode otorisasi Supabase tidak valid."
+                )
+                raise AppError(400, "SUPABASE_CODE_INVALID", msg) from exc
+            except Exception as exc:
+                raise AppError(
+                    502, "SUPABASE_UNAVAILABLE", "Supabase Auth tidak dapat dihubungi."
+                ) from exc
+        except Exception as exc:
+            raise AppError(
+                502, "SUPABASE_UNAVAILABLE", "Supabase Auth tidak dapat dihubungi."
+            ) from exc
+
+    if not raw_token:
+        raise AppError(
+            400,
+            "SUPABASE_TOKEN_REQUIRED",
+            "Access token atau authorization code Supabase diperlukan.",
+        )
+
+    user_endpoint = f"{settings.supabase_url.rstrip('/')}/auth/v1/user"
+    headers = {"Authorization": f"Bearer {raw_token}"}
+    if anon_key:
+        headers["apikey"] = anon_key
+
+    try:
+        req = UrlRequest(user_endpoint, headers=headers, method="GET")
+        with urlopen(req, timeout=15, context=_oauth_ssl_context()) as resp:  # noqa: S310
+            user_data = json.loads(resp.read().decode("utf-8"))
+    except HTTPError as exc:
+        try:
+            err_data = json.loads(exc.read().decode("utf-8"))
+        except Exception:
+            err_data = {}
+        msg = (
+            err_data.get("msg")
+            or err_data.get("message")
+            or "Sesi Supabase tidak valid atau telah kedaluwarsa."
+        )
+        raise AppError(401, "SUPABASE_TOKEN_INVALID", msg) from exc
+    except Exception as exc:
+        raise AppError(502, "SUPABASE_UNAVAILABLE", "Supabase Auth tidak dapat dihubungi.") from exc
+
+    if not isinstance(user_data, dict) or not user_data.get("id"):
+        raise AppError(502, "SUPABASE_INVALID_RESPONSE", "Respons data user Supabase tidak valid.")
+
+    return user_data
+
+
+@account_auth_router.post("/supabase", response_model=AuthSession)
+def supabase_login(body: SupabaseAuthRequest, db: DB, request: Request):
+    settings = request.app.state.settings
+    userinfo = _resolve_supabase_user(body, settings)
+
+    provider_id = userinfo.get("id")
+    email = userinfo.get("email")
+    if not isinstance(provider_id, str) or not isinstance(email, str) or not email:
+        raise AppError(
+            400, "SUPABASE_PROFILE_INCOMPLETE", "Data profil email dari Supabase tidak lengkap."
+        )
+
+    user_metadata = (
+        userinfo.get("user_metadata") if isinstance(userinfo.get("user_metadata"), dict) else {}
+    )
+    name = user_metadata.get("full_name") or user_metadata.get("name")
+    avatar = user_metadata.get("avatar_url") or user_metadata.get("picture")
+
+    now = datetime.now(UTC)
+    identity = db.scalar(
+        select(OAuthIdentityRow).where(
+            OAuthIdentityRow.provider.in_(["supabase", "google"]),
+            OAuthIdentityRow.provider_user_id == provider_id,
+        )
+    )
+    account = db.get(AccountRow, identity.account_id) if identity else None
+    if account is None:
+        account = db.scalar(select(AccountRow).where(AccountRow.email == email.lower()))
+    if account is None:
+        account = AccountRow(
+            email=email.lower(),
+            display_name=name if isinstance(name, str) else email.split("@")[0],
+            avatar_url=avatar if isinstance(avatar, str) else None,
+            email_verified=True,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(account)
+        db.flush()
+    else:
+        if isinstance(name, str) and not account.display_name:
+            account.display_name = name
+        if isinstance(avatar, str) and not account.avatar_url:
+            account.avatar_url = avatar
+        account.email_verified = True
+        account.updated_at = now
+
+    if identity is None:
+        db.add(
+            OAuthIdentityRow(
+                account_id=account.id,
+                provider="supabase",
+                provider_user_id=provider_id,
+                created_at=now,
+                updated_at=now,
+            )
+        )
+
+    access_token = secrets.token_urlsafe(32)
+    expires_at = now + timedelta(days=settings.account_session_ttl_days)
+    db.add(
+        AccountSessionRow(
+            account_id=account.id,
+            token_hash=hashlib.sha256(access_token.encode()).hexdigest(),
+            created_at=now,
+            expires_at=expires_at,
+            revoked_at=None,
+        )
+    )
+    db.commit()
+    return AuthSession(
+        account=_account_summary(account, db),
+        access_token=access_token,
+        expires_at=expires_at,
+    )
+
+
 @api_router.get("/capabilities", response_model=AuthCapabilities)
 def capabilities(request: Request):
     settings = request.app.state.settings
     return AuthCapabilities(
         email_delivery=settings.is_email_delivery_active,
         google_oauth=bool(
-            settings.google_client_id and settings.google_client_secret.get_secret_value()
+            settings.is_supabase_auth_active
+            or (settings.google_client_id and settings.google_client_secret.get_secret_value())
         ),
     )
 
