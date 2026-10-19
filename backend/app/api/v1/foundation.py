@@ -9,16 +9,11 @@ from app.core.dependencies import DB, ActiveActor, ActiveSession, AISession, Con
 from app.core.errors import AppError, not_implemented
 from app.repositories.ownership import approved_action, owned_resource
 from app.schemas.action import ProposedAction
-from app.schemas.assessment import CoverageNeed
 from app.schemas.audit import AuditEvent
 from app.schemas.foundation import (
     ActionExecutionRequest,
-    AskAnswer,
-    AskRequest,
     AuthMessage,
     AuthSession,
-    ClaimCaseCreate,
-    ClaimCaseCreated,
     ClaimCaseDetail,
     ClaimCasePage,
     ClaimCaseStatus,
@@ -30,13 +25,9 @@ from app.schemas.foundation import (
     DocumentDetail,
     DocumentUploadAccepted,
     EmailRequest,
-    EmergencyRedirect,
     EvidenceMatchResult,
     FieldReviewRequest,
-    HomeSummary,
     LoginRequest,
-    PathwayComparison,
-    PathwayComparisonRequest,
     RegisterRequest,
     ReviewedField,
     SandboxClaimRequest,
@@ -185,12 +176,6 @@ def triage(body: TriageRequest, session: ActiveSession, db: DB):
     not_implemented()
 
 
-@router.post("/claims", response_model=ClaimCaseCreated, status_code=201)
-def create_claim(body: ClaimCaseCreate, session: ConsentedSession, actor: ActiveActor, db: DB):
-    owned_resource(db, actor, "coverage", body.coverage_id)
-    not_implemented()
-
-
 @router.get("/claims", response_model=ClaimCasePage)
 def list_claims(
     session: ActiveSession,
@@ -232,11 +217,6 @@ def data_inventory(session: ActiveSession):
 
 @router.delete("/data", response_model=DeletionResult)
 def delete_data(body: DeleteConfirmation, session: ActiveSession):
-    not_implemented()
-
-
-@router.get("/coverage-needs", response_model=list[CoverageNeed])
-def coverage_needs(session: ConsentedSession):
     not_implemented()
 
 

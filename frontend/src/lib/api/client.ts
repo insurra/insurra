@@ -78,6 +78,14 @@ export function createApiClient(
     options: TransportOptions,
     stream = false,
   ) {
+    if (!baseUrl)
+      throw new ApiClientError(0, {
+        code: "BACKEND_NOT_CONFIGURED",
+        message:
+          "Backend belum dikonfigurasi untuk deployment ini. Hubungi pengelola aplikasi.",
+        details: null,
+        request_id: "local",
+      });
     const rendered = path.replace(/\{([^}]+)\}/g, (_, key: string) => {
       const value = options.params?.[key];
       if (value === undefined)
@@ -124,8 +132,7 @@ export function createApiClient(
       if (options.signal?.aborted) throw error;
       throw new ApiClientError(0, {
         code: "NETWORK_ERROR",
-        message:
-          "Backend belum terhubung. Pastikan server berjalan di port 8000.",
+        message: "Backend belum terhubung. Periksa koneksi atau coba kembali.",
         details: null,
         request_id: "local",
       });

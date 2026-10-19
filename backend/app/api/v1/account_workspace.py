@@ -18,6 +18,7 @@ from app.models import (
     AccountDocumentRow,
     AccountFieldRow,
     AccountProfileRow,
+    ClaimCaseRow,
     FamilyMemberRow,
 )
 from app.schemas.account_workspace import (
@@ -48,6 +49,8 @@ from app.services.audit_logger import (
     ensure_account_guardrail_events,
 )
 from app.services.policy_guard import PolicyGuard
+from app.services.rules_engine import uncovered_interval
+from app.services.workspace_privacy import purge_content, purge_workspace
 
 router = APIRouter(prefix="/account", tags=["Authenticated workspace"])
 
@@ -171,6 +174,8 @@ def update_consent(body: PurposeConsentUpdate, db: DB, account: ActiveAccount):
             select(AccountDocumentRow).where(AccountDocumentRow.account_id == account.id)
         ):
             document.content = None
+    if not body.granted:
+        purge_content(db, account.id, pages=body.purpose == ConsentPurpose.RETENTION)
     audit(db, account.id, "CONSENT_CHANGED", purpose=body.purpose.value, granted=body.granted)
     db.commit()
     return get_consents(db, account)
@@ -200,6 +205,8 @@ def decide_consents(body: BulkConsentDecision, db: DB, account: ActiveAccount):
                 select(AccountDocumentRow).where(AccountDocumentRow.account_id == account.id)
             ):
                 document.content = None
+    if not all(decisions.values()):
+        purge_content(db, account.id, pages=not decisions[ConsentPurpose.RETENTION.value])
     audit(db, account.id, "CONSENTS_DECIDED", skip=body.skip, **decisions)
     db.commit()
     return get_consents(db, account)
@@ -438,7 +445,24 @@ def completeness(
     )
     visa_gap = None
     rule = next((item for item in country.rules if item.kind == "visa_coverage"), None)
-    if rule and profile.occupation.value == "STUDENT" and task == "visa_cover":
+    from app.schemas.actor import Actor
+    from app.services.coverage_matching import visa_assessment
+    from app.services.workspace import coverages
+
+    actor = Actor(actor_type="AUTHENTICATED_ACCOUNT", account_id=account.id)
+    normalized = coverages(db, actor, kb)
+    if task == "visa_cover" and normalized:
+        report = visa_assessment(db, actor, kb, profile, normalized)
+        source = report.rule_source
+        visa_gap = AccountVisaGap(
+            status=report.assessment_status.value,
+            gap_days=report.gap_days,
+            explanation=report.explanation,
+            source_url=source.source_url if source else None,
+            checked_at=source.checked_at.isoformat() if source and source.checked_at else None,
+            verification_status=source.verification_status if source else "UNVERIFIED",
+        )
+    elif rule and profile.occupation.value == "STUDENT" and task == "visa_cover":
         by_key = {item.field_key: item for item in items}
         needed = ("arrival_date", "visa_expiry_date", "coverage_start_date", "coverage_end_date")
         if not all(
@@ -456,7 +480,7 @@ def completeness(
             visa_end = date.fromisoformat(str(by_key["visa_expiry_date"].value))
             cover_start = date.fromisoformat(str(by_key["coverage_start_date"].value))
             cover_end = date.fromisoformat(str(by_key["coverage_end_date"].value))
-            gap = max((cover_start - arrival).days, 0) + max((visa_end - cover_end).days, 0)
+            gap, _ = uncovered_interval(arrival, visa_end, [(cover_start, cover_end)])
             visa_gap = AccountVisaGap(
                 status="GAP_FOUND" if gap else "PASS",
                 gap_days=gap,
@@ -502,7 +526,10 @@ def inventory(db: DB, account: ActiveAccount):
         document_count=len(documents),
         structured_field_count=fields or 0,
         coverage_count=coverages or 0,
-        claim_case_count=0,
+        claim_case_count=db.scalar(
+            select(func.count(ClaimCaseRow.id)).where(ClaimCaseRow.account_id == account.id)
+        )
+        or 0,
         action_count=0,
         documents=[document_summary(row) for row in documents],
     )
@@ -511,6 +538,7 @@ def inventory(db: DB, account: ActiveAccount):
 @router.delete("/data", response_model=Deleted)
 def delete_all_data(body: DeleteRequest, db: DB, account: ActiveAccount):
     current_consents = consent_rows(db, account.id)
+    purge_workspace(db, account.id)
     document_count = (
         db.scalar(
             select(func.count(AccountDocumentRow.id)).where(

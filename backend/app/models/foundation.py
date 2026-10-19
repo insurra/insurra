@@ -94,9 +94,32 @@ class ExtractedFieldRow(Base):
 
 class ClaimCaseRow(Base):
     __tablename__ = "claim_cases"
-    __table_args__ = (UniqueConstraint("id", "session_id", name="uq_claim_owner"),)
+    __table_args__ = (
+        UniqueConstraint("id", "session_id", name="uq_claim_owner"),
+        CheckConstraint("(account_id IS NULL) <> (session_id IS NULL)", name="ck_claim_actor"),
+        UniqueConstraint("account_id", "idempotency_key", name="uq_claim_account_key"),
+        UniqueConstraint("session_id", "idempotency_key", name="uq_claim_session_key"),
+        UniqueConstraint("comparison_id", name="uq_claim_decision"),
+        ForeignKeyConstraint(
+            ["coverage_id", "account_id"],
+            ["account_coverages.id", "account_coverages.account_id"],
+            ondelete="CASCADE",
+            name="fk_claim_account_coverage",
+        ),
+    )
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
-    session_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("demo_sessions.id"), index=True)
+    session_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("demo_sessions.id"), index=True
+    )
+    account_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("accounts.id", ondelete="CASCADE"), index=True
+    )
+    comparison_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("pathway_decisions.id", ondelete="SET NULL")
+    )
+    idempotency_key: Mapped[str | None] = mapped_column(String(128))
+    payload_sha256: Mapped[str | None] = mapped_column(String(64))
+    complaint_summary: Mapped[str | None] = mapped_column(String(80))
     coverage_id: Mapped[UUID] = mapped_column(
         Uuid
     )  # References the session's validated JSON policy.

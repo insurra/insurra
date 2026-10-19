@@ -1,6 +1,6 @@
 {
   "schema_version": "1.5",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
@@ -9,28 +9,86 @@
       {
         "pathway_code": "BPJS_PRIMARY",
         "label": "Jalur BPJS",
-        "description": "Placeholder konfigurasi demo. Syarat dan jaringan fasilitas belum diverifikasi.",
-        "required_documents": [],
+        "description": "Panduan Mobile JKN menjelaskan pendaftaran pada FKTP terdaftar yang terintegrasi dan memerlukan status peserta aktif. Konfirmasi rujukan, layanan, dan syarat lain kepada faskes.",
+        "required_documents": [
+          "Kartu kepesertaan atau ringkasan polis, jika diminta fasilitas.",
+          "Rujukan dan bukti layanan atau pembayaran, bila berlaku; pastikan kepada fasilitas."
+        ],
         "estimated_out_of_pocket": null,
         "currency": "IDR",
         "uncertainties": [
-          "Biaya, waktu tunggu, kelayakan, dan dokumen belum diverifikasi."
+          "Daftar ini berisi langkah verifikasi, bukan konfirmasi kelayakan atau pembayaran."
         ],
-        "source_url": null,
-        "verification_status": "UNVERIFIED"
+        "source_url": "https://bpjs-kesehatan.go.id/user-manual-mobile-jkn/pelayanan%20jkn.html",
+        "verification_status": "VERIFIED",
+        "service_types": [
+          "OUTPATIENT"
+        ],
+        "policy_types": [
+          "BPJS"
+        ],
+        "benefit_category": "outpatient",
+        "verification_codes": [
+          "provider_network",
+          "referral",
+          "claim_mode",
+          "benefit",
+          "kapj"
+        ],
+        "steps": [
+          "Konfirmasi kelayakan layanan dan manfaat dengan penyedia atau fasilitas.",
+          "Periksa jaringan, prosedur rujukan, dan cara pembayaran sebelum berangkat.",
+          "Cek jadwal atau booking online melalui kanal fasilitas.",
+          "Tanyakan dokumen yang diperlukan; simpan bukti layanan dan pembayaran jika diminta."
+        ],
+        "requirements": [
+          "Kepesertaan aktif dan manfaat yang sesuai perlu dikonfirmasi.",
+          "Jaringan provider, rujukan, dan direct billing atau reimbursement mengikuti dokumen serta konfirmasi fasilitas."
+        ],
+        "checked_at": "2026-10-19",
+        "tariff": null
       },
       {
         "pathway_code": "EMPLOYER_NETWORK",
         "label": "Jalur asuransi karyawan",
-        "description": "Placeholder konfigurasi demo. Syarat dan jaringan fasilitas belum diverifikasi.",
-        "required_documents": [],
+        "description": "Verifikasi jalur asuransi kantor kepada HR dan penyedia. Belum ada sumber publik atau ketentuan polis spesifik yang terverifikasi.",
+        "required_documents": [
+          "Kartu kepesertaan atau ringkasan polis, jika diminta fasilitas.",
+          "Rujukan dan bukti layanan atau pembayaran, bila berlaku; pastikan kepada fasilitas."
+        ],
         "estimated_out_of_pocket": null,
         "currency": "IDR",
         "uncertainties": [
-          "Biaya, waktu tunggu, kelayakan, dan dokumen belum diverifikasi."
+          "Daftar ini berisi langkah verifikasi, bukan konfirmasi kelayakan atau pembayaran."
         ],
         "source_url": null,
-        "verification_status": "UNVERIFIED"
+        "verification_status": "UNVERIFIED",
+        "service_types": [
+          "OUTPATIENT"
+        ],
+        "policy_types": [
+          "EMPLOYER"
+        ],
+        "benefit_category": "outpatient",
+        "verification_codes": [
+          "provider_network",
+          "referral",
+          "claim_mode",
+          "benefit",
+          "kapj"
+        ],
+        "steps": [
+          "Konfirmasi kelayakan layanan dan manfaat dengan penyedia atau fasilitas.",
+          "Periksa jaringan, prosedur rujukan, dan cara pembayaran sebelum berangkat.",
+          "Cek jadwal atau booking online melalui kanal fasilitas.",
+          "Tanyakan dokumen yang diperlukan; simpan bukti layanan dan pembayaran jika diminta."
+        ],
+        "requirements": [
+          "Kepesertaan aktif dan manfaat yang sesuai perlu dikonfirmasi.",
+          "Jaringan provider, rujukan, dan direct billing atau reimbursement mengikuti dokumen serta konfirmasi fasilitas."
+        ],
+        "checked_at": null,
+        "tariff": null
       }
     ],
     "emergency": {
@@ -39,6 +97,23 @@
       "source_url": null,
       "checked_at": null,
       "verification_status": "UNVERIFIED"
-    }
+    },
+    "service_types": [
+      {
+        "code": "OUTPATIENT",
+        "label": "Rawat jalan"
+      }
+    ],
+    "help_text": "Sampaikan kebutuhan layanan non-darurat. Keluhan tidak dipakai untuk diagnosis dan tidak disimpan lengkap.",
+    "priority_rules": [
+      {
+        "codes": [
+          "low_cost",
+          "Biaya berobat rendah"
+        ],
+        "kind": "lowest_cost",
+        "explanation": "Rentang perkiraan biaya pribadi paling rendah dari tarif dan manfaat yang dapat diverifikasi; bukan penilaian medis."
+      }
+    ]
   }
 }

@@ -46,6 +46,7 @@ from app.services.account_documents import (
     remove_injection_lines,
     sniff_mime,
 )
+from app.services.workspace_privacy import purge_content
 
 router = APIRouter(prefix="/account", tags=["Authenticated documents"])
 
@@ -184,7 +185,7 @@ async def upload_document(
         )
         db.add(coverage)
         db.flush()
-    for page in pages:
+    for page in pages if retention else []:
         db.add(
             AccountDocumentPageRow(
                 document_id=document.id,
@@ -313,6 +314,7 @@ def review_field(field_id: UUID, body: AccountFieldUpdate, db: DB, account: Acti
 @router.delete("/documents/{document_id}", response_model=Deleted)
 def delete_document(document_id: UUID, body: DeleteRequest, db: DB, account: ActiveAccount):
     row = _owned_document(db, account.id, document_id)
+    purge_content(db, account.id)
     db.execute(delete(AccountFieldRow).where(AccountFieldRow.document_id == row.id))
     db.execute(delete(AccountDocumentPageRow).where(AccountDocumentPageRow.document_id == row.id))
     db.execute(delete(AccountCoverageRow).where(AccountCoverageRow.document_id == row.id))

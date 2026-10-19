@@ -1,5 +1,8 @@
 # Screen route specifications
 
+Current rollout (19 October 2026): `/home`, `/ask`, `/pathways` and `/coverage-needs` exist and reuse current account/demo authentication. `/ask-policy`, `/care` and `/coverage` re-export their canonical page; `/dashboard` remains the existing demo dashboard. Q&A/pathways remain fail-closed with shipped unverified triage. SC-08 `/emergency`, SC-09 `/claims/[id]` and SC-10 `/actions` remain absent. Case creation shows its real ID with an unavailable-checklist state. Existing Rere account/onboarding/document/privacy wrappers remain intact. The earlier route/status inventory below is historical; it is not a current absence claim for these activated routes.
+
+
 These are PRD route specifications, not a plan to scaffold nineteen pages. Existing routes stay intact. No new product screens are built in Phase 1.5. Existing shells/partial demos do not fulfill complete screen acceptance criteria.
 
 | ID | Exact PRD name | PRD route | Priority | Purpose | Current route/status |

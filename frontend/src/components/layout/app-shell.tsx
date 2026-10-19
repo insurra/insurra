@@ -23,16 +23,15 @@ import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/home", label: "Home", icon: LayoutDashboard },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
   { href: "/documents", label: "Documents", icon: FileText },
   {
-    href: "/ask-policy",
-    label: "Ask INSURRA",
+    href: "/ask",
+    label: "Tanya polis",
     icon: MessageSquareText,
-    soon: true,
   },
-  { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
+  { href: "/pathways", label: "Jalur layanan", icon: HeartPulse },
   {
     href: "/claims",
     label: "Claims Center",
@@ -48,16 +47,15 @@ const navigation = [
 ];
 
 const accountNavigation = [
-  { href: "/account", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/home", label: "Home", icon: LayoutDashboard },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
   { href: "/documents", label: "Documents", icon: FileText },
   {
-    href: "/ask-policy",
-    label: "Ask INSURRA",
+    href: "/ask",
+    label: "Tanya polis",
     icon: MessageSquareText,
-    soon: true,
   },
-  { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
+  { href: "/pathways", label: "Jalur layanan", icon: HeartPulse },
   {
     href: "/claims",
     label: "Claims Center",

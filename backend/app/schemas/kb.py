@@ -3,7 +3,7 @@ from typing import Generic, Literal, TypeVar
 
 from pydantic import Field, JsonValue, model_validator
 
-from app.schemas.common import Contract, CountryCode, VerificationStatus
+from app.schemas.common import Contract, CountryCode, CurrencyCode, Money, VerificationStatus
 from app.schemas.profile import Occupation, ResidenceContext
 
 
@@ -16,6 +16,9 @@ class CountryManifest(Contract):
     sources: list[str]
     supported_features: list[str]
     verification_status: VerificationStatus
+    default_timezone: str = "UTC"
+    city_timezones: dict[str, str] = Field(default_factory=dict)
+    official_source_hosts: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def verified_manifest_requires_sources(self):
@@ -29,6 +32,8 @@ class CountryManifest(Contract):
 class Applicability(Contract):
     residence_context: list[ResidenceContext] = Field(default_factory=list)
     occupation: list[Occupation] = Field(default_factory=list)
+    has_dependents: bool | None = None
+    requires_visa_context: bool | None = None
 
 
 class RuleParameters(Contract):
@@ -58,6 +63,11 @@ class CoverageVocabulary(Contract):
 
     source_url: str | None = None
     checked_at: date | None = None
+    applicability: Applicability = Field(default_factory=Applicability)
+    benefit_categories: list[str] = Field(default_factory=list)
+    explanation: str = "Verifikasi kebutuhan sesuai situasi Anda."
+    verification_steps: list[str] = Field(default_factory=list)
+    task_code: str | None = None
 
     @model_validator(mode="after")
     def required_needs_verified_source(self):
@@ -70,6 +80,16 @@ class CoverageVocabulary(Contract):
         return self
 
 
+class ReferenceTariff(Contract):
+    minimum: Money
+    maximum: Money
+    currency: CurrencyCode
+    source_url: str
+    checked_at: date
+    verification_status: VerificationStatus
+    synthetic: bool = False
+
+
 class PathwayConfig(Contract):
     pathway_code: str
     label: str
@@ -80,6 +100,26 @@ class PathwayConfig(Contract):
     uncertainties: list[str]
     source_url: str | None
     verification_status: VerificationStatus
+    checked_at: date | None = None
+    service_types: list[str] = Field(default_factory=list)
+    policy_types: list[str] = Field(default_factory=list)
+    steps: list[str] = Field(default_factory=list, max_length=5)
+    requirements: list[str] = Field(default_factory=list)
+    benefit_category: str = "outpatient"
+    verification_codes: list[str] = Field(default_factory=list)
+    emergency: bool = False
+    tariff: ReferenceTariff | None = None
+
+
+class PathwayService(Contract):
+    code: str
+    label: str
+
+
+class PathwayPriority(Contract):
+    codes: list[str]
+    kind: Literal["lowest_cost"]
+    explanation: str
 
 
 class EmergencyConfig(Contract):
@@ -93,6 +133,9 @@ class EmergencyConfig(Contract):
 class PathwaysResource(Contract):
     pathways: list[PathwayConfig]
     emergency: EmergencyConfig
+    service_types: list[PathwayService] = Field(default_factory=list)
+    help_text: str = "Jelaskan kebutuhan layanan non-darurat; sistem tidak memberi diagnosis."
+    priority_rules: list[PathwayPriority] = Field(default_factory=list)
 
 
 class CountryKB(Contract):
@@ -108,6 +151,19 @@ class CountryKB(Contract):
         ids = [rule.rule_id for rule in self.rules]
         if len(ids) != len(set(ids)):
             raise ValueError("Duplicate KB rule IDs")
+        services = {s.code for s in self.pathways.service_types}
+        policies = {p.code for p in self.resources.coverage_types.data}
+        verifications = {v.code for v in self.resources.verification_steps.data}
+        paths = [p.pathway_code for p in self.pathways.pathways]
+        if len(paths) != len(set(paths)) or len(services) != len(self.pathways.service_types):
+            raise ValueError("Duplicate pathway or service codes")
+        for path in self.pathways.pathways:
+            if (
+                not set(path.service_types) <= services
+                or not set(path.policy_types) <= policies
+                or not set(path.verification_codes) <= verifications
+            ):
+                raise ValueError("Unknown pathway service, policy or verification reference")
         return self
 
 
@@ -139,6 +195,7 @@ class VersionedResource(ResourceMetadata, Generic[T]):
 class VocabularyEntry(Contract):
     code: str = Field(min_length=1)
     label: str = Field(min_length=1)
+    aliases: list[str] = Field(default_factory=list)
 
 
 class TemplateField(Contract):
@@ -185,12 +242,23 @@ class RecommendationRuleConfig(Contract):
     conditions: dict[str, JsonValue]
     text_template: str
     task_code: str | None = None
+    explanation_template: str = "Periksa data dan sumber sebelum mengambil keputusan."
+    action_url: str = "/documents"
+    visa_related: bool = False
+    regulatory: bool = False
+    source_url: str | None = None
+    checked_at: date | None = None
+    verification_status: VerificationStatus = VerificationStatus.UNVERIFIED
+    applicability: Applicability = Field(default_factory=Applicability)
 
 
 class VerificationStepConfig(Contract):
     code: str
     label: str
     steps: list[str]
+    field_key: str | None = None
+    known_values: list[str] = Field(default_factory=list)
+    impact: str | None = None
 
 
 class RedFlagConfig(Contract):
@@ -222,6 +290,8 @@ class CountryResources(Contract):
     verification_steps: VersionedResource[list[VerificationStepConfig]]
     red_flags: VersionedResource[list[RedFlagConfig]]
     emergency: VersionedResource[EmergencyConfig]
+    example_questions: VersionedResource[list[str]]
+    retrieval_terms: VersionedResource[dict[str, list[str]]]
 
     @model_validator(mode="after")
     def consistent_references(self):

@@ -1,18 +1,63 @@
 {
   "schema_version": "1.5",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
   "data": [
     {
       "need_code": "OSHC",
-      "label": "OSHC",
-      "requirement_level": "RECOMMENDED",
+      "label": "OSHC · perlindungan kesehatan pelajar",
+      "requirement_level": "REQUIRED",
       "policy_types": [
         "OSHC"
       ],
-      "verification_status": "UNVERIFIED"
+      "verification_status": "VERIFIED",
+      "source_url": "https://www.ombudsman.gov.au/__data/assets/pdf_file/0025/88324/Factsheet_student_OSHC.pdf",
+      "checked_at": "2026-10-18",
+      "applicability": {
+        "occupation": [
+          "STUDENT"
+        ],
+        "residence_context": [
+          "ABROAD"
+        ]
+      },
+      "explanation": "Untuk konteks visa pelajar; periksa syarat individual dan pengecualian pada sumber resmi.",
+      "task_code": "visa_cover",
+      "verification_steps": [
+        "Cocokkan tanggal sertifikat dengan masa tinggal yang diwajibkan visa."
+      ]
+    },
+    {
+      "need_code": "DENTAL",
+      "label": "Perlindungan gigi",
+      "requirement_level": "RECOMMENDED",
+      "policy_types": [],
+      "benefit_categories": [
+        "dental"
+      ],
+      "verification_status": "UNVERIFIED",
+      "explanation": "Periksa kebutuhan dan manfaat gigi dalam dokumen Anda.",
+      "verification_steps": [
+        "Tanyakan kategori dan pengecualian manfaat kepada penyedia."
+      ]
+    },
+    {
+      "need_code": "WORKER_HEALTH",
+      "label": "Perlindungan kesehatan pekerja",
+      "requirement_level": "RECOMMENDED",
+      "policy_types": [
+        "PERSONAL_HEALTH",
+        "EMPLOYER"
+      ],
+      "verification_status": "UNVERIFIED",
+      "applicability": {
+        "occupation": [
+          "EMPLOYEE"
+        ]
+      },
+      "explanation": "Kewajiban khusus visa kerja belum diverifikasi; periksa sumber resmi untuk visa Anda."
     }
   ]
 }

@@ -1,5 +1,22 @@
 # Canonical API contracts
 
+## Current workspace activation — 19 October 2026
+
+This section supersedes the older foundation-only status rows below for the five activated operations. Existing account authentication and account endpoints are live at the inspected master baseline; canonical workspace routes resolve the same bearer account or the existing demo session, rejecting both credentials together. Other foundation stubs retain their previous guards/statuses. No unversioned or duplicate API was added.
+
+| Canonical operation | Current contract and boundary |
+| --- | --- |
+| GET /home/summary | Existing counts/recommendations plus context, original-country cards/labels, emergency availability, KB examples/service choices. No processing grant needed for this owned read. |
+| GET /coverage-needs | Existing typed list plus current-context ownership reasons, source dates, verification steps and shared visa result. Requires process_documents. |
+| POST /ask | Existing question/optional owned coverage plus optional chat_session_id. JSON AskAnswer/EmergencyRedirect or Accept:text/event-stream. Named progress/answer_point/complete/redirect/error with UTF-8, comment heartbeats and validated terminal sequence. Additive numeric facts, verification steps, context and answer/conversation IDs. Current process_documents AND external_ai required; unavailable reviewed triage returns 503 before provider use. |
+| POST /pathways/compare | Existing complaint/service_type/city plus optional timeframe today/this_week/unknown. Existing paths plus owned comparison_id, current country, max-five questions and warnings. Requires process_documents and reviewed triage. Null costs when source/benefit prerequisites are missing. |
+| POST /claims | Existing path/coverage_id plus comparison_id and Idempotency-Key for the live creation service. Existing 201 claim_case_id response, DRAFT only. Foreign coverage is 404 before proof/key errors. Same payload retries return same ID; conflicting key/comparison is 409. No checklist, submission or execution. |
+
+Helpers: POST /home/recommendations/decision; GET/DELETE /ask/sessions/{id}; POST /ask/sessions/{id}/feedback; GET /ask/sources/{document_id}/{page}. History/source/feedback always recheck owner and current grants. Sources require available retained owned pages. No source/history is restored by consent regrant. Source endpoint bounds pages to 1–30.
+
+The wire additions are generated from Python; original required PRD fields and existing non-owned routes remain. See [integration decisions](../agent-tasks/valen/INTEGRATION.md), [DECISIONS](DECISIONS.md) and the generated schema for exact fields. No real emergency number, policy clause or cost is inferred from these DTOs. Historical field audits below describe their dated foundation baseline rather than completion of these workflows.
+
+
 All business paths below have `/api/v1` prefix. A mapped future endpoint is an honest HTTP 501 contract after identity, consent and object scope checks; no business operation succeeds. Existing working GET/demo endpoints retain their response shapes. Canonical PUT /profile now uses the PRD envelope; see compatibility notes below. Lowercase PRD purpose values remain lowercase; other legacy domain enums remain uppercase.
 
 Consent notation: `D` process_documents; `A` external_ai; `—` no processing grant required. Every user-scoped route requires a validated demo session today. Authenticated-account actors are specified but not resolved. Foreign and absent object IDs both return 404; session failure is 401, purpose denial 403, then owned unimplemented operations return 501. Retention never grants AI permission.

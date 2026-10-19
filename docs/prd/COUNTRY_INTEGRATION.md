@@ -59,3 +59,12 @@ Before any future activation: review real country facts outside this foundation 
 | Preservation checks | Original PRD CSVs, migrations, lockfiles, KB files and Next.js framework AGENTS block unchanged; no route/link rewiring or consent/ownership changes. |
 
 Tests cover both country-switch directions, original record/DocumentRow preservation, unchanged purpose grants, exactly one redacted profile audit entry per save, failed-update atomicity, explicit destination metadata, same-country merge, round-trip date invalidation and the original 76-day/Sinta behavior. Browser assertions exercise current API updates plus full-page session restoration; they do not claim a working profile editor or live cross-tab refresh. Starlette/httpx deprecation and Node color warnings remain upstream/environment notices. No live provider/AI/PostgreSQL integration or hosted CI run was performed.
+
+
+## Current workspace integration — 19 October 2026
+
+The inventory above records the earlier foundation baseline. Current AU/ID manifests/resources are version 0.3.0 with sixteen resource files, including question examples and multilingual retrieval vocabulary. Home, contextual need matching, bounded pathway schemas and verification questions are now implemented. Official AU student-cover and narrow UCC/JKN descriptive references are documented in [KB_SOURCES](../agent-tasks/valen/KB_SOURCES.md). This does not verify policy benefits, individual eligibility, worker visa requirements, GP/employer sources or tariffs.
+
+Shared red_flags remains empty/unverified; emergency numbers remain null. Care/chat fail closed. SC-04 task matrices and extraction templates remain empty; SC-08/09/10 and account audit display remain dependencies. Original countries/currencies are preserved. Current account views refresh country-derived context on focus/navigation; pathway case proofs reject changed profile, fields or KB. Neither a source URL alone nor a matching country establishes a benefit.
+
+Read-only `git fetch origin master` during resume resolved origin/master to 3fa80ce, unchanged from branch baseline: kb has AU and ID, no CN folder and no new ID/CN commits. Nothing was merged. A future CN resource needs the same complete versioned envelope set and canonical vocabulary/reference validation; an AU-to-CN relabel would break student/visa/timezone/source assumptions and cannot establish Chinese guidance. Coordinate any new country snapshot before integration.

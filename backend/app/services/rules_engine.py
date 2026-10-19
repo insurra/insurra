@@ -7,6 +7,27 @@ from app.schemas.profile import UserProfile
 from app.services.kb_loader import CountryKBLoader
 
 
+def uncovered_interval(start: date, end: date, intervals: list[tuple[date, date]]):
+    """Union/clamp inclusive calendar intervals. Shared by demo, SC-04 and SC-14."""
+    ranges = sorted(
+        (max(start.toordinal(), left.toordinal()), min(end.toordinal(), right.toordinal()))
+        for left, right in intervals
+    )
+    cursor, end_day = start.toordinal(), end.toordinal()
+    gaps: list[DateRange] = []
+    for left, right in ranges:
+        if left > right:
+            continue
+        if left > cursor:
+            gaps.append(
+                DateRange(start_date=date.fromordinal(cursor), end_date=date.fromordinal(left - 1))
+            )
+        cursor = max(cursor, right + 1)
+    if cursor <= end_day:
+        gaps.append(DateRange(start_date=date.fromordinal(cursor), end_date=end))
+    return sum((g.end_date - g.start_date + timedelta(days=1)).days for g in gaps), gaps
+
+
 class RulesEngine:
     def __init__(self, kb_loader: CountryKBLoader):
         self.kb_loader = kb_loader
@@ -83,31 +104,15 @@ class RulesEngine:
                 explanation="Policy dates or context are incomplete. " + explanation,
                 rule_source=source,
             )
-        # Union all qualifying coverage intervals, clipped to the required inclusive interval.
-        # Python ordinals avoid overflow even at date.max. No LLM performs arithmetic.
-        intervals = sorted(
-            (
-                max(start.toordinal(), p.coverage_start_date.toordinal()),
-                min(end.toordinal(), p.coverage_end_date.toordinal()),
-            )
-            for p in policies
-            if p.coverage_start_date is not None and p.coverage_end_date is not None
+        days, gaps = uncovered_interval(
+            start,
+            end,
+            [
+                (p.coverage_start_date, p.coverage_end_date)
+                for p in policies
+                if p.coverage_start_date is not None and p.coverage_end_date is not None
+            ],
         )
-        cursor, end_day = start.toordinal(), end.toordinal()
-        gaps: list[DateRange] = []
-        for left, right in intervals:
-            if left > right:
-                continue
-            if left > cursor:
-                gaps.append(
-                    DateRange(
-                        start_date=date.fromordinal(cursor), end_date=date.fromordinal(left - 1)
-                    )
-                )
-            cursor = max(cursor, right + 1)
-        if cursor <= end_day:
-            gaps.append(DateRange(start_date=date.fromordinal(cursor), end_date=end))
-        days = sum((g.end_date - g.start_date + timedelta(days=1)).days for g in gaps)
         verified = (
             rule.verification_status == VerificationStatus.VERIFIED
             and kb.manifest.verification_status == VerificationStatus.VERIFIED
