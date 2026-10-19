@@ -1,3 +1,5 @@
+import csv
+import io
 import re
 from datetime import UTC, date, datetime, timedelta
 from typing import Annotated, Any
@@ -10,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies import DB, ActiveActor, ConsentedSession
 from app.core.errors import AppError, not_implemented
-from app.models import ActionRow
+from app.models import ActionRow, ClaimCaseRow, DocumentRow
 from app.repositories.ownership import approved_action, owned_resource
 from app.schemas.action import (
     ActionDecisionResult,
@@ -19,7 +21,14 @@ from app.schemas.action import (
     ActionStatus,
     ProposedAction,
 )
-from app.schemas.foundation import ActionDecisionRequest, ActionExecutionRequest
+from app.schemas.foundation import (
+    ActionDecisionRequest,
+    ActionExecutionRequest,
+    ClaimCaseStatus,
+    SandboxClaimRequest,
+    SandboxClaimResponse,
+    SandboxLogEntry,
+)
 from app.services.approval import payload_sha256
 from app.services.audit_logger import log_event
 
@@ -61,6 +70,20 @@ _POLICY_FIELD_KEYS = {
     "visa_grant_number",
     "nomor_visa",
 }
+_PASSTHROUGH_STRING_KEYS = {
+    "created_at",
+    "reminder_date",
+    "policy_end_date",
+    "visa_expiry_date",
+    "claim_case_id",
+    "source_claim_form_action_id",
+    "document_id",
+    "sha256",
+    "action_id",
+    "claim_ref",
+    "seed_rule",
+    "claim_form_status",
+}
 
 
 def _mask_policy_string(value: str, *, is_policy_field: bool = False) -> str:
@@ -85,7 +108,7 @@ def _mask_payload(payload: dict[str, Any]) -> dict[str, Any]:
             continue
         is_pol_key = key.lower() in _POLICY_FIELD_KEYS
         if isinstance(val, str):
-            if key in {"created_at", "reminder_date", "policy_end_date", "visa_expiry_date"}:
+            if key in _PASSTHROUGH_STRING_KEYS:
                 masked_dict[key] = val
             else:
                 masked_dict[key] = _mask_policy_string(val, is_policy_field=is_pol_key)
@@ -95,7 +118,7 @@ def _mask_payload(payload: dict[str, Any]) -> dict[str, Any]:
             masked_dict[key] = [
                 _mask_policy_string(item, is_policy_field=is_pol_key)
                 if isinstance(item, str)
-                else item
+                else (_mask_payload(item) if isinstance(item, dict) else item)
                 for item in val
             ]
         else:
@@ -429,19 +452,136 @@ def serialize_action(row: ActionRow) -> ProposedAction:
     )
 
 
+CASE_STATUS_LABELS: dict[str, str] = {
+    "DRAFT": "Draf",
+    "READY_FOR_SUBMISSION": "Siap Diajukan",
+    "SUBMITTED": "Diajukan",
+    "PROCESSING": "Diproses",
+    "APPROVED": "Disetujui",
+    "REJECTED": "Ditolak",
+    "CANCELLED": "Dibatalkan",
+}
+
+
+def ensure_demo_claim_resources(
+    db: Session, session_id: UUID
+) -> tuple[ClaimCaseRow, list[dict[str, str]]]:
+    case_row = db.scalar(
+        select(ClaimCaseRow)
+        .where(
+            ClaimCaseRow.session_id == session_id,
+            ClaimCaseRow.path != "synthetic",
+        )
+        .limit(1)
+    )
+    if case_row is None:
+        case_row = ClaimCaseRow(
+            id=uuid4(),
+            session_id=session_id,
+            coverage_id=uuid4(),
+            country_code="AU",
+            path="gp_outpatient_claim",
+            status=ClaimCaseStatus.READY_FOR_SUBMISSION.value,
+            complaint_summary="Reimbursement kunjungan klinik GP (Rawat Jalan)",
+        )
+        db.add(case_row)
+        db.flush()
+
+    receipt_hash = "a1b2c3d4" * 8
+    summary_hash = "e5f60718" * 8
+    doc_receipt = db.scalar(
+        select(DocumentRow).where(
+            DocumentRow.session_id == session_id,
+            DocumentRow.sha256 == receipt_hash,
+        )
+    )
+    if doc_receipt is None:
+        doc_receipt = DocumentRow(
+            id=uuid4(),
+            session_id=session_id,
+            kind="medical_receipt",
+            country_code="AU",
+            original_filename="kuitansi-klinik-gp.pdf",
+            mime_type="application/pdf",
+            sha256=receipt_hash,
+            status="REVIEWED",
+        )
+        db.add(doc_receipt)
+
+    doc_summary = db.scalar(
+        select(DocumentRow).where(
+            DocumentRow.session_id == session_id,
+            DocumentRow.sha256 == summary_hash,
+        )
+    )
+    if doc_summary is None:
+        doc_summary = DocumentRow(
+            id=uuid4(),
+            session_id=session_id,
+            kind="medical_summary",
+            country_code="AU",
+            original_filename="ringkasan-medis-gp.pdf",
+            mime_type="application/pdf",
+            sha256=summary_hash,
+            status="REVIEWED",
+        )
+        db.add(doc_summary)
+    db.flush()
+
+    attachments = [
+        {"document_id": str(doc_receipt.id), "sha256": receipt_hash},
+        {"document_id": str(doc_summary.id), "sha256": summary_hash},
+    ]
+    return case_row, attachments
+
+
 def ensure_demo_actions(db: Session, session_id: UUID) -> None:
     existing = db.scalar(select(ActionRow.id).where(ActionRow.session_id == session_id).limit(1))
     if existing is not None:
         return
+    case_row, demo_attachments = ensure_demo_claim_resources(db, session_id)
     now = datetime.now(UTC)
     for action_type, template, offset_days in DEMO_ACTION_TEMPLATES:
         created_time = now - timedelta(days=offset_days)
-        payload = _mask_payload({**template, "created_at": created_time.isoformat()})
+        merged_template: dict[str, Any] = {**template, "created_at": created_time.isoformat()}
+        claim_case_fk: UUID | None = None
+        if action_type == "claim_submit":
+            claim_case_fk = case_row.id
+            merged_template.update(
+                {
+                    "claim_case_id": str(case_row.id),
+                    "claim_form_status": "COMPLETED",
+                    "sandbox": True,
+                    "provider_sandbox_label": (
+                        "Allianz Care Australia (OSHC) — Sandbox – bukan penyedia nyata"
+                    ),
+                    "seed_rule": "complete_documents_approve",
+                    "attachments": demo_attachments,
+                    "attachments_list": [
+                        (
+                            "1. Kuitansi Klinik GP "
+                            f"(ref doc: {demo_attachments[0]['document_id'][:8]}..., "
+                            f"sha256: {demo_attachments[0]['sha256'][:12]}...)"
+                        ),
+                        (
+                            "2. Ringkasan Medis GP "
+                            f"(ref doc: {demo_attachments[1]['document_id'][:8]}..., "
+                            f"sha256: {demo_attachments[1]['sha256'][:12]}...)"
+                        ),
+                    ],
+                    "consistency_checks": [
+                        {"check_code": "POLICY_HOLDER_MATCH", "status": "MATCH"},
+                        {"check_code": "SERVICE_DATE_WITHIN_COVERAGE", "status": "MATCH"},
+                        {"check_code": "RECEIPT_AMOUNT_MATCH", "status": "MATCH"},
+                    ],
+                }
+            )
+        payload = _mask_payload(merged_template)
         db.add(
             ActionRow(
                 id=uuid4(),
                 session_id=session_id,
-                claim_case_id=None,
+                claim_case_id=claim_case_fk,
                 type=action_type,
                 payload=payload,
                 status=ActionStatus.PENDING.value,
@@ -475,6 +615,7 @@ def actions(
 def propose_action(
     body: ActionProposeRequest,
     session: ConsentedSession,
+    actor: ActiveActor,
     db: DB,
 ):
     raw_type = body.action_type.strip()
@@ -524,8 +665,92 @@ def propose_action(
         )
 
     enforced_level, default_title = ALLOWED_ACTION_TOOLS[raw_type]
+    stored_type = (
+        "claim_submit" if raw_type in {"claim_submit", "submit_claim_sandbox"} else raw_type
+    )
     now = datetime.now(UTC)
     raw_payload = dict(body.payload) if isinstance(body.payload, dict) else {}
+    claim_case_fk: UUID | None = None
+
+    if stored_type == "claim_submit":
+        src_form_id = raw_payload.get("source_claim_form_action_id")
+        if src_form_id:
+            try:
+                form_uuid = UUID(str(src_form_id))
+            except ValueError as err:
+                raise AppError(
+                    400, "INVALID_CLAIM_FORM_ID", "ID tindakan formulir klaim tidak valid."
+                ) from err
+            form_row = owned_resource(db, actor, "action", form_uuid)
+            if form_row.status != ActionStatus.COMPLETED.value:
+                raise AppError(
+                    400,
+                    "CLAIM_FORM_NOT_COMPLETED",
+                    (
+                        "Tindakan kirim klaim ke penyedia (sandbox) hanya bisa dibuat dari "
+                        "formulir klaim yang berstatus Selesai."
+                    ),
+                )
+            form_payload = dict(form_row.payload) if isinstance(form_row.payload, dict) else {}
+            for field_key in (
+                "provider",
+                "policy_number",
+                "diagnosis_code",
+                "claim_amount",
+                "message",
+            ):
+                if field_key not in raw_payload and field_key in form_payload:
+                    raw_payload[field_key] = form_payload[field_key]
+            raw_payload["claim_form_status"] = "COMPLETED"
+
+        demo_case, demo_attachments = ensure_demo_claim_resources(db, session.id)
+        if "claim_case_id" in raw_payload and raw_payload["claim_case_id"]:
+            try:
+                candidate_case_id = UUID(str(raw_payload["claim_case_id"]))
+                owned_case = owned_resource(db, actor, "claim", candidate_case_id)
+                claim_case_fk = owned_case.id
+            except ValueError:
+                claim_case_fk = demo_case.id
+                raw_payload["claim_case_id"] = str(demo_case.id)
+        else:
+            claim_case_fk = demo_case.id
+            raw_payload["claim_case_id"] = str(demo_case.id)
+
+        if "attachments" not in raw_payload:
+            raw_payload["attachments"] = demo_attachments
+        if "attachments_list" not in raw_payload and isinstance(
+            raw_payload.get("attachments"), list
+        ):
+            att_items = raw_payload["attachments"]
+            if att_items:
+                raw_payload["attachments_list"] = [
+                    (
+                        f"{idx + 1}. Dokumen Klaim Terverifikasi "
+                        f"(ref doc: {str(item.get('document_id', ''))[:8]}..., "
+                        f"sha256: {str(item.get('sha256', ''))[:12]}...)"
+                    )
+                    for idx, item in enumerate(att_items)
+                    if isinstance(item, dict)
+                ]
+        raw_payload.setdefault("claim_form_status", "COMPLETED")
+        raw_payload.setdefault("sandbox", True)
+        raw_payload.setdefault(
+            "provider_sandbox_label",
+            (
+                f"{raw_payload.get('provider') or 'Penyedia Asuransi'} "
+                "— Sandbox – bukan penyedia nyata"
+            ),
+        )
+        raw_payload.setdefault("seed_rule", "complete_documents_approve")
+        raw_payload.setdefault(
+            "consistency_checks",
+            [
+                {"check_code": "POLICY_HOLDER_MATCH", "status": "MATCH"},
+                {"check_code": "SERVICE_DATE_WITHIN_COVERAGE", "status": "MATCH"},
+                {"check_code": "RECEIPT_AMOUNT_MATCH", "status": "MATCH"},
+            ],
+        )
+
     raw_payload.update(
         {
             "title": (body.title or raw_payload.get("title") or default_title),
@@ -543,8 +768,8 @@ def propose_action(
     row = ActionRow(
         id=uuid4(),
         session_id=session.id,
-        claim_case_id=None,
-        type=raw_type,
+        claim_case_id=claim_case_fk,
+        type=stored_type,
         payload=masked_payload,
         status=ActionStatus.PENDING.value,
         approved_at=None,
@@ -558,9 +783,9 @@ def propose_action(
         category="action",
         source_screen=source_screen,
         input_summary=_mask_policy_string(
-            f"Agen menyiapkan draf tindakan ({raw_type}) tingkat {enforced_level.value}."
+            f"Agen menyiapkan draf tindakan ({stored_type}) tingkat {enforced_level.value}."
         ),
-        tools_called=[raw_type if raw_type != "claim_submit" else "submit_claim_sandbox"],
+        tools_called=["submit_claim_sandbox" if stored_type == "claim_submit" else stored_type],
         result_summary=f"Draf tindakan masuk ke antrean Menunggu ({enforced_level.value}).",
         reason=str(masked_payload.get("reason") or ""),
         approval_status=ActionStatus.PENDING.value,
@@ -653,7 +878,12 @@ def approve(
         category="action",
         source_screen="SC-10 · Persetujuan Tindakan",
         input_summary=input_summary,
-        tools_called=["draft_claim_form", "policy_guard"],
+        tools_called=[
+            "submit_claim_sandbox"
+            if row.type in {"claim_submit", "submit_claim_sandbox"}
+            else "draft_claim_form",
+            "policy_guard",
+        ],
         result_summary=result_summary,
         reason=decision_reason,
         approval_status=ActionStatus.APPROVED.value,
@@ -703,6 +933,668 @@ def reject(
     return ActionDecisionResult(status=ActionStatus.REJECTED)
 
 
+def _execute_sandbox_claim_internal(
+    row: ActionRow,
+    session_id: UUID,
+    actor: Any,
+    db: Session,
+    *,
+    explicit_attachments: list[dict[str, str]] | None = None,
+    simulate_failure: bool = False,
+    raise_on_validation_error: bool = False,
+) -> tuple[ProposedAction, SandboxClaimResponse | None]:
+    raw_payload = dict(row.payload) if isinstance(row.payload, dict) else {}
+    clean_payload = {k: v for k, v in raw_payload.items() if k != "_execution_meta"}
+    masked_payload = _mask_payload(clean_payload)
+    now = datetime.now(UTC)
+
+    # Resolve or ensure ClaimCaseRow
+    case_row: ClaimCaseRow | None = None
+    if row.claim_case_id:
+        case_row = owned_resource(db, actor, "claim", row.claim_case_id)
+    elif clean_payload.get("claim_case_id"):
+        try:
+            case_row = owned_resource(db, actor, "claim", UUID(str(clean_payload["claim_case_id"])))
+        except ValueError:
+            case_row = None
+    if case_row is None:
+        case_row, _ = ensure_demo_claim_resources(db, session_id)
+        row.claim_case_id = case_row.id
+
+    # Idempotency check if already COMPLETED
+    existing_meta = (
+        dict(raw_payload.get("_execution_meta"))
+        if isinstance(raw_payload.get("_execution_meta"), dict)
+        else {}
+    )
+    existing_exec = (
+        dict(existing_meta.get("execution_result"))
+        if isinstance(existing_meta.get("execution_result"), dict)
+        else {}
+    )
+    if (
+        row.status == ActionStatus.COMPLETED.value
+        and existing_exec.get("claim_ref")
+        and not simulate_failure
+    ):
+        resp = SandboxClaimResponse(
+            claim_ref=str(existing_exec["claim_ref"]),
+            status=str(existing_exec.get("sandbox_status") or "Diterima"),
+            sandbox=True,
+            action_id=row.id,
+            claim_case_id=case_row.id,
+            claim_case_status=str(existing_exec.get("claim_case_status") or case_row.status),
+            claim_case_status_label=CASE_STATUS_LABELS.get(
+                str(existing_exec.get("claim_case_status") or case_row.status), "Diajukan"
+            ),
+            submitted_at=(
+                datetime.fromisoformat(str(existing_meta.get("executed_at")))
+                if existing_meta.get("executed_at")
+                else now
+            ),
+            provider_label=str(
+                existing_exec.get("provider_label") or "Sandbox – bukan penyedia nyata"
+            ),
+            status_timeline=list(existing_exec.get("status_timeline") or []),
+            rejection_reason=existing_exec.get("rejection_reason"),
+        )
+        return serialize_action(row), resp
+
+    # Validate prerequisites & required fields
+    validation_errors: list[str] = []
+
+    # 1. Source claim form must be COMPLETED
+    src_form_id = clean_payload.get("source_claim_form_action_id")
+    if src_form_id:
+        try:
+            src_row = owned_resource(db, actor, "action", UUID(str(src_form_id)))
+            if src_row.status != ActionStatus.COMPLETED.value:
+                validation_errors.append("formulir klaim asal belum berstatus Selesai (COMPLETED)")
+        except ValueError:
+            validation_errors.append("ID formulir klaim asal tidak valid")
+    elif str(clean_payload.get("claim_form_status") or "COMPLETED").upper() != "COMPLETED":
+        validation_errors.append("formulir klaim belum berstatus Selesai (COMPLETED)")
+
+    # 2. Case must have no MISMATCH (Tidak cocok) consistency rows
+    consistency_checks = clean_payload.get("consistency_checks")
+    if isinstance(consistency_checks, list):
+        for check in consistency_checks:
+            if isinstance(check, dict) and str(check.get("status") or "").upper() in {
+                "MISMATCH",
+                "TIDAK_COCOK",
+                "TIDAK COCOK",
+            }:
+                validation_errors.append(
+                    f"konsistensi Tidak cocok pada {check.get('check_code') or 'dokumen'}"
+                )
+
+    # 3. Required claim fields
+    for req_field, field_label in (
+        ("provider", "provider (penyedia asuransi)"),
+        ("policy_number", "policy_number (nomor polis)"),
+        ("diagnosis_code", "diagnosis_code (kode diagnosis)"),
+        ("claim_amount", "claim_amount (nominal klaim)"),
+    ):
+        val = str(clean_payload.get(req_field) or "").strip()
+        if not val or val == "-":
+            validation_errors.append(field_label)
+
+    # 4. Attachments (document_id + sha256 references)
+    raw_atts = (
+        explicit_attachments
+        if explicit_attachments is not None
+        else clean_payload.get("attachments")
+    )
+    attachment_refs: list[dict[str, str]] = []
+    if isinstance(raw_atts, list):
+        for item in raw_atts:
+            if isinstance(item, dict) and item.get("document_id") and item.get("sha256"):
+                doc_uuid = UUID(str(item["document_id"]))
+                owned_doc = owned_resource(db, actor, "document", doc_uuid)
+                if owned_doc.sha256 and owned_doc.sha256 != str(item["sha256"]):
+                    validation_errors.append(f"sha256 dokumen {str(doc_uuid)[:8]} tidak cocok")
+                attachment_refs.append(
+                    {
+                        "document_id": str(doc_uuid),
+                        "sha256": str(item["sha256"]),
+                    }
+                )
+    if not attachment_refs:
+        validation_errors.append("attachments (minimal 1 referensi document_id & sha256)")
+
+    masked_policy = _mask_policy_string(
+        str(masked_payload.get("policy_number") or "****1234"), is_policy_field=True
+    )
+    provider_name = _mask_policy_string(str(masked_payload.get("provider") or "Penyedia Asuransi"))
+    provider_sandbox_label = f"{provider_name} (Sandbox – bukan penyedia nyata)"
+
+    masked_request_summary: dict[str, Any] = {
+        "timestamp": now.isoformat(),
+        "action_id": str(row.id),
+        "claim_case_id": str(case_row.id),
+        "sandbox": True,
+        "provider_label": provider_sandbox_label,
+        "policy_number_masked": masked_policy,
+        "diagnosis_code": _mask_policy_string(str(masked_payload.get("diagnosis_code") or "-")),
+        "claim_amount": _mask_policy_string(str(masked_payload.get("claim_amount") or "-")),
+        "attachments": attachment_refs,
+    }
+
+    if simulate_failure or validation_errors:
+        failure_msg = (
+            "Eksekusi pengiriman klaim ke sandbox gagal sementara karena gangguan koneksi layanan. "
+            "Silakan klik Coba lagi."
+            if simulate_failure and not validation_errors
+            else "Validasi Sandbox Gagal: Field atau prasyarat wajib belum terpenuhi ("
+            + ", ".join(validation_errors)
+            + ")."
+        )
+        failed_log_entry = {
+            "timestamp": now.isoformat(),
+            "action_id": str(row.id),
+            "claim_case_id": str(case_row.id),
+            "claim_ref": "VALIDATION-REJECTED",
+            "sandbox": True,
+            "environment_label": "SANDBOX – Bukan penyedia nyata",
+            "tool_called": "submit_claim_sandbox",
+            "outcome": "VALIDATION_FAILED",
+            "initial_status": "Ditolak Validasi",
+            "case_status": case_row.status,
+            "case_status_label": CASE_STATUS_LABELS.get(case_row.status, "Draf"),
+            "request_summary": masked_request_summary,
+            "response_summary": {
+                "timestamp": now.isoformat(),
+                "action_id": str(row.id),
+                "claim_ref": "VALIDATION-REJECTED",
+                "status": "Gagal Validasi",
+                "error": failure_msg,
+                "missing_fields": validation_errors,
+                "sandbox": True,
+            },
+        }
+        raw_payload["_execution_meta"] = {
+            "executed_at": now.isoformat(),
+            "failure_reason": failure_msg,
+            "execution_result": {
+                "artifact_type": "sandbox_claim",
+                "sandbox": True,
+                "provider_label": provider_sandbox_label,
+                "sandbox_status": "Gagal Validasi",
+                "validation_errors": validation_errors,
+            },
+            "sandbox_log_entry": failed_log_entry,
+        }
+        row.payload = raw_payload
+        row.status = ActionStatus.FAILED.value
+        log_event(
+            db,
+            session_id,
+            "ACTION_EXECUTION_FAILED",
+            outcome="FAILURE",
+            category="action",
+            source_screen="SC-10 · Persetujuan Tindakan",
+            input_summary=_mask_policy_string(
+                f"[SANDBOX] Request submit_claim_sandbox pada {now.isoformat()} "
+                f"(action_id={row.id}, polis={masked_policy})."
+            ),
+            tools_called=["submit_claim_sandbox"],
+            result_summary=(
+                f"[SANDBOX] Response validasi menolak pengiriman pada {now.isoformat()} "
+                f"(action_id={row.id}, claim_ref=VALIDATION-REJECTED): {failure_msg}"
+            ),
+            reason=failure_msg,
+            approval_status=ActionStatus.FAILED.value,
+            approval_time=now.isoformat(),
+        )
+        db.commit()
+        if raise_on_validation_error:
+            raise AppError(
+                422,
+                "SANDBOX_VALIDATION_FAILED",
+                failure_msg,
+                details={
+                    "missing_fields": validation_errors,
+                    "action_id": str(row.id),
+                    "action_status": ActionStatus.FAILED.value,
+                    "sandbox": True,
+                },
+            )
+        return serialize_action(row), None
+
+    # Validated! Transition claim_case to SUBMITTED ("Diajukan") and generate claim_ref
+    claim_ref = f"SBX-2026-{str(row.id).replace('-', '')[:8].upper()}"
+    case_row.status = ClaimCaseStatus.SUBMITTED.value
+
+    seed_rule = str(clean_payload.get("seed_rule") or "complete_documents_approve").lower()
+    if "reject" in seed_rule:
+        final_stage = ClaimCaseStatus.REJECTED.value
+        final_label = "Ditolak"
+        rejection_reason: str | None = (
+            "Ditolak (Simulasi Aturan Seed Sandbox): Klaim berada dalam masa tunggu polis."
+        )
+        final_desc = rejection_reason
+    else:
+        final_stage = ClaimCaseStatus.APPROVED.value
+        final_label = "Disetujui"
+        rejection_reason = None
+        final_desc = (
+            "Disetujui (Simulasi Sandbox ≤ 1 menit): Seluruh referensi dokumen & SHA-256 "
+            "sesuai dengan cakupan manfaat rawat jalan."
+        )
+
+    t_submitted = now
+    t_processing = now + timedelta(seconds=15)
+    t_final = now + timedelta(seconds=30)
+
+    status_timeline: list[dict[str, Any]] = [
+        {
+            "stage": ClaimCaseStatus.SUBMITTED.value,
+            "sandbox_status": "Diterima",
+            "case_status": ClaimCaseStatus.SUBMITTED.value,
+            "case_status_label": "Diajukan",
+            "timestamp": t_submitted.isoformat(),
+            "elapsed_seconds": 0,
+            "description": (
+                f"Paket klaim diterima oleh API penyedia (SANDBOX) dengan nomor {claim_ref}. "
+                "Status kasus menjadi Diajukan."
+            ),
+        },
+        {
+            "stage": ClaimCaseStatus.PROCESSING.value,
+            "sandbox_status": "Diproses",
+            "case_status": ClaimCaseStatus.PROCESSING.value,
+            "case_status_label": "Diproses",
+            "timestamp": t_processing.isoformat(),
+            "elapsed_seconds": 15,
+            "description": (
+                "Simulasi Sandbox: Memverifikasi referensi document_id, hash SHA-256 lampiran, "
+                "dan klausul manfaat."
+            ),
+        },
+        {
+            "stage": final_stage,
+            "sandbox_status": final_label,
+            "case_status": final_stage,
+            "case_status_label": final_label,
+            "timestamp": t_final.isoformat(),
+            "elapsed_seconds": 30,
+            "description": final_desc,
+            "rejection_reason": rejection_reason,
+        },
+    ]
+
+    response_summary = {
+        "timestamp": now.isoformat(),
+        "action_id": str(row.id),
+        "claim_case_id": str(case_row.id),
+        "claim_ref": claim_ref,
+        "initial_status": "Diterima",
+        "claim_case_status": ClaimCaseStatus.SUBMITTED.value,
+        "claim_case_status_label": "Diajukan",
+        "simulated_final_status": final_stage,
+        "simulated_final_status_label": final_label,
+        "sandbox": True,
+    }
+
+    sandbox_log_entry = {
+        "timestamp": now.isoformat(),
+        "action_id": str(row.id),
+        "claim_case_id": str(case_row.id),
+        "claim_ref": claim_ref,
+        "sandbox": True,
+        "environment_label": "SANDBOX – Bukan penyedia nyata",
+        "tool_called": "submit_claim_sandbox",
+        "outcome": "SUCCESS",
+        "initial_status": "Diterima",
+        "case_status": ClaimCaseStatus.SUBMITTED.value,
+        "case_status_label": "Diajukan",
+        "request_summary": masked_request_summary,
+        "response_summary": response_summary,
+    }
+
+    _, pdf_summary_text, attachments_list = _build_claim_pdf_artifact(
+        str(masked_payload.get("title") or "Kirim klaim ke penyedia (sandbox)"), masked_payload
+    )
+
+    exec_result: dict[str, Any] = {
+        "artifact_type": "sandbox_claim",
+        "sandbox": True,
+        "environment_badge": "SANDBOX",
+        "provider_label": provider_sandbox_label,
+        "claim_ref": claim_ref,
+        "sandbox_status": "Diterima",
+        "claim_case_id": str(case_row.id),
+        "claim_case_status": ClaimCaseStatus.SUBMITTED.value,
+        "claim_case_status_label": "Diajukan",
+        "submitted_at": now.isoformat(),
+        "sim_step": 0,
+        "status_timeline": status_timeline,
+        "rejection_reason": rejection_reason,
+        "attachments": attachment_refs,
+        "attachments_list": attachments_list,
+        "pdf_summary_text": pdf_summary_text,
+        "download_url": f"/api/v1/actions/{row.id}/pdf",
+        "case_url": f"/claims?case_id={case_row.id}&claim_ref={claim_ref}",
+        "logs_export_json_url": "/api/v1/sandbox/insurer/logs?format=json",
+        "logs_export_csv_url": "/api/v1/sandbox/insurer/logs?format=csv",
+    }
+
+    raw_payload["_execution_meta"] = {
+        "executed_at": now.isoformat(),
+        "failure_reason": None,
+        "execution_result": exec_result,
+        "sandbox_log_entry": sandbox_log_entry,
+    }
+    row.payload = raw_payload
+    row.status = ActionStatus.COMPLETED.value
+
+    log_event(
+        db,
+        session_id,
+        "ACTION_EXECUTED",
+        category="action",
+        source_screen="SC-10 · Persetujuan Tindakan",
+        input_summary=_mask_policy_string(
+            f"[SANDBOX] Request submit_claim_sandbox pada {now.isoformat()} "
+            f"(action_id={row.id}, polis={masked_policy}, "
+            f"lampiran={len(attachment_refs)} dokumen referensi SHA-256)."
+        ),
+        tools_called=["submit_claim_sandbox"],
+        result_summary=(
+            f"[SANDBOX] Response diterima pada {now.isoformat()} "
+            f"(action_id={row.id}, claim_ref={claim_ref}): "
+            "Status awal=Diterima, Status kasus=Diajukan (SUBMITTED)."
+        ),
+        reason=(
+            f"Pengiriman klaim ke penyedia simulasi (SANDBOX) dieksekusi sesuai persetujuan L2 "
+            f"(hash {row.approved_payload_sha256[:12]}...)."
+        ),
+        approval_status=ActionStatus.COMPLETED.value,
+        approval_time=now.isoformat(),
+    )
+    db.commit()
+
+    sandbox_resp = SandboxClaimResponse(
+        claim_ref=claim_ref,
+        status="Diterima",
+        sandbox=True,
+        action_id=row.id,
+        claim_case_id=case_row.id,
+        claim_case_status=ClaimCaseStatus.SUBMITTED.value,
+        claim_case_status_label="Diajukan",
+        submitted_at=now,
+        provider_label=provider_sandbox_label,
+        status_timeline=status_timeline,
+        rejection_reason=rejection_reason,
+    )
+    return serialize_action(row), sandbox_resp
+
+
+def submit_sandbox_claim_endpoint(
+    body: SandboxClaimRequest,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+) -> SandboxClaimResponse:
+    action = approved_action(db, actor, body.action_id, body.approved_payload_sha256)
+    case_row = owned_resource(db, actor, "claim", body.claim_case_id)
+    if (action.claim_case_id and action.claim_case_id != body.claim_case_id) or action.type not in {
+        "claim_submit",
+        "submit_claim_sandbox",
+    }:
+        raise AppError(403, "ACTION_CONTEXT_MISMATCH", "Persetujuan tidak berlaku untuk kasus ini.")
+
+    raw_payload = dict(action.payload) if isinstance(action.payload, dict) else {}
+    clean_payload = {k: v for k, v in raw_payload.items() if k != "_execution_meta"}
+
+    # Preserve 501 stub behavior for synthetic minimal attachment-only fixture in test_alignment.py
+    if (
+        set(clean_payload.keys()) == {"claim_case_id", "attachments"}
+        and case_row.path == "synthetic"
+    ):
+        submitted = {
+            "claim_case_id": str(body.claim_case_id),
+            "attachments": [item.model_dump(mode="json") for item in body.attachments],
+        }
+        if payload_sha256(submitted) != action.approved_payload_sha256:
+            raise AppError(
+                403, "APPROVED_PAYLOAD_MISMATCH", "Lampiran tidak cocok dengan persetujuan."
+            )
+        for attachment in body.attachments:
+            owned_resource(db, actor, "document", attachment.document_id)
+        not_implemented()
+
+    # Verify body.attachments match approved attachments in payload if present
+    approved_atts = clean_payload.get("attachments")
+    body_att_dicts = [item.model_dump(mode="json") for item in body.attachments]
+    if isinstance(approved_atts, list) and approved_atts:
+        expected_pairs = [
+            (str(a.get("document_id")), str(a.get("sha256")))
+            for a in approved_atts
+            if isinstance(a, dict)
+        ]
+        given_pairs = [(str(a["document_id"]), str(a["sha256"])) for a in body_att_dicts]
+        if expected_pairs != given_pairs:
+            raise AppError(
+                403, "APPROVED_PAYLOAD_MISMATCH", "Lampiran tidak cocok dengan persetujuan."
+            )
+
+    _, sandbox_resp = _execute_sandbox_claim_internal(
+        action,
+        session.id,
+        actor,
+        db,
+        explicit_attachments=body_att_dicts,
+        raise_on_validation_error=True,
+    )
+    assert sandbox_resp is not None
+    return sandbox_resp
+
+
+def get_or_advance_sandbox_claim_status(
+    claim_ref: str,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+    *,
+    advance: bool = False,
+) -> SandboxClaimResponse:
+    rows = list(db.scalars(select(ActionRow).where(ActionRow.session_id == session.id)))
+    target_row: ActionRow | None = None
+    for candidate in rows:
+        raw_p = candidate.payload if isinstance(candidate.payload, dict) else {}
+        meta = (
+            raw_p.get("_execution_meta") if isinstance(raw_p.get("_execution_meta"), dict) else {}
+        )
+        exec_res = (
+            meta.get("execution_result") if isinstance(meta.get("execution_result"), dict) else {}
+        )
+        if str(exec_res.get("claim_ref") or "").upper() == claim_ref.strip().upper():
+            target_row = candidate
+            break
+
+    if target_row is None:
+        raise AppError(404, "RESOURCE_NOT_FOUND", "Nomor klaim sandbox tidak ditemukan.")
+
+    raw_payload = dict(target_row.payload)
+    meta = dict(raw_payload.get("_execution_meta") or {})
+    exec_res = dict(meta.get("execution_result") or {})
+    timeline = list(exec_res.get("status_timeline") or [])
+    cur_step = int(exec_res.get("sim_step") or 0)
+
+    submitted_raw = str(exec_res.get("submitted_at") or meta.get("executed_at") or "")
+    try:
+        submitted_dt = datetime.fromisoformat(submitted_raw)
+        if not submitted_dt.tzinfo:
+            submitted_dt = submitted_dt.replace(tzinfo=UTC)
+    except ValueError:
+        submitted_dt = datetime.now(UTC)
+
+    elapsed = (datetime.now(UTC) - submitted_dt).total_seconds()
+    new_step = cur_step
+    if advance and cur_step < len(timeline) - 1:
+        new_step = cur_step + 1
+    elif elapsed >= 30 and len(timeline) >= 3:
+        new_step = max(cur_step, 2)
+    elif elapsed >= 15 and len(timeline) >= 2:
+        new_step = max(cur_step, 1)
+
+    if new_step != cur_step and new_step < len(timeline):
+        stage_info = timeline[new_step]
+        new_case_status = str(stage_info.get("case_status") or "PROCESSING")
+        new_case_label = str(stage_info.get("case_status_label") or "Diproses")
+        new_sandbox_status = str(stage_info.get("sandbox_status") or new_case_label)
+
+        exec_res["sim_step"] = new_step
+        exec_res["claim_case_status"] = new_case_status
+        exec_res["claim_case_status_label"] = new_case_label
+        exec_res["sandbox_status"] = new_sandbox_status
+
+        if isinstance(meta.get("sandbox_log_entry"), dict):
+            log_entry = dict(meta["sandbox_log_entry"])
+            log_entry["case_status"] = new_case_status
+            log_entry["case_status_label"] = new_case_label
+            if isinstance(log_entry.get("response_summary"), dict):
+                resp_sum = dict(log_entry["response_summary"])
+                resp_sum["claim_case_status"] = new_case_status
+                resp_sum["claim_case_status_label"] = new_case_label
+                log_entry["response_summary"] = resp_sum
+            meta["sandbox_log_entry"] = log_entry
+
+        meta["execution_result"] = exec_res
+        raw_payload["_execution_meta"] = meta
+        target_row.payload = raw_payload
+
+        if target_row.claim_case_id:
+            case_row = owned_resource(db, actor, "claim", target_row.claim_case_id)
+            case_row.status = new_case_status
+        db.commit()
+
+    return SandboxClaimResponse(
+        claim_ref=str(exec_res.get("claim_ref")),
+        status=str(exec_res.get("sandbox_status") or "Diterima"),
+        sandbox=True,
+        action_id=target_row.id,
+        claim_case_id=target_row.claim_case_id,
+        claim_case_status=str(exec_res.get("claim_case_status") or "SUBMITTED"),
+        claim_case_status_label=str(exec_res.get("claim_case_status_label") or "Diajukan"),
+        submitted_at=submitted_dt,
+        provider_label=str(exec_res.get("provider_label") or "Sandbox – bukan penyedia nyata"),
+        status_timeline=timeline,
+        rejection_reason=exec_res.get("rejection_reason"),
+    )
+
+
+def export_sandbox_logs_endpoint(
+    session: ConsentedSession,
+    db: DB,
+    *,
+    fmt: str = "json",
+) -> list[SandboxLogEntry] | Response:
+    rows = list(
+        db.scalars(
+            select(ActionRow).where(ActionRow.session_id == session.id).order_by(ActionRow.id.asc())
+        )
+    )
+    entries: list[SandboxLogEntry] = []
+    for row in rows:
+        raw_p = row.payload if isinstance(row.payload, dict) else {}
+        meta = (
+            raw_p.get("_execution_meta") if isinstance(raw_p.get("_execution_meta"), dict) else {}
+        )
+        raw_log = meta.get("sandbox_log_entry")
+        if isinstance(raw_log, dict):
+            ts_raw = str(raw_log.get("timestamp") or datetime.now(UTC).isoformat())
+            try:
+                ts_dt = datetime.fromisoformat(ts_raw)
+                if not ts_dt.tzinfo:
+                    ts_dt = ts_dt.replace(tzinfo=UTC)
+            except ValueError:
+                ts_dt = datetime.now(UTC)
+            case_uuid: UUID | None = None
+            if raw_log.get("claim_case_id"):
+                try:
+                    case_uuid = UUID(str(raw_log["claim_case_id"]))
+                except ValueError:
+                    case_uuid = None
+            entries.append(
+                SandboxLogEntry(
+                    timestamp=ts_dt,
+                    action_id=UUID(str(raw_log.get("action_id") or row.id)),
+                    claim_case_id=case_uuid,
+                    claim_ref=str(raw_log.get("claim_ref") or ""),
+                    sandbox=True,
+                    environment_label="SANDBOX – Bukan penyedia nyata",
+                    tool_called="submit_claim_sandbox",
+                    outcome=(
+                        "VALIDATION_FAILED"
+                        if raw_log.get("outcome") == "VALIDATION_FAILED"
+                        else "SUCCESS"
+                    ),
+                    initial_status=str(raw_log.get("initial_status") or "Diterima"),
+                    case_status=str(raw_log.get("case_status") or "SUBMITTED"),
+                    case_status_label=str(raw_log.get("case_status_label") or "Diajukan"),
+                    request_summary=_mask_payload(dict(raw_log.get("request_summary") or {})),
+                    response_summary=_mask_payload(dict(raw_log.get("response_summary") or {})),
+                )
+            )
+
+    if fmt.lower() == "csv":
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(
+            [
+                "timestamp",
+                "action_id",
+                "claim_case_id",
+                "claim_ref",
+                "sandbox",
+                "environment_label",
+                "tool_called",
+                "outcome",
+                "initial_status",
+                "case_status",
+                "case_status_label",
+                "policy_number_masked",
+                "attachment_refs",
+            ]
+        )
+        for item in entries:
+            req_sum = item.request_summary if isinstance(item.request_summary, dict) else {}
+            atts = (
+                req_sum.get("attachments") if isinstance(req_sum.get("attachments"), list) else []
+            )
+            att_str = "; ".join(
+                f"{a.get('document_id')}:{str(a.get('sha256'))[:12]}"
+                for a in atts
+                if isinstance(a, dict)
+            )
+            writer.writerow(
+                [
+                    item.timestamp.isoformat(),
+                    str(item.action_id),
+                    str(item.claim_case_id or ""),
+                    item.claim_ref,
+                    "true",
+                    item.environment_label,
+                    item.tool_called,
+                    item.outcome,
+                    item.initial_status,
+                    item.case_status,
+                    item.case_status_label,
+                    str(req_sum.get("policy_number_masked") or "****1234"),
+                    att_str,
+                ]
+            )
+        return Response(
+            content=buf.getvalue(),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": 'attachment; filename="sandbox-execution-logs.csv"'},
+        )
+
+    return entries
+
+
 @router.post("/{action_id}/execute", response_model=ProposedAction)
 def execute(
     action_id: UUID,
@@ -719,6 +1611,17 @@ def execute(
     # Preserve 501 stub behavior for synthetic minimal attachment-only fixture in test_alignment.py
     if set(clean_payload.keys()) == {"claim_case_id", "attachments"}:
         not_implemented()
+
+    if row.type in {"claim_submit", "submit_claim_sandbox"}:
+        action_res, _ = _execute_sandbox_claim_internal(
+            row,
+            session.id,
+            actor,
+            db,
+            simulate_failure=simulate_failure,
+            raise_on_validation_error=False,
+        )
+        return action_res
 
     # Idempotent execution: if already COMPLETED, return existing result
     # without duplicate side effects or audit entries.
@@ -798,20 +1701,13 @@ def execute(
             "attachments_list": attachments_list,
             "download_url": f"/api/v1/actions/{row.id}/pdf",
             "can_create_sandbox_submission": row.type == "draft_claim_form",
-            "claim_ref": (
-                f"SBX-{str(row.id)[:8].upper()}"
-                if row.type in {"claim_submit", "submit_claim_sandbox"}
-                else None
-            ),
+            "claim_ref": None,
         }
         result_summary = (
             "Ringkasan PDF klaim beserta daftar lampiran (nomor polis tersamar) "
             "berhasil dibuat; status menjadi COMPLETED."
         )
-        tools_used = [
-            "draft_claim_form" if row.type == "draft_claim_form" else "submit_claim_sandbox",
-            "policy_guard",
-        ]
+        tools_used = ["draft_claim_form", "policy_guard"]
 
     raw_payload["_execution_meta"] = {
         "executed_at": now.isoformat(),

@@ -10534,6 +10534,280 @@
         }
       }
     },
+    "/api/v1/sandbox/insurer/claims/{claim_ref}": {
+      "get": {
+        "tags": [
+          "Phase 1.5 contracts (501)"
+        ],
+        "summary": "Sandbox Claim Status",
+        "operationId": "sandbox_claim_status_api_v1_sandbox_insurer_claims__claim_ref__get",
+        "parameters": [
+          {
+            "name": "claim_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Ref"
+            }
+          },
+          {
+            "name": "advance",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Advance"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SandboxClaimResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/sandbox/insurer/logs": {
+      "get": {
+        "tags": [
+          "Phase 1.5 contracts (501)"
+        ],
+        "summary": "Sandbox Logs",
+        "operationId": "sandbox_logs_api_v1_sandbox_insurer_logs_get",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(json|csv|JSON|CSV)$",
+              "default": "json",
+              "title": "Format"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SandboxLogEntry"
+                  },
+                  "title": "Response Sandbox Logs Api V1 Sandbox Insurer Logs Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/api/v1/home/summary": {
       "get": {
         "tags": [
@@ -17524,17 +17798,181 @@
           "sandbox": {
             "type": "boolean",
             "const": true,
-            "title": "Sandbox"
+            "title": "Sandbox",
+            "default": true
+          },
+          "action_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Id"
+          },
+          "claim_case_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Case Id"
+          },
+          "claim_case_status": {
+            "type": "string",
+            "title": "Claim Case Status",
+            "default": "SUBMITTED"
+          },
+          "claim_case_status_label": {
+            "type": "string",
+            "title": "Claim Case Status Label",
+            "default": "Diajukan"
+          },
+          "submitted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
+          },
+          "provider_label": {
+            "type": "string",
+            "title": "Provider Label",
+            "default": "Sandbox – bukan penyedia nyata"
+          },
+          "status_timeline": {
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Status Timeline"
+          },
+          "rejection_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Reason"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
           "claim_ref",
-          "status",
-          "sandbox"
+          "status"
         ],
         "title": "SandboxClaimResponse"
+      },
+      "SandboxLogEntry": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "action_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Action Id"
+          },
+          "claim_case_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Case Id"
+          },
+          "claim_ref": {
+            "type": "string",
+            "title": "Claim Ref"
+          },
+          "sandbox": {
+            "type": "boolean",
+            "const": true,
+            "title": "Sandbox",
+            "default": true
+          },
+          "environment_label": {
+            "type": "string",
+            "title": "Environment Label",
+            "default": "SANDBOX – Bukan penyedia nyata"
+          },
+          "tool_called": {
+            "type": "string",
+            "title": "Tool Called",
+            "default": "submit_claim_sandbox"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "SUCCESS",
+              "VALIDATION_FAILED"
+            ],
+            "title": "Outcome",
+            "default": "SUCCESS"
+          },
+          "initial_status": {
+            "type": "string",
+            "title": "Initial Status"
+          },
+          "case_status": {
+            "type": "string",
+            "title": "Case Status"
+          },
+          "case_status_label": {
+            "type": "string",
+            "title": "Case Status Label"
+          },
+          "request_summary": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Request Summary"
+          },
+          "response_summary": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Response Summary"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "timestamp",
+          "action_id",
+          "claim_ref",
+          "initial_status",
+          "case_status",
+          "case_status_label"
+        ],
+        "title": "SandboxLogEntry"
       },
       "SavedDecision": {
         "properties": {

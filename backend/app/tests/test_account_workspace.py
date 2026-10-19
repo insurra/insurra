@@ -720,3 +720,213 @@ def test_action_execution_ics_mailto_pdf_idempotency_and_hash_guardrail(client, 
     assert "C9876543" not in pdf_text_raw
     assert "1122334455667" not in pdf_text_raw
     assert "****1234" in pdf_text_raw
+
+
+def test_us_10_04_submit_claim_to_sandbox_provider_and_export_logs(client, demo) -> None:
+    _, headers = demo("raka")
+    assert (
+        client.put(
+            "/api/v1/consent", headers=headers, json={"processing_consent": True}
+        ).status_code
+        == 200
+    )
+
+    # 1. Create and complete draft_claim_form first (US-10-03 prerequisite)
+    cf_res = client.post(
+        "/api/v1/actions",
+        headers=headers,
+        json={
+            "action_type": "draft_claim_form",
+            "title": "Formulir Klaim Rawat Jalan GP",
+            "reason": "Klaim siap dikirim ke sandbox setelah dokumen lengkap",
+            "source_screen": "SC-09 · Kesiapan Klaim",
+            "payload": {
+                "provider": "Allianz Care Australia",
+                "policy_number": "OSHC-8899001234",
+                "diagnosis_code": "J06.9",
+                "claim_amount": "125.00 AUD",
+            },
+        },
+    )
+    assert cf_res.status_code == 201
+    cf = cf_res.json()
+    assert (
+        client.post(
+            f"/api/v1/actions/{cf['id']}/approve", headers=headers, json={"confirmed": True}
+        ).status_code
+        == 200
+    )
+    cf_approved = client.get(f"/api/v1/actions/{cf['id']}", headers=headers).json()
+    cf_exec = client.post(
+        f"/api/v1/actions/{cf['id']}/execute",
+        headers=headers,
+        json={"approved_payload_sha256": cf_approved["approved_payload_sha256"]},
+    )
+    assert cf_exec.status_code == 200
+    assert cf_exec.json()["status"] == "COMPLETED"
+
+    # 2. Propose claim_submit action from the completed claim_form (L2)
+    sbx_action_res = client.post(
+        "/api/v1/actions",
+        headers=headers,
+        json={
+            "action_type": "claim_submit",
+            "permission_level": "L2",
+            "title": "Kirim klaim ke penyedia (sandbox)",
+            "reason": "Dibuat dari formulir klaim yang sudah selesai dieksekusi (US-10-03)",
+            "source_screen": "SC-10 · Antrean Tindakan",
+            "payload": {
+                "source_claim_form_action_id": cf["id"],
+                "provider": "Allianz Care Australia",
+                "provider_label": "Allianz Care Australia (Sandbox – bukan penyedia nyata)",
+                "policy_number": "****1234",
+                "diagnosis_code": "J06.9",
+                "claim_amount": "125.00 AUD",
+                "summary_action": "Klaim akan dikirim ke penyedia (sandbox)",
+            },
+        },
+    )
+    assert sbx_action_res.status_code == 201
+    sbx_action = sbx_action_res.json()
+    assert sbx_action["action_type"] == "claim_submit"
+    assert sbx_action["permission_level"] == "L2"
+    claim_case_id = sbx_action["payload"]["claim_case_id"]
+    attachments = sbx_action["payload"]["attachments"]
+    assert len(attachments) >= 1
+    assert all("document_id" in a and len(a["sha256"]) == 64 for a in attachments)
+
+    # 3. AC: Unapproved submission -> 403 and guardrail audit event
+    unapproved_sub = client.post(
+        "/api/v1/sandbox/insurer/claims",
+        headers=headers,
+        json={
+            "action_id": sbx_action["id"],
+            "claim_case_id": claim_case_id,
+            "approved_payload_sha256": "0" * 64,
+            "attachments": [
+                {"document_id": a["document_id"], "sha256": a["sha256"]} for a in attachments
+            ],
+        },
+    )
+    assert unapproved_sub.status_code == 403
+    assert unapproved_sub.json()["code"] == "ACTION_APPROVAL_REQUIRED"
+    guardrails = client.get("/api/v1/audit?type=guardrail", headers=headers).json()
+    assert any(
+        e["event_type"] == "GUARDRAIL_UNAPPROVED_ACTION"
+        and e["subtype"] == "Tindakan tanpa persetujuan diblokir"
+        for e in guardrails
+    )
+
+    # 4. AC: Missing required field (e.g. empty diagnosis_code) -> sandbox rejects & status FAILED
+    bad_action_res = client.post(
+        "/api/v1/actions",
+        headers=headers,
+        json={
+            "action_type": "claim_submit",
+            "permission_level": "L2",
+            "title": "Kirim klaim tanpa diagnosis",
+            "reason": "Uji validasi field wajib sandbox",
+            "source_screen": "SC-10 · Antrean Tindakan",
+            "payload": {
+                "source_claim_form_action_id": cf["id"],
+                "provider": "Allianz Care Australia",
+                "policy_number": "****1234",
+                "diagnosis_code": "",
+                "claim_amount": "125.00 AUD",
+            },
+        },
+    )
+    assert bad_action_res.status_code == 201
+    bad_action = bad_action_res.json()
+    assert (
+        client.post(
+            f"/api/v1/actions/{bad_action['id']}/approve",
+            headers=headers,
+            json={"confirmed": True},
+        ).status_code
+        == 200
+    )
+    bad_approved = client.get(f"/api/v1/actions/{bad_action['id']}", headers=headers).json()
+    bad_exec = client.post(
+        f"/api/v1/actions/{bad_action['id']}/execute",
+        headers=headers,
+        json={"approved_payload_sha256": bad_approved["approved_payload_sha256"]},
+    )
+    assert bad_exec.status_code == 200
+    assert bad_exec.json()["status"] == "FAILED"
+    assert "diagnosis_code" in bad_exec.json()["failure_reason"]
+
+    # 5. AC: Approve valid claim_submit (L2) and execute -> returns claim_ref,
+    # initial status Diterima, and case status becomes SUBMITTED ("Diajukan")
+    assert (
+        client.post(
+            f"/api/v1/actions/{sbx_action['id']}/approve",
+            headers=headers,
+            json={"confirmed": True},
+        ).status_code
+        == 200
+    )
+    sbx_approved = client.get(f"/api/v1/actions/{sbx_action['id']}", headers=headers).json()
+    sbx_hash = sbx_approved["approved_payload_sha256"]
+
+    # Test calling /api/sandbox/insurer/claims directly
+    direct_sbx = client.post(
+        "/api/sandbox/insurer/claims",
+        headers=headers,
+        json={
+            "action_id": sbx_action["id"],
+            "claim_case_id": claim_case_id,
+            "approved_payload_sha256": sbx_hash,
+            "attachments": [
+                {"document_id": a["document_id"], "sha256": a["sha256"]} for a in attachments
+            ],
+        },
+    )
+    assert direct_sbx.status_code == 200
+    sbx_body = direct_sbx.json()
+    assert sbx_body["sandbox"] is True
+    assert sbx_body["claim_ref"].startswith("SBX-")
+    assert sbx_body["status"] == "Diterima"
+    assert sbx_body["claim_case_status"] == "SUBMITTED"
+    assert sbx_body["claim_case_status_label"] == "Diajukan"
+    claim_ref = sbx_body["claim_ref"]
+
+    # Case detail endpoint reflects SUBMITTED status
+    case_detail = client.get(f"/api/v1/claims/{claim_case_id}", headers=headers)
+    assert case_detail.status_code == 200
+    assert case_detail.json()["case"]["status"] == "SUBMITTED"
+
+    # 6. AC: Simulated status progression Diajukan -> Diproses -> Disetujui (in <= 1 min)
+    step_processing = client.get(
+        f"/api/v1/sandbox/insurer/claims/{claim_ref}?advance=true", headers=headers
+    )
+    assert step_processing.status_code == 200
+    assert step_processing.json()["claim_case_status"] == "PROCESSING"
+    assert step_processing.json()["claim_case_status_label"] == "Diproses"
+
+    step_approved = client.get(
+        f"/api/v1/sandbox/insurer/claims/{claim_ref}?advance=true", headers=headers
+    )
+    assert step_approved.status_code == 200
+    assert step_approved.json()["claim_case_status"] == "APPROVED"
+    assert step_approved.json()["claim_case_status_label"] == "Disetujui"
+
+    # 7. AC: Export sandbox logs in JSON and CSV with timestamp, action_id, claim_ref, no raw PII
+    logs_json_res = client.get("/api/v1/sandbox/insurer/logs?format=json", headers=headers)
+    assert logs_json_res.status_code == 200
+    logs_json = logs_json_res.json()
+    assert len(logs_json) >= 1
+    matching_log = next(entry for entry in logs_json if entry["claim_ref"] == claim_ref)
+    assert matching_log["action_id"] == sbx_action["id"]
+    assert matching_log["timestamp"]
+    assert matching_log["tool_called"] == "submit_claim_sandbox"
+    assert matching_log["sandbox"] is True
+    assert "8899001234" not in str(matching_log)
+
+    logs_csv_res = client.get("/api/v1/sandbox/insurer/logs?format=csv", headers=headers)
+    assert logs_csv_res.status_code == 200
+    csv_text = logs_csv_res.text
+    assert "timestamp,action_id,claim_case_id,claim_ref" in csv_text
+    assert claim_ref in csv_text
+    assert sbx_action["id"] in csv_text
+    assert "8899001234" not in csv_text

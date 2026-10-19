@@ -6,8 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import AccountAuditRow, AuditRow
-from app.schemas.audit import AuditCategory, AuditEvent, GuardrailSubtype
 from app.schemas.actor import Actor
+from app.schemas.audit import AuditCategory, AuditEvent, GuardrailSubtype
 from app.services.policy_guard import PolicyGuard
 
 CATEGORY_EVENT_TYPES: dict[AuditCategory, tuple[str, ...]] = {
@@ -682,6 +682,8 @@ def ensure_account_guardrail_events(db: Session, account_id: UUID) -> None:
             added = True
     if added:
         db.commit()
+
+
 def log_actor_event(db: Session, actor: Actor, event_type: str, **metadata):
     """Operational codes/counts only. Free-form content is never an accepted field."""
     import re
