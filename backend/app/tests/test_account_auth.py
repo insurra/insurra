@@ -548,7 +548,7 @@ def test_supabase_token_login_and_account_creation(client, app, monkeypatch):
     assert res2.json()["account"]["id"] == data["account"]["id"]
 
 
-def test_supabase_otp_verification_flow(client, app, monkeypatch):
+def test_supabase_otp_verification_flow(client, app, db_session, monkeypatch):
     app.state.settings.supabase_url = "https://example.supabase.co"
 
     dispatched = []
@@ -563,6 +563,22 @@ def test_supabase_otp_verification_flow(client, app, monkeypatch):
     monkeypatch.setattr("app.services.email_delivery.send_supabase_otp_email", mock_send_otp)
     monkeypatch.setattr("app.services.email_delivery.send_email", lambda *a, **k: True)
     monkeypatch.setattr("app.api.auth.verify_supabase_otp", mock_verify_otp)
+    monkeypatch.setattr(
+        "app.api.auth.supabase_signup",
+        lambda email, pw, name, settings: {"id": "mock-supa-id"},
+    )
+    monkeypatch.setattr(
+        "app.api.auth.supabase_login_password",
+        lambda email, pw, settings: {
+            "access_token": "mock-access-token",
+            "user": {
+                "id": "mock-supa-id",
+                "email": email,
+                "email_confirmed_at": "2026-10-20T00:00:00Z",
+                "user_metadata": {"full_name": "OTP User"},
+            },
+        },
+    )
 
     email = "otp-user@example.com"
     reg = client.post(
@@ -575,6 +591,18 @@ def test_supabase_otp_verification_flow(client, app, monkeypatch):
         },
     )
     assert reg.status_code == 201
+
+    # Backdate verification_sent_at to satisfy the 60s cooldown
+    account = _account(db_session, email)
+    account.verification_sent_at = datetime.now(UTC) - timedelta(seconds=65)
+    db_session.commit()
+
+    # Resend triggers Supabase OTP dispatch
+    resend = client.post(
+        "/api/v1/account/auth/resend-verification",
+        json={"email": email},
+    )
+    assert resend.status_code == 200
     assert len(dispatched) == 1
     assert dispatched[0][0] == email
 

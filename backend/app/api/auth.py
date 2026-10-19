@@ -38,6 +38,12 @@ from app.services.email_delivery import (
     send_verification_email,
     verify_supabase_otp,
 )
+from app.services.supabase_auth import (
+    supabase_login_password,
+    supabase_signup,
+    supabase_update_password,
+    supabase_verify_otp,
+)
 
 public_router = APIRouter(prefix="/auth", tags=["Authentication"])
 api_router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -343,6 +349,41 @@ def register(body: RegisterRequest, db: DB, request: Request):
     now = datetime.now(UTC)
     raw_pw = body.password.get_secret_value()
     token = secrets.token_urlsafe(32)
+    settings = request.app.state.settings
+
+    if settings.is_supabase_auth_active:
+        supabase_user = supabase_signup(email_clean, raw_pw, email_clean.split("@")[0], settings)
+        supa_id = supabase_user.get("id") or secrets.token_hex(16)
+        account = AccountRow(
+            email=email_clean,
+            display_name=email_clean.split("@")[0],
+            email_verified=False,
+            password_hash=_hash_password(raw_pw),
+            verification_token=_hash_token(token),
+            verification_sent_at=now,
+            verification_token_expires_at=now + VERIFICATION_TTL,
+            failed_login_attempts=0,
+            locked_until=None,
+            consent_decided=False,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(account)
+        db.flush()
+        db.add(
+            OAuthIdentityRow(
+                account_id=account.id,
+                provider="supabase",
+                provider_user_id=supa_id,
+                created_at=now,
+                updated_at=now,
+            )
+        )
+        db.commit()
+        return AuthMessage(
+            message="Registration successful. Please check your email to verify your account."
+        )
+
     account = AccountRow(
         email=email_clean,
         display_name=email_clean.split("@")[0],
@@ -360,7 +401,6 @@ def register(body: RegisterRequest, db: DB, request: Request):
     db.add(account)
     db.commit()
 
-    settings = request.app.state.settings
     if settings.is_email_delivery_active:
         send_verification_email(email_clean, token, settings)
 
@@ -373,6 +413,71 @@ def register(body: RegisterRequest, db: DB, request: Request):
 def login(body: LoginRequest, db: DB, request: Request):
     email_clean = str(body.email).strip().lower()
     now = datetime.now(UTC)
+    settings = request.app.state.settings
+
+    if settings.is_supabase_auth_active:
+        session_data = supabase_login_password(
+            email_clean, body.password.get_secret_value(), settings
+        )
+        supa_user = session_data.get("user") or {}
+        supa_id = supa_user.get("id")
+
+        account = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
+        if account is None:
+            user_meta = supa_user.get("user_metadata") or {}
+            disp_name = (
+                user_meta.get("full_name") or user_meta.get("name") or email_clean.split("@")[0]
+            )
+            account = AccountRow(
+                email=email_clean,
+                display_name=disp_name,
+                email_verified=True,
+                password_hash=_hash_password(body.password.get_secret_value()),
+                created_at=now,
+                updated_at=now,
+            )
+            db.add(account)
+            db.flush()
+        else:
+            account.email_verified = True
+            account.updated_at = now
+
+        if supa_id:
+            identity = db.scalar(
+                select(OAuthIdentityRow).where(
+                    OAuthIdentityRow.provider == "supabase",
+                    OAuthIdentityRow.provider_user_id == supa_id,
+                )
+            )
+            if identity is None:
+                db.add(
+                    OAuthIdentityRow(
+                        account_id=account.id,
+                        provider="supabase",
+                        provider_user_id=supa_id,
+                        created_at=now,
+                        updated_at=now,
+                    )
+                )
+
+        access_token = secrets.token_urlsafe(32)
+        expires_at = now + timedelta(days=settings.account_session_ttl_days)
+        db.add(
+            AccountSessionRow(
+                account_id=account.id,
+                token_hash=hashlib.sha256(access_token.encode()).hexdigest(),
+                created_at=now,
+                expires_at=expires_at,
+                revoked_at=None,
+            )
+        )
+        db.commit()
+        return AuthSession(
+            account=_account_summary(account, db),
+            access_token=access_token,
+            expires_at=expires_at,
+        )
+
     account = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
     if account is None:
         _verify_password(body.password.get_secret_value(), _DUMMY_PASSWORD_HASH)
@@ -412,7 +517,6 @@ def login(body: LoginRequest, db: DB, request: Request):
     account.failed_login_attempts = 0
     account.locked_until = None
 
-    settings = request.app.state.settings
     access_token = secrets.token_urlsafe(32)
     expires_at = now + timedelta(days=settings.account_session_ttl_days)
     db.add(
@@ -560,6 +664,7 @@ def forgot_password(body: EmailRequest, db: DB, request: Request):
 @account_auth_router.post("/reset-password", response_model=AuthMessage)
 def reset_password(body: ResetPasswordRequest, db: DB, request: Request):
     token = body.token.get_secret_value().strip()
+    raw_pw = body.password.get_secret_value()
     account = db.scalar(
         select(AccountRow).where(AccountRow.reset_token.in_(_token_candidates(token)))
     )
@@ -575,14 +680,20 @@ def reset_password(body: ResetPasswordRequest, db: DB, request: Request):
         email_clean = str(body.email).strip().lower() if body.email else None
         if settings.is_supabase_auth_active and email_clean:
             cand = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
-            if cand and verify_supabase_otp(email_clean, token, "recovery", settings):
-                account = cand
-                is_valid = True
+            if cand:
+                try:
+                    verify_res = supabase_verify_otp(email_clean, token, "recovery", settings)
+                    if verify_res:
+                        account = cand
+                        is_valid = True
+                        if verify_res.get("access_token"):
+                            supabase_update_password(verify_res["access_token"], raw_pw, settings)
+                except Exception:
+                    pass
 
     if not is_valid or account is None:
         raise AppError(400, "INVALID_RESET_TOKEN", "Password reset link is invalid or has expired.")
 
-    raw_pw = body.password.get_secret_value()
     account.password_hash = _hash_password(raw_pw)
     account.reset_token = None
     account.reset_token_expires_at = None

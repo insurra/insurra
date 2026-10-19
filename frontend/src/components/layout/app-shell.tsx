@@ -3,16 +3,19 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Activity,
   Bell,
   ChevronDown,
+  ChevronRight,
   ClipboardCheck,
   FileText,
   HeartPulse,
   Home,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
   PhoneCall,
   ShieldCheck,
   Sparkles,
@@ -27,6 +30,7 @@ import { signInUrl } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { DemoBanner } from "@/components/layout/demo-banner";
+import "./shell-extras.css";
 
 // Account-only routes send visitors without an account to sign in.
 const accountOnlyRoute = (pathname: string) =>
@@ -84,6 +88,46 @@ function PrivateShell({
   const { data, loading, error } = useSession();
   const { account, token, loading: authLoading, logout } = useAuth();
   const { residenceCountry, countryFlag } = useUserContext();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("insurra_sidebar_collapsed");
+    if (saved !== null) {
+      setSidebarCollapsed(saved === "true");
+    } else if (typeof window !== "undefined" && window.innerWidth <= 1024) {
+      setSidebarCollapsed(true);
+    }
+  }, []);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("insurra_sidebar_collapsed", String(next));
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        const target = e.target as HTMLElement | null;
+        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+          return;
+        }
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth <= 760) {
+      setSidebarCollapsed(true);
+    }
+  }, [pathname]);
+
   const accountMode =
     Boolean(token && account) ||
     pathname.startsWith("/account") ||
@@ -199,20 +243,42 @@ function PrivateShell({
   const workspaceHref = "/home";
 
   return (
-    <div className="app-frame">
+    <div className={cn("app-frame", sidebarCollapsed && "sidebar-is-collapsed")}>
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
-      <aside className="sidebar">
-        <Link href="/" className="brand">
-          <Image
-            src="/Inssura%20Kangaroo%20Shield%20Logo.png"
-            width={130}
-            height={58}
-            alt="Insurra"
-            className="brand-image"
-          />
-        </Link>
+
+      {/* Mobile drawer backdrop */}
+      {!sidebarCollapsed && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setSidebarCollapsed(true)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={cn("sidebar", sidebarCollapsed && "collapsed")}>
+        <div className="sidebar-brand-row">
+          <Link href="/" className="brand">
+            <Image
+              src="/Inssura%20Kangaroo%20Shield%20Logo.png"
+              width={124}
+              height={55}
+              alt="Insurra"
+              className="brand-image"
+              priority
+            />
+          </Link>
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="sidebar-hide-btn"
+            title="Sembunyikan sidebar (Ctrl+B)"
+            aria-label="Sembunyikan sidebar"
+          >
+            <PanelLeftClose size={17} />
+          </button>
+        </div>
         <div className="workspace-label">YOUR INSURANCE COMPANION</div>
         <nav aria-label="Main Navigation" className="main-nav">
           {items.map(({ href, label, icon: Icon, ...rest }) => (
@@ -258,33 +324,54 @@ function PrivateShell({
           </div>
         </div>
       </aside>
-      <div className="app-column">
+
+      <div className={cn("app-column", sidebarCollapsed && "expanded")}>
         <header className="topbar">
-          <nav className="breadcrumb" aria-label="Breadcrumb">
-            <Link href={workspaceHref}>Workspace</Link>
-            <span>/</span>
-            {breadcrumbParent && (
-              <>
-                <Link href={breadcrumbParent.href}>{breadcrumbParent.label}</Link>
-                <span>/</span>
-              </>
-            )}
-            <strong aria-current="page">{pageTitle}</strong>
-          </nav>
-          <div className="topbar-right" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div className="topbar-left">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="topbar-toggle-btn"
+              title={sidebarCollapsed ? "Tampilkan sidebar (Ctrl+B)" : "Sembunyikan sidebar (Ctrl+B)"}
+              aria-label={sidebarCollapsed ? "Tampilkan sidebar" : "Sembunyikan sidebar"}
+            >
+              {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            </button>
+            <div className="topbar-divider" />
+            <nav className="breadcrumb" aria-label="Breadcrumb">
+              <Link href={workspaceHref} className="breadcrumb-item">
+                Workspace
+              </Link>
+              <ChevronRight size={13} className="breadcrumb-sep" />
+              {breadcrumbParent && (
+                <>
+                  <Link href={breadcrumbParent.href} className="breadcrumb-item">
+                    {breadcrumbParent.label}
+                  </Link>
+                  <ChevronRight size={13} className="breadcrumb-sep" />
+                </>
+              )}
+              <strong className="breadcrumb-active" aria-current="page">
+                {pageTitle}
+              </strong>
+            </nav>
+          </div>
+
+          <div className="topbar-right">
             {/* Country Selector from Active Context */}
             <div className="figma-topbar-country" title={`Active Country: ${residenceCountry}`}>
-              <span style={{ fontSize: 15 }}>{countryFlag}</span>
-              <span>{residenceCountry}</span>
-              <ChevronDown size={14} color="#64748b" />
+              <span className="country-flag-icon">{countryFlag}</span>
+              <span className="country-name-text">{residenceCountry}</span>
+              <ChevronDown size={13} className="country-arrow" />
             </div>
 
             {/* Emergency SOS Quick Button */}
             <Link
               href="/emergency"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-full shadow-sm transition-all"
+              className="topbar-sos-btn"
               title="Emergency Guidance & Crisis Lines"
             >
+              <span className="sos-pulse-ring" />
               <PhoneCall size={13} />
               <span>Emergency SOS</span>
             </Link>
@@ -293,22 +380,8 @@ function PrivateShell({
             <NotificationBell />
 
             {/* User Profile Avatar */}
-            <Link href="/profile" title="Profile" aria-label="Profile">
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "50%",
-                  border: "1.5px solid #0ea58a",
-                  background: "#eaf8f4",
-                  color: "#08876f",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 800,
-                  fontSize: 14,
-                }}
-              >
+            <Link href="/profile" title="Profile" aria-label="Profile" className="topbar-avatar-link">
+              <div className="topbar-avatar-badge">
                 {(account?.display_name ?? data?.profile.display_name ?? "U").slice(0, 1).toUpperCase()}
               </div>
             </Link>

@@ -334,7 +334,15 @@ export default function HomePage() {
                     <div className="home-step-desc">
                       <div className="flex items-center gap-2 mb-0.5">
                         <strong>{ins.title}</strong>
-                        <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                            ins.severity === "HIGH"
+                              ? "bg-rose-50 text-rose-700 border-rose-200"
+                              : ins.severity === "NEEDS_VERIFICATION"
+                              ? "bg-amber-50 text-amber-800 border-amber-200"
+                              : "bg-teal-50 text-teal-800 border-teal-200"
+                          }`}
+                        >
                           {ins.severity.replace(/_/g, " ")}
                         </span>
                       </div>
