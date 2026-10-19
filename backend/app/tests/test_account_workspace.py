@@ -486,7 +486,7 @@ def test_actions_queue_pending_cards_stale_masking_and_forbidden_tool_guardrail(
     assert empty_res.status_code == 200
     assert empty_res.json() == []
 
-    # 2. Seed 3 pending drafts -> all 3 have reason, source_screen, permission_level, masked policy number
+    # 2. Seed 3 pending drafts -> all 3 have reason, source_screen, permission_level
     seeded_res = client.get("/api/v1/actions?seed_demo=true", headers=headers)
     assert seeded_res.status_code == 200
     seeded = seeded_res.json()
@@ -526,7 +526,7 @@ def test_actions_queue_pending_cards_stale_masking_and_forbidden_tool_guardrail(
         for e in guardrail_audits
     )
 
-    # 4. Propose a valid draft_claim_form with raw policy number -> server masks policy number to ****5678
+    # 4. Propose a valid draft_claim_form with raw policy number -> server masks to ****5678
     propose_res = client.post(
         "/api/v1/actions",
         headers=headers,
