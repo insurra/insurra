@@ -1,0 +1,18 @@
+{
+  "fixture_id": "synth-sand-rejected-consent-revoked",
+  "category": "sandbox_integration_test",
+  "country_code": "ID",
+  "label": "Mock Sandbox Rejection Due to Revoked Processing Consent",
+  "description": "Sandbox submission rejected when user consent for document processing or external action has been revoked.",
+  "payload": {
+    "sandbox_endpoint": "/sandbox/v1/claims/submit",
+    "simulated_status": 403,
+    "response_body": {
+      "error_code": "CONSENT_REVOKED",
+      "message": "User has revoked consent for third-party claims transmission.",
+      "action_id": "act-id-9988-demo"
+    }
+  },
+  "is_adversarial": false,
+  "expected_outcome": "ACTION_BLOCKED_CONSENT_REVOKED"
+}

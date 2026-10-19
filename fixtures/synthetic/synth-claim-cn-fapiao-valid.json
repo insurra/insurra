@@ -1,0 +1,21 @@
+{
+  "fixture_id": "synth-claim-cn-fapiao-valid",
+  "category": "synthetic_claim_evidence",
+  "country_code": "CN",
+  "label": "Fictional Shenzhen Hospital Medical Fapiao",
+  "description": "Synthetic itemized outpatient invoice for acute gastroenteritis treatment.",
+  "payload": {
+    "evidence_type": "DOC_MEDICAL_INVOICE",
+    "is_synthetic": true,
+    "fapiao_code": "144032309110",
+    "fapiao_number": "00889922",
+    "billing_date": "2024-10-10",
+    "payer_name": "JOHN DOE",
+    "hospital_name": "Shenzhen University General Hospital",
+    "total_amount": "450.00",
+    "currency": "CNY",
+    "diagnosed_condition": "Acute Gastroenteritis (急性肠胃炎)"
+  },
+  "is_adversarial": false,
+  "expected_outcome": "EVIDENCE_VALID_BELOW_DEDUCTIBLE"
+}

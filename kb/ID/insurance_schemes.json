@@ -1,0 +1,43 @@
+[
+  {
+    "scheme_id": "id-scheme-jkn",
+    "country_code": "ID",
+    "jurisdiction": "ID-National",
+    "scheme_name_original": "Program Jaminan Kesehatan Nasional (JKN / BPJS Kesehatan)",
+    "scheme_name_english": "National Health Insurance Program (JKN BPJS Kesehatan)",
+    "administrator": "Badan Penyelenggara Jaminan Sosial Kesehatan (BPJS Kesehatan)",
+    "membership_categories": [
+      {
+        "code": "PBI_JK",
+        "label": "Penerima Bantuan Iuran Jaminan Kesehatan (Subsidized vulnerable population paid by APBN/APBD)"
+      },
+      {
+        "code": "PPU",
+        "label": "Pekerja Penerima Upah (Formal employees in government, state-owned enterprises, and private companies)"
+      },
+      {
+        "code": "PBPU",
+        "label": "Pekerja Bukan Penerima Upah / Peserta Mandiri (Self-employed and independent workers)"
+      },
+      {
+        "code": "BP",
+        "label": "Bukan Pekerja (Investors, pensioners, and non-employed residents)"
+      }
+    ],
+    "contribution_rules": "PPU: 5% of monthly wage (4% employer, 1% employee, salary cap IDR 12,000,000). PBPU Mandiri: Flat monthly premium per member according to class (Kelas 1: IDR 150k, Kelas 2: IDR 100k, Kelas 3: IDR 35k).",
+    "benefit_summary": [
+      "Comprehensive primary medical care at registered FKTP clinic (Puskesmas / Dokter Praktik / Klinik Pratama)",
+      "Specialist outpatient consultation and surgical inpatient hospital care at FKRTL with electronic referral",
+      "Emergency medical services at any hospital Emergency Department (IGD) without prior referral",
+      "Essential medicine coverage pursuant to Formularium Nasional (Fornas)"
+    ],
+    "referral_requirements": "Strict tiered referral system (Sistem Rujukan Berjenjang) through primary care clinic (FKTP). Direct hospital visits without emergency or referral are non-reimbursable.",
+    "administrative_procedures": [
+      "Register online via Mobile JKN application, Pandawa WhatsApp (08118165165), or BPJS branch office.",
+      "Select and register one designated primary care clinic (FKTP) in neighborhood of residence.",
+      "Display digital KIS card in Mobile JKN application or present NIK KTP during medical check-in."
+    ],
+    "source_url": "https://www.bpjs-kesehatan.go.id",
+    "verification_status": "VERIFIED"
+  }
+]

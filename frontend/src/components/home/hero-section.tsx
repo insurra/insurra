@@ -10,12 +10,16 @@ interface HeroSectionProps {
   persona: PersonaType;
   onSelectPersona: (p: PersonaType) => void;
   onOpenDemo: () => void;
+  demoLoading: boolean;
+  demoError: string | null;
 }
 
 export function HeroSection({
   persona,
   onSelectPersona,
   onOpenDemo,
+  demoLoading,
+  demoError,
 }: HeroSectionProps) {
   const { account, loading } = useAuth();
   const signedIn = !loading && !!account;
@@ -56,8 +60,10 @@ export function HeroSection({
               type="button"
               className="primary"
               onClick={onOpenDemo}
+              disabled={demoLoading}
             >
-              Check Demo <ArrowRight size={16} aria-hidden="true" />
+              {demoLoading ? "Membuka demo..." : "Check Demo"}
+              {!demoLoading && <ArrowRight size={16} aria-hidden="true" />}
             </button>
 
             {signedIn ? (
@@ -70,6 +76,7 @@ export function HeroSection({
               </Link>
             )}
           </div>
+          {demoError && <p className="demo-error" role="alert">{demoError}</p>}
 
           <div className="trust">
             <span>
@@ -88,6 +95,7 @@ export function HeroSection({
           persona={persona}
           onSelectPersona={onSelectPersona}
           onOpenDemo={onOpenDemo}
+          demoLoading={demoLoading}
         />
       </div>
 

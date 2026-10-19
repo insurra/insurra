@@ -41,11 +41,40 @@
       }
     ],
     "emergency": {
-      "label": "Medical Emergency Ambulance in mainland China: Dial 120 immediately.",
+      "label": "Kontak darurat resmi untuk Tiongkok daratan.",
       "phone_number": "120",
-      "source_url": null,
-      "checked_at": null,
-      "verification_status": "UNVERIFIED"
+      "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+      "checked_at": "2026-10-19",
+      "verification_status": "VERIFIED",
+      "contacts": [
+        {
+          "service_code": "medical",
+          "label": "Ambulans / 急救",
+          "phone_number": "120",
+          "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+          "checked_at": "2026-10-19",
+          "verification_status": "VERIFIED",
+          "jurisdiction": "CN mainland"
+        },
+        {
+          "service_code": "police",
+          "label": "Polisi / 报警",
+          "phone_number": "110",
+          "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+          "checked_at": "2026-10-19",
+          "verification_status": "VERIFIED",
+          "jurisdiction": "CN mainland"
+        },
+        {
+          "service_code": "fire",
+          "label": "Pemadam kebakaran / 火警",
+          "phone_number": "119",
+          "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+          "checked_at": "2026-10-19",
+          "verification_status": "VERIFIED",
+          "jurisdiction": "CN mainland"
+        }
+      ]
     }
   }
 }

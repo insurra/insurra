@@ -1,0 +1,77 @@
+{
+  "template_id": "tmpl-cn-student-cert",
+  "document_category": "DOC_INS_CERTIFICATE",
+  "country_code": "CN",
+  "original_language": "zh",
+  "applicable_schemes": [
+    "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China"
+  ],
+  "required_fields": [
+    {
+      "field_key": "insured_name",
+      "label_en": "Insured Legal Name",
+      "label_original": "被保险人姓名",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Uppercase English name as printed in foreign passport",
+      "source_evidence_hint": "Top section under '姓名 / Name'"
+    },
+    {
+      "field_key": "passport_number",
+      "label_en": "Passport Number",
+      "label_original": "护照号码",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Alphanumeric string without spaces",
+      "source_evidence_hint": "Identifier field next to passport label"
+    },
+    {
+      "field_key": "institution_name",
+      "label_en": "Educational Institution Name",
+      "label_original": "学校名称",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Standard university title in China (e.g., Shenzhen University)",
+      "source_evidence_hint": "Header block or school declaration"
+    },
+    {
+      "field_key": "coverage_start_date",
+      "label_en": "Coverage Inception Date",
+      "label_original": "保险起期",
+      "value_type": "date",
+      "required": true,
+      "normalization_rule": "ISO 8601 date YYYY-MM-DD",
+      "source_evidence_hint": "'保险期间 / Coverage Period' start timestamp"
+    },
+    {
+      "field_key": "coverage_end_date",
+      "label_en": "Coverage Expiry Date",
+      "label_original": "保险止期",
+      "value_type": "date",
+      "required": true,
+      "normalization_rule": "ISO 8601 date YYYY-MM-DD",
+      "source_evidence_hint": "'保险期间 / Coverage Period' end timestamp"
+    },
+    {
+      "field_key": "policy_number",
+      "label_en": "Insurance Policy Number",
+      "label_original": "保单号",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Numeric or alphanumeric policy tracking code",
+      "source_evidence_hint": "Upper right corner of electronic certificate"
+    }
+  ],
+  "optional_fields": [
+    {
+      "field_key": "premium_amount",
+      "label_en": "Premium Paid",
+      "label_original": "保费金额",
+      "value_type": "money",
+      "required": false,
+      "normalization_rule": "Decimal string in CNY (e.g., 800.00)",
+      "source_evidence_hint": "Payment receipt summary row"
+    }
+  ],
+  "review_requirements": "Human confirmation required if OCR confidence is below 0.85 or passport number has special characters."
+}

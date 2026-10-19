@@ -18,12 +18,14 @@ from app.api.v1 import (
     sessions,
 )
 from app.core.errors import ERROR_RESPONSES
+from app.workflow.router import router as workflow_router
 
 router = APIRouter(prefix="/api/v1", responses=ERROR_RESPONSES)
 router.include_router(auth.api_router)
 router.include_router(auth.account_auth_router)
 router.include_router(account_workspace.router)
 router.include_router(account_documents.router)
+router.include_router(workflow_router)
 for module in (
     sessions,
     consent,

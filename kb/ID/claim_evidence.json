@@ -1,0 +1,38 @@
+[
+  {
+    "evidence_id": "id-ev-kuitansi-asli",
+    "country_code": "ID",
+    "insurer_id": "id-insurer-allianz",
+    "product_id": "id-prod-allianz-smarthealth",
+    "claim_type": "Hospital Reimbursement Claim",
+    "evidence_item_name": "Original Hospital Payment Receipt and Bill Breakdown",
+    "evidence_item_name_original": "Kuitansi Asli Pembayaran Rumah Sakit dan Rincian Biaya",
+    "description": "Official payment receipt stamped by hospital cashier with detailed breakdown of room charges, doctor consultations, lab tests, medications, and surgical consumables.",
+    "mandatory": true,
+    "accepted_formats": [
+      "Original hardcopy stamped receipt",
+      "High-resolution digital scan for eAZy Connect preliminary review"
+    ],
+    "special_conditions": "Duplicate or provisional receipts not accepted without official hospital confirmation seal.",
+    "source_url": "https://www.allianz.co.id/layanan/klaim.html",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "evidence_id": "id-ev-resume-medis",
+    "country_code": "ID",
+    "insurer_id": null,
+    "product_id": null,
+    "claim_type": "Health Insurance Reimbursement",
+    "evidence_item_name": "Medical Resume Signed by Treating Physician",
+    "evidence_item_name_original": "Resume Medis Pasien yang Ditandatangani Dokter yang Merawat",
+    "description": "Clinical summary document specifying diagnosis (ICD-10 code), symptom onset date, clinical history, diagnostic findings, medical interventions performed, and doctor registration number (SIP/IDI).",
+    "mandatory": true,
+    "accepted_formats": [
+      "Original stamped hospital medical resume",
+      "Digital hospital electronic medical record certified printout"
+    ],
+    "special_conditions": "Must explicitly state the cause of condition to verify policy exclusion criteria.",
+    "source_url": "https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
+    "verification_status": "VERIFIED"
+  }
+]

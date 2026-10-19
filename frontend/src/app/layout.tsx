@@ -16,7 +16,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body>
+      <body suppressHydrationWarning>
         <AuthProvider>
           <SessionProvider>
             <UserContextProvider>

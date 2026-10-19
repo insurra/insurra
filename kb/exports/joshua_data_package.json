@@ -1,0 +1,777 @@
+{
+  "recipient": "Joshua (Actions, Workflows, Claims, Regulatory Engine)",
+  "description": "Regulations, public health schemes, university requirements, claims procedures, claim evidence checklists, dispute procedures",
+  "generated_at": "2026-10-18",
+  "regulations_cn": [
+    {
+      "regulation_id": "CN-REG-MOHRSS-ORDER16",
+      "country_code": "CN",
+      "jurisdiction": "CN-National",
+      "issuing_authority": "Ministry of Human Resources and Social Security of the PRC",
+      "title_original": "在中国境内就业的外国人参加社会保险暂行办法",
+      "title_english": "Interim Measures for the Participation in Social Insurance by Foreigners Employed in China (MoHRSS Order No. 16)",
+      "legal_reference_number": "MoHRSS Order No. 16 (人力资源和社会保障部令第16号)",
+      "promulgation_date": "2011-09-06",
+      "effective_date": "2011-10-15",
+      "category": "Social Insurance Mandate",
+      "summary": "Mandates that foreigners legally employed within the territory of China must participate in the five statutory social insurances: Basic Pension, Basic Medical Insurance, Work-related Injury Insurance, Unemployment Insurance, and Maternity Insurance.",
+      "key_provisions": [
+        "Article 3: Employers recruiting foreigners shall complete social insurance registration within 30 days of obtaining employment certificates.",
+        "Article 4: Both employer and foreign employee shall make monthly social insurance contributions pursuant to statutory rates.",
+        "Article 9: Social insurance agreements between China and foreign countries shall govern exemption from specific contributions (bilateral treaty reciprocity)."
+      ],
+      "applicable_population": [
+        "Legally employed foreign nationals holding Work Permit in China",
+        "Enterprises registered in China"
+      ],
+      "source_url": "https://www.mohrss.gov.cn/xxgk2020/gwyxxgk/201109/t20110906_113038.html",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "regulation_id": "CN-REG-MOE-ORDER42",
+      "country_code": "CN",
+      "jurisdiction": "CN-National",
+      "issuing_authority": "Ministry of Education, Ministry of Foreign Affairs, Ministry of Public Security",
+      "title_original": "学校招收和培养国际学生管理办法",
+      "title_english": "Provisions on the Administration of the Enrollment and Cultivation of International Students by Schools (Joint Order No. 42)",
+      "legal_reference_number": "MoE, MFA, MPS Joint Order No. 42 (教育部、外交部、公安部令第42号)",
+      "promulgation_date": "2017-03-20",
+      "effective_date": "2017-07-01",
+      "category": "International Student Insurance Mandate",
+      "summary": "Requires that all international students studying at schools in China must purchase comprehensive medical insurance covering accidental injury and inpatient hospitalization.",
+      "key_provisions": [
+        "Article 41: Schools shall implement an international student insurance system. International students must purchase comprehensive medical insurance in accordance with national regulations.",
+        "Article 41: Schools shall not register or enroll international students who fail to purchase the required comprehensive medical insurance."
+      ],
+      "applicable_population": [
+        "International students studying in China",
+        "Higher education institutions in China"
+      ],
+      "source_url": "https://www.gov.cn/zhengce/2017-06/02/content_5199187.htm",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "regulation_id": "CN-REG-SZ-MED-2023",
+      "country_code": "CN",
+      "jurisdiction": "CN-Guangdong-Shenzhen",
+      "issuing_authority": "Shenzhen Municipal People's Government",
+      "title_original": "深圳市医疗保障办法",
+      "title_english": "Shenzhen Medical Security Measures (Shenzhen Municipal Gov Order No. 358)",
+      "legal_reference_number": "Shenzhen Municipal Order No. 358 (深圳市人民政府令第358号)",
+      "promulgation_date": "2023-09-15",
+      "effective_date": "2023-10-01",
+      "category": "Municipal Social Health Insurance",
+      "summary": "Establishes Shenzhen municipal basic medical insurance into First-tier (Tier 1, comprehensive individual account and pool fund) and Second-tier (Tier 2, municipal pool fund for inpatient and outpatient capitation).",
+      "key_provisions": [
+        "Employees with employment relations in Shenzhen participate in Tier 1 or Tier 2 based on employer registration.",
+        "Tier 1 participants may use personal medical accounts for outpatient pharmacy and family member health expenses.",
+        "Community Health Centers (社康中心) provide primary outpatient consultations with preferential 75% to 90% reimbursement."
+      ],
+      "applicable_population": [
+        "Residents and employees in Shenzhen",
+        "Foreign employees participating in Shenzhen social insurance"
+      ],
+      "source_url": "https://www.sz.gov.cn/zfgb/2023/gb1299/content/post_10842270.html",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "regulation_id": "CN-REG-PIPL-2021",
+      "country_code": "CN",
+      "jurisdiction": "CN-National",
+      "issuing_authority": "Standing Committee of the National People's Congress",
+      "title_original": "中华人民共和国个人信息保护法",
+      "title_english": "Personal Information Protection Law of the PRC (PIPL)",
+      "legal_reference_number": "Presidential Order No. 91 (中华人民共和国主席令第九十一号)",
+      "promulgation_date": "2021-08-20",
+      "effective_date": "2021-11-01",
+      "category": "Data Protection & Privacy",
+      "summary": "China's foundational personal information protection statute, classifying medical and financial insurance data as Sensitive Personal Information requiring separate consent and security impact assessments.",
+      "key_provisions": [
+        "Article 28: Biometric, medical health, financial accounts, and personal tracking are Sensitive Personal Information.",
+        "Article 29: Processing sensitive personal information requires specific necessity and separate consent from the individual.",
+        "Article 39: Cross-border transfer of personal information requires statutory compliance mechanisms (CAC security assessment, certification, or standard contract)."
+      ],
+      "applicable_population": [
+        "Entities processing personal information in China",
+        "Insurance platforms handling health and claim data"
+      ],
+      "source_url": "https://www.gov.cn/xinwen/2021-08/20/content_5632486.htm",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "regulations_id": [
+    {
+      "regulation_id": "ID-REG-UU-40-2004",
+      "country_code": "ID",
+      "jurisdiction": "ID-National",
+      "issuing_authority": "Dewan Perwakilan Rakyat dan Presiden Republik Indonesia",
+      "title_original": "Undang-Undang Republik Indonesia Nomor 40 Tahun 2004 tentang Sistem Jaminan Sosial Nasional",
+      "title_english": "Law No. 40 Year 2004 on the National Social Security System (UU SJSN)",
+      "legal_reference_number": "UU No. 40 Tahun 2004 (LN Tahun 2004 No. 150)",
+      "promulgation_date": "2004-10-19",
+      "effective_date": "2004-10-19",
+      "category": "Foundational Social Security Law",
+      "summary": "Foundational statute establishing the principles of mandatory social security, mutual cooperation (gotong royong), non-profit operation, and universal health security for all residents of Indonesia.",
+      "key_provisions": [
+        "Pasal 19: Health security is implemented on the principle of social insurance and equity, ensuring comprehensive medical benefits.",
+        "Pasal 22: Health security benefits are intended to maintain and enhance the health degree of participants and their family members."
+      ],
+      "applicable_population": [
+        "All residents of Indonesia",
+        "Foreigners residing and working for at least 6 months"
+      ],
+      "source_url": "https://peraturan.bpk.go.id/Details/40764/uu-no-40-tahun-2004",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "regulation_id": "ID-REG-PERPRES-59-2024",
+      "country_code": "ID",
+      "jurisdiction": "ID-National",
+      "issuing_authority": "Presiden Republik Indonesia",
+      "title_original": "Peraturan Presiden Nomor 59 Tahun 2024 tentang Perubahan Ketiga atas Peraturan Presiden Nomor 82 Tahun 2018 tentang Jaminan Kesehatan",
+      "title_english": "Presidential Regulation No. 59 Year 2024 on Health Security (Perpres JKN 2024)",
+      "legal_reference_number": "Perpres No. 59 Tahun 2024",
+      "promulgation_date": "2024-05-08",
+      "effective_date": "2024-05-08",
+      "category": "National Health Insurance Regulation",
+      "summary": "Regulates the implementation of Standard Inpatient Classes (Kelas Rawat Inap Standar - KRIS), service referral mechanisms, contribution tiers, and comprehensive list of excluded medical procedures under JKN BPJS Kesehatan.",
+      "key_provisions": [
+        "Pasal 46: Implementation of KRIS minimum hospital facility criteria across all participating JKN partner hospitals.",
+        "Pasal 52: Exhaustive statutory exclusions list from JKN benefits (aesthetic surgery, non-referral non-emergencies, overseas care, injuries from intoxication)."
+      ],
+      "applicable_population": [
+        "BPJS Kesehatan participants",
+        "Healthcare provider facilities (FKTP and FKRTL) in Indonesia"
+      ],
+      "source_url": "https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "regulation_id": "ID-REG-POJK-22-2023",
+      "country_code": "ID",
+      "jurisdiction": "ID-National",
+      "issuing_authority": "Otoritas Jasa Keuangan (OJK)",
+      "title_original": "Peraturan Otoritas Jasa Keuangan Nomor 22 Tahun 2023 tentang Pelindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan",
+      "title_english": "OJK Regulation No. 22 Year 2023 on Consumer Protection in Financial Services (POJK 22/2023)",
+      "legal_reference_number": "POJK No. 22 Tahun 2023",
+      "promulgation_date": "2023-12-12",
+      "effective_date": "2024-01-01",
+      "category": "Financial Consumer Protection",
+      "summary": "Mandates transparency, fair treatment, clear policy wording disclosure (RIPLAY), and internal dispute resolution standards for licensed insurance companies operating in Indonesia.",
+      "key_provisions": [
+        "Pasal 14: Insurers must deliver accurate, balanced, and understandable Product and Service Information Summary (RIPLAY) prior to policy contracting.",
+        "Pasal 38: Financial service businesses must handle consumer complaints within a maximum of 10 working days (extendable by 10 working days for complex cases)."
+      ],
+      "applicable_population": [
+        "Licensed commercial insurance companies in Indonesia",
+        "Insurance consumers and policyholders"
+      ],
+      "source_url": "https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "regulation_id": "ID-REG-UU-27-2022",
+      "country_code": "ID",
+      "jurisdiction": "ID-National",
+      "issuing_authority": "Dewan Perwakilan Rakyat dan Presiden Republik Indonesia",
+      "title_original": "Undang-Undang Republik Indonesia Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi",
+      "title_english": "Law No. 27 Year 2022 on Personal Data Protection (UU PDP)",
+      "legal_reference_number": "UU No. 27 Tahun 2022 (LN Tahun 2022 No. 196)",
+      "promulgation_date": "2022-10-17",
+      "effective_date": "2024-10-17",
+      "category": "Data Protection & Privacy",
+      "summary": "Indonesia's comprehensive data privacy statute, defining health data, biometrics, and personal financial data as Specific Personal Data requiring explicit consent and high-standard data governance.",
+      "key_provisions": [
+        "Pasal 4 ayat (2): Health data and information, genetic data, and personal financial data are Specific Personal Data (Data Pribadi yang Bersifat Spesifik).",
+        "Pasal 20: Processing of personal data requires valid legal basis, including explicit consent from the data subject for specified purposes."
+      ],
+      "applicable_population": [
+        "Data controllers and data processors handling personal data of Indonesian residents"
+      ],
+      "source_url": "https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "schemes_cn": [
+    {
+      "scheme_id": "cn-scheme-uebmi",
+      "country_code": "CN",
+      "jurisdiction": "CN-National",
+      "scheme_name_original": "城镇职工基本医疗保险 (UEBMI)",
+      "scheme_name_english": "Urban Employee Basic Medical Insurance",
+      "administrator": "National Healthcare Security Administration (NHSA) and local municipal HSA bureaus",
+      "membership_categories": [
+        {
+          "code": "UEBMI_EMPLOYEE",
+          "label": "Employed worker (domestic and foreign holding work permit)"
+        },
+        {
+          "code": "UEBMI_RETIREE",
+          "label": "Retired employee meeting minimum contribution years"
+        }
+      ],
+      "contribution_rules": "Jointly contributed by employer (approx 6% to 8% of wage base) and employee (2% of wage base deducted via payroll).",
+      "benefit_summary": [
+        "Inpatient hospitalization coverage up to local annual ceiling (often RMB 500,000+ depending on municipality)",
+        "Personal medical account (个人账户) funded by employee contribution for outpatient consultations and pharmacy",
+        "Catastrophic illness supplemental insurance (大病保险) automatically linked to high medical costs"
+      ],
+      "referral_requirements": "Direct access to contracted public medical institutions (定点医疗机构). Referral required for inter-provincial direct billing (跨省异地就医直接结算备案).",
+      "administrative_procedures": [
+        "Employer submits registration to local Social Insurance Bureau within 30 days of hiring.",
+        "Employee receives Social Security Card (社保卡) or activates Digital Health Insurance Code (医保电子凭证)."
+      ],
+      "source_url": "https://www.nhsa.gov.cn/art/2021/6/30/art_37_5391.html",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "schemes_id": [
+    {
+      "scheme_id": "id-scheme-jkn",
+      "country_code": "ID",
+      "jurisdiction": "ID-National",
+      "scheme_name_original": "Program Jaminan Kesehatan Nasional (JKN / BPJS Kesehatan)",
+      "scheme_name_english": "National Health Insurance Program (JKN BPJS Kesehatan)",
+      "administrator": "Badan Penyelenggara Jaminan Sosial Kesehatan (BPJS Kesehatan)",
+      "membership_categories": [
+        {
+          "code": "PBI_JK",
+          "label": "Penerima Bantuan Iuran Jaminan Kesehatan (Subsidized vulnerable population paid by APBN/APBD)"
+        },
+        {
+          "code": "PPU",
+          "label": "Pekerja Penerima Upah (Formal employees in government, state-owned enterprises, and private companies)"
+        },
+        {
+          "code": "PBPU",
+          "label": "Pekerja Bukan Penerima Upah / Peserta Mandiri (Self-employed and independent workers)"
+        },
+        {
+          "code": "BP",
+          "label": "Bukan Pekerja (Investors, pensioners, and non-employed residents)"
+        }
+      ],
+      "contribution_rules": "PPU: 5% of monthly wage (4% employer, 1% employee, salary cap IDR 12,000,000). PBPU Mandiri: Flat monthly premium per member according to class (Kelas 1: IDR 150k, Kelas 2: IDR 100k, Kelas 3: IDR 35k).",
+      "benefit_summary": [
+        "Comprehensive primary medical care at registered FKTP clinic (Puskesmas / Dokter Praktik / Klinik Pratama)",
+        "Specialist outpatient consultation and surgical inpatient hospital care at FKRTL with electronic referral",
+        "Emergency medical services at any hospital Emergency Department (IGD) without prior referral",
+        "Essential medicine coverage pursuant to Formularium Nasional (Fornas)"
+      ],
+      "referral_requirements": "Strict tiered referral system (Sistem Rujukan Berjenjang) through primary care clinic (FKTP). Direct hospital visits without emergency or referral are non-reimbursable.",
+      "administrative_procedures": [
+        "Register online via Mobile JKN application, Pandawa WhatsApp (08118165165), or BPJS branch office.",
+        "Select and register one designated primary care clinic (FKTP) in neighborhood of residence.",
+        "Display digital KIS card in Mobile JKN application or present NIK KTP during medical check-in."
+      ],
+      "source_url": "https://www.bpjs-kesehatan.go.id",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "university_requirements_cn": [
+    {
+      "requirement_id": "cn-req-szu-student",
+      "institution_id": "cn-szu",
+      "institution_name": "Shenzhen University",
+      "institution_name_original": "深圳大学",
+      "city": "Shenzhen",
+      "province": "Guangdong",
+      "country_code": "CN",
+      "official_requirement_summary": "Shenzhen University international students must purchase the Comprehensive Insurance & Protection Scheme for Foreigners Staying in China (来华留学生综合医疗保险) prior to enrollment or visa extension. Proof of purchase is required for semester registration.",
+      "eligible_student_categories": [
+        "Degree international students",
+        "Language exchange students",
+        "Visiting international researchers"
+      ],
+      "mandatory_purchase_required": true,
+      "approved_scheme_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China (来华留学生综合医疗保险)",
+      "approved_insurer": "Ping An Pension Insurance Co., Ltd. (via lxbx.net platform)",
+      "required_document_types": [
+        "DOC-CN-INS-CERT",
+        "DOC-CN-PASSPORT",
+        "DOC-CN-STUDY-VISA"
+      ],
+      "coverage_period_requirements": "Coverage must cover the full academic semester or year (minimum 6 months or 12 months) and remain continuously valid throughout enrollment.",
+      "minimum_benefit_limits": {
+        "Accidental Death": "100,000 CNY",
+        "Inpatient Hospitalization": "400,000 CNY"
+      },
+      "relevant_deadlines": "Must be paid and validated at least 7 days before university on-site registration deadline",
+      "policy_sources": [
+        "https://lxs.szu.edu.cn/info/1020/2198.htm"
+      ],
+      "administrative_guidance": "Purchase online via www.lxbx.net, select Shenzhen University, enter passport number, complete UnionPay/WeChat Pay, download PDF certificate.",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "requirement_id": "cn-req-cuhksz-student",
+      "institution_id": "cn-cuhk-sz",
+      "institution_name": "The Chinese University of Hong Kong, Shenzhen",
+      "institution_name_original": "香港中文大学（深圳）",
+      "city": "Shenzhen",
+      "province": "Guangdong",
+      "country_code": "CN",
+      "official_requirement_summary": "All non-local degree-seeking and exchange students at CUHK-Shenzhen must hold valid comprehensive medical insurance covering accidental medical and hospitalization expenses in mainland China.",
+      "eligible_student_categories": [
+        "Undergraduate international students",
+        "Postgraduate international students",
+        "Inbound exchange students"
+      ],
+      "mandatory_purchase_required": true,
+      "approved_scheme_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China or university-verified international equivalent",
+      "approved_insurer": "Ping An Pension Insurance / designated institutional policy",
+      "required_document_types": [
+        "DOC-CN-INS-CERT",
+        "DOC-CN-PASSPORT"
+      ],
+      "coverage_period_requirements": "Must cover the entire duration of stay in Shenzhen until departure date",
+      "minimum_benefit_limits": {
+        "Inpatient Hospitalization": "400,000 CNY"
+      },
+      "relevant_deadlines": "Verification required during freshman orientation check-in",
+      "policy_sources": [
+        "https://www.cuhk.edu.cn/en/page/international-student-services"
+      ],
+      "administrative_guidance": "Submit policy certificate via CUHK-Shenzhen student information portal prior to class commencement.",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "requirement_id": "cn-req-tsinghua-student",
+      "institution_id": "cn-thu",
+      "institution_name": "Tsinghua University",
+      "institution_name_original": "清华大学",
+      "city": "Beijing",
+      "province": "Beijing",
+      "country_code": "CN",
+      "official_requirement_summary": "Tsinghua University requires all international students studying for more than six months to hold the Comprehensive Insurance & Protection Scheme for Foreigners Staying in China before completion of semester registration.",
+      "eligible_student_categories": [
+        "Degree students",
+        "Exchange scholars",
+        "Language students"
+      ],
+      "mandatory_purchase_required": true,
+      "approved_scheme_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China",
+      "approved_insurer": "Ping An Pension Insurance Co., Ltd. (via lxbx.net platform)",
+      "required_document_types": [
+        "DOC-CN-INS-CERT",
+        "DOC-CN-PASSPORT"
+      ],
+      "coverage_period_requirements": "Must cover the full registered semester or academic year without interruption.",
+      "minimum_benefit_limits": {
+        "Accidental Death": "100,000 CNY",
+        "Inpatient Hospitalization": "400,000 CNY"
+      },
+      "relevant_deadlines": "Proof required during international student orientation registration window",
+      "policy_sources": [
+        "https://is.tsinghua.edu.cn/en/info/1020/1234.htm"
+      ],
+      "administrative_guidance": "Complete online purchase on lxbx.net selecting Tsinghua University as designated institution.",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "requirement_id": "cn-req-pku-student",
+      "institution_id": "cn-pku",
+      "institution_name": "Peking University",
+      "institution_name_original": "北京大学",
+      "city": "Beijing",
+      "province": "Beijing",
+      "country_code": "CN",
+      "official_requirement_summary": "Peking University mandates that international students submit valid comprehensive medical insurance proof pursuant to Ministry of Education Joint Order No. 42 for registration and residence permit issuance.",
+      "eligible_student_categories": [
+        "Undergraduate",
+        "Postgraduate",
+        "Visiting fellows"
+      ],
+      "mandatory_purchase_required": true,
+      "approved_scheme_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China",
+      "approved_insurer": "Ping An Pension Insurance Co., Ltd. (via lxbx.net platform)",
+      "required_document_types": [
+        "DOC-CN-INS-CERT",
+        "DOC-CN-PASSPORT"
+      ],
+      "coverage_period_requirements": "Must cover the entire duration of studies at Peking University.",
+      "minimum_benefit_limits": {
+        "Accidental Death": "100,000 CNY",
+        "Inpatient Hospitalization": "400,000 CNY"
+      },
+      "relevant_deadlines": "Verification mandatory prior to course registration confirmation",
+      "policy_sources": [
+        "https://isd.pku.edu.cn/notice/insurance.htm"
+      ],
+      "administrative_guidance": "Purchase via lxbx.net and present electronic insurance certificate barcode at registration counter.",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "claims_procedures_cn": [
+    {
+      "procedure_id": "cn-claim-proc-lxbx",
+      "country_code": "CN",
+      "claims_administrator": "Ping An Pension Insurance Co., Ltd. (Foreign Student Claims Department)",
+      "relevant_product_ids": [
+        "cn-prod-lxbx-student"
+      ],
+      "claim_types": [
+        "Inpatient Hospitalization Reimbursement",
+        "Outpatient Emergency Reimbursement",
+        "Accidental Injury Claim"
+      ],
+      "submission_instructions": "For hospitalization, notify 400-810-5119 within 48 hours of admission. For outpatient, collect original fapiao and medical records, submit claim online via lxbx.net or mail paper originals to Ping An Beijing Claims Center.",
+      "filing_deadlines": "Within 60 calendar days from the date of hospital discharge or outpatient consultation",
+      "required_forms": [
+        "International Student Insurance Claim Application Form (来华留学生保险理赔申请书)"
+      ],
+      "submission_channels": [
+        "Online claim portal (www.lxbx.net)",
+        "Postal mail to Ping An Pension Beijing Center",
+        "Emergency WeChat Service"
+      ],
+      "official_portal_url": "https://www.lxbx.net/claims.html",
+      "preauthorization_requirements": "Hospitalization requires advance call to 400-810-5119. Emergency admissions must be reported within 48 hours.",
+      "reimbursement_procedures": "Insurer audits invoices against national medical insurance catalog. Approved funds transferred to claimant mainland China bank card (UnionPay).",
+      "published_processing_timeline": "7 to 15 working days upon receipt of complete original evidence documents",
+      "status_inquiry_channels": [
+        "Online claim query (www.lxbx.net/query)",
+        "Hotline 400-810-5119",
+        "WeChat official service account"
+      ],
+      "customer_support_contact": "400-810-5119 (Bilingual English and Chinese, 24/7 hotline)",
+      "dispute_escalation_guidance": "Contact Ping An National Customer Service 95511 or escalate to NFRA Financial Consumer Protection Hotline 12378.",
+      "source_url": "https://www.lxbx.net/claims_guide.html",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "claims_procedures_id": [
+    {
+      "procedure_id": "id-claim-proc-bpjs-rujukan",
+      "country_code": "ID",
+      "claims_administrator": "BPJS Kesehatan & Rumah Sakit Rekanan",
+      "relevant_product_ids": [
+        "id-prod-bpjs-jkn"
+      ],
+      "claim_types": [
+        "Pelayanan Rawat Jalan Tingkat Lanjutan",
+        "Pelayanan Rawat Inap Rumah Sakit"
+      ],
+      "submission_instructions": "Visit registered FKTP for initial examination. If medical condition requires specialist treatment, FKTP issues online electronic referral (Surat Rujukan). Present NIK KTP and referral barcode at hospital admissions. Hospital generates SEP (Surat Eligibilitas Peserta). No cash payment required for standard entitlements.",
+      "filing_deadlines": "Referral valid for 90 days from date of issuance by FKTP for recurring treatment",
+      "required_forms": [
+        "Surat Rujukan FKTP",
+        "Surat Eligibilitas Peserta (SEP) digital"
+      ],
+      "submission_channels": [
+        "Mobile JKN App",
+        "Hospital BPJS Center Desk",
+        "P-Care Clinic System"
+      ],
+      "official_portal_url": "https://pcare.bpjs-kesehatan.go.id",
+      "preauthorization_requirements": "Prior examination and electronic referral from registered FKTP mandatory",
+      "reimbursement_procedures": "Direct settlement (cashless) between hospital and BPJS Kesehatan under INA-CBGs diagnosis-related group tariff",
+      "published_processing_timeline": "Immediate electronic verification at admissions desk",
+      "status_inquiry_channels": [
+        "Mobile JKN App",
+        "Care Center 165",
+        "Petugas BPJS SATU di Rumah Sakit"
+      ],
+      "customer_support_contact": "BPJS Care Center 165 (24 Jam)",
+      "dispute_escalation_guidance": "Contact BPJS SATU (Siap Membantu) petugas di rumah sakit, atau hotline 165",
+      "source_url": "https://www.bpjs-kesehatan.go.id/bpjs/pages/detail/2014/12",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "procedure_id": "id-claim-proc-allianz-reimbursement",
+      "country_code": "ID",
+      "claims_administrator": "PT Asuransi Allianz Life Indonesia (Claims Department)",
+      "relevant_product_ids": [
+        "id-prod-allianz-smarthealth"
+      ],
+      "claim_types": [
+        "Rawat Inap Non-Rekanan Reimbursement",
+        "Rawat Jalan Lanjutan Reimbursement"
+      ],
+      "submission_instructions": "For non-partner hospital treatments, pay initial expenses, collect original hospital receipts, complete formulir klaim with treating physician signature, and submit via Allianz eAZy Connect portal or mail to Allianz Tower Jakarta.",
+      "filing_deadlines": "Within 30 calendar days from the date of discharge or consultation",
+      "required_forms": [
+        "Formulir Klaim Asuransi Kesehatan Allianz Asli"
+      ],
+      "submission_channels": [
+        "Allianz eAZy Connect Mobile App",
+        "Customer Portal Online",
+        "Kantor Pusat Allianz Tower Kuningan"
+      ],
+      "official_portal_url": "https://www.allianz.co.id/klaim",
+      "preauthorization_requirements": "Required for planned surgeries at least 7 days before admission",
+      "reimbursement_procedures": "Claim assessed against policy benefit table. Approved payment transferred to policyholder bank account.",
+      "published_processing_timeline": "7 to 14 working days after receipt of complete original documents",
+      "status_inquiry_channels": [
+        "Allianz eAZy Connect Mobile App",
+        "Customer Portal",
+        "Contact Center 1500-136"
+      ],
+      "customer_support_contact": "1500-136",
+      "dispute_escalation_guidance": "Internal Dispute Resolution Unit Allianz, or escalate to OJK Kontak 157 and LAPS SJK.",
+      "source_url": "https://www.allianz.co.id/layanan/klaim/klaim-asuransi-kesehatan.html",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "claim_evidence_cn": [
+    {
+      "evidence_id": "cn-ev-fapiao",
+      "country_code": "CN",
+      "insurer_id": "cn-platform-lxbx",
+      "product_id": "cn-prod-lxbx-student",
+      "claim_type": "Outpatient and Inpatient Reimbursement",
+      "evidence_item_name": "Official Hospital Medical Invoice (Fapiao)",
+      "evidence_item_name_original": "医疗门诊/住院收费电子或纸质专用发票",
+      "description": "Official fiscal invoice issued by a public hospital, containing national fiscal verification code, patient legal name, hospital seal, and itemized billing code.",
+      "mandatory": true,
+      "accepted_formats": [
+        "Electronic Fapiao (OFD/PDF)",
+        "Scanned original paper fapiao with fiscal red stamp"
+      ],
+      "special_conditions": "Patient name on fapiao must match passport name exactly. Invoices from private clinics without prior insurer approval are rejected.",
+      "source_url": "https://www.lxbx.net/evidence_requirements.html",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "evidence_id": "cn-ev-medical-record",
+      "country_code": "CN",
+      "insurer_id": "cn-platform-lxbx",
+      "product_id": "cn-prod-lxbx-student",
+      "claim_type": "Outpatient and Inpatient Reimbursement",
+      "evidence_item_name": "Medical Consultation Record or Discharge Summary",
+      "evidence_item_name_original": "门急诊病历手册 / 出院小结记录",
+      "description": "Doctor consultation notes detailing chief complaint, onset date, diagnostic conclusion, treatment plan, and doctor signature/stamp.",
+      "mandatory": true,
+      "accepted_formats": [
+        "PDF",
+        "Original stamped doctor record copy"
+      ],
+      "special_conditions": "Must explicitly indicate the onset date of symptoms to verify policy active period and rule out pre-existing exclusions.",
+      "source_url": "https://www.lxbx.net/evidence_requirements.html",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "evidence_id": "cn-ev-expense-breakdown",
+      "country_code": "CN",
+      "insurer_id": "cn-platform-lxbx",
+      "product_id": "cn-prod-lxbx-student",
+      "claim_type": "Inpatient Hospitalization Reimbursement",
+      "evidence_item_name": "Itemized Hospital Expense Breakdown List",
+      "evidence_item_name_original": "住院医疗费用明细清单",
+      "description": "Detailed daily printout of all medicines, tests, bed fees, and surgical supplies provided during hospital stay, certified by hospital cash desk.",
+      "mandatory": true,
+      "accepted_formats": [
+        "PDF",
+        "Stamped computer printout"
+      ],
+      "special_conditions": "Required for all hospitalization claims exceeding RMB 1,000.",
+      "source_url": "https://www.lxbx.net/evidence_requirements.html",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "claim_evidence_id": [
+    {
+      "evidence_id": "id-ev-kuitansi-asli",
+      "country_code": "ID",
+      "insurer_id": "id-insurer-allianz",
+      "product_id": "id-prod-allianz-smarthealth",
+      "claim_type": "Hospital Reimbursement Claim",
+      "evidence_item_name": "Original Hospital Payment Receipt and Bill Breakdown",
+      "evidence_item_name_original": "Kuitansi Asli Pembayaran Rumah Sakit dan Rincian Biaya",
+      "description": "Official payment receipt stamped by hospital cashier with detailed breakdown of room charges, doctor consultations, lab tests, medications, and surgical consumables.",
+      "mandatory": true,
+      "accepted_formats": [
+        "Original hardcopy stamped receipt",
+        "High-resolution digital scan for eAZy Connect preliminary review"
+      ],
+      "special_conditions": "Duplicate or provisional receipts not accepted without official hospital confirmation seal.",
+      "source_url": "https://www.allianz.co.id/layanan/klaim.html",
+      "verification_status": "VERIFIED"
+    },
+    {
+      "evidence_id": "id-ev-resume-medis",
+      "country_code": "ID",
+      "insurer_id": null,
+      "product_id": null,
+      "claim_type": "Health Insurance Reimbursement",
+      "evidence_item_name": "Medical Resume Signed by Treating Physician",
+      "evidence_item_name_original": "Resume Medis Pasien yang Ditandatangani Dokter yang Merawat",
+      "description": "Clinical summary document specifying diagnosis (ICD-10 code), symptom onset date, clinical history, diagnostic findings, medical interventions performed, and doctor registration number (SIP/IDI).",
+      "mandatory": true,
+      "accepted_formats": [
+        "Original stamped hospital medical resume",
+        "Digital hospital electronic medical record certified printout"
+      ],
+      "special_conditions": "Must explicitly state the cause of condition to verify policy exclusion criteria.",
+      "source_url": "https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "consumer_disputes_cn": [
+    {
+      "dispute_id": "cn-disp-nfra-12378",
+      "country_code": "CN",
+      "authority_name": "National Financial Regulatory Administration Financial Consumer Protection Center",
+      "channel_name": "12378 Banking and Insurance Consumer Complaint Hotline (12378银行保险消费者投诉维权热线)",
+      "contact_phone": "12378",
+      "online_portal": "https://www.nfra.gov.cn/cn/view/pages/index/index.html",
+      "jurisdiction_scope": "Mainland China national banking and insurance disputes",
+      "procedure_summary": "Policyholders who fail to resolve insurance claim or coverage disputes through direct insurer customer service may lodge an official regulatory complaint via hotline 12378.",
+      "published_deadlines": "Insurer required to handle and respond within 15 calendar days of receiving supervisory referral",
+      "filing_guidance": [
+        "Provide insurance policy number, insurer legal entity name, and claimant identification",
+        "Detail the claim denial or service grievance with factual supporting documents",
+        "State explicit resolution demands (e.g., policy claim payment, clarification of denial basis)"
+      ],
+      "source_url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1107775",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "consumer_disputes_id": [
+    {
+      "dispute_id": "id-disp-ojk-157",
+      "country_code": "ID",
+      "authority_name": "Otoritas Jasa Keuangan (OJK)",
+      "channel_name": "Kontak OJK 157 / Portal Aplikasi Pelindungan Konsumen (APAK)",
+      "contact_phone": "157 (Telepon) / 081-157-157-157 (WhatsApp)",
+      "online_portal": "https://kontak157.ojk.go.id",
+      "jurisdiction_scope": "National Financial Services and Insurance Consumer Protection",
+      "procedure_summary": "Consumers who have submitted a complaint to an insurer without satisfactory resolution within 10 to 20 working days may lodge an official grievance with OJK Kontak 157 or request mediation through LAPS SJK.",
+      "published_deadlines": "Insurer response required within maximum 10 working days, extendable by 10 working days for complex cases pursuant to POJK 22/2023",
+      "filing_guidance": [
+        "Submit copy of active insurance policy and official claim denial letter from insurer",
+        "Provide chronology of dispute and chronological evidence of interaction with insurer customer service",
+        "Attach identity card (KTP/KITAS) and statement confirming dispute is not currently in litigation"
+      ],
+      "source_url": "https://kontak157.ojk.go.id",
+      "verification_status": "VERIFIED"
+    }
+  ],
+  "deterministic_rules": [
+    {
+      "rule_id": "CN-RULE-STUDENT-VISA-INSURANCE",
+      "country_code": "CN",
+      "jurisdiction": "CN-National",
+      "authority": "Ministry of Education & National Immigration Administration",
+      "rule_type": "REGULATORY_VISA_MANDATE",
+      "applicable_personas": [
+        "INTERNATIONAL_STUDENT"
+      ],
+      "applicability_conditions": {
+        "residence_context": "INTERNATIONAL_STUDENT",
+        "study_duration": "GREATER_THAN_180_DAYS",
+        "visa_category": "X1_OR_X2"
+      },
+      "required_evidence": [
+        "DOC_INS_CERTIFICATE",
+        "DOC_PASSPORT",
+        "DOC_STUDENT_VISA"
+      ],
+      "comparison_operator": "GREATER_THAN_OR_EQUAL",
+      "threshold_or_condition": "coverage_end_date >= visa_expiry_date",
+      "effective_from": "2017-07-01",
+      "effective_to": null,
+      "exceptions": [
+        "Short-term cultural exchange under 30 days holding tourist L visa"
+      ],
+      "source_ids": [
+        "CN-SRC-MOE-ORDER42",
+        "CN-SRC-SZU"
+      ],
+      "verification_status": "VERIFIED"
+    },
+    {
+      "rule_id": "CN-RULE-FOREIGN-EMPLOYEE-SOCIAL-INSURANCE",
+      "country_code": "CN",
+      "jurisdiction": "CN-National",
+      "authority": "Ministry of Human Resources and Social Security (MoHRSS)",
+      "rule_type": "STATUTORY_EMPLOYMENT_MANDATE",
+      "applicable_personas": [
+        "FOREIGN_EMPLOYEE",
+        "DOMESTIC_EMPLOYEE"
+      ],
+      "applicability_conditions": {
+        "employment_status": "EMPLOYED",
+        "contract_location": "MAINLAND_CHINA",
+        "work_permit_held": "TRUE"
+      },
+      "required_evidence": [
+        "DOC_WORK_PERMIT",
+        "DOC_EMPLOYMENT_CONTRACT",
+        "DOC_SOCIAL_SECURITY_CARD"
+      ],
+      "comparison_operator": "EQUAL",
+      "threshold_or_condition": "employer_social_security_registration == COMPLETED",
+      "effective_from": "2011-10-15",
+      "effective_to": null,
+      "exceptions": [
+        "Citizens of countries with bilateral social security exemption treaties (e.g. Germany, Korea, Japan) for specific pension contributions"
+      ],
+      "source_ids": [
+        "CN-SRC-MOHRSS"
+      ],
+      "verification_status": "VERIFIED"
+    },
+    {
+      "rule_id": "ID-RULE-JKN-MANDATORY-PARTICIPATION",
+      "country_code": "ID",
+      "jurisdiction": "ID-National",
+      "authority": "Badan Penyelenggara Jaminan Sosial Kesehatan (BPJS Kesehatan)",
+      "rule_type": "STATUTORY_HEALTH_SECURITY_MANDATE",
+      "applicable_personas": [
+        "DOMESTIC_EMPLOYEE",
+        "SELF_EMPLOYED",
+        "FOREIGN_EMPLOYEE"
+      ],
+      "applicability_conditions": {
+        "residency_duration": "MINIMUM_6_MONTHS",
+        "legal_status": "WNI_OR_KITAS_HOLDER"
+      },
+      "required_evidence": [
+        "DOC_JKN_CARD",
+        "DOC_KTP_OR_KITAS"
+      ],
+      "comparison_operator": "EQUAL",
+      "threshold_or_condition": "jkn_membership_status == AKTIF",
+      "effective_from": "2014-01-01",
+      "effective_to": null,
+      "exceptions": [
+        "Foreign tourists residing less than 6 months on visit visa"
+      ],
+      "source_ids": [
+        "ID-SRC-BPJS-KES",
+        "ID-SRC-BPK-JDIH"
+      ],
+      "verification_status": "VERIFIED"
+    },
+    {
+      "rule_id": "ID-RULE-JKN-TIERED-REFERRAL",
+      "country_code": "ID",
+      "jurisdiction": "ID-National",
+      "authority": "Kementerian Kesehatan RI & BPJS Kesehatan",
+      "rule_type": "CARE_PATHWAY_COMPLIANCE",
+      "applicable_personas": [
+        "ALL_JKN_PARTICIPANTS"
+      ],
+      "applicability_conditions": {
+        "encounter_type": "ELECTIVE_SPECIALIST_CONSULTATION",
+        "emergency_flag": "FALSE"
+      },
+      "required_evidence": [
+        "DOC_REFERRAL_LETTER"
+      ],
+      "comparison_operator": "EQUAL",
+      "threshold_or_condition": "referral_from_fktp == VALID_AND_ACTIVE",
+      "effective_from": "2014-01-01",
+      "effective_to": null,
+      "exceptions": [
+        "Direct hospital admissions through Emergency Department (IGD) meeting emergency criteria"
+      ],
+      "source_ids": [
+        "ID-SRC-BPJS-KES",
+        "ID-SRC-KEMKES"
+      ],
+      "verification_status": "VERIFIED"
+    }
+  ]
+}

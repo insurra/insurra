@@ -9,6 +9,29 @@ from app.models.account_data import (
     FamilyMemberRow,
 )
 from app.models.auth import AccountRow, AccountSessionRow, OAuthIdentityRow
+from app.models.catalog import (
+    DataCollectionRunRow,
+    DataQualityIssueRow,
+    HealthcareCostReferenceRow,
+    HealthcareNetworkLinkRow,
+    HealthcareProviderRow,
+    InsuranceBenefitRow,
+    InsuranceBrandAssetRow,
+    InsuranceBrandRow,
+    InsuranceClaimProcedureRow,
+    InsuranceEligibilityRuleRow,
+    InsuranceEntityRow,
+    InsuranceEvidenceRequirementRow,
+    InsuranceExclusionRow,
+    InsuranceGlossaryRow,
+    InsurancePolicyDocumentRow,
+    InsuranceProductRow,
+    InsuranceProductVersionRow,
+    InsurancePublicSchemeRow,
+    InsuranceRegulationRow,
+    SourceRegistryRow,
+    UniversityInsuranceRequirementRow,
+)
 from app.models.entities import (
     AuditRow,
     ConsentRow,
@@ -16,6 +39,13 @@ from app.models.entities import (
     InsuranceRecordRow,
     PersonaRow,
     ProfileRow,
+)
+from app.models.foundation import (
+    ActionRow,
+    ClaimCaseRow,
+    DocumentRow,
+    ExtractedFieldRow,
+    PurposeConsentRow,
 )
 
 __all__ = [
@@ -36,14 +66,33 @@ __all__ = [
     "PersonaRow",
     "ProfileRow",
     "OAuthIdentityRow",
+    "ActionRow",
+    "ClaimCaseRow",
+    "DocumentRow",
+    "ExtractedFieldRow",
+    "PurposeConsentRow",
 ]
 
-from app.models.foundation import (
-    ActionRow,
-    ClaimCaseRow,
-    DocumentRow,
-    ExtractedFieldRow,
-    PurposeConsentRow,
-)
-
-__all__ += ["ActionRow", "ClaimCaseRow", "DocumentRow", "ExtractedFieldRow", "PurposeConsentRow"]
+__all__ += [
+    "DataCollectionRunRow",
+    "DataQualityIssueRow",
+    "HealthcareCostReferenceRow",
+    "HealthcareNetworkLinkRow",
+    "HealthcareProviderRow",
+    "InsuranceBenefitRow",
+    "InsuranceBrandAssetRow",
+    "InsuranceBrandRow",
+    "InsuranceClaimProcedureRow",
+    "InsuranceEligibilityRuleRow",
+    "InsuranceEntityRow",
+    "InsuranceEvidenceRequirementRow",
+    "InsuranceExclusionRow",
+    "InsuranceGlossaryRow",
+    "InsurancePolicyDocumentRow",
+    "InsuranceProductRow",
+    "InsuranceProductVersionRow",
+    "InsurancePublicSchemeRow",
+    "InsuranceRegulationRow",
+    "SourceRegistryRow",
+    "UniversityInsuranceRequirementRow",
+]

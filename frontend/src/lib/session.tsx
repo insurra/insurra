@@ -26,6 +26,13 @@ type SessionContextValue = {
   selectPersona: (id: string) => Promise<boolean>;
   setConsent: (value: boolean) => Promise<boolean>;
   getAudit: (eventType?: string) => Promise<S["AuditEvent"][]>;
+  getClaims: () => Promise<S["ClaimCasePage"]>;
+  getClaim: (id: string) => Promise<S["ClaimCaseDetail"]>;
+  createClaim: (coverageId: string) => Promise<S["ClaimCaseCreated"]>;
+  getActions: () => Promise<S["ProposedAction"][]>;
+  approveAction: (id: string, expectedHash: string) => Promise<S["ActionDecisionResult"]>;
+  rejectAction: (id: string) => Promise<S["ActionDecisionResult"]>;
+  checkTriage: (text: string, countryCode: string) => Promise<S["TriageResult"]>;
   clearSession: () => void;
 };
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -154,6 +161,54 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     [clearSession],
   );
 
+  const getClaims = useCallback(async () => {
+    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    return api.get("/api/v1/claims", token.current);
+  }, []);
+
+  const getClaim = useCallback(async (id: string) => {
+    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    return api.request("get", "/api/v1/claims/{claim_case_id}", {
+      token: token.current,
+      params: { claim_case_id: id },
+    });
+  }, []);
+
+  const createClaim = useCallback(async (coverageId: string) => {
+    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    return api.post("/api/v1/claims", token.current, {
+      path: "manual",
+      coverage_id: coverageId,
+    });
+  }, []);
+
+  const getActions = useCallback(async () => {
+    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    return api.get("/api/v1/actions", token.current);
+  }, []);
+
+  const approveAction = useCallback(async (id: string, expectedHash: string) => {
+    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    return api.request("post", "/api/v1/actions/{action_id}/approve", {
+      token: token.current,
+      params: { action_id: id },
+      body: { confirmed: true, expected_payload_sha256: expectedHash },
+    });
+  }, []);
+
+  const rejectAction = useCallback(async (id: string) => {
+    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    return api.request("post", "/api/v1/actions/{action_id}/reject", {
+      token: token.current,
+      params: { action_id: id },
+    });
+  }, []);
+
+  const checkTriage = useCallback(async (text: string, countryCode: string) => {
+    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    return api.post("/api/v1/triage", token.current, { text, country_code: countryCode });
+  }, []);
+
   return (
     <SessionContext.Provider
       value={{
@@ -163,6 +218,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         selectPersona,
         setConsent,
         getAudit,
+        getClaims,
+        getClaim,
+        createClaim,
+        getActions,
+        approveAction,
+        rejectAction,
+        checkTriage,
         clearSession,
       }}
     >

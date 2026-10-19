@@ -16,7 +16,7 @@ from app.schemas.profile import UserProfile
 def seed_personas(db: Session, fixture_root: Path = ROOT / "fixtures") -> int:
     inserted = 0
     for folder in sorted(fixture_root.iterdir()):
-        if not folder.is_dir():
+        if not folder.is_dir() or not (folder / "profile.json").exists():
             continue
         profile = UserProfile.model_validate_json((folder / "profile.json").read_text())
         record = UnifiedInsuranceRecord.model_validate_json(

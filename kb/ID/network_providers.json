@@ -1,0 +1,69 @@
+[
+  {
+    "provider_id": "id-hosp-rscm",
+    "country_code": "ID",
+    "name_original": "RSUPN Dr. Cipto Mangunkusumo (RSCM)",
+    "name_english": "Dr. Cipto Mangunkusumo National Central General Hospital",
+    "city": "Jakarta Pusat",
+    "facility_category": "Public Class A National Referral Hospital (Rumah Sakit Rujukan Nasional Kelas A)",
+    "facility_tier": "Class A (Rujukan Nasional)",
+    "address": "Jl. Diponegoro No. 71, Kenari, Senen, Jakarta Pusat, DKI Jakarta 10430",
+    "official_contact": "1500-135 / +62-21-1500135",
+    "emergency_service_available": true,
+    "verified_insurer_affiliations": [
+      "id-public-bpjs-kesehatan",
+      "id-insurer-allianz",
+      "id-insurer-prudential",
+      "id-insurer-manulife",
+      "id-insurer-aia"
+    ],
+    "cashless_direct_billing_verified": true,
+    "source_url": "https://rscm.co.id",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "provider_id": "id-hosp-medistra",
+    "country_code": "ID",
+    "name_original": "Rumah Sakit Medistra Jakarta",
+    "name_english": "Medistra Hospital Jakarta",
+    "city": "Jakarta Selatan",
+    "facility_category": "Private General Hospital",
+    "facility_tier": "Class B Swasta",
+    "address": "Jl. Jend. Gatot Subroto Kav. 59, Kuningan Timur, Setiabudi, Jakarta Selatan 12950",
+    "official_contact": "+62-21-5210200",
+    "emergency_service_available": true,
+    "verified_insurer_affiliations": [
+      "id-insurer-allianz",
+      "id-insurer-prudential",
+      "id-insurer-manulife",
+      "id-insurer-aia",
+      "id-insurer-axa-mandiri"
+    ],
+    "cashless_direct_billing_verified": true,
+    "source_url": "https://www.medistra.com",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "provider_id": "id-hosp-siloam-mrccc",
+    "country_code": "ID",
+    "name_original": "MRCCC Siloam Hospitals Semanggi",
+    "name_english": "MRCCC Siloam Hospitals Semanggi",
+    "city": "Jakarta Selatan",
+    "facility_category": "Private Comprehensive Hospital and Oncology Center",
+    "facility_tier": "Class B Swasta",
+    "address": "Jl. Garnisun No. 2-3, Karet Semanggi, Setiabudi, Jakarta Selatan 12930",
+    "official_contact": "1-500-181 / +62-21-29962888",
+    "emergency_service_available": true,
+    "verified_insurer_affiliations": [
+      "id-public-bpjs-kesehatan",
+      "id-insurer-allianz",
+      "id-insurer-prudential",
+      "id-insurer-manulife",
+      "id-insurer-aia",
+      "id-insurer-axa-mandiri"
+    ],
+    "cashless_direct_billing_verified": true,
+    "source_url": "https://www.siloamhospitals.com/hospitals-list/mrccc-siloam-hospitals-semanggi",
+    "verification_status": "VERIFIED"
+  }
+]

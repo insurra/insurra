@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.5",
+  "version": "1.0.0",
+  "taxonomy_name": "INSURRA Universal Insurance Taxonomy",
+  "categories": [
+    {
+      "category_code": "PUBLIC_SOCIAL_HEALTH",
+      "english_label": "Public Social Health Insurance",
+      "chinese_label": "国家社会医疗保险",
+      "indonesian_label": "Jaminan Kesehatan Sosial Nasional",
+      "description": "Statutory universal or employment-based state health security programs.",
+      "examples": [
+        "CN: Urban Employee Basic Medical Insurance (职工医保)",
+        "ID: BPJS Kesehatan (JKN)"
+      ]
+    },
+    {
+      "category_code": "PRIVATE_MEDICAL",
+      "english_label": "Private Medical & Health Insurance",
+      "chinese_label": "商业医疗与健康保险",
+      "indonesian_label": "Asuransi Kesehatan Swasta",
+      "description": "Commercial indemnity or fixed-benefit private healthcare insurance policies.",
+      "examples": [
+        "Allianz SmartHealth Maxi Violet",
+        "Prudential PRUWell Medical"
+      ]
+    },
+    {
+      "category_code": "INTERNATIONAL_STUDENT",
+      "english_label": "International Student Health Insurance",
+      "chinese_label": "来华留学生综合医疗保险",
+      "indonesian_label": "Asuransi Mahasiswa Internasional",
+      "description": "Mandatory or university-endorsed health protection tailored for foreign students.",
+      "examples": [
+        "Ping An Comprehensive Scheme via lxbx.net"
+      ]
+    },
+    {
+      "category_code": "EMPLOYER_GROUP",
+      "english_label": "Employer Group Health & Benefit Plans",
+      "chinese_label": "企业团体健康与雇主责任险",
+      "indonesian_label": "Asuransi Kesehatan Kumpulan Karyawan",
+      "description": "Corporate group policies covering employees and dependents.",
+      "examples": [
+        "PICC Foreign Expatriate Health",
+        "AIA Corporate Solutions"
+      ]
+    },
+    {
+      "category_code": "LIFE_AND_ACCIDENT",
+      "english_label": "Life & Personal Accident Insurance",
+      "chinese_label": "人身意外伤害与人寿保险",
+      "indonesian_label": "Asuransi Jiwa dan Kecelakaan Diri",
+      "description": "Coverage for accidental death, disability, and term life protection.",
+      "examples": [
+        "China Life Personal Accident",
+        "BRI Life Asuransi Jiwa"
+      ]
+    },
+    {
+      "category_code": "CRITICAL_ILLNESS",
+      "english_label": "Critical Illness Insurance",
+      "chinese_label": "重大疾病保险",
+      "indonesian_label": "Asuransi Penyakit Kritis",
+      "description": "Lump-sum monetary benefit payable upon confirmed diagnosis of specified major diseases.",
+      "examples": [
+        "Ping An Critical Illness 120",
+        "Prudential PRUCritical"
+      ]
+    },
+    {
+      "category_code": "TRAVEL",
+      "english_label": "International Travel Insurance",
+      "chinese_label": "国际旅行意外与医疗险",
+      "indonesian_label": "Asuransi Perjalanan Internasional",
+      "description": "Short-term medical evacuation, trip cancellation, and overseas medical care.",
+      "examples": [
+        "Allianz TravelPro",
+        "Ping An Global Traveler"
+      ]
+    }
+  ]
+}

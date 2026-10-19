@@ -8,7 +8,7 @@ This repository implements **Phase 1.5: Shared Foundation Alignment** of a 48-ho
 
 ## Hackathon Scope
 
-Phase 1.5 aligns the existing foundation with the complete PRD while preserving the working demo. It adds contracts, minimal shared storage, security boundaries, KB structures and tests. Product workflows and screen implementations remain deferred. Future routes return `501 NOT_IMPLEMENTED` after identity, purpose and object-scope checks. No team ownership, feature branches or deployments are assigned or created.
+Phase 1.5 aligns the existing foundation with the complete PRD while preserving the working demo. A subsequent Joshua demo slice adds owner-scoped claim case creation/list/detail, action queue and persisted approval/rejection, plus truthful claim, action and general emergency screens. Evidence processing, claim drafts, action editing, insurer execution and receipts remain deferred and return `501 NOT_IMPLEMENTED` after applicable guards. No team ownership, feature branches or deployments are assigned or created.
 
 ## Features
 
@@ -20,10 +20,11 @@ Implemented:
 - Versioned, validated AU/ID country configuration and idempotent fixture seeding.
 - Deterministic, inclusive interval calculation: Raka has a **potential 76-day gap**, 16 April–30 June 2027. Because rules/policies are unverified, status is `NEEDS_VERIFICATION`, not a legal finding. Sinta returns `NOT_APPLICABLE`.
 - Responsive Indonesian application shell, persona selection, onboarding, dashboard, document metadata and audit pages.
+- Joshua demo case creation/list/detail with factual case timelines and empty unverified checklists, scoped action queue and explicit hash-bound approval/rejection of valid persisted actions. The emergency page shows CN/ID contacts from checked official sources and limited positive-only Indonesian, English and Mandarin red-flag phrase escalation; a no-match result never clears an emergency.
 - Public cover, Google OAuth sign-in, revocable seven-day account sessions, and a guest/demo path.
 - Generated TypeScript/OpenAPI contracts, contract-drift checks, typed GET/POST/PUT/PATCH/DELETE and multipart/no-content/stream transport, additive migrations, scope/approval primitives, and automated verification.
 
-Contract-only (`501`): password registration/login/recovery, document upload/detail/delete and field review, completeness, home summary, policy Q&A/SSE, pathway comparison, triage, claim cases/evidence/draft, action decisions/execution, data inventory/deletion, coverage needs, audit detail and sandbox submission. These are shared interfaces, not implemented product features. P1/bonus features and the full nineteen-screen PRD remain deferred; current pages are preserved.
+Contract-only (`501`): document upload/detail/delete and field review in the demo API, home summary, policy Q&A/SSE, pathway comparison, claim evidence/draft, action edits/execution, data inventory/deletion, coverage needs, audit detail and sandbox submission. These are shared interfaces, not implemented product features. Sandbox monitoring, polling, receipts, and outbound follow-up remain inactive without an official endpoint. P1/bonus features and the full nineteen-screen PRD remain deferred; current pages are preserved.
 
 ## Tech Stack
 

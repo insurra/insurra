@@ -18,7 +18,7 @@ class RulesEngine:
         applicable_rules = [
             rule
             for rule in kb.rules
-            if rule.kind == "visa_coverage"
+            if rule.kind == "coverage_continuity"
             and (
                 not rule.applicability.occupation
                 or profile.occupation in rule.applicability.occupation
@@ -39,37 +39,38 @@ class RulesEngine:
                     "Coverage fit is not yet verified. The original data is preserved."
                 ),
             )
-        if not applicable_rules:
-            return VisaCoverageAssessment(
-                applicable=False,
-                assessment_status=AssessmentStatus.NOT_APPLICABLE,
-                gap_periods=[],
-                explanation="No visa interval rule applies to this profile.",
-            )
         if len(applicable_rules) != 1:
-            return VisaCoverageAssessment(
-                applicable=True,
-                assessment_status=AssessmentStatus.NEEDS_VERIFICATION,
-                gap_periods=[],
-                explanation="Konfigurasi aturan tumpang tindih; perlu ditinjau.",
+            if applicable_rules:
+                return VisaCoverageAssessment(
+                    applicable=True,
+                    assessment_status=AssessmentStatus.NEEDS_VERIFICATION,
+                    gap_periods=[],
+                    explanation=(
+                        "Overlapping continuity rules need review before they can be applied."
+                    ),
+                )
+        rule = applicable_rules[0] if applicable_rules else None
+        source = (
+            RuleSource(
+                country_code=kb.manifest.country_code,
+                kb_version=kb.manifest.version,
+                rule_id=rule.rule_id,
+                source_url=rule.source_url,
+                checked_at=rule.checked_at,
+                verification_status=rule.verification_status,
             )
-        rule = applicable_rules[0]
-        source = RuleSource(
-            country_code=kb.manifest.country_code,
-            kb_version=kb.manifest.version,
-            rule_id=rule.rule_id,
-            source_url=rule.source_url,
-            checked_at=rule.checked_at,
-            verification_status=rule.verification_status,
+            if rule
+            else None
         )
-        start: date | None = getattr(profile, rule.parameters.start_field)
-        end: date | None = getattr(profile, rule.parameters.end_field)
-        policies = [p for p in record.policies if p.policy_type in rule.parameters.policy_types]
-        explanation = (
-            "The interval calculation uses inclusive end dates. "
-            "This result is not a finding of a visa breach; "
-            "the rules and your policy still need to be verified."
+        start: date | None = profile.arrival_date
+        end: date | None = profile.visa_expiry_date
+        legacy_rule = next((item for item in kb.rules if item.kind == "visa_coverage"), None)
+        policy_types = (
+            rule.parameters.policy_types
+            if rule
+            else (legacy_rule.parameters.policy_types if legacy_rule else [])
         )
+        policies = [p for p in record.policies if not policy_types or p.policy_type in policy_types]
         if (
             not start
             or not end
@@ -77,10 +78,16 @@ class RulesEngine:
             or any(p.coverage_start_date is None or p.coverage_end_date is None for p in policies)
         ):
             return VisaCoverageAssessment(
-                applicable=True,
-                assessment_status=AssessmentStatus.NEEDS_VERIFICATION,
+                applicable=bool(rule),
+                assessment_status=AssessmentStatus.UNABLE_TO_DETERMINE,
                 gap_periods=[],
-                explanation="Policy dates or context are incomplete. " + explanation,
+                requirement_status="VERIFIED"
+                if rule and rule.verification_status == VerificationStatus.VERIFIED
+                else "NEEDS_VERIFICATION",
+                explanation=(
+                    "Unable to determine continuity because policy end dates or declared "
+                    "period dates are unavailable."
+                ),
                 rule_source=source,
             )
         # Union all qualifying coverage intervals, clipped to the required inclusive interval.
@@ -108,23 +115,36 @@ class RulesEngine:
         if cursor <= end_day:
             gaps.append(DateRange(start_date=date.fromordinal(cursor), end_date=end))
         days = sum((g.end_date - g.start_date + timedelta(days=1)).days for g in gaps)
-        verified = (
-            rule.verification_status == VerificationStatus.VERIFIED
+        verified = bool(
+            rule
+            and rule.verification_status == VerificationStatus.VERIFIED
             and kb.manifest.verification_status == VerificationStatus.VERIFIED
             and all(p.verification_status == VerificationStatus.VERIFIED for p in policies)
             and source.source_url is not None
             and source.checked_at is not None
         )
         status = (
-            (AssessmentStatus.GAP_FOUND if days else AssessmentStatus.PASS)
-            if verified
-            else (AssessmentStatus.NEEDS_VERIFICATION)
+            AssessmentStatus.POTENTIAL_COVERAGE_GAP
+            if days and verified
+            else AssessmentStatus.DATE_DIFFERENCE_DETECTED
+            if days
+            else AssessmentStatus.NO_DATE_DIFFERENCE
         )
         return VisaCoverageAssessment(
-            applicable=True,
+            applicable=bool(rule),
             assessment_status=status,
+            requirement_status="VERIFIED" if verified else "NEEDS_VERIFICATION",
             gap_days=days,
             gap_periods=gaps,
-            explanation=explanation,
+            explanation=(
+                f"A {days}-day difference was detected between the declared period "
+                "and policy dates. "
+                "This is a date comparison, not a visa or immigration violation."
+                if days
+                else (
+                    "No date difference was detected for the dates provided. This does not "
+                    "establish that an institution requirement is met."
+                )
+            ),
             rule_source=source,
         )

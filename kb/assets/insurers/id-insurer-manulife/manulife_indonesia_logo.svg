@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
+  <rect width="320" height="80" rx="8" fill="#FFFFFF" />
+  <rect x="25" y="20" width="40" height="40" rx="6" fill="#00A758" />
+  <polygon points="32,50 40,30 46,45 52,32 58,50" fill="#FFFFFF" />
+  <text x="85" y="48" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#00A758">Manulife</text>
+  <text x="85" y="65" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">PT ASURANSI JIWA MANULIFE INDONESIA</text>
+</svg>

@@ -1,0 +1,15 @@
+{
+  "fixture_id": "synth-dec-potential-visa-gap",
+  "category": "decision_test_case",
+  "country_code": "CN",
+  "label": "Student Visa Expiry Beyond Insurance Expiry Date",
+  "description": "Insurance expires 2025-06-30 but study visa valid through 2025-09-15 (potential 76-day gap).",
+  "payload": {
+    "arrival_date": "2024-09-01",
+    "policy_end_date": "2025-06-30",
+    "visa_expiry_date": "2025-09-15",
+    "calculated_gap_days": 76
+  },
+  "is_adversarial": false,
+  "expected_outcome": "COVERAGE_GAP_WARNING_ACTION_REQUIRED"
+}

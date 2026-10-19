@@ -40,7 +40,7 @@ class RuleParameters(Contract):
 
 class CountryRule(Contract):
     rule_id: str
-    kind: Literal["visa_coverage"]
+    kind: Literal["visa_coverage", "coverage_continuity"]
     description: str
     applicability: Applicability
     parameters: RuleParameters
@@ -82,12 +82,35 @@ class PathwayConfig(Contract):
     verification_status: VerificationStatus
 
 
+class EmergencyContact(Contract):
+    service_code: Literal["medical", "police", "fire", "general"]
+    label: str
+    jurisdiction: str = Field(min_length=2, max_length=50)
+    phone_number: str = Field(pattern=r"^[0-9]{2,6}$")
+    source_url: str
+    checked_at: date
+    verification_status: VerificationStatus
+
+    @model_validator(mode="after")
+    def checked_source_for_verified_contact(self):
+        if self.verification_status == VerificationStatus.VERIFIED and not self.source_url:
+            raise ValueError("Verified emergency contact requires an official source")
+        return self
+
+
 class EmergencyConfig(Contract):
     label: str
     phone_number: str | None
     source_url: str | None
     checked_at: date | None
     verification_status: VerificationStatus
+    contacts: list[EmergencyContact] = Field(default_factory=list)
+
+
+class EmergencyDirectory(Contract):
+    country_code: CountryCode
+    label: str
+    contacts: list[EmergencyContact]
 
 
 class PathwaysResource(Contract):
@@ -195,10 +218,23 @@ class VerificationStepConfig(Contract):
 
 class RedFlagConfig(Contract):
     id: str
-    category: str
+    category: Literal["MEDICAL", "SELF_HARM"]
     phrases_id: list[str]
     phrases_en: list[str]
+    phrases_zh: list[str] = Field(default_factory=list)
     destination_code: str
+    jurisdiction: str | None = None
+    source_url: str | None = None
+    checked_at: date | None = None
+    verification_status: VerificationStatus = VerificationStatus.UNVERIFIED
+
+    @model_validator(mode="after")
+    def verified_red_flag_requires_source(self):
+        if self.verification_status == VerificationStatus.VERIFIED and (
+            not self.source_url or not self.checked_at or not self.jurisdiction
+        ):
+            raise ValueError("Verified red flag requires a checked source")
+        return self
 
 
 class InjectionPattern(Contract):

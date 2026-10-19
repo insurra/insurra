@@ -45,8 +45,6 @@ export function HomeNav({ onSelectPersona }: HomeNavProps) {
         >
           For Professionals
         </a>
-        <a href="#how">How it works</a>
-        <a href="#pricing">Pricing</a>
         <a href="#privacy">Privacy</a>
       </nav>
 

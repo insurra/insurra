@@ -39,9 +39,11 @@ export default function Dashboard() {
   const firstName = profile.display_name.split(" ")[0];
   const runwayPolicy =
     record.policies.find((p) => p.coverage_end_date) ?? record.policies[0] ?? null;
-  const hasGap = assessment.gap_days !== null && assessment.gap_days !== undefined;
+  const hasGap = (assessment.gap_days ?? 0) > 0;
   const notApplicable = assessment.assessment_status === "NOT_APPLICABLE";
-  const needsVerification = assessment.assessment_status === "NEEDS_VERIFICATION";
+  const dateDifference = assessment.assessment_status === "DATE_DIFFERENCE_DETECTED";
+  const potentialGap = assessment.assessment_status === "POTENTIAL_COVERAGE_GAP";
+  const unableToDetermine = assessment.assessment_status === "UNABLE_TO_DETERMINE";
 
   return (
     <div className="dx">
@@ -95,23 +97,26 @@ export default function Dashboard() {
       <section className="dx-runway assessment-card" aria-labelledby="dx-runway-title">
         <div className="dx-runway-text">
           <div className="dx-runway-kicker-row">
-            <span className="dx-kicker">Coverage &amp; Visa Timeline</span>
+            <span className="dx-kicker">Coverage Continuity</span>
             <span className="dx-pulse-dot" aria-hidden="true" />
           </div>
 
           <h2 id="dx-runway-title">
             {notApplicable
-              ? "No visa interval check needed for this profile"
-              : hasGap
-                ? "Your coverage may end before your visa does"
-                : "Dates require verification against policy"}
+              ? "No configured continuity check applies to this profile"
+              : potentialGap
+                ? "Potential coverage gap"
+                : dateDifference
+                  ? "Date difference detected"
+                  : unableToDetermine
+                    ? "Unable to determine continuity"
+                    : "No date difference detected"}
           </h2>
 
           {!notApplicable && hasGap && (
             <div className="gap-value">
               <strong>{assessment.gap_days}</strong>
-              <span>days potentially uncovered</span>
-              <span className="sr-only">hari potensi jeda</span>
+              <span>calendar-day difference</span>
             </div>
           )}
 
@@ -130,7 +135,7 @@ export default function Dashboard() {
           <div className="dx-runway-foot">
             {!notApplicable && (
               <span className="dx-flag">
-                {needsVerification ? "PERLU VERIFIKASI" : "Needs verification"}
+                {assessment.requirement_status === "VERIFIED" ? "Verified requirement" : "Requirement needs verification"}
               </span>
             )}
             {assessment.rule_source && (

@@ -1,0 +1,56 @@
+[
+  {
+    "evidence_id": "cn-ev-fapiao",
+    "country_code": "CN",
+    "insurer_id": "cn-platform-lxbx",
+    "product_id": "cn-prod-lxbx-student",
+    "claim_type": "Outpatient and Inpatient Reimbursement",
+    "evidence_item_name": "Official Hospital Medical Invoice (Fapiao)",
+    "evidence_item_name_original": "医疗门诊/住院收费电子或纸质专用发票",
+    "description": "Official fiscal invoice issued by a public hospital, containing national fiscal verification code, patient legal name, hospital seal, and itemized billing code.",
+    "mandatory": true,
+    "accepted_formats": [
+      "Electronic Fapiao (OFD/PDF)",
+      "Scanned original paper fapiao with fiscal red stamp"
+    ],
+    "special_conditions": "Patient name on fapiao must match passport name exactly. Invoices from private clinics without prior insurer approval are rejected.",
+    "source_url": "https://www.lxbx.net/evidence_requirements.html",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "evidence_id": "cn-ev-medical-record",
+    "country_code": "CN",
+    "insurer_id": "cn-platform-lxbx",
+    "product_id": "cn-prod-lxbx-student",
+    "claim_type": "Outpatient and Inpatient Reimbursement",
+    "evidence_item_name": "Medical Consultation Record or Discharge Summary",
+    "evidence_item_name_original": "门急诊病历手册 / 出院小结记录",
+    "description": "Doctor consultation notes detailing chief complaint, onset date, diagnostic conclusion, treatment plan, and doctor signature/stamp.",
+    "mandatory": true,
+    "accepted_formats": [
+      "PDF",
+      "Original stamped doctor record copy"
+    ],
+    "special_conditions": "Must explicitly indicate the onset date of symptoms to verify policy active period and rule out pre-existing exclusions.",
+    "source_url": "https://www.lxbx.net/evidence_requirements.html",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "evidence_id": "cn-ev-expense-breakdown",
+    "country_code": "CN",
+    "insurer_id": "cn-platform-lxbx",
+    "product_id": "cn-prod-lxbx-student",
+    "claim_type": "Inpatient Hospitalization Reimbursement",
+    "evidence_item_name": "Itemized Hospital Expense Breakdown List",
+    "evidence_item_name_original": "住院医疗费用明细清单",
+    "description": "Detailed daily printout of all medicines, tests, bed fees, and surgical supplies provided during hospital stay, certified by hospital cash desk.",
+    "mandatory": true,
+    "accepted_formats": [
+      "PDF",
+      "Stamped computer printout"
+    ],
+    "special_conditions": "Required for all hospitalization claims exceeding RMB 1,000.",
+    "source_url": "https://www.lxbx.net/evidence_requirements.html",
+    "verification_status": "VERIFIED"
+  }
+]

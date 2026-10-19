@@ -1,0 +1,63 @@
+[
+  {
+    "provider_id": "cn-hosp-szu-general",
+    "country_code": "CN",
+    "name_original": "深圳大学总医院",
+    "name_english": "Shenzhen University General Hospital",
+    "city": "Shenzhen",
+    "facility_category": "Public Class 3A General Hospital (公立三级甲等综合医院)",
+    "facility_tier": "Class 3A (三甲)",
+    "address": "No. 1098 Xueyuan Avenue, Xili University Town, Nanshan District, Shenzhen",
+    "official_contact": "+86-755-21839999",
+    "emergency_service_available": true,
+    "verified_insurer_affiliations": [
+      "cn-platform-lxbx",
+      "cn-insurer-pingan",
+      "cn-insurer-picc"
+    ],
+    "cashless_direct_billing_verified": false,
+    "source_url": "https://sugh.szu.edu.cn",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "provider_id": "cn-hosp-hku-sz",
+    "country_code": "CN",
+    "name_original": "香港大学深圳医院",
+    "name_english": "The University of Hong Kong-Shenzhen Hospital",
+    "city": "Shenzhen",
+    "facility_category": "Public Class 3A Hospital / Modern Healthcare Reform Center",
+    "facility_tier": "Class 3A (三甲)",
+    "address": "No. 1 Haiyuan 1st Road, Futian District, Shenzhen",
+    "official_contact": "+86-755-86913333",
+    "emergency_service_available": true,
+    "verified_insurer_affiliations": [
+      "cn-platform-lxbx",
+      "cn-insurer-pingan",
+      "cn-insurer-picc",
+      "cn-insurer-cpic"
+    ],
+    "cashless_direct_billing_verified": true,
+    "source_url": "https://www.hku-szh.org",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "provider_id": "cn-hosp-pku-sz",
+    "country_code": "CN",
+    "name_original": "北京大学深圳医院",
+    "name_english": "Peking University Shenzhen Hospital",
+    "city": "Shenzhen",
+    "facility_category": "Public Class 3A General Hospital",
+    "facility_tier": "Class 3A (三甲)",
+    "address": "No. 1120 Lianhua Road, Futian District, Shenzhen",
+    "official_contact": "+86-755-83923333",
+    "emergency_service_available": true,
+    "verified_insurer_affiliations": [
+      "cn-platform-lxbx",
+      "cn-insurer-pingan",
+      "cn-insurer-picc"
+    ],
+    "cashless_direct_billing_verified": false,
+    "source_url": "https://www.pkuszh.com",
+    "verification_status": "VERIFIED"
+  }
+]

@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Clock,
   FileText,
-  HelpCircle,
   Info,
   Plus,
   Search,
@@ -19,6 +18,7 @@ import { useAuth } from "@/lib/auth";
 import { useUserContext } from "@/lib/user-context";
 
 type PolicySummary = components["schemas"]["AccountPolicySummary"];
+type PolicyDetail = components["schemas"]["AccountPolicyDetail"];
 
 interface DisplayPolicy {
   id: string;
@@ -34,7 +34,7 @@ interface DisplayPolicy {
   region: string;
   logoBadge: string;
   isEmployer: boolean;
-  evidenceStatus: "Self-Reported" | "Document Uploaded" | "Extracted" | "Source Verified";
+  evidenceStatus: "Self-Reported" | "Needs Review" | "Verified";
 }
 
 export default function PoliciesPage() {
@@ -42,9 +42,10 @@ export default function PoliciesPage() {
   const userCtx = useUserContext();
 
   const [policies, setPolicies] = useState<PolicySummary[]>([]);
+  const [policyDetail, setPolicyDetail] = useState<PolicyDetail | null>(null);
   const [activeTab, setActiveTab] = useState<"ALL" | "SELF_REPORTED" | "EMPLOYER">("ALL");
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string>("0");
+  const [selectedId, setSelectedId] = useState<string>("");
   const [detailTab, setDetailTab] = useState<"Overview" | "Benefits" | "Coverage Details" | "Documents">("Overview");
 
   const refreshPolicies = useCallback(async () => {
@@ -63,30 +64,29 @@ export default function PoliciesPage() {
     void Promise.resolve().then(refreshPolicies);
   }, [refreshPolicies]);
 
-  // Construct policies based on actual state and onboarding declarations
+  // Keep extracted records and user declarations distinct in the wallet.
   const declaredList = userCtx.declaredCoverages || [];
-  const countryName = userCtx.residenceCountry || "China";
-  const city = userCtx.residenceCity || "Shenzhen";
+  const countryName = userCtx.residenceCountry || userCtx.countryCode || "Selected country";
+  const city = userCtx.residenceCity || "Location not provided";
 
-  const allDisplayPolicies: DisplayPolicy[] = policies.length > 0
-    ? policies.map((p) => ({
+  const extractedPolicies: DisplayPolicy[] = policies.map((p) => ({
         id: p.id,
-        provider: p.provider || "Insurance Provider",
+        provider: p.provider || "Provider not identified",
         title: p.kind ? p.kind.replaceAll("_", " ") : "Medical Policy",
         category: p.kind || "Health",
-        tags: [p.kind || "Health", countryName],
-        status: p.status === "ACTIVE" ? "ACTIVE" : "SELF_REPORTED",
-        statusLabel: p.status === "ACTIVE" ? "Verified Active" : "Self-Reported",
-        dateRange: p.end_date ? `Valid until ${p.end_date}` : "Verification pending",
-        policyNumber: p.policy_number_masked || "Masked for privacy",
+        tags: [p.kind || "Health", p.country_code],
+        status: p.status === "ACTIVE" ? "ACTIVE" : p.status === "EXPIRING_SOON" ? "EXPIRING_SOON" : "SELF_REPORTED",
+        statusLabel: p.evidence_status === "VERIFIED" ? "Verified" : p.evidence_status === "NEEDS_REVIEW" ? "Needs Review" : "Self-Reported",
+        dateRange: p.start_date && p.end_date ? `${p.start_date} – ${p.end_date}` : p.end_date ? `End date: ${p.end_date}` : "Coverage dates unavailable",
+        policyNumber: p.policy_number_masked || "Not provided",
         planType: "Policy Record",
-        region: `${countryName} (${city})`,
+        region: p.country_code,
         logoBadge: "generic",
         isEmployer: p.kind?.includes("EMPLOYER") ?? false,
-        evidenceStatus: p.status === "ACTIVE" ? "Source Verified" : "Self-Reported",
-      }))
-    : declaredList.map((cov, idx) => ({
-        id: String(idx),
+        evidenceStatus: p.evidence_status === "VERIFIED" ? "Verified" : p.evidence_status === "NEEDS_REVIEW" ? "Needs Review" : "Self-Reported",
+      }));
+  const declaredPolicies: DisplayPolicy[] = declaredList.map((cov, idx) => ({
+        id: `declared-${idx}`,
         provider: cov.provider || cov.category,
         title: cov.label || cov.category,
         category: cov.category,
@@ -107,9 +107,10 @@ export default function PoliciesPage() {
         isEmployer: cov.category.toLowerCase().includes("employer") || cov.category.toLowerCase().includes("group"),
         evidenceStatus: "Self-Reported",
       }));
+  const allDisplayPolicies = [...extractedPolicies, ...declaredPolicies];
 
   const filtered = allDisplayPolicies.filter((p) => {
-    if (activeTab === "SELF_REPORTED" && p.status !== "SELF_REPORTED") return false;
+    if (activeTab === "SELF_REPORTED" && p.evidenceStatus !== "Self-Reported") return false;
     if (activeTab === "EMPLOYER" && !p.isEmployer) return false;
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -124,16 +125,33 @@ export default function PoliciesPage() {
 
   const selectedPolicy =
     filtered.find((p) => p.id === selectedId) || filtered[0] || allDisplayPolicies[0];
+  const selectedPolicyId = selectedPolicy?.id;
+  const selectedPolicyIsPersisted = policies.some((policy) => policy.id === selectedPolicyId);
+  const activePolicyDetail = policyDetail?.id === selectedPolicy?.id ? policyDetail : null;
+
+  useEffect(() => {
+    if (!token || !selectedPolicyId || !selectedPolicyIsPersisted) {
+      return;
+    }
+    let active = true;
+    api
+      .request("get", "/api/v1/account/policies/{policy_id}", {
+        params: { policy_id: selectedPolicyId },
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((detail) => {
+        if (active) setPolicyDetail(detail);
+      })
+      .catch(() => {
+        if (active) setPolicyDetail(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [token, selectedPolicyId, selectedPolicyIsPersisted]);
 
   return (
     <div className="figma-page-shell">
-      {/* ---------------- Breadcrumb Navigation ---------------- */}
-      <nav aria-label="Breadcrumb" className="figma-breadcrumb">
-        <Link href="/protection">My Protection</Link>
-        <span className="figma-breadcrumb-separator">/</span>
-        <strong>Policy Wallet</strong>
-      </nav>
-
       {/* ---------------- Page Header ---------------- */}
       <header className="figma-page-header">
         <div>
@@ -184,7 +202,7 @@ export default function PoliciesPage() {
           className={`figma-tab-btn ${activeTab === "SELF_REPORTED" ? "active" : ""}`}
           onClick={() => setActiveTab("SELF_REPORTED")}
         >
-          Self-Reported ({allDisplayPolicies.filter((p) => p.status === "SELF_REPORTED").length})
+          Self-Reported ({allDisplayPolicies.filter((p) => p.evidenceStatus === "Self-Reported").length})
         </button>
         <button
           type="button"
@@ -316,9 +334,8 @@ export default function PoliciesPage() {
             >
               <Info size={18} color="#0ea58a" style={{ flexShrink: 0, marginTop: 2 }} />
               <div style={{ fontSize: 12.5, color: "#475569", lineHeight: 1.5 }}>
-                <strong>Self-reported insurance declaration:</strong> This policy was entered during onboarding.
-                Specific benefits, hospital coverage networks, and deductible thresholds will be verified once
-                your policy certificate or booklet is uploaded in <strong>Documents</strong>.
+                <strong>{selectedPolicy.evidenceStatus}:</strong> Evidence status is shown separately from the date-based policy status.
+                Benefits, limits, exclusions, and product version appear only when they are present in the linked policy evidence.
               </div>
             </div>
 
@@ -363,8 +380,8 @@ export default function PoliciesPage() {
                     Evidence & Verification Status
                   </h4>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#64748b" }}>
-                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#d97706" }} />
-                    <span>Evidence pending: Upload document to enable AI policy extraction.</span>
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: selectedPolicy.evidenceStatus === "Verified" ? "#059669" : "#d97706" }} />
+                    <span>{selectedPolicy.evidenceStatus}{activePolicyDetail?.document_id ? ` · linked document ${activePolicyDetail.document_id}` : " · no linked source document"}</span>
                   </div>
                   <div style={{ marginTop: 14 }}>
                     <Link
@@ -383,50 +400,26 @@ export default function PoliciesPage() {
             {/* Tab: Benefits */}
             {detailTab === "Benefits" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div style={{ padding: "20px 0", textAlign: "center", color: "#64748b" }}>
-                  <HelpCircle size={32} color="#cbd5e1" style={{ margin: "0 auto 8px" }} />
-                  <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#334155" }}>
-                    Benefits Awaiting Document Verification
-                  </h4>
-                  <p style={{ margin: "4px 0 16px", fontSize: 12.5 }}>
-                    INSURRA does not fabricate policy benefits or monetary limits. Upload your official policy
-                    wording to display verified room rates, outpatient limits, and surgical coverage.
-                  </p>
-                  <Link
-                    href="/documents"
-                    className="figma-btn-primary"
-                    style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13 }}
-                  >
-                    <Upload size={14} />
-                    <span>Upload Policy Document</span>
-                  </Link>
-                </div>
+                <h4 style={{ margin: 0, color: "#0f1d38" }}>Benefits and limits</h4>
+                {(activePolicyDetail?.benefits ?? []).length ? (activePolicyDetail?.benefits ?? []).map((benefit, index) => (
+                  <div key={`${String(benefit.field_key)}-${index}`} className="figma-meta-item">
+                    <span className="figma-meta-label">{String(benefit.field_key).replaceAll("_", " ")}</span>
+                    <strong className="figma-meta-value">{JSON.stringify(benefit.value)}</strong>
+                    {typeof benefit.source_page === "number" && <span className="figma-meta-label">Source: page {benefit.source_page}</span>}
+                  </div>
+                )) : <p style={{ margin: 0, color: "#64748b", fontSize: 13 }}>No benefit or limit data is available in the linked evidence.</p>}
+                <p style={{ margin: 0, color: "#64748b", fontSize: 12 }}>Product version: Not available in the current record.</p>
+                {activePolicyDetail?.document_id && <Link href={`/documents/${activePolicyDetail.document_id}`} className="figma-btn-primary" style={{ textDecoration: "none", width: "fit-content" }}><FileText size={14} /> Review source document</Link>}
               </div>
             )}
 
             {/* Tab: Coverage Details */}
             {detailTab === "Coverage Details" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div className="figma-meta-grid">
-                  <div className="figma-meta-item">
-                    <span className="figma-meta-label">Hospital Network</span>
-                    <strong className="figma-meta-value">
-                      {countryName === "China"
-                        ? "Public secondary and tertiary hospitals (二级及以上公立医院)"
-                        : countryName === "Indonesia"
-                        ? "BPJS FKTP / FKRTL & Network Hospitals"
-                        : "Australian hospital network"}
-                    </strong>
-                  </div>
-                  <div className="figma-meta-item">
-                    <span className="figma-meta-label">Deductibles & Excess</span>
-                    <strong className="figma-meta-value">
-                      {countryName === "China"
-                        ? "Subject to scheme threshold (typically RMB 650 outpatient)"
-                        : "Pending document evidence"}
-                    </strong>
-                  </div>
-                </div>
+                <h4 style={{ margin: 0, color: "#0f1d38" }}>Exclusions</h4>
+                {(activePolicyDetail?.exclusions ?? []).length ? (activePolicyDetail?.exclusions ?? []).map((exclusion, index) => <p key={`${exclusion}-${index}`} style={{ margin: 0, color: "#334155" }}>{exclusion}</p>) : <p style={{ margin: 0, color: "#64748b", fontSize: 13 }}>No exclusion data is available in the linked evidence.</p>}
+                <p style={{ margin: 0, color: "#64748b", fontSize: 12 }}>Uncertainties: Not specified in the current record. Source pages: {activePolicyDetail?.source_pages?.length ? activePolicyDetail.source_pages.join(", ") : "Not available"}.</p>
+                {activePolicyDetail?.document_id && <Link href={`/documents/${activePolicyDetail.document_id}`} className="figma-btn-primary" style={{ textDecoration: "none", width: "fit-content" }}><FileText size={14} /> Review source citations</Link>}
               </div>
             )}
 
@@ -446,20 +439,19 @@ export default function PoliciesPage() {
                   }}
                 >
                   <FileText size={28} color="#94a3b8" style={{ margin: "0 auto 8px" }} />
-                  <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: "#1e293b" }}>
-                    No Document Linked Yet
-                  </h4>
-                  <p style={{ margin: "4px 0 14px", fontSize: 12, color: "#64748b" }}>
-                    Upload an insurance certificate or PDF policy to link evidence.
-                  </p>
-                  <Link
-                    href="/documents"
-                    className="figma-btn-primary"
-                    style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5 }}
-                  >
-                    <Upload size={14} />
-                    <span>Upload Document</span>
-                  </Link>
+                  {activePolicyDetail?.document_id ? (
+                    <>
+                      <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: "#1e293b" }}>Linked source document</h4>
+                      <p style={{ margin: "4px 0 14px", fontSize: 12, color: "#64748b" }}>Document ID: {activePolicyDetail.document_id}</p>
+                      <Link href={`/documents/${activePolicyDetail.document_id}`} className="figma-btn-primary" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5 }}><FileText size={14} /> Review document and evidence</Link>
+                    </>
+                  ) : (
+                    <>
+                      <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: "#1e293b" }}>No source document linked</h4>
+                      <p style={{ margin: "4px 0 14px", fontSize: 12, color: "#64748b" }}>Upload a policy document to associate source evidence with this record.</p>
+                      <Link href="/documents" className="figma-btn-primary" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5 }}><Upload size={14} /> Upload document</Link>
+                    </>
+                  )}
                 </div>
               </div>
             )}

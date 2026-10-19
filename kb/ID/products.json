@@ -1,0 +1,867 @@
+[
+  {
+    "product_id": "id-prod-bpjs-jkn",
+    "insurer_id": "id-public-bpjs-kesehatan",
+    "original_product_name": "Program Jaminan Kesehatan Nasional (JKN)",
+    "english_name": "National Health Insurance Program (JKN BPJS Kesehatan)",
+    "product_category": "public_social_health",
+    "target_users": [
+      "All Indonesian citizens",
+      "Foreign residents residing and working in Indonesia for at least 6 months"
+    ],
+    "eligibility_conditions": [
+      "Indonesian citizen holding NIK KTP or foreign resident holding valid KITAS/KITAP and work contract >= 6 months",
+      "Enrolled in one of the membership categories: PPU (formal worker), PBPU (independent), BP (non-worker), or PBI (subsidized)",
+      "Active contribution payment status without unpaid premium arrears"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Entire territory of the Republic of Indonesia across contracted healthcare facilities",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": "35000.00",
+    "published_pricing_conditions": "PBPU Mandiri monthly contribution: Kelas 1 IDR 150,000; Kelas 2 IDR 100,000; Kelas 3 IDR 35,000 (after government subsidy)",
+    "product_url": "https://www.bpjs-kesehatan.go.id/bpjs/pages/detail/2014/11",
+    "policy_document_references": [
+      "DOC-ID-PERPRES-59-2024",
+      "DOC-ID-PANDUAN-JKN-2024"
+    ],
+    "effective_from": "2014-01-01",
+    "effective_to": null,
+    "product_version": "2024.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-jkn-fktp-rawat-jalan",
+        "benefit_category": "Primary Care Outpatient",
+        "benefit_name": "Pelayanan Kesehatan Tingkat Pertama (Rawat Jalan Tingkat Pertama - RJTP)",
+        "original_name": "Rawat Jalan Tingkat Pertama (RJTP) di FKTP Terdaftar",
+        "covered_event": "Non-emergency illness or consultation covered under primary care competencies",
+        "covered_service": "Doctor consultation, preventive services, health counseling, laboratory diagnostics according to primary clinic capacity, prescription medicines on Formularium Nasional (Fornas)",
+        "inpatient_applicable": false,
+        "outpatient_applicable": true,
+        "benefit_limit": null,
+        "sublimits": {},
+        "currency": "IDR",
+        "period": "Comprehensive",
+        "eligibility_conditions": [
+          "Active membership with registered FKTP (Puskesmas or primary clinic)"
+        ],
+        "network_requirements": "Must visit registered FKTP clinic on participant card (except medical emergencies)",
+        "reimbursement_rate": "100% cashless at registered FKTP network",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Active KIS digital card in Mobile JKN application",
+          "KTP or KITAS identification"
+        ]
+      },
+      {
+        "benefit_id": "id-ben-jkn-fktr-rawat-inap",
+        "benefit_category": "Advanced Hospital Inpatient",
+        "benefit_name": "Pelayanan Rawat Inap Tingkat Lanjutan (RITL) di Rumah Sakit",
+        "original_name": "Rawat Inap Tingkat Lanjutan (RITL) di FKRTL",
+        "covered_event": "Inpatient hospitalization for surgical or non-surgical disease requiring hospital care",
+        "covered_service": "Hospital room, intensive care unit (ICU, ICCU, PICU, NICU), surgery, anesthesia, specialist consultations, diagnostic imaging, medicine in Fornas",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": null,
+        "sublimits": {},
+        "currency": "IDR",
+        "period": "Comprehensive pursuant to medical necessity",
+        "eligibility_conditions": [
+          "Official electronic referral letter (Surat Rujukan) from FKTP or direct emergency admission"
+        ],
+        "network_requirements": "Contracted public or private hospitals (FKRTL) in BPJS network",
+        "reimbursement_rate": "100% under INA-CBGs tariff package with no out-of-pocket payment when following standard class",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Electronic referral from P-Care",
+          "Hospital admission order (Surat Eligibilitas Peserta - SEP)"
+        ]
+      },
+      {
+        "benefit_id": "id-ben-jkn-igd-emergency",
+        "benefit_category": "Emergency Medical Service",
+        "benefit_name": "Pelayanan Kegawatdaruratan Medis (Instalasi Gawat Darurat - IGD)",
+        "original_name": "Pelayanan Gawat Darurat di IGD Rumah Sakit",
+        "covered_event": "Life-threatening emergency, organ danger, severe acute trauma meeting criteria of Permenkes No. 47 Tahun 2018",
+        "covered_service": "Emergency resuscitation, emergency stabilization, medication, immediate life-saving surgery",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": null,
+        "sublimits": {},
+        "currency": "IDR",
+        "period": "Emergency episode",
+        "eligibility_conditions": [
+          "Meets medical emergency criteria; no prior referral letter required"
+        ],
+        "network_requirements": "Any hospital emergency room (IGD) in Indonesia, contracted or non-contracted",
+        "reimbursement_rate": "100% covered under statutory emergency rules",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "SEP Gawat Darurat generated by hospital emergency desk"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "id-excl-jkn-tanpa-rujukan",
+        "excluded_event_or_service": "Non-emergency healthcare obtained at hospital specialist clinics without primary referral from FKTP",
+        "original_text": "Pelayanan kesehatan yang dilakukan tanpa melalui prosedur rujukan dari Fasilitas Kesehatan Tingkat Pertama, kecuali dalam keadaan gawat darurat",
+        "conditions_and_exceptions": "True medical emergencies entering through the Emergency Department (IGD) are exempted",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [
+          "Healthcare services received outside the territory of Indonesia"
+        ],
+        "pre_existing_condition_provisions": "No pre-existing condition exclusions in JKN social health insurance",
+        "supporting_policy_clause": "Perpres No. 59 Tahun 2024 Pasal 52 ayat (1) huruf b",
+        "source_page": 12
+      },
+      {
+        "exclusion_id": "id-excl-jkn-kosmetik",
+        "excluded_event_or_service": "Cosmetic, aesthetic, and non-medically necessary plastic surgeries",
+        "original_text": "Pelayanan kesehatan untuk tujuan estetik atau kosmetik",
+        "conditions_and_exceptions": "Reconstructive surgery required following severe accidental trauma or burn is covered",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": null,
+        "supporting_policy_clause": "Perpres No. 59 Tahun 2024 Pasal 52 ayat (1) huruf f",
+        "source_page": 12
+      },
+      {
+        "exclusion_id": "id-excl-jkn-infertilitas",
+        "excluded_event_or_service": "Infertility treatments, in vitro fertilization (IVF), and elective vasectomy/tubectomy reversal",
+        "original_text": "Pelayanan untuk mengatasi infertilitas atau program mendapatkan keturunan",
+        "conditions_and_exceptions": null,
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": null,
+        "supporting_policy_clause": "Perpres No. 59 Tahun 2024 Pasal 52 ayat (1) huruf h",
+        "source_page": 12
+      }
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "product_id": "id-prod-allianz-smarthealth",
+    "insurer_id": "id-insurer-allianz",
+    "original_product_name": "SmartHealth Maxi Violet",
+    "english_name": "SmartHealth Maxi Violet Individual Health Insurance",
+    "product_category": "private_medical",
+    "target_users": [
+      "Individuals",
+      "Families",
+      "Expatriates residing in Indonesia"
+    ],
+    "eligibility_conditions": [
+      "Age between 15 days and 60 years at policy issue date (renewable up to 70 years)",
+      "Indonesian citizen or foreign resident holding valid KITAS/KITAP",
+      "Medical underwriting questionnaire acceptance"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Indonesia and optional ASEAN regional coverage extension",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": null,
+    "published_pricing_conditions": "Underwriting premium dependent on entry age, gender, and selected room board plan tier",
+    "product_url": "https://www.allianz.co.id/produk/asuransi-kesehatan/individu/smarthealth-maxi-violet.html",
+    "policy_document_references": [
+      "DOC-ID-ALLIANZ-RIPLAY-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2025-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-allianz-kamar-inap",
+        "benefit_category": "Inpatient Room and Board",
+        "benefit_name": "Kamar dan Menginap Harian Rumah Sakit",
+        "original_name": "Biaya Kamar dan Menginap di Rumah Sakit",
+        "covered_event": "Inpatient hospitalization due to illness or accidental injury",
+        "covered_service": "Hospital room accommodation up to plan daily allowance (Plan 500 up to Plan 2000)",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": "1000000.00",
+        "sublimits": {
+          "Maksimal Hari": "Up to 180 days per policy year"
+        },
+        "currency": "IDR",
+        "period": "Policy Year",
+        "eligibility_conditions": [
+          "Hospitalization minimum 24 consecutive hours unless surgical daycare"
+        ],
+        "network_requirements": "Cashless access at AdMedika network hospitals in Indonesia",
+        "reimbursement_rate": "100% within inner limit table",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "AdMedika cashless guarantee letter",
+          "Hospital discharge summary",
+          "Original invoice"
+        ]
+      },
+      {
+        "benefit_id": "id-ben-allianz-pembedahan",
+        "benefit_category": "Surgical Fees",
+        "benefit_name": "Biaya Pembedahan dan Operasi",
+        "original_name": "Biaya Pembedahan dan Kamar Operasi",
+        "covered_event": "Surgical operation performed by certified surgeon",
+        "covered_service": "Surgeon fee, operating theater fee, anesthesiologist fee",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": "50000000.00",
+        "sublimits": {
+          "Tipe Pembedahan": "Kategori Kompleks, Besar, Sedang, Kecil sesuai tabel"
+        },
+        "currency": "IDR",
+        "period": "Per disability",
+        "eligibility_conditions": [
+          "Medically necessary surgical procedure"
+        ],
+        "network_requirements": "Licensed hospital operating theater",
+        "reimbursement_rate": "100% of reasonable and customary charges within sublimit",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Operative report (Laporan Operasi)",
+          "Itemized bill"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "id-excl-allianz-waiting-special",
+        "excluded_event_or_service": "Specific illnesses (penyakit khusus) during the first 12 months of coverage",
+        "original_text": "Penyakit-penyakit tertentu seperti katarak, batu ginjal, hernia, penyakit amandel, wasir, dan tumor yang terjadi dalam 12 bulan pertama",
+        "conditions_and_exceptions": "Covered after continuous policy renewal beyond 12 months",
+        "waiting_period_days": 365,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Waiting period 12 months for 18 specific illnesses listed in policy",
+        "supporting_policy_clause": "Ketentuan Polis Pasal 5",
+        "source_page": 8
+      }
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "product_id": "id-prod-prudential-pruwell",
+    "insurer_id": "id-insurer-prudential",
+    "original_product_name": "PRUWell Medical",
+    "english_name": "PRUWell Medical Comprehensive Health Insurance",
+    "product_category": "private_medical",
+    "target_users": [
+      "Individuals",
+      "Families",
+      "Business owners"
+    ],
+    "eligibility_conditions": [
+      "Age 30 days to 70 years",
+      "Indonesian citizen or foreigner with valid residency permit",
+      "Underwriting approval"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Indonesia and optional Asia wide territory",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": null,
+    "published_pricing_conditions": "Custom quote based on plan tier (Diamond, Platinum, Gold, Silver)",
+    "product_url": "https://www.prudential.co.id/id/our-products/products/pruwell-medical/",
+    "policy_document_references": [
+      "DOC-ID-PRUWELL-RIPLAY-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2025-12-31",
+    "product_version": "2023.2",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-pruwell-as-charged",
+        "benefit_category": "Comprehensive Inpatient",
+        "benefit_name": "Perawatan Rumah Sakit Sesuai Tagihan (As Charged)",
+        "original_name": "Manfaat Rawat Inap Sesuai Tagihan (As Charged)",
+        "covered_event": "Inpatient medical hospitalization",
+        "covered_service": "Room and board standard 1 bed, doctor visits, medicines, surgical procedures reimbursed as charged",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": "10000000000.00",
+        "sublimits": {
+          "Batas Tahunan": "IDR 10 Milyar per tahun polis"
+        },
+        "currency": "IDR",
+        "period": "Policy Year",
+        "eligibility_conditions": [
+          "Eligible room tier matching chosen plan"
+        ],
+        "network_requirements": "PRUMedical Network cashless hospitals in Indonesia and regional Asia",
+        "reimbursement_rate": "100% as charged within annual limit",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Cashless verification via PRUMedical Network card",
+          "Hospital claim dossier"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "id-excl-pruwell-preexisting",
+        "excluded_event_or_service": "Pre-existing medical conditions not declared or accepted during underwriting",
+        "original_text": "Kondisi yang sudah ada sebelumnya (Pre-existing conditions) kecuali telah disetujui secara tertulis",
+        "conditions_and_exceptions": "Declared conditions accepted with standard terms or rated premium",
+        "waiting_period_days": 30,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Exclusion applies unless accepted at inception",
+        "supporting_policy_clause": "Pasal 8 Pengecualian",
+        "source_page": 14
+      }
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "product_id": "id-prod-allianz-travelpro",
+    "insurer_id": "id-insurer-allianz",
+    "original_product_name": "Allianz TravelPro International",
+    "english_name": "Allianz TravelPro International Travel Insurance",
+    "product_category": "travel",
+    "target_users": [
+      "Indonesian outbound travelers",
+      "Families traveling overseas",
+      "Business travelers"
+    ],
+    "eligibility_conditions": [
+      "Indonesian citizen (WNI) or KITAS/KITAP holder residing in Indonesia",
+      "Aged 14 days to 84 years at departure date",
+      "Trip starts and ends in Indonesia"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Worldwide or Asia Pacific depending on selected region destination",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": "From IDR 250,000 for standard 7-day Asia trip",
+    "published_pricing_conditions": "Individual and family package available with single trip or annual policy",
+    "product_url": "https://www.allianz.co.id/produk/asuransi-umum/asuransi-perjalanan/travelpro.html",
+    "policy_document_references": [
+      "DOC-ID-ALLIANZ-TRAVELPRO-Wording-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2025-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-allianz-travelpro-med",
+        "benefit_category": "Emergency Medical Abroad",
+        "benefit_name": "Biaya Medis Darurat dan Perawatan Rumah Sakit di Luar Negeri",
+        "original_name": "Manfaat Biaya Medis Darurat di Luar Negeri",
+        "covered_event": "Emergency medical treatment required for illness or accident during overseas journey",
+        "covered_service": "Inpatient and outpatient medical consultation, hospital stay, surgery, emergency medicine abroad",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "1500000000.00",
+        "sublimits": {
+          "Rawat Inap Luar Negeri": "Up to IDR 1.5 Milyar"
+        },
+        "currency": "IDR",
+        "period": "Per Journey",
+        "eligibility_conditions": [
+          "Policy active prior to border departure from Indonesia"
+        ],
+        "network_requirements": "Allianz Global Assistance 24/7 emergency network",
+        "reimbursement_rate": "100% cashless guarantee for inpatient admission via assistance desk",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Overseas medical invoices",
+          "Passport exit/entry stamps",
+          "Boarding pass"
+        ]
+      },
+      {
+        "benefit_id": "id-ben-allianz-travelpro-evac",
+        "benefit_category": "Medical Evacuation and Repatriation",
+        "benefit_name": "Evakuasi Medis Darurat dan Repatriasi Jenazah",
+        "original_name": "Evakuasi Medis dan Repatriasi Darurat",
+        "covered_event": "Medical emergency requiring urgent transfer to nearest appropriate medical facility or repatriation to Indonesia",
+        "covered_service": "Air ambulance, ground transport, medical escort, mortal remains return",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": "2000000000.00",
+        "sublimits": {},
+        "currency": "IDR",
+        "period": "Per Journey",
+        "eligibility_conditions": [
+          "Arranged directly via Allianz Global Assistance hotline +62 21 5695 8585"
+        ],
+        "network_requirements": "Allianz Global Assistance network",
+        "reimbursement_rate": "100% direct settlement by assistance service",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Emergency evacuation authorization by attending physician"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "id-excl-allianz-travelpro-war",
+        "excluded_event_or_service": "Travel to sanctioned countries or regions with active war declarations",
+        "original_text": "Perjalanan ke negara yang berada dalam sanksi internasional atau daerah konflik bersenjata aktif",
+        "conditions_and_exceptions": "None",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [
+          "Active war zones declared by Kemlu RI"
+        ],
+        "pre_existing_condition_provisions": "Pre-existing conditions excluded unless specific rider purchased",
+        "supporting_policy_clause": "Pasal 10 Pengecualian Umum Polis",
+        "source_page": 12
+      }
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "product_id": "id-prod-prudential-prucritical88",
+    "insurer_id": "id-insurer-prudential",
+    "original_product_name": "Asuransi PRUCritical Benefit 88",
+    "english_name": "PRUCritical Benefit 88 Critical Illness Protection",
+    "product_category": "critical_illness",
+    "target_users": [
+      "Indonesian citizens and residents aged 1 to 60",
+      "Families seeking lump sum critical illness protection"
+    ],
+    "eligibility_conditions": [
+      "Aged 1 to 60 years at issuance",
+      "Indonesian citizen (WNI) or KITAS/KITAP holder residing in Indonesia",
+      "Pass medical underwriting and health questionnaire"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Worldwide lump sum monetary payout upon diagnosis by recognized medical specialist",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": "Based on age, gender, smoker status, and selected sum insured tier",
+    "published_pricing_conditions": "Single pay or regular payment options (5, 10, or 15 years) covering up to age 88",
+    "product_url": "https://www.prudential.co.id/id/our-products/products/prucritical-benefit-88/",
+    "policy_document_references": [
+      "DOC-ID-PRUCRITICAL88-RIPLAY-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-prucritical88-ci",
+        "benefit_category": "Advanced Critical Illness Lump Sum",
+        "benefit_name": "Santunan Kondisi Kritis Tahap Akhir (60 Kondisi Kritis)",
+        "original_name": "Manfaat Kondisi Kritis Tahap Akhir",
+        "covered_event": "Clinical diagnosis confirmation of any of 60 specified advanced critical illness conditions after 90 days waiting period",
+        "covered_service": "Direct cash lump-sum payout of 100% basic sum insured for cancer, heart attack, stroke, kidney failure, major organ transplant",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "1000000000.00",
+        "sublimits": {
+          "Uang Pertanggungan": "100% basic sum insured lump sum (up to IDR 1 Milyar)"
+        },
+        "currency": "IDR",
+        "period": "Lifetime to Age 88",
+        "eligibility_conditions": [
+          "Survival period of 7 calendar days after diagnosis date"
+        ],
+        "network_requirements": "Specialist doctor in licensed hospital in Indonesia or recognized overseas medical center",
+        "reimbursement_rate": "100% cash lump sum settlement",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Dokumen resume medis dokter spesialis",
+          "Hasil laboratorium patologi anatomi",
+          "Hasil pemeriksaan diagnostik"
+        ]
+      },
+      {
+        "benefit_id": "id-ben-prucritical88-angio",
+        "benefit_category": "Special Cardiovascular Intervention",
+        "benefit_name": "Manfaat Tindakan Bedah Angioplasti",
+        "original_name": "Manfaat Khusus Tindakan Bedah Angioplasti",
+        "covered_event": "Undergoing coronary balloon angioplasty or stent placement for coronary artery disease",
+        "covered_service": "Additional cash payout equal to 10% of basic sum insured (maximum IDR 200,000,000) payable once",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "200000000.00",
+        "sublimits": {
+          "Maksimum Angioplasti": "10% UP (maksimum IDR 200 Juta)"
+        },
+        "currency": "IDR",
+        "period": "Lifetime",
+        "eligibility_conditions": [
+          "Undergoing catheter angioplasty after 90 days waiting period"
+        ],
+        "network_requirements": "Licensed cardiovascular catheterization laboratory hospital",
+        "reimbursement_rate": "100% lump sum payout",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Coronary angiography report",
+          "Cardiac surgeon operative report"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "id-excl-prucritical88-preexisting",
+        "excluded_event_or_service": "Pre-existing medical conditions not disclosed, congenital anomalies, self-inflicted injuries",
+        "original_text": "Kondisi yang sudah ada sebelumnya (Pre-existing conditions), kelainan bawaan (congenital), tindakan bunuh diri atau melukai diri sendiri",
+        "conditions_and_exceptions": "Declared conditions accepted in writing by insurer during policy underwriting",
+        "waiting_period_days": 90,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Strict 90-day waiting period from policy inception for critical illness diagnosis",
+        "supporting_policy_clause": "Pasal 8 Pengecualian Khusus",
+        "source_page": 11
+      }
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "product_id": "id-prod-allianz-flexici",
+    "insurer_id": "id-insurer-allianz",
+    "original_product_name": "Allianz Flexi CI (Critical Illness)",
+    "english_name": "Allianz Flexi CI Multi-Stage Critical Illness Insurance",
+    "product_category": "critical_illness",
+    "target_users": [
+      "Working adults aged 18 to 65",
+      "Individuals seeking multi-stage critical illness cash security"
+    ],
+    "eligibility_conditions": [
+      "Aged 1 month to 65 years at issuance",
+      "Indonesian citizen or legal resident alien",
+      "Medical underwriting approval"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Indonesia and worldwide diagnosis verification",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": "Determined by chosen plan tier (Silver, Gold, Platinum) and entry age",
+    "published_pricing_conditions": "Standalone or rider attachment options with premium waiver feature",
+    "product_url": "https://www.allianz.co.id/produk/asuransi-jiwa/asuransi-penyakit-kritis/flexi-ci.html",
+    "policy_document_references": [
+      "DOC-ID-ALLIANZ-FLEXICI-RIPLAY-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-allianz-flexici-advanced",
+        "benefit_category": "Major Stage Critical Illness",
+        "benefit_name": "Santunan Tunai Penyakit Kritis Tahap Major",
+        "original_name": "Manfaat Penyakit Kritis Kondisi Major",
+        "covered_event": "Confirmed clinical diagnosis of any major critical illness condition in policy schedule",
+        "covered_service": "Cash lump-sum of 100% sum insured paid to policyholder to replace income during medical treatment",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "500000000.00",
+        "sublimits": {
+          "Major Stage": "100% basic sum insured"
+        },
+        "currency": "IDR",
+        "period": "Policy Lifetime",
+        "eligibility_conditions": [
+          "Diagnosis after 90 days waiting period"
+        ],
+        "network_requirements": "Accredited hospital specialist in Indonesia or recognized overseas center",
+        "reimbursement_rate": "100% lump sum compensation",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Surat keterangan dokter spesialis",
+          "Hasil pemeriksaan laboratorium dan histopatologi"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "id-excl-allianz-flexici-waiting",
+        "excluded_event_or_service": "Symptoms arising within 90 days waiting period, intentional crime, alcohol and substance abuse",
+        "original_text": "Gejala atau tanda penyakit kritis yang timbul dalam masa tunggu 90 hari, tindakan kejahatan, penyalahgunaan obat terlarang",
+        "conditions_and_exceptions": "Accidental injuries resulting in immediate trauma are exempt from 90 days waiting period",
+        "waiting_period_days": 90,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Pre-existing medical conditions not accepted in policy schedule are excluded",
+        "supporting_policy_clause": "Pasal 7 Ketentuan Pengecualian",
+        "source_page": 9
+      }
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "product_id": "id-prod-manulife-mea",
+    "insurer_id": "id-insurer-manulife",
+    "original_product_name": "Manulife Essential Assurance (MEA)",
+    "english_name": "Manulife Essential Assurance Whole Life Protection",
+    "product_category": "life",
+    "target_users": [
+      "Family breadwinners aged 18 to 60",
+      "Individuals securing guaranteed financial inheritance"
+    ],
+    "eligibility_conditions": [
+      "Aged 18 to 60 years at issuance",
+      "Indonesian citizen (WNI) or foreigner with valid residence permit (KITAS/KITAP)",
+      "Underwriting approval based on financial and medical profile"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Worldwide 24 hours death benefit protection",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": "Guaranteed level premium for chosen payment period (5, 10, or 20 years)",
+    "published_pricing_conditions": "Guaranteed whole life protection up to age 99 with cash value accumulation",
+    "product_url": "https://www.manulife.co.id/id/individu/produk/asuransi-jiwa/manulife-essential-assurance.html",
+    "policy_document_references": [
+      "DOC-ID-MANULIFE-MEA-POLIS-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-manulife-mea-death",
+        "benefit_category": "Guaranteed Death Benefit",
+        "benefit_name": "Santunan Meninggal Dunia Alami atau Akibat Kecelakaan",
+        "original_name": "Manfaat Pertanggungan Meninggal Dunia",
+        "covered_event": "Death of insured person due to natural causes, illness, or accidental event",
+        "covered_service": "100% basic sum insured plus accumulated terminal bonus paid to designated heirs and beneficiaries",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "1000000000.00",
+        "sublimits": {
+          "Death Benefit": "100% basic sum insured lump sum"
+        },
+        "currency": "IDR",
+        "period": "To Age 99",
+        "eligibility_conditions": [
+          "Policy must remain active with premium obligations fulfilled"
+        ],
+        "network_requirements": "Official death certificate issued by hospital or civil registry (Dinas Dukcapil)",
+        "reimbursement_rate": "100% lump sum to designated beneficiaries",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Akta Kematian dari Catatan Sipil",
+          "Surat Keterangan Kematian dari Rumah Sakit",
+          "KTP Ahli Waris"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "id-excl-manulife-mea-suicide",
+        "excluded_event_or_service": "Suicide within first 2 years from policy inception date, execution of death penalty by court of law",
+        "original_text": "Tindakan bunuh diri yang terjadi dalam waktu 2 tahun sejak tanggal penerbitan polis, pelaksanaan hukuman mati oleh pengadilan",
+        "conditions_and_exceptions": "Suicide occurring after 2 years of active continuous policy is covered pursuant to Indonesian insurance law",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Non-accidental death within initial contestability period undergoes standard claim investigation",
+        "supporting_policy_clause": "Pasal 4 Pengecualian Manfaat Kematian",
+        "source_page": 6
+      }
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "product_id": "id-prod-allianz-pa",
+    "insurer_id": "id-insurer-allianz",
+    "original_product_name": "Asuransi Kecelakaan Diri Allianz (Personal Accident)",
+    "english_name": "Allianz Comprehensive Personal Accident Insurance",
+    "product_category": "personal_accident",
+    "target_users": [
+      "Individuals aged 18 to 65",
+      "Commuters, field professionals, and active travelers"
+    ],
+    "eligibility_conditions": [
+      "Aged 18 to 65 years",
+      "Indonesian citizen (WNI) or KITAS holder residing in Indonesia",
+      "Occupational category class 1 to 3"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Indonesia and worldwide 24 hours accidental protection",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": "Annual premium from IDR 350,000 per year for IDR 500,000,000 protection package",
+    "published_pricing_conditions": "One-year annual policy with renewable term",
+    "product_url": "https://www.allianz.co.id/produk/asuransi-umum/asuransi-kecelakaan/personal-accident.html",
+    "policy_document_references": [
+      "DOC-ID-ALLIANZ-PA-POLIS-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-allianz-pa-death",
+        "benefit_category": "Accidental Death and Permanent Disability",
+        "benefit_name": "Santunan Kematian dan Cacat Tetap Akibat Kecelakaan",
+        "original_name": "Manfaat Meninggal Dunia dan Cacat Tetap Akibat Kecelakaan",
+        "covered_event": "Death or permanent bodily dismemberment directly caused by sudden, violent, external accidental trauma",
+        "covered_service": "Direct lump-sum payout of 100% sum insured for accidental death or scaled permanent disability benefit",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "500000000.00",
+        "sublimits": {
+          "Accidental Death": "100% sum insured",
+          "Permanent Disability": "Up to 100% per indemnity table"
+        },
+        "currency": "IDR",
+        "period": "Per Accident",
+        "eligibility_conditions": [
+          "Accident occurs during policy in-force period; death/disability ensues within 90 days of accident"
+        ],
+        "network_requirements": "Hospital emergency department or medical examiner verification",
+        "reimbursement_rate": "100% lump sum compensation",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Surat Keterangan Kepolisian (Laporan Polisi)",
+          "Surat Kematian/Cacat Tetap dari Dokter Spesialis"
+        ]
+      },
+      {
+        "benefit_id": "id-ben-allianz-pa-med",
+        "benefit_category": "Accidental Medical Reimbursement",
+        "benefit_name": "Penggantian Biaya Medis dan Rawat Inap Akibat Kecelakaan",
+        "original_name": "Penggantian Biaya Medis Akibat Kecelakaan",
+        "covered_event": "Medical examination, wound care, bone fracture surgery, and hospitalization due to covered accident",
+        "covered_service": "Reimbursement of reasonable hospital and doctor fees with zero deductible",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "50000000.00",
+        "sublimits": {
+          "Biaya Medis Kecelakaan": "Up to IDR 50 Juta per kejadian"
+        },
+        "currency": "IDR",
+        "period": "Per Policy Year",
+        "eligibility_conditions": [
+          "Medical treatment commenced within 48 hours of accident"
+        ],
+        "network_requirements": "Any licensed clinic or hospital in Indonesia",
+        "reimbursement_rate": "100% reimbursement of eligible bills",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Kuitansi asli rumah sakit",
+          "Rincian biaya obat dan tindakan",
+          "Resume medis darurat"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "id-excl-allianz-pa-influence",
+        "excluded_event_or_service": "Driving under the influence of alcohol or narcotics, intentional self-harm, professional speed racing",
+        "original_text": "Mengemudi di bawah pengaruh minuman keras atau narkotika, tindakan sengaja mencelakai diri sendiri, balapan kendaraan bermotor berkecepatan tinggi",
+        "conditions_and_exceptions": "Accidents occurring as passenger on commercial public transport are covered with double indemnity",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Internal disease episodes, epilepsy, and cardiac arrests are excluded from accident definition",
+        "supporting_policy_clause": "Pasal 5 Pengecualian Umum Polis PA",
+        "source_page": 5
+      }
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "product_id": "id-prod-aia-corporate",
+    "insurer_id": "id-insurer-aia",
+    "original_product_name": "AIA Premier Hospital & Surgical Care Kumpulan",
+    "english_name": "AIA Corporate Premier Hospital & Surgical Care",
+    "product_category": "employer_group",
+    "target_users": [
+      "Corporate employees and registered family dependents",
+      "Enterprises operating in Indonesia"
+    ],
+    "eligibility_conditions": [
+      "Permanent or contract employee of enrolled enterprise",
+      "Aged 18 to 65 years (employee) or 15 days to 23 years (dependent child)",
+      "Enrolled under active corporate master policy"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Indonesia and Singapore/Malaysia direct cashless network",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": "Corporate group rate determined by company census and selected room plan tier",
+    "published_pricing_conditions": "Annual employer-sponsored master group contract",
+    "product_url": "https://www.aia-financial.co.id/id/our-products/corporate-solutions/",
+    "policy_document_references": [
+      "DOC-ID-AIA-CORP-GUIDE-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-aia-corp-inpatient",
+        "benefit_category": "Group Inpatient Hospital and Surgery",
+        "benefit_name": "Rawat Inap dan Pembedahan Karyawan Perusahaan dan Tanggungan",
+        "original_name": "Manfaat Rawat Inap dan Bedah Kumpulan Karyawan",
+        "covered_event": "Hospital admission for acute illness, elective necessary surgery, or accident for employee and dependents",
+        "covered_service": "Hospital room, ICU, surgical procedures, specialist doctor visits, diagnostic tests, emergency outpatient treatment",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": "500000000.00",
+        "sublimits": {
+          "Annual Limit": "IDR 500 Juta per family unit per policy year"
+        },
+        "currency": "IDR",
+        "period": "Policy Year",
+        "eligibility_conditions": [
+          "Registered full-time employee or verified legal dependent on master policy census"
+        ],
+        "network_requirements": "AIA Cashless Provider Network across Siloam, Mitra Keluarga, Pondok Indah, and Premier hospitals",
+        "reimbursement_rate": "100% cashless on eligible room plan tier",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Kartu Asuransi Elektronik Kumpulan",
+          "Surat Jaminan Rumah Sakit (Letter of Guarantee)"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "id-excl-aia-corp-cosmetic",
+        "excluded_event_or_service": "Elective cosmetic surgery, non-medical aesthetic dental treatments, routine wellness checkups without rider",
+        "original_text": "Pembedahan kosmetik elektif, perawatan gigi estetika non-medis, pemeriksaan kesehatan rutin tanpa klausul khusus",
+        "conditions_and_exceptions": "Reconstructive surgery following accidental injury is covered",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Pre-existing condition coverage determined by master corporate policy endorsement waiver",
+        "supporting_policy_clause": "Buku Panduan Polis Kumpulan Bab 4",
+        "source_page": 8
+      }
+    ],
+    "verification_status": "VERIFIED"
+  }
+]

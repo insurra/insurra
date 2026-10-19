@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.5",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "rule_id": "DQR-001-STABLE-ID",
+      "name": "Stable Entity Identifier Consistency",
+      "description": "Every entity must have a deterministic identifier prefixed with country and domain code.",
+      "severity": "CRITICAL"
+    },
+    {
+      "rule_id": "DQR-002-PROVENANCE-REQUIRED",
+      "name": "Mandatory Provenance Reference",
+      "description": "Factual records must contain a valid HTTP(S) source URL, publisher, and checked date.",
+      "severity": "HIGH"
+    },
+    {
+      "rule_id": "DQR-003-NO-EM-DASH",
+      "name": "Strict Punctuation Format Compliance",
+      "description": "No em dashes (unicode U+2014) may appear in any string, comment, or label.",
+      "severity": "CRITICAL"
+    },
+    {
+      "rule_id": "DQR-004-AUTHENTIC-VERIFICATION",
+      "name": "Honest Verification State Gate",
+      "description": "A record may only be marked VERIFIED if officially corroborated and effective dates checked.",
+      "severity": "CRITICAL"
+    },
+    {
+      "rule_id": "DQR-005-CURRENCY-INTEGRITY",
+      "name": "Currency Code Conformance",
+      "description": "Monetary values must preserve original ISO 4217 currency (CNY or IDR); never convert implicitly.",
+      "severity": "HIGH"
+    }
+  ]
+}

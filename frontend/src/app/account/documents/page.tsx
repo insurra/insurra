@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
+import { getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
 import type { components } from "@/lib/api/types.gen";
 import { config } from "@/lib/config";
 import { useAuth } from "@/lib/auth";
@@ -85,7 +86,27 @@ export default function AccountDocuments() {
   const { token } = useAuth();
   const userCtx = useUserContext();
 
-  const [activeTab, setActiveTab] = useState<"OVERVIEW" | "UPLOAD" | "RECOMMENDED">("OVERVIEW");
+  const [activeTab, setActiveTab] = useState<"OVERVIEW" | "UPLOAD" | "RECOMMENDED" | "PROOF">("OVERVIEW");
+  const [proofOriginalHash, setProofOriginalHash] = useState<string>("");
+  const [proofCandidateText, setProofCandidateText] = useState<string>("");
+  const [proofResult, setProofResult] = useState<{
+    verified: boolean;
+    original_sha256: string;
+    computed_sha256: string;
+    status: string;
+    detail: string;
+  } | null>(null);
+  const [proofVerifying, setProofVerifying] = useState<boolean>(false);
+  const [anchorDocTitle, setAnchorDocTitle] = useState<string>("");
+  const [anchorHash, setAnchorHash] = useState<string>("");
+  const [anchorResult, setAnchorResult] = useState<{
+    network: string;
+    transaction_hash: string;
+    block_number: number;
+    smart_contract_address: string;
+    gas_used: number;
+  } | null>(null);
+  const [anchoring, setAnchoring] = useState<boolean>(false);
   const [documents, setDocuments] = useState<DocumentSummary[]>([]);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [selectedDetail, setSelectedDetail] = useState<DocumentDetail | null>(null);
@@ -908,6 +929,13 @@ export default function AccountDocuments() {
         >
           <CheckCircle2 size={14} style={{ display: "inline", marginRight: 6 }} /> Recommended for You ({recommendedDocs.length})
         </button>
+        <button
+          type="button"
+          className={`figma-pill-btn ${activeTab === "PROOF" ? "active" : ""}`}
+          onClick={() => setActiveTab("PROOF")}
+        >
+          <ShieldCheck size={14} style={{ display: "inline", marginRight: 6 }} /> Blockchain Proof &amp; Integrity
+        </button>
       </div>
 
       {/* ======================================================================
@@ -1705,6 +1733,185 @@ export default function AccountDocuments() {
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================================
+          TAB 4: BLOCKCHAIN PROOF & INTEGRITY ANCHORING (SC-19)
+          ====================================================================== */}
+      {activeTab === "PROOF" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 24, marginTop: 12 }}>
+          {/* Card 1: Cryptographic Integrity Verification */}
+          <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #e2e8f0", padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: "#f0fdfa", color: "#0f766e", display: "grid", placeItems: "center" }}>
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: "#0f172a" }}>Verify Document Integrity</h3>
+                <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Compare candidate content against a registered SHA-256 digest</p>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 6 }}>
+                  Original Expected SHA-256 Hash
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 4d71bc29f8a3d548325a07c126e7925e01934c568910b8cf891045a190283bca"
+                  value={proofOriginalHash}
+                  onChange={(e) => setProofOriginalHash(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #cbd5e1", fontSize: 12, fontFamily: "monospace" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 6 }}>
+                  Candidate Document Content / Text
+                </label>
+                <textarea
+                  rows={4}
+                  placeholder="Paste candidate text or invoice content to verify byte-level integrity..."
+                  value={proofCandidateText}
+                  onChange={(e) => setProofCandidateText(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #cbd5e1", fontSize: 12, outline: "none" }}
+                />
+              </div>
+
+              <button
+                type="button"
+                className="figma-btn-primary"
+                disabled={proofVerifying || !proofOriginalHash || !proofCandidateText}
+                onClick={async () => {
+                  setProofVerifying(true);
+                  try {
+                    const headers = getWorkflowHeaders(token);
+                    headers["Content-Type"] = "application/json";
+                    const res = await fetch(getWorkflowUrl("/api/v1/workflow/proof/verify"), {
+                      method: "POST",
+                      headers,
+                      body: JSON.stringify({
+                        original_sha256: proofOriginalHash.trim(),
+                        candidate_text: proofCandidateText.trim(),
+                      }),
+                    });
+                    const resJson = await res.json();
+                    setProofResult(resJson);
+                  } catch {
+                    alert("Verification request failed");
+                  } finally {
+                    setProofVerifying(false);
+                  }
+                }}
+                style={{ height: 42, fontSize: 13, fontWeight: 700 }}
+              >
+                {proofVerifying ? "Computing Cryptographic Digest..." : "Verify Content Integrity"}
+              </button>
+
+              {proofResult && (
+                <div style={{ marginTop: 10, padding: 16, borderRadius: 12, background: proofResult.verified ? "#ecfdf5" : "#fef2f2", border: `1px solid ${proofResult.verified ? "#a7f3d0" : "#fecaca"}` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: 14, color: proofResult.verified ? "#065f46" : "#991b1b", marginBottom: 6 }}>
+                    {proofResult.verified ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
+                    {proofResult.status}
+                  </div>
+                  <p style={{ fontSize: 12, color: proofResult.verified ? "#047857" : "#b91c1c", margin: "0 0 8px", lineHeight: 1.45 }}>
+                    {proofResult.detail}
+                  </p>
+                  <div style={{ fontSize: 11, fontFamily: "monospace", color: "#475569", wordBreak: "break-all" }}>
+                    Computed SHA: {proofResult.computed_sha256}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card 2: Blockchain Testnet Anchoring */}
+          <div style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #e2e8f0", padding: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: "#f0fdf4", color: "#16a34a", display: "grid", placeItems: "center" }}>
+                <CheckCircle2 size={20} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: "#0f172a" }}>Sepolia Testnet Proof Anchor</h3>
+                <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>Anchor document SHA-256 hash to immutable public ledger</p>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: 14 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 6 }}>
+                  Document Title / Description
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Official Medical Invoice Oct 2026"
+                  value={anchorDocTitle}
+                  onChange={(e) => setAnchorDocTitle(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #cbd5e1", fontSize: 13 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 6 }}>
+                  Document SHA-256 Digest
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 4d71bc29f8a3d548325a07c126e7925e01934c568910b8cf891045a190283bca"
+                  value={anchorHash}
+                  onChange={(e) => setAnchorHash(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #cbd5e1", fontSize: 12, fontFamily: "monospace" }}
+                />
+              </div>
+
+              <button
+                type="button"
+                className="figma-btn-primary"
+                disabled={anchoring || !anchorDocTitle || !anchorHash}
+                onClick={async () => {
+                  setAnchoring(true);
+                  try {
+                    const headers = getWorkflowHeaders(token);
+                    headers["Content-Type"] = "application/json";
+                    const res = await fetch(getWorkflowUrl("/api/v1/workflow/proof/anchor"), {
+                      method: "POST",
+                      headers,
+                      body: JSON.stringify({
+                        document_title: anchorDocTitle.trim(),
+                        document_sha256: anchorHash.trim(),
+                        mime_type: "application/pdf",
+                      }),
+                    });
+                    const json = await res.json();
+                    setAnchorResult(json);
+                  } catch {
+                    alert("Anchoring failed");
+                  } finally {
+                    setAnchoring(false);
+                  }
+                }}
+                style={{ height: 42, fontSize: 13, fontWeight: 700, background: "#0f766e", borderColor: "#0f766e" }}
+              >
+                {anchoring ? "Broadcasting Digest..." : "Anchor Digest to Testnet"}
+              </button>
+
+              {anchorResult && (
+                <div style={{ marginTop: 10, padding: 16, borderRadius: 12, background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: "#166534", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <CheckCircle2 size={16} /> Anchored Successfully to {anchorResult.network}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#334155", display: "grid", gap: 4 }}>
+                    <div><strong>Tx Hash:</strong> <span style={{ fontFamily: "monospace", wordBreak: "break-all" }}>{anchorResult.transaction_hash}</span></div>
+                    <div><strong>Block Number:</strong> {anchorResult.block_number}</div>
+                    <div><strong>Contract:</strong> <span style={{ fontFamily: "monospace" }}>{anchorResult.smart_contract_address}</span></div>
+                    <div><strong>Gas Used:</strong> {anchorResult.gas_used} gwei</div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

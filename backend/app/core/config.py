@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     backend_url: str = "http://localhost:8000"
     session_secret: SecretStr = SecretStr("")
     account_session_ttl_days: int = 7
+    sandbox_step_seconds: int = 10
+    claim_poll_interval_seconds: int = 0
+    claim_poll_limit: int = 60
 
     @model_validator(mode="after")
     def restrict_origin(self):

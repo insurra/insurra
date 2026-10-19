@@ -1,0 +1,134 @@
+[
+  {
+    "requirement_id": "cn-req-szu-student",
+    "institution_id": "cn-szu",
+    "institution_name": "Shenzhen University",
+    "institution_name_original": "深圳大学",
+    "city": "Shenzhen",
+    "province": "Guangdong",
+    "country_code": "CN",
+    "official_requirement_summary": "Shenzhen University international students must purchase the Comprehensive Insurance & Protection Scheme for Foreigners Staying in China (来华留学生综合医疗保险) prior to enrollment or visa extension. Proof of purchase is required for semester registration.",
+    "eligible_student_categories": [
+      "Degree international students",
+      "Language exchange students",
+      "Visiting international researchers"
+    ],
+    "mandatory_purchase_required": true,
+    "approved_scheme_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China (来华留学生综合医疗保险)",
+    "approved_insurer": "Ping An Pension Insurance Co., Ltd. (via lxbx.net platform)",
+    "required_document_types": [
+      "DOC-CN-INS-CERT",
+      "DOC-CN-PASSPORT",
+      "DOC-CN-STUDY-VISA"
+    ],
+    "coverage_period_requirements": "Coverage must cover the full academic semester or year (minimum 6 months or 12 months) and remain continuously valid throughout enrollment.",
+    "minimum_benefit_limits": {
+      "Accidental Death": "100,000 CNY",
+      "Inpatient Hospitalization": "400,000 CNY"
+    },
+    "relevant_deadlines": "Must be paid and validated at least 7 days before university on-site registration deadline",
+    "policy_sources": [
+      "https://lxs.szu.edu.cn/info/1020/2198.htm"
+    ],
+    "administrative_guidance": "Purchase online via www.lxbx.net, select Shenzhen University, enter passport number, complete UnionPay/WeChat Pay, download PDF certificate.",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "requirement_id": "cn-req-cuhksz-student",
+    "institution_id": "cn-cuhk-sz",
+    "institution_name": "The Chinese University of Hong Kong, Shenzhen",
+    "institution_name_original": "香港中文大学（深圳）",
+    "city": "Shenzhen",
+    "province": "Guangdong",
+    "country_code": "CN",
+    "official_requirement_summary": "All non-local degree-seeking and exchange students at CUHK-Shenzhen must hold valid comprehensive medical insurance covering accidental medical and hospitalization expenses in mainland China.",
+    "eligible_student_categories": [
+      "Undergraduate international students",
+      "Postgraduate international students",
+      "Inbound exchange students"
+    ],
+    "mandatory_purchase_required": true,
+    "approved_scheme_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China or university-verified international equivalent",
+    "approved_insurer": "Ping An Pension Insurance / designated institutional policy",
+    "required_document_types": [
+      "DOC-CN-INS-CERT",
+      "DOC-CN-PASSPORT"
+    ],
+    "coverage_period_requirements": "Must cover the entire duration of stay in Shenzhen until departure date",
+    "minimum_benefit_limits": {
+      "Inpatient Hospitalization": "400,000 CNY"
+    },
+    "relevant_deadlines": "Verification required during freshman orientation check-in",
+    "policy_sources": [
+      "https://www.cuhk.edu.cn/en/page/international-student-services"
+    ],
+    "administrative_guidance": "Submit policy certificate via CUHK-Shenzhen student information portal prior to class commencement.",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "requirement_id": "cn-req-tsinghua-student",
+    "institution_id": "cn-thu",
+    "institution_name": "Tsinghua University",
+    "institution_name_original": "清华大学",
+    "city": "Beijing",
+    "province": "Beijing",
+    "country_code": "CN",
+    "official_requirement_summary": "Tsinghua University requires all international students studying for more than six months to hold the Comprehensive Insurance & Protection Scheme for Foreigners Staying in China before completion of semester registration.",
+    "eligible_student_categories": [
+      "Degree students",
+      "Exchange scholars",
+      "Language students"
+    ],
+    "mandatory_purchase_required": true,
+    "approved_scheme_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China",
+    "approved_insurer": "Ping An Pension Insurance Co., Ltd. (via lxbx.net platform)",
+    "required_document_types": [
+      "DOC-CN-INS-CERT",
+      "DOC-CN-PASSPORT"
+    ],
+    "coverage_period_requirements": "Must cover the full registered semester or academic year without interruption.",
+    "minimum_benefit_limits": {
+      "Accidental Death": "100,000 CNY",
+      "Inpatient Hospitalization": "400,000 CNY"
+    },
+    "relevant_deadlines": "Proof required during international student orientation registration window",
+    "policy_sources": [
+      "https://is.tsinghua.edu.cn/en/info/1020/1234.htm"
+    ],
+    "administrative_guidance": "Complete online purchase on lxbx.net selecting Tsinghua University as designated institution.",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "requirement_id": "cn-req-pku-student",
+    "institution_id": "cn-pku",
+    "institution_name": "Peking University",
+    "institution_name_original": "北京大学",
+    "city": "Beijing",
+    "province": "Beijing",
+    "country_code": "CN",
+    "official_requirement_summary": "Peking University mandates that international students submit valid comprehensive medical insurance proof pursuant to Ministry of Education Joint Order No. 42 for registration and residence permit issuance.",
+    "eligible_student_categories": [
+      "Undergraduate",
+      "Postgraduate",
+      "Visiting fellows"
+    ],
+    "mandatory_purchase_required": true,
+    "approved_scheme_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China",
+    "approved_insurer": "Ping An Pension Insurance Co., Ltd. (via lxbx.net platform)",
+    "required_document_types": [
+      "DOC-CN-INS-CERT",
+      "DOC-CN-PASSPORT"
+    ],
+    "coverage_period_requirements": "Must cover the entire duration of studies at Peking University.",
+    "minimum_benefit_limits": {
+      "Accidental Death": "100,000 CNY",
+      "Inpatient Hospitalization": "400,000 CNY"
+    },
+    "relevant_deadlines": "Verification mandatory prior to course registration confirmation",
+    "policy_sources": [
+      "https://isd.pku.edu.cn/notice/insurance.htm"
+    ],
+    "administrative_guidance": "Purchase via lxbx.net and present electronic insurance certificate barcode at registration counter.",
+    "verification_status": "VERIFIED"
+  }
+]

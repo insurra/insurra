@@ -124,3 +124,111 @@ def test_new_tables_compile_for_postgresql_without_connecting():
     ]:
         sql = str(CreateTable(Base.metadata.tables[name]).compile(dialect=postgresql.dialect()))
         assert "UUID" in sql and "CREATE TABLE" in sql
+
+
+def test_action_review_metadata_upgrade_keeps_existing_status_and_payload(tmp_path, monkeypatch):
+    url = f"sqlite:///{tmp_path / 'actions-upgrade.db'}"
+    monkeypatch.setenv("DATABASE_URL", url)
+    get_settings.cache_clear()
+    cfg = Config(str(ROOT / "backend/alembic.ini"))
+    command.upgrade(cfg, "0008")
+    engine = make_engine(url)
+    session_id, action_id = uuid4(), uuid4()
+    now = datetime.now(UTC).isoformat()
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO demo_sessions "
+                "(id, token_hash, persona_id, created_at, expires_at) "
+                "VALUES (:id, :token_hash, :persona_id, :created_at, :expires_at)"
+            ),
+            {
+                "id": session_id.hex,
+                "token_hash": "a" * 64,
+                "persona_id": "raka",
+                "created_at": now,
+                "expires_at": now,
+            },
+        )
+        connection.execute(
+            text(
+                "INSERT INTO actions (id, session_id, type, payload, status) "
+                "VALUES (:id, :session_id, :type, :payload, :status)"
+            ),
+            {
+                "id": action_id.hex,
+                "session_id": session_id.hex,
+                "type": "claim_submit",
+                "payload": '{"claim_case_id":"synthetic"}',
+                "status": "PENDING",
+            },
+        )
+    command.upgrade(cfg, "0009")
+    with engine.connect() as connection:
+        row = connection.execute(
+            text("SELECT status, payload, created_at, payload_version FROM actions WHERE id=:id"),
+            {"id": action_id.hex},
+        ).one()
+    assert row.status == "PENDING"
+    assert row.payload == '{"claim_case_id":"synthetic"}'
+    assert row.created_at is None and row.payload_version is None
+    engine.dispose()
+    get_settings.cache_clear()
+
+
+def test_claim_tracking_upgrade_preserves_existing_case_status(tmp_path, monkeypatch):
+    url = f"sqlite:///{tmp_path / 'claim-tracking-upgrade.db'}"
+    monkeypatch.setenv("DATABASE_URL", url)
+    get_settings.cache_clear()
+    cfg = Config(str(ROOT / "backend/alembic.ini"))
+    command.upgrade(cfg, "0009")
+    engine = make_engine(url)
+    session_id, claim_id, coverage_id = uuid4(), uuid4(), uuid4()
+    now = datetime.now(UTC).isoformat()
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT INTO demo_sessions (id, token_hash, persona_id, created_at, expires_at) "
+                "VALUES (:id, :token_hash, :persona_id, :created_at, :expires_at)"
+            ),
+            {
+                "id": session_id.hex,
+                "token_hash": "b" * 64,
+                "persona_id": "raka",
+                "created_at": now,
+                "expires_at": now,
+            },
+        )
+        connection.execute(
+            text(
+                "INSERT INTO claim_cases "
+                "(id, session_id, coverage_id, country_code, path, status, created_at) "
+                "VALUES (:id, :session_id, :coverage_id, :country_code, :path, "
+                ":status, :created_at)"
+            ),
+            {
+                "id": claim_id.hex,
+                "session_id": session_id.hex,
+                "coverage_id": coverage_id.hex,
+                "country_code": "ID",
+                "path": "manual",
+                "status": "DRAFT",
+                "created_at": now,
+            },
+        )
+    command.upgrade(cfg, "0010")
+    with engine.connect() as connection:
+        row = connection.execute(
+            text(
+                "SELECT status, claim_ref, sandbox_status, last_checked_at, monitoring_state "
+                "FROM claim_cases WHERE id=:id"
+            ),
+            {"id": claim_id.hex},
+        ).one()
+        assert "claim_case_events" in inspect(connection).get_table_names()
+    assert row.status == "DRAFT"
+    assert (
+        row.claim_ref is row.sandbox_status is row.last_checked_at is row.monitoring_state is None
+    )
+    engine.dispose()
+    get_settings.cache_clear()

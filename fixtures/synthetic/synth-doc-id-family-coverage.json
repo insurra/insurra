@@ -1,0 +1,31 @@
+{
+  "fixture_id": "synth-doc-id-family-coverage",
+  "category": "synthetic_insurance_document",
+  "country_code": "ID",
+  "label": "Fictional Family Policy Schedule with Multiple Dependents",
+  "description": "Synthetic private health policy covering primary insured, spouse, and child.",
+  "payload": {
+    "document_type": "DOC_INS_POLICY_SCHEDULE",
+    "is_synthetic": true,
+    "policy_number": "SYNTH-ALZ-FAM-112233",
+    "primary_insured": "AHMAD YUSUF",
+    "dependents": [
+      {
+        "name": "SITI AMINAH",
+        "relation": "SPOUSE",
+        "birth_date": "1992-05-14"
+      },
+      {
+        "name": "RAYHAN YUSUF",
+        "relation": "CHILD",
+        "birth_date": "2020-11-20"
+      }
+    ],
+    "coverage_start_date": "2024-03-01",
+    "coverage_end_date": "2025-02-28",
+    "currency": "IDR",
+    "status": "ACTIVE"
+  },
+  "is_adversarial": false,
+  "expected_outcome": "COMPLETED_VALID_FAMILY_RECORD"
+}

@@ -99,7 +99,9 @@ def test_country_round_trip_requires_new_country_details_before_reusing_gap(clie
         for field in ("dependents", "priorities", "owned_coverage"):
             assert profile[field] == metadata[field]
         assessment = client.get("/api/v1/assessments/visa-gap", headers=headers).json()
-        assert assessment["assessment_status"] == "NEEDS_VERIFICATION"
+        assert assessment["assessment_status"] == (
+            "NEEDS_VERIFICATION" if country != original["country_code"] else "UNABLE_TO_DETERMINE"
+        )
         assert assessment["gap_days"] is None and assessment["gap_periods"] == []
     # Explicitly re-entered dates can be used again once profile and record countries match.
     response = client.put(

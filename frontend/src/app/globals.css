@@ -260,6 +260,10 @@ p {
 .breadcrumb span {
   color: #b0bcc4;
 }
+.breadcrumb a:hover {
+  color: #0f766e;
+  text-decoration: underline;
+}
 .breadcrumb strong {
   color: #3c5362;
   font-weight: 500;
@@ -304,10 +308,18 @@ p {
   font-size: 13px;
 }
 .main-content {
-  max-width: 1430px;
-  padding: 40px 42px 48px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  padding: 24px 42px 48px;
+  margin: 0;
   min-height: calc(100vh - 145px);
+}
+#main-content > * {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: 0;
+  padding-block-start: 0;
 }
 .page-footer {
   display: flex;
@@ -1097,7 +1109,7 @@ p {
 }
 @media (min-width: 1550px) {
   .main-content {
-    padding-top: 50px;
+    padding-top: 24px;
   }
 }
 @media (max-width: 1200px) {

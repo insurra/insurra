@@ -1,8 +1,70 @@
 {
   "schema_version": "1.5",
   "version": "0.2.0",
-  "source_url": null,
-  "checked_at": null,
-  "verification_status": "UNVERIFIED",
-  "data": []
+  "source_url": "https://www.who.int/news-room/questions-and-answers/item/suicide",
+  "checked_at": "2026-10-19",
+  "verification_status": "VERIFIED",
+  "data": [
+    {
+      "id": "acute_chest_pain",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "nyeri dada berat",
+        "nyeri dada disertai sesak"
+      ],
+      "phrases_en": [
+        "severe chest pain",
+        "chest pain with difficulty breathing"
+      ],
+      "phrases_zh": [
+        "胸痛"
+      ],
+      "destination_code": "medical",
+      "source_url": "https://www.nhc.gov.cn/xcs/c100122/202405/f251e896a50a49ff8c632b4b3da93126/files/1734001844015_12363.pdf",
+      "checked_at": "2026-10-19",
+      "verification_status": "VERIFIED",
+      "jurisdiction": "CN"
+    },
+    {
+      "id": "difficulty_breathing",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "sesak napas berat",
+        "sulit bernapas"
+      ],
+      "phrases_en": [
+        "difficulty breathing",
+        "severe shortness of breath"
+      ],
+      "phrases_zh": [
+        "呼吸困难"
+      ],
+      "destination_code": "medical",
+      "source_url": "https://www.nhc.gov.cn/xcs/c100122/202405/f251e896a50a49ff8c632b4b3da93126/files/1734001844015_12363.pdf",
+      "checked_at": "2026-10-19",
+      "verification_status": "VERIFIED",
+      "jurisdiction": "CN"
+    },
+    {
+      "id": "self_harm_risk",
+      "category": "SELF_HARM",
+      "phrases_id": [
+        "ingin bunuh diri",
+        "ingin menyakiti diri sendiri"
+      ],
+      "phrases_en": [
+        "want to kill myself",
+        "want to hurt myself"
+      ],
+      "phrases_zh": [
+        "想自杀",
+        "想伤害自己"
+      ],
+      "destination_code": "safety_support",
+      "source_url": "https://www.who.int/news-room/questions-and-answers/item/suicide",
+      "checked_at": "2026-10-19",
+      "verification_status": "VERIFIED",
+      "jurisdiction": "Global safety guidance"
+    }
+  ]
 }

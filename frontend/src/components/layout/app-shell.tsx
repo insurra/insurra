@@ -6,12 +6,14 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   Bell,
+  Building2,
   ChevronDown,
   ClipboardCheck,
   FileText,
   HeartPulse,
   Home,
   LogOut,
+  PhoneCall,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
@@ -26,6 +28,10 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
+  { href: "/claims", label: "Claims Center", icon: ClipboardCheck },
+  { href: "/actions", label: "Action Approvals", icon: ShieldCheck },
+  { href: "/emergency", label: "Emergency Guidance", icon: PhoneCall },
+  { href: "/employer-benefits", label: "Employer Benefits", icon: Building2 },
   { href: "/documents", label: "Documents", icon: FileText },
   {
     href: "/ask-policy",
@@ -34,12 +40,6 @@ const navigation = [
     soon: true,
   },
   { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
-  {
-    href: "/claims",
-    label: "Claims Center",
-    icon: ClipboardCheck,
-    soon: true,
-  },
   {
     href: "/audit",
     label: "Activity & Audit",
@@ -51,6 +51,10 @@ const navigation = [
 const accountNavigation = [
   { href: "/account", label: "Home", icon: Home },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
+  { href: "/claims", label: "Claims Center", icon: ClipboardCheck },
+  { href: "/actions", label: "Action Approvals", icon: ShieldCheck },
+  { href: "/emergency", label: "Emergency Guidance", icon: PhoneCall },
+  { href: "/employer-benefits", label: "Employer Benefits", icon: Building2 },
   { href: "/documents", label: "Documents", icon: FileText },
   {
     href: "/ask-policy",
@@ -59,12 +63,6 @@ const accountNavigation = [
     soon: true,
   },
   { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
-  {
-    href: "/claims",
-    label: "Claims Center",
-    icon: ClipboardCheck,
-    soon: true,
-  },
   {
     href: "/audit",
     label: "Activity & Audit",
@@ -131,6 +129,14 @@ function PrivateShell({
   const pageTitle =
     pathname === "/protection"
       ? "My Protection"
+      : pathname.startsWith("/claims/")
+      ? "Claim Detail"
+      : pathname === "/actions"
+      ? "Action Approval"
+      : pathname === "/emergency"
+      ? "Emergency Guidance"
+      : pathname === "/products/compare"
+      ? "Insurance Product Comparison"
       : pathname === "/policies"
       ? "Policy Wallet"
       : pathname === "/completeness"
@@ -150,6 +156,14 @@ function PrivateShell({
       : pathname === "/onboarding"
       ? "User Context"
       : items.find((item) => item.href === pathname)?.label ?? "Dashboard";
+  const breadcrumbParent = pathname.startsWith("/claims/")
+    ? { href: "/claims", label: "Claims Center" }
+    : pathname === "/policies" || pathname === "/employer-benefits"
+    ? { href: "/protection", label: "My Protection" }
+    : pathname === "/products/compare"
+    ? { href: "/policies", label: "Policy Wallet" }
+    : null;
+  const workspaceHref = accountMode ? "/account" : "/dashboard";
 
   return (
     <div className="app-frame">
@@ -238,9 +252,17 @@ function PrivateShell({
       </aside>
       <div className="app-column">
         <header className="topbar">
-          <div className="breadcrumb">
-            Workspace <span>/</span> <strong>{pageTitle}</strong>
-          </div>
+          <nav className="breadcrumb" aria-label="Breadcrumb">
+            <Link href={workspaceHref}>Workspace</Link>
+            <span>/</span>
+            {breadcrumbParent && (
+              <>
+                <Link href={breadcrumbParent.href}>{breadcrumbParent.label}</Link>
+                <span>/</span>
+              </>
+            )}
+            <strong aria-current="page">{pageTitle}</strong>
+          </nav>
           <div className="topbar-right" style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {/* Country Selector from Active Context */}
             <div className="figma-topbar-country" title={`Active Country: ${residenceCountry}`}>
@@ -248,6 +270,16 @@ function PrivateShell({
               <span>{residenceCountry}</span>
               <ChevronDown size={14} color="#64748b" />
             </div>
+
+            {/* Emergency SOS Quick Button */}
+            <Link
+              href="/emergency"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-full shadow-sm transition-all"
+              title="Emergency Guidance & Crisis Lines"
+            >
+              <PhoneCall size={13} />
+              <span>Emergency SOS</span>
+            </Link>
 
             {/* Notification Bell */}
             <div className="figma-topbar-bell" title="Notifications">

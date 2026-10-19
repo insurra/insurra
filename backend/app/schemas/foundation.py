@@ -304,25 +304,39 @@ class PathwayComparison(Contract):
 
 class TriageRequest(Contract):
     text: str = Field(min_length=1, max_length=500)
+    country_code: CountryCode | None = None
 
 
 class TriageMatch(Contract):
     id: str
     kb_version: str
+    category: Literal["MEDICAL", "SELF_HARM"]
+    source_url: str
 
 
 class TriageResult(Contract):
     red_flag: bool
     matched: list[TriageMatch]
+    safety_flows: list[Literal["EMERGENCY_MEDICAL", "SELF_HARM_SUPPORT"]] = Field(
+        default_factory=list
+    )
+    screening_complete: Literal[False] = False
 
 
 class ClaimCaseStatus(StrEnum):
     DRAFT = "DRAFT"
+    NEEDS_EVIDENCE = "NEEDS_EVIDENCE"
+    READY_FOR_REVIEW = "READY_FOR_REVIEW"
+    AWAITING_APPROVAL = "AWAITING_APPROVAL"
     READY_FOR_SUBMISSION = "READY_FOR_SUBMISSION"
     SUBMITTED = "SUBMITTED"
+    SUBMITTED_SANDBOX = "SUBMITTED_SANDBOX"
     PROCESSING = "PROCESSING"
+    ADDITIONAL_INFORMATION_REQUIRED = "ADDITIONAL_INFORMATION_REQUIRED"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
+    SANDBOX_APPROVED = "SANDBOX_APPROVED"
+    SANDBOX_REJECTED = "SANDBOX_REJECTED"
     CANCELLED = "CANCELLED"
 
 
@@ -339,6 +353,17 @@ class ClaimCase(ClaimCaseCreate):
     id: UUID
     country_code: CountryCode
     status: ClaimCaseStatus
+    claim_ref: str | None = None
+    sandbox_status: str | None = None
+    last_checked_at: datetime | None = None
+    monitoring_state: Literal["NOT_CONFIGURED", "ACTIVE", "PAUSED", "FAILED"] | None = None
+    created_at: datetime
+
+
+class ClaimCaseEvent(Contract):
+    id: UUID
+    event_type: str = Field(max_length=50)
+    status_snapshot: ClaimCaseStatus
     created_at: datetime
 
 
@@ -361,6 +386,7 @@ class ClaimCaseDetail(Contract):
     case: ClaimCase
     checklist: list[CaseChecklistItem]
     consistency_checks: list[ConsistencyCheck]
+    timeline: list[ClaimCaseEvent] = Field(default_factory=list)
 
 
 class ClaimCasePage(Contract):
@@ -381,6 +407,7 @@ class ActionDecisionRequest(Contract):
     edited_payload: dict[str, JsonValue] | None = None
     reason: str | None = Field(default=None, max_length=500)
     confirmed: StrictBool = False
+    expected_payload_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 class ActionExecutionRequest(Contract):
@@ -390,6 +417,11 @@ class ActionExecutionRequest(Contract):
 class SandboxAttachment(Contract):
     document_id: UUID
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class ClaimSubmissionPayload(Contract):
+    claim_case_id: UUID
+    attachments: list[SandboxAttachment]
 
 
 class SandboxClaimRequest(ActionExecutionRequest):

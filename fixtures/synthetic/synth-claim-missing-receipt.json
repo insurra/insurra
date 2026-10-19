@@ -1,0 +1,21 @@
+{
+  "fixture_id": "synth-claim-missing-receipt",
+  "category": "synthetic_claim_evidence",
+  "country_code": "ID",
+  "label": "Incomplete Claim Dossier Missing Original Kwitansi",
+  "description": "Claim application submitted with doctor diagnosis resume only, lacking fiscal receipt.",
+  "payload": {
+    "claim_type": "Rawat Jalan Reimbursement",
+    "is_synthetic": true,
+    "submitted_documents": [
+      "DOC_DOCTOR_DIAGNOSIS"
+    ],
+    "missing_documents": [
+      "DOC_MEDICAL_INVOICE"
+    ],
+    "amount_claimed": "850000.00",
+    "currency": "IDR"
+  },
+  "is_adversarial": false,
+  "expected_outcome": "REJECTED_MISSING_MANDATORY_EVIDENCE"
+}

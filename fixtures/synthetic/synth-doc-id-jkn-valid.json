@@ -1,0 +1,20 @@
+{
+  "fixture_id": "synth-doc-id-jkn-valid",
+  "category": "synthetic_insurance_document",
+  "country_code": "ID",
+  "label": "Fictional BPJS Kesehatan KIS Digital Card",
+  "description": "Valid synthetic digital KIS membership proof for fictional employee Budi Santoso in Jakarta.",
+  "payload": {
+    "document_type": "DOC_JKN_CARD",
+    "is_synthetic": true,
+    "card_number": "0009988776655",
+    "participant_name": "BUDI SANTOSO",
+    "nik": "3171019901850001",
+    "fktp_registered": "Puskesmas Kecamatan Setiabudi",
+    "membership_type": "PPU Swasta",
+    "class_tier": "Kelas 1",
+    "status": "AKTIF"
+  },
+  "is_adversarial": false,
+  "expected_outcome": "COMPLETED_VALID_JKN_MEMBERSHIP"
+}

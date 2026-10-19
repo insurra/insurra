@@ -51,7 +51,7 @@ def test_missing_dates(inputs, field):
     else:
         setattr(profile, field, None)
     result = RulesEngine(CountryKBLoader(ROOT / "kb")).assess_visa_coverage(profile, record)
-    assert result.assessment_status == "NEEDS_VERIFICATION" and result.gap_days is None
+    assert result.assessment_status == "UNABLE_TO_DETERMINE" and result.gap_days is None
 
 
 def test_invalid_ranges_and_money(inputs):
@@ -106,7 +106,10 @@ def test_new_country_requires_only_configuration(tmp_path, inputs):
     p, r = inputs
     p.country_code = r.country_code = "XY"
     result = RulesEngine(CountryKBLoader(tmp_path)).assess_visa_coverage(p, r)
-    assert result.gap_days == 76 and result.rule_source.country_code == "XY"
+    assert result.gap_days == 76
+    assert result.assessment_status == "DATE_DIFFERENCE_DETECTED"
+    assert result.requirement_status == "NEEDS_VERIFICATION"
+    assert result.rule_source is None
 
 
 def test_extraction_confidence_is_conservative():

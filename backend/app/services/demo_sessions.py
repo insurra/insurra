@@ -79,4 +79,15 @@ def create_demo_session(db: Session, persona_id: str, ttl_hours: int) -> Session
     initialize_consents(db, session.id, now)
     log_event(db, session.id, "SESSION_CREATED")
     db.commit()
+
+    # Seed realistic demo claim cases, actions and audit events from KB for demo session
+    from app.seeds.demo_claims_seed import seed_demo_claims_for_session
+
+    seed_demo_claims_for_session(
+        db,
+        session.id,
+        country_code="CN" if profile.country_code in ("CN", "AU") else "ID",
+        persona_name=profile.display_name or "Demo User",
+    )
+
     return SessionCreated(**describe_session(db, session).model_dump(), session_token=token)

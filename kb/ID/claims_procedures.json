@@ -1,0 +1,73 @@
+[
+  {
+    "procedure_id": "id-claim-proc-bpjs-rujukan",
+    "country_code": "ID",
+    "claims_administrator": "BPJS Kesehatan & Rumah Sakit Rekanan",
+    "relevant_product_ids": [
+      "id-prod-bpjs-jkn"
+    ],
+    "claim_types": [
+      "Pelayanan Rawat Jalan Tingkat Lanjutan",
+      "Pelayanan Rawat Inap Rumah Sakit"
+    ],
+    "submission_instructions": "Visit registered FKTP for initial examination. If medical condition requires specialist treatment, FKTP issues online electronic referral (Surat Rujukan). Present NIK KTP and referral barcode at hospital admissions. Hospital generates SEP (Surat Eligibilitas Peserta). No cash payment required for standard entitlements.",
+    "filing_deadlines": "Referral valid for 90 days from date of issuance by FKTP for recurring treatment",
+    "required_forms": [
+      "Surat Rujukan FKTP",
+      "Surat Eligibilitas Peserta (SEP) digital"
+    ],
+    "submission_channels": [
+      "Mobile JKN App",
+      "Hospital BPJS Center Desk",
+      "P-Care Clinic System"
+    ],
+    "official_portal_url": "https://pcare.bpjs-kesehatan.go.id",
+    "preauthorization_requirements": "Prior examination and electronic referral from registered FKTP mandatory",
+    "reimbursement_procedures": "Direct settlement (cashless) between hospital and BPJS Kesehatan under INA-CBGs diagnosis-related group tariff",
+    "published_processing_timeline": "Immediate electronic verification at admissions desk",
+    "status_inquiry_channels": [
+      "Mobile JKN App",
+      "Care Center 165",
+      "Petugas BPJS SATU di Rumah Sakit"
+    ],
+    "customer_support_contact": "BPJS Care Center 165 (24 Jam)",
+    "dispute_escalation_guidance": "Contact BPJS SATU (Siap Membantu) petugas di rumah sakit, atau hotline 165",
+    "source_url": "https://www.bpjs-kesehatan.go.id/bpjs/pages/detail/2014/12",
+    "verification_status": "VERIFIED"
+  },
+  {
+    "procedure_id": "id-claim-proc-allianz-reimbursement",
+    "country_code": "ID",
+    "claims_administrator": "PT Asuransi Allianz Life Indonesia (Claims Department)",
+    "relevant_product_ids": [
+      "id-prod-allianz-smarthealth"
+    ],
+    "claim_types": [
+      "Rawat Inap Non-Rekanan Reimbursement",
+      "Rawat Jalan Lanjutan Reimbursement"
+    ],
+    "submission_instructions": "For non-partner hospital treatments, pay initial expenses, collect original hospital receipts, complete formulir klaim with treating physician signature, and submit via Allianz eAZy Connect portal or mail to Allianz Tower Jakarta.",
+    "filing_deadlines": "Within 30 calendar days from the date of discharge or consultation",
+    "required_forms": [
+      "Formulir Klaim Asuransi Kesehatan Allianz Asli"
+    ],
+    "submission_channels": [
+      "Allianz eAZy Connect Mobile App",
+      "Customer Portal Online",
+      "Kantor Pusat Allianz Tower Kuningan"
+    ],
+    "official_portal_url": "https://www.allianz.co.id/klaim",
+    "preauthorization_requirements": "Required for planned surgeries at least 7 days before admission",
+    "reimbursement_procedures": "Claim assessed against policy benefit table. Approved payment transferred to policyholder bank account.",
+    "published_processing_timeline": "7 to 14 working days after receipt of complete original documents",
+    "status_inquiry_channels": [
+      "Allianz eAZy Connect Mobile App",
+      "Customer Portal",
+      "Contact Center 1500-136"
+    ],
+    "customer_support_contact": "1500-136",
+    "dispute_escalation_guidance": "Internal Dispute Resolution Unit Allianz, or escalate to OJK Kontak 157 and LAPS SJK.",
+    "source_url": "https://www.allianz.co.id/layanan/klaim/klaim-asuransi-kesehatan.html",
+    "verification_status": "VERIFIED"
+  }
+]

@@ -5,6 +5,7 @@
   "checked_at": null,
   "verification_status": "UNVERIFIED",
   "data": [
+    {"task_code": "coverage_continuity", "label": "Protection continuity check", "policy_types": []},
     {
       "task_code": "student_outpatient_claim",
       "label": "Outpatient and emergency claim preparation",

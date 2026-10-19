@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
+  <rect width="320" height="80" rx="8" fill="#FFFFFF" />
+  <circle cx="45" cy="40" r="26" fill="#008837" />
+  <circle cx="45" cy="40" r="16" fill="#FFFFFF" />
+  <circle cx="45" cy="40" r="8" fill="#008837" />
+  <text x="85" y="47" font-family="Arial, 'PingFang SC', sans-serif" font-size="24" font-weight="bold" fill="#008837">中国人寿</text>
+  <text x="85" y="65" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#333333">CHINA LIFE INSURANCE</text>
+</svg>

@@ -41,7 +41,16 @@ class PolicyGuard:
         # Allow-list scalar operational facts; unknown/nested content is dropped entirely.
         output: dict[str, Any] = {}
         allowed_values = {
-            "assessment_status": {"PASS", "GAP_FOUND", "NEEDS_VERIFICATION", "NOT_APPLICABLE"},
+            "assessment_status": {
+                "UNABLE_TO_DETERMINE",
+                "NO_DATE_DIFFERENCE",
+                "DATE_DIFFERENCE_DETECTED",
+                "POTENTIAL_COVERAGE_GAP",
+                "PASS",
+                "GAP_FOUND",
+                "NEEDS_VERIFICATION",
+                "NOT_APPLICABLE",
+            },
             "feature": {"documents", "chat", "care", "claims", "actions"},
             "purpose": {"process_documents", "external_ai", "retention"},
             "policy_version": {"1.5", "legacy-v1"},
@@ -53,6 +62,11 @@ class PolicyGuard:
                 output[key] = value
             elif key in allowed_values and isinstance(value, str) and value in allowed_values[key]:
                 output[key] = value
+            elif key in {"claim_case_id", "action_id"} and isinstance(value, str):
+                try:
+                    output[key] = str(UUID(value))
+                except ValueError:
+                    pass
         return output
 
     # Fail-closed extension points. No claim of completed medical or injection safeguards.

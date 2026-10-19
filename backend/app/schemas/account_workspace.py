@@ -104,7 +104,13 @@ class AccountCompletenessItem(Contract):
 
 
 class AccountVisaGap(Contract):
-    status: Literal["PASS", "GAP_FOUND", "NEEDS_VERIFICATION", "NOT_APPLICABLE"]
+    status: Literal[
+        "UNABLE_TO_DETERMINE",
+        "NO_DATE_DIFFERENCE",
+        "DATE_DIFFERENCE_DETECTED",
+        "POTENTIAL_COVERAGE_GAP",
+    ]
+    requirement_status: Literal["VERIFIED", "NEEDS_VERIFICATION"] = "NEEDS_VERIFICATION"
     gap_days: int | None = None
     explanation: str
     source_url: str | None = None
@@ -120,6 +126,7 @@ class AccountCompleteness(Contract):
     ready_pct: int
     items: list[AccountCompletenessItem]
     visa_gap: AccountVisaGap | None = None
+    coverage_continuity: AccountVisaGap | None = None
     kb_version: str
     verification_status: VerificationStatus
 
@@ -151,6 +158,7 @@ class AccountPolicySummary(Contract):
     start_date: str | None = None
     end_date: str | None = None
     status: Literal["ACTIVE", "EXPIRING_SOON", "EXPIRED", "UNKNOWN"] = "UNKNOWN"
+    evidence_status: Literal["SELF_REPORTED", "NEEDS_REVIEW", "VERIFIED"]
     created_at: datetime
 
 
@@ -176,4 +184,4 @@ class FamilyMember(Contract):
     birth_date: str | None = None
     consent_at: datetime
     created_at: datetime
-    active_coverage_count: int = 0
+    active_coverage_count: int | None = None

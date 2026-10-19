@@ -1,0 +1,127 @@
+[
+  {
+    "insurer_id": "cn-insurer-pingan",
+    "legal_entity_name": "Ping An Insurance (Group) Company of China, Ltd.",
+    "brand_name": "Ping An",
+    "original_local_name": "中国平安保险（集团）股份有限公司",
+    "country": "CN",
+    "entity_type": "insurance_group",
+    "parent_company": null,
+    "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
+    "license_reference": "NFRA-B0002H111000001",
+    "licensing_verification_status": "VERIFIED",
+    "official_website": "https://www.pingan.com",
+    "business_category": "Composite Financial & Insurance Group (Life, Health, Property & Casualty, Pension)",
+    "public_customer_service_contact": "95511",
+    "official_claim_contact": "95511",
+    "official_claim_portal": "https://www.pingan.com/claims",
+    "brand_asset_ids": [
+      "asset-cn-insurer-pingan-primary"
+    ],
+    "source_references": [
+      "CN-SRC-PINGAN",
+      "CN-SRC-NFRA"
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "insurer_id": "cn-insurer-picc",
+    "legal_entity_name": "The People's Insurance Company (Group) of China Limited",
+    "brand_name": "PICC",
+    "original_local_name": "中国人民保险集团股份有限公司",
+    "country": "CN",
+    "entity_type": "insurance_group",
+    "parent_company": null,
+    "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
+    "license_reference": "NFRA-B0003H111000001",
+    "licensing_verification_status": "VERIFIED",
+    "official_website": "https://www.picc.com",
+    "business_category": "Property & Casualty, Health, Life Insurance Group",
+    "public_customer_service_contact": "95518",
+    "official_claim_contact": "95518",
+    "official_claim_portal": "https://www.picc.com/claims",
+    "brand_asset_ids": [
+      "asset-cn-insurer-picc-primary"
+    ],
+    "source_references": [
+      "CN-SRC-PICC",
+      "CN-SRC-NFRA"
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "insurer_id": "cn-insurer-chinalife",
+    "legal_entity_name": "China Life Insurance (Group) Company",
+    "brand_name": "China Life",
+    "original_local_name": "中国人寿保险（集团）公司",
+    "country": "CN",
+    "entity_type": "insurance_group",
+    "parent_company": null,
+    "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
+    "license_reference": "NFRA-B0005H111000001",
+    "licensing_verification_status": "VERIFIED",
+    "official_website": "https://www.chinalife.com.cn",
+    "business_category": "Life Insurance, Health Insurance, Pension, Asset Management",
+    "public_customer_service_contact": "95519",
+    "official_claim_contact": "95519",
+    "official_claim_portal": "https://www.chinalife.com.cn/service/claims",
+    "brand_asset_ids": [
+      "asset-cn-insurer-chinalife-primary"
+    ],
+    "source_references": [
+      "CN-SRC-CHINALIFE",
+      "CN-SRC-NFRA"
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "insurer_id": "cn-insurer-cpic",
+    "legal_entity_name": "China Pacific Insurance (Group) Co., Ltd.",
+    "brand_name": "CPIC",
+    "original_local_name": "中国太平洋保险（集团）股份有限公司",
+    "country": "CN",
+    "entity_type": "insurance_group",
+    "parent_company": null,
+    "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
+    "license_reference": "NFRA-B0006H111000001",
+    "licensing_verification_status": "VERIFIED",
+    "official_website": "https://www.cpic.com.cn",
+    "business_category": "Life, Property & Casualty, Health Insurance",
+    "public_customer_service_contact": "95500",
+    "official_claim_contact": "95500",
+    "official_claim_portal": "https://www.cpic.com.cn/claims",
+    "brand_asset_ids": [
+      "asset-cn-insurer-cpic-primary"
+    ],
+    "source_references": [
+      "CN-SRC-CPIC",
+      "CN-SRC-NFRA"
+    ],
+    "verification_status": "VERIFIED"
+  },
+  {
+    "insurer_id": "cn-platform-lxbx",
+    "legal_entity_name": "Ping An Pension Insurance Co., Ltd. (Underwriter for Foreign Student Scheme)",
+    "brand_name": "Comprehensive Insurance for Foreigners Staying in China",
+    "original_local_name": "平安养老保险股份有限公司（来华留学生综合医疗保险服务平台）",
+    "country": "CN",
+    "entity_type": "student_insurance_platform",
+    "parent_company": "Ping An Insurance (Group) Company of China, Ltd.",
+    "regulatory_authority": "National Financial Regulatory Administration (NFRA) & Ministry of Education",
+    "license_reference": "NFRA-B0018H211000001",
+    "licensing_verification_status": "VERIFIED",
+    "official_website": "https://www.lxbx.net",
+    "business_category": "National Foreign Student Insurance & Group Pension",
+    "public_customer_service_contact": "400-810-5119",
+    "official_claim_contact": "400-810-5119 (Ext 1)",
+    "official_claim_portal": "https://www.lxbx.net/claims.html",
+    "brand_asset_ids": [
+      "asset-cn-platform-lxbx-primary"
+    ],
+    "source_references": [
+      "CN-SRC-LXBX",
+      "CN-SRC-SZU"
+    ],
+    "verification_status": "VERIFIED"
+  }
+]

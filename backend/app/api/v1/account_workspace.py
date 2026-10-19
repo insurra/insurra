@@ -424,43 +424,109 @@ def completeness(
                 suggested_doc=requirement.suggested_doc,
             )
         )
+    if task == "coverage_continuity":
+        continuity_fields = {
+            "arrival_date": "Declared period start date",
+            "visa_expiry_date": "Declared period end date",
+            "coverage_start_date": "Policy coverage start date",
+            "coverage_end_date": "Policy coverage end date",
+        }
+        existing_keys = {item.field_key for item in items}
+        for key, label in continuity_fields.items():
+            if key in existing_keys:
+                continue
+            status, value, row = _field_value(key, profile, fields)
+            items.append(
+                AccountCompletenessItem(
+                    field_key=key,
+                    label=label,
+                    status=status,
+                    value=value,
+                    source_type=row.source_type if row else ("USER_PROVIDED" if value else None),
+                    document_id=row.document_id if row else None,
+                    source_page=row.source_page if row else None,
+                    suggested_doc=None,
+                )
+            )
     ready = sum(
         item.status in {CompletenessStatus.FOUND, CompletenessStatus.NOT_APPLICABLE}
         for item in items
     )
-    visa_gap = None
-    rule = next((item for item in country.rules if item.kind == "visa_coverage"), None)
-    if rule and profile.occupation.value == "STUDENT" and task == "visa_cover":
+    continuity = None
+    rule = next(
+        (
+            item
+            for item in country.rules
+            if item.kind == "coverage_continuity"
+            and (
+                not item.applicability.occupation
+                or profile.occupation in item.applicability.occupation
+            )
+            and (
+                not item.applicability.residence_context
+                or profile.residence_context in item.applicability.residence_context
+            )
+        ),
+        None,
+    )
+    if task == "coverage_continuity":
         by_key = {item.field_key: item for item in items}
         needed = ("arrival_date", "visa_expiry_date", "coverage_start_date", "coverage_end_date")
-        if not all(
+        dates_available = all(
             key in by_key and by_key[key].status == CompletenessStatus.FOUND for key in needed
-        ):
-            visa_gap = AccountVisaGap(
-                status="NEEDS_VERIFICATION",
-                explanation="Tanggal yang diperlukan belum lengkap atau belum terverifikasi.",
-                source_url=rule.source_url,
-                checked_at=rule.checked_at.isoformat() if rule.checked_at else None,
-                verification_status=rule.verification_status,
+        )
+        rule_verified = bool(
+            rule
+            and rule.verification_status.value == "VERIFIED"
+            and country.manifest.verification_status.value == "VERIFIED"
+            and rule.source_url
+            and rule.checked_at
+        )
+        if not dates_available:
+            continuity = AccountVisaGap(
+                status="UNABLE_TO_DETERMINE",
+                explanation=(
+                    "Unable to determine continuity because confirmed policy and period dates "
+                    "are incomplete."
+                ),
+                source_url=rule.source_url if rule else None,
+                checked_at=rule.checked_at.isoformat() if rule and rule.checked_at else None,
+                verification_status=rule.verification_status
+                if rule
+                else country.manifest.verification_status,
             )
         else:
             arrival = date.fromisoformat(str(by_key["arrival_date"].value))
             visa_end = date.fromisoformat(str(by_key["visa_expiry_date"].value))
             cover_start = date.fromisoformat(str(by_key["coverage_start_date"].value))
             cover_end = date.fromisoformat(str(by_key["coverage_end_date"].value))
-            gap = max((cover_start - arrival).days, 0) + max((visa_end - cover_end).days, 0)
-            visa_gap = AccountVisaGap(
-                status="GAP_FOUND" if gap else "PASS",
+            covered_start = max(arrival, cover_start)
+            covered_end = min(visa_end, cover_end)
+            if covered_start > covered_end:
+                gap = (visa_end - arrival).days + 1
+            else:
+                gap = (covered_start - arrival).days + (visa_end - covered_end).days
+            continuity = AccountVisaGap(
+                status=(
+                    "POTENTIAL_COVERAGE_GAP"
+                    if gap and rule_verified
+                    else "DATE_DIFFERENCE_DETECTED"
+                    if gap
+                    else "NO_DATE_DIFFERENCE"
+                ),
+                requirement_status="VERIFIED" if rule_verified else "NEEDS_VERIFICATION",
                 gap_days=gap,
                 explanation=(
-                    f"Potensi jeda perlindungan {gap} hari. "
-                    "Konfirmasi dengan penyedia dan sumber resmi."
+                    f"A {gap}-day difference was detected between the declared period "
+                    "and policy dates."
                     if gap
-                    else "Tanggal perlindungan mencakup interval yang diperiksa."
+                    else "No date difference was detected for the dates provided."
                 ),
-                source_url=rule.source_url,
-                checked_at=rule.checked_at.isoformat() if rule.checked_at else None,
-                verification_status=rule.verification_status,
+                source_url=rule.source_url if rule else None,
+                checked_at=rule.checked_at.isoformat() if rule and rule.checked_at else None,
+                verification_status=rule.verification_status
+                if rule
+                else country.manifest.verification_status,
             )
     return AccountCompleteness(
         task_code=task,
@@ -469,7 +535,8 @@ def completeness(
         total_count=len(items),
         ready_pct=round(ready * 100 / len(items)) if items else 0,
         items=items,
-        visa_gap=visa_gap,
+        visa_gap=continuity,
+        coverage_continuity=continuity,
         kb_version=country.manifest.version,
         verification_status=country.resources.required_fields.verification_status,
     )
@@ -579,6 +646,7 @@ def list_policies(db: DB, account: ActiveAccount):
             start_date=row.start_date,
             end_date=row.end_date,
             status=_policy_status(row.end_date),
+            evidence_status="SELF_REPORTED" if row.document_id is None else "NEEDS_REVIEW",
             created_at=row.created_at,
         )
         for row in rows
@@ -640,6 +708,7 @@ def get_policy(policy_id: UUID, db: DB, account: ActiveAccount):
         start_date=row.start_date,
         end_date=row.end_date,
         status=_policy_status(row.end_date),
+        evidence_status="SELF_REPORTED" if row.document_id is None else "NEEDS_REVIEW",
         created_at=row.created_at,
         benefits=benefits,
         exclusions=exclusions,
@@ -666,7 +735,7 @@ def list_family_members(db: DB, account: ActiveAccount):
             birth_date=row.birth_date,
             consent_at=row.consent_at,
             created_at=row.created_at,
-            active_coverage_count=0,
+            active_coverage_count=None,
         )
         for row in rows
     ]
@@ -700,7 +769,7 @@ def add_family_member(body: FamilyMemberCreate, db: DB, account: ActiveAccount):
         birth_date=member.birth_date,
         consent_at=member.consent_at,
         created_at=member.created_at,
-        active_coverage_count=0,
+        active_coverage_count=None,
     )
 
 

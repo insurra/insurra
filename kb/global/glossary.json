@@ -1,0 +1,155 @@
+[
+  {
+    "term_id": "term-deductible",
+    "category": "Cost Sharing",
+    "simplified_chinese": "免赔额",
+    "indonesian": "Deductible (Pengurang Risiko)",
+    "english_display": "Deductible",
+    "definition_en": "The predetermined amount of eligible expenses that the policyholder must pay out of pocket before the insurer begins paying benefits.",
+    "definition_id": "Jumlah biaya awal yang harus dibayar oleh pemegang polis sendiri sebelum perusahaan asuransi mulai membayar manfaat klaim.",
+    "definition_zh": "在保险公司按约定比例赔付前，由被保险人自行承担的法定或合同约定免赔金额。",
+    "country_specific_notes": {
+      "CN": "In China international student insurance (lxbx.net), outpatient medical has an annual deductible of RMB 650, and inpatient has an incident deductible of RMB 650.",
+      "ID": "In Indonesian commercial health insurance, deductibles are often applied to high-tier plans to lower monthly premiums (e.g. IDR 10jt to 25jt per year)."
+    },
+    "related_terms": [
+      "term-copayment",
+      "term-coinsurance",
+      "term-out-of-pocket"
+    ],
+    "authoritative_source": "NFRA Insurance Terms Standard & OJK Financial Consumer Dictionary"
+  },
+  {
+    "term_id": "term-copayment",
+    "category": "Cost Sharing",
+    "simplified_chinese": "自付比例 / 自负比例",
+    "indonesian": "Kopembayaran (Copayment)",
+    "english_display": "Copayment",
+    "definition_en": "A fixed dollar amount or percentage that the insured person pays for a covered healthcare service after the deductible.",
+    "definition_id": "Jumlah tetap atau persentase tertentu yang dibayar oleh peserta asuransi setiap kali menerima layanan medis yang dijamin.",
+    "definition_zh": "被保险人在获得保险责任范围内的医疗服务时，自行按比例或固定金额分摊支付的医疗费用。",
+    "country_specific_notes": {
+      "CN": "In mainland China public healthcare, patients pay a statutory copayment percentage depending on the hospital tier (Class 1, 2, or 3).",
+      "ID": "In Indonesian private health insurance, copayment typically ranges from 10% to 20% on specific outpatient or pharmacy claims."
+    },
+    "related_terms": [
+      "term-deductible",
+      "term-coinsurance"
+    ],
+    "authoritative_source": "NFRA and OJK Consumer Protection Glossary"
+  },
+  {
+    "term_id": "term-preexisting",
+    "category": "Underwriting and Exclusions",
+    "simplified_chinese": "既往症",
+    "indonesian": "Kondisi yang Sudah Ada Sebelumnya (Pre-existing Condition)",
+    "english_display": "Pre-existing Condition",
+    "definition_en": "A medical condition, injury, or illness diagnosed, treated, or exhibiting known symptoms prior to policy effective date.",
+    "definition_id": "Kondisi medis, cedera, atau penyakit yang telah terdiagnosis, diobati, atau menunjukkan gejala sebelum tanggal berlakunya polis asuransi.",
+    "definition_zh": "在保险合同生效日前已由医生明确确诊、接受过治疗，或已有明显临床症状的既往疾病或健康损害。",
+    "country_specific_notes": {
+      "CN": "Ping An international student insurance explicitly excludes all pre-existing conditions and congenital diseases diagnosed prior to registration.",
+      "ID": "BPJS Kesehatan does NOT exclude pre-existing conditions, while commercial Indonesian private insurers enforce waiting periods or underwriting exclusions."
+    },
+    "related_terms": [
+      "term-waiting-period",
+      "term-underwriting"
+    ],
+    "authoritative_source": "Insurance Law of the PRC Article 16 & Indonesian Insurance Code"
+  },
+  {
+    "term_id": "term-waiting-period",
+    "category": "Policy Limitations",
+    "simplified_chinese": "等待期 / 观察期",
+    "indonesian": "Masa Tunggu (Waiting Period)",
+    "english_display": "Waiting Period",
+    "definition_en": "The period of time after policy inception during which benefits are not payable for specified medical events or illnesses.",
+    "definition_id": "Jangka waktu tertentu setelah polis mulai berlaku di mana manfaat asuransi belum dapat diklaim untuk penyakit tertentu.",
+    "definition_zh": "自保险合同生效日起计算的一定期间（通常为30天至1年），在此期间内发生的非意外疾病，保险公司不承担给付责任。",
+    "country_specific_notes": {
+      "CN": "China commercial health insurance typically applies a 30-day waiting period for illness and 90 to 180 days for critical illnesses. Accidental injuries have 0 waiting period.",
+      "ID": "Indonesian health insurance enforces a 30-day waiting period for general illness and 12-month waiting period for 18 specific illnesses (penyakit khusus)."
+    },
+    "related_terms": [
+      "term-preexisting",
+      "term-exclusion"
+    ],
+    "authoritative_source": "NFRA Product Disclosure Standards & POJK 23/POJK.05/2015"
+  },
+  {
+    "term_id": "term-cashless",
+    "category": "Claims and Settlement",
+    "simplified_chinese": "直付 / 无感支付",
+    "indonesian": "Cashless (Pembayaran Nontunai Langsung)",
+    "english_display": "Cashless Direct Billing",
+    "definition_en": "A payment facility where the hospital bills the insurer or third-party administrator directly without the patient paying out of pocket first.",
+    "definition_id": "Fasilitas di mana rumah sakit rekanan menagihkan biaya perawatan langsung kepada perusahaan asuransi atau TPA tanpa pasien harus membayar tunai terlebih dahulu.",
+    "definition_zh": "被保险人在定点医疗机构就医时，属于保险责任范围内的费用由保险公司直接与医疗机构结算，患者无需先行垫付资金。",
+    "country_specific_notes": {
+      "CN": "In China, basic social health insurance uses real-time direct settlement via the Digital Medical Insurance Card (医保电子凭证). Commercial cashless is common in high-end international wings.",
+      "ID": "In Indonesia, JKN BPJS Kesehatan operates entirely cashless with SEP at partner hospitals. Commercial insurers provide cashless cards through TPAs like AdMedika."
+    },
+    "related_terms": [
+      "term-reimbursement",
+      "term-third-party-administrator"
+    ],
+    "authoritative_source": "NHSA Direct Settlement Protocol & AAJI Cashless Standards"
+  },
+  {
+    "term_id": "term-reimbursement",
+    "category": "Claims and Settlement",
+    "simplified_chinese": "报销 / 垫付后理赔",
+    "indonesian": "Reimbursement (Penggantian Klaim)",
+    "english_display": "Reimbursement",
+    "definition_en": "The claim method where the policyholder settles medical bills directly with the provider, then submits receipts and medical evidence to the insurer for compensation.",
+    "definition_id": "Metode klaim di mana tertanggung membayar sendiri seluruh tagihan di rumah sakit terlebih dahulu, kemudian mengajukan kuitansi asli kepada penanggung untuk penggantian.",
+    "definition_zh": "被保险人自行先向医疗机构全额垫付费用，治疗结束后持发票、明细和病历向保险公司申请审核给付已发生的合理费用。",
+    "country_specific_notes": {
+      "CN": "Ping An international student insurance uses the reimbursement model: students pay the hospital, obtain official fapiao, and submit online via lxbx.net.",
+      "ID": "Used for non-partner hospitals or when cashless card facilities are offline, requiring original stamped kwitansi and doctor's resume medis."
+    },
+    "related_terms": [
+      "term-cashless",
+      "term-claim-evidence"
+    ],
+    "authoritative_source": "NFRA and OJK Consumer Protection Rules"
+  },
+  {
+    "term_id": "term-fapiao",
+    "category": "Document Taxonomy",
+    "simplified_chinese": "医疗收费发票",
+    "indonesian": "Faktur Medis Resmi (Fapiao Tiongkok)",
+    "english_display": "Official Medical Invoice (Fapiao)",
+    "definition_en": "The state-certified fiscal electronic or paper invoice issued by licensed hospitals in China, containing national fiscal verification codes and official seal.",
+    "definition_id": "Faktur keuangan resmi terverifikasi yang diterbitkan oleh rumah sakit berlisensi di Tiongkok dengan stempel fiskal dan kode verifikasi nasional.",
+    "definition_zh": "由国家财政部和税务总局统一监制、由公立医疗机构出具的具有法定效力的医疗门急诊或住院专用财政收费凭据。",
+    "country_specific_notes": {
+      "CN": "Mandatory proof for all insurance reimbursement in mainland China. Electronic fapiao (电子票据) can be verified on official provincial fiscal portals.",
+      "ID": "Equivalent in Indonesia is Kuitansi Resmi Rumah Sakit bermeterai dengan stempel kasir dan rincian biaya resmi."
+    },
+    "related_terms": [
+      "term-claim-evidence",
+      "term-reimbursement"
+    ],
+    "authoritative_source": "Ministry of Finance of the PRC Hospital Fiscal Invoice Standards"
+  },
+  {
+    "term_id": "term-referral",
+    "category": "Care Pathways",
+    "simplified_chinese": "转诊 / 双向转诊",
+    "indonesian": "Sistem Rujukan Berjenjang",
+    "english_display": "Tiered Referral System",
+    "definition_en": "A structured clinical coordination system where patients must be initially examined by primary healthcare providers before accessing specialized hospital care.",
+    "definition_id": "Sistem koordinasi pelayanan kesehatan di mana pasien wajib diperiksa terlebih dahulu di fasilitas kesehatan tingkat pertama sebelum dirujuk ke rumah sakit spesialis.",
+    "definition_zh": "按照分级诊疗原则，患者就诊应首先在基层社区医疗卫生机构首诊，确因病情需要再由全科医师开具转诊单上转至二级或三级综合医院。",
+    "country_specific_notes": {
+      "CN": "Mainland China promotes hierarchical diagnosis and treatment (分级诊疗) via Community Health Centers (社康中心) with higher reimbursement rates for local primary care.",
+      "ID": "In Indonesian JKN, tiered referral (FKTP to FKRTL) is legally mandatory; specialist visits without valid electronic referral are completely non-reimbursable except for emergency room entries."
+    },
+    "related_terms": [
+      "term-primary-care",
+      "term-specialist"
+    ],
+    "authoritative_source": "NHSA Graded Diagnosis Guideline & Permenkes No. 001 Tahun 2012"
+  }
+]

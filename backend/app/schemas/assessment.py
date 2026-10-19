@@ -1,4 +1,5 @@
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import Field
 
@@ -36,6 +37,10 @@ class CoverageNeed(Contract):
 
 
 class AssessmentStatus(StrEnum):
+    UNABLE_TO_DETERMINE = "UNABLE_TO_DETERMINE"
+    NO_DATE_DIFFERENCE = "NO_DATE_DIFFERENCE"
+    DATE_DIFFERENCE_DETECTED = "DATE_DIFFERENCE_DETECTED"
+    POTENTIAL_COVERAGE_GAP = "POTENTIAL_COVERAGE_GAP"
     PASS = "PASS"
     GAP_FOUND = "GAP_FOUND"
     NEEDS_VERIFICATION = "NEEDS_VERIFICATION"
@@ -45,6 +50,7 @@ class AssessmentStatus(StrEnum):
 class VisaCoverageAssessment(Contract):
     applicable: bool
     assessment_status: AssessmentStatus
+    requirement_status: Literal["VERIFIED", "NEEDS_VERIFICATION"] = "NEEDS_VERIFICATION"
     gap_days: int | None = Field(default=None, ge=0)
     gap_periods: list[DateRange]
     explanation: str

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
+  <rect width="320" height="80" rx="8" fill="#FFFFFF" />
+  <circle cx="45" cy="40" r="26" fill="#005BAC" />
+  <path d="M35 30 L55 30 L55 50 L35 50 Z" fill="#FFFFFF" />
+  <text x="85" y="47" font-family="Arial, 'PingFang SC', sans-serif" font-size="24" font-weight="bold" fill="#005BAC">中国太保</text>
+  <text x="85" y="65" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#333333">CHINA PACIFIC INSURANCE</text>
+</svg>
