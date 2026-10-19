@@ -25,7 +25,16 @@ type SessionContextValue = {
   error: string | null;
   selectPersona: (id: string) => Promise<boolean>;
   setConsent: (value: boolean) => Promise<boolean>;
-  getAudit: (eventType?: string) => Promise<S["AuditEvent"][]>;
+  getAudit: (
+    filter?:
+      | string
+      | {
+          event_type?: string;
+          type?: "answer" | "compare" | "action" | "guardrail" | "deletion" | "consent";
+          limit?: number;
+          offset?: number;
+        },
+  ) => Promise<S["AuditEvent"][]>;
   clearSession: () => void;
 };
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -136,16 +145,25 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const getAudit = useCallback(
-    async (eventType?: string) => {
+    async (
+      filter?:
+        | string
+        | {
+            event_type?: string;
+            type?: "answer" | "compare" | "action" | "guardrail" | "deletion" | "consent";
+            limit?: number;
+            offset?: number;
+          },
+    ) => {
       if (!token.current) return [];
       try {
-        return await api.get(
-          "/api/v1/audit",
-          token.current,
-          eventType
-            ? new URLSearchParams({ event_type: eventType })
-            : undefined,
-        );
+        const query =
+          typeof filter === "string"
+            ? filter
+              ? new URLSearchParams({ event_type: filter })
+              : undefined
+            : filter;
+        return await api.get("/api/v1/audit", token.current, query);
       } catch (err) {
         if (err instanceof ApiClientError && err.status === 401) clearSession();
         throw err;
