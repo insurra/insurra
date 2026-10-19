@@ -604,7 +604,7 @@ function ActionsPageContent() {
       const created = await api.request("post", "/api/v1/actions", {
         headers: { "X-Demo-Session": storedToken },
         body: {
-          action_type: "submit_claim_sandbox",
+          action_type: "claim_submit",
           title: "Kirim klaim ke penyedia (sandbox) — Lanjutan Formulir Klaim",
           reason:
             "Dibuat dari formulir klaim yang telah selesai untuk dikirim ke penyedia (sandbox)",
@@ -612,6 +612,10 @@ function ActionsPageContent() {
           permission_level: "L2",
           payload: {
             ...(action.payload ?? {}),
+            source_claim_form_action_id: action.id,
+            claim_form_status: "COMPLETED",
+            sandbox: true,
+            provider_sandbox_label: `${String(action.payload?.provider ?? "Penyedia Asuransi")} — Sandbox – bukan penyedia nyata`,
             summary_action: "Klaim akan dikirim ke penyedia (sandbox)",
           } as unknown as Record<string, never>,
         },
@@ -621,7 +625,7 @@ function ActionsPageContent() {
       setFeedback({
         type: "success",
         message:
-          "Tindakan lanjutan 'Kirim ke penyedia (sandbox)' (Tingkat L2) berhasil dibuat dan masuk ke tab Menunggu.",
+          "Tindakan baru 'Kirim klaim ke penyedia (sandbox)' (Tingkat L2 · SANDBOX) berhasil dibuat dari formulir klaim yang telah selesai.",
       });
       setRevision((r) => r + 1);
     } catch (err) {
@@ -629,6 +633,73 @@ function ActionsPageContent() {
         err instanceof Error ? err.message : "Gagal membuat tindakan pengiriman sandbox.",
       );
       setPending(false);
+    }
+  };
+
+  const handleAdvanceSandboxStatus = async (claimRef: string) => {
+    const storedToken =
+      typeof window !== "undefined"
+        ? window.sessionStorage.getItem("insurra.demo-session")
+        : null;
+    if (!storedToken || !claimRef) return;
+
+    setPending(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `${config.apiBaseUrl}/api/v1/sandbox/insurer/claims/${encodeURIComponent(claimRef)}?advance=true`,
+        {
+          headers: { "X-Demo-Session": storedToken },
+        },
+      );
+      if (res.ok) {
+        const data = (await res.json()) as {
+          claim_ref: string;
+          status: string;
+          claim_case_status_label?: string;
+        };
+        setFeedback({
+          type: "success",
+          message: `[SANDBOX] Status klaim ${data.claim_ref} diperbarui menjadi: ${data.claim_case_status_label ?? data.status}.`,
+        });
+        setRevision((r) => r + 1);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Gagal memperbarui status simulasi sandbox.",
+      );
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const handleExportSandboxLogs = async (format: "json" | "csv") => {
+    const storedToken =
+      typeof window !== "undefined"
+        ? window.sessionStorage.getItem("insurra.demo-session")
+        : null;
+    if (!storedToken) return;
+
+    try {
+      const res = await fetch(
+        `${config.apiBaseUrl}/api/v1/sandbox/insurer/logs?format=${format}`,
+        {
+          headers: { "X-Demo-Session": storedToken },
+        },
+      );
+      if (!res.ok) return;
+      const text = await res.text();
+      triggerBrowserDownload(
+        `sandbox-execution-logs.${format}`,
+        text,
+        format === "csv" ? "text/csv;charset=utf-8" : "application/json;charset=utf-8",
+      );
+      setFeedback({
+        type: "success",
+        message: `[SANDBOX] Log operasi sandbox (${format.toUpperCase()}) berhasil diekspor (memuat timestamp, action_id, dan claim_ref tanpa data pribadi mentah).`,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal mengekspor log sandbox.");
     }
   };
 
@@ -701,6 +772,28 @@ function ActionsPageContent() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="btn-export-sandbox-json"
+            disabled={pending}
+            onClick={() => void handleExportSandboxLogs("json")}
+            className="text-xs border-emerald-300 text-emerald-900 hover:bg-emerald-50 flex items-center gap-1.5"
+          >
+            <Download size={13} />
+            Ekspor log sandbox (JSON)
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="btn-export-sandbox-csv"
+            disabled={pending}
+            onClick={() => void handleExportSandboxLogs("csv")}
+            className="text-xs border-emerald-300 text-emerald-900 hover:bg-emerald-50 flex items-center gap-1.5"
+          >
+            <Download size={13} />
+            Ekspor log sandbox (CSV)
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -944,6 +1037,9 @@ function ActionsPageContent() {
             {filteredItems.map((item) => {
               const isSelected = selectedAction?.id === item.id;
               const isL2 = item.permission_level === "L2";
+              const isSandboxAction =
+                item.action_type === "claim_submit" ||
+                item.action_type === "submit_claim_sandbox";
               const meta = ACTION_TYPE_META[item.action_type] ?? {
                 categoryLabel: item.action_type,
                 title: item.title ?? item.action_type,
@@ -972,12 +1068,22 @@ function ActionsPageContent() {
                       : "hover:bg-slate-50"
                   }`}
                 >
-                  {/* Top Badges: Type Icon + Label, Permission Level, Status */}
+                  {/* Top Badges: Type Icon + Label, SANDBOX Badge, Permission Level, Status */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800">
-                      <TypeIcon size={13} className="text-emerald-700 shrink-0" />
-                      <span>{meta.categoryLabel}</span>
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800">
+                        <TypeIcon size={13} className="text-emerald-700 shrink-0" />
+                        <span>{meta.categoryLabel}</span>
+                      </span>
+                      {isSandboxAction && (
+                        <span
+                          data-testid="sandbox-badge"
+                          className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-indigo-900 text-white tracking-wider uppercase"
+                        >
+                          SANDBOX
+                        </span>
+                      )}
+                    </div>
 
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span
@@ -1058,6 +1164,15 @@ function ActionsPageContent() {
               <div className="p-5 bg-slate-50/70 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
+                    {(selectedAction.action_type === "claim_submit" ||
+                      selectedAction.action_type === "submit_claim_sandbox") && (
+                      <span
+                        data-testid="detail-sandbox-badge"
+                        className="text-xs font-extrabold px-2.5 py-0.5 rounded bg-indigo-900 text-white tracking-wider uppercase"
+                      >
+                        SANDBOX
+                      </span>
+                    )}
                     <span
                       className={`text-xs font-bold px-2.5 py-0.5 rounded uppercase ${
                         selectedAction.permission_level === "L2"
@@ -1167,7 +1282,7 @@ function ActionsPageContent() {
                   </div>
                 )}
 
-                {/* US-10-03 Execution Output & Artifact Controls when COMPLETED */}
+                {/* US-10-03 & US-10-04 Execution Output & Artifact Controls when COMPLETED */}
                 {selectedAction.status === "COMPLETED" && (
                   <div
                     data-testid="execution-artifacts-panel"
@@ -1257,10 +1372,8 @@ function ActionsPageContent() {
                       </div>
                     )}
 
-                    {/* 3. Formulir Klaim / Kirim Klaim (PDF Ringkasan + Daftar Lampiran + Kirim ke penyedia sandbox) */}
-                    {(selectedAction.action_type === "draft_claim_form" ||
-                      selectedAction.action_type === "claim_submit" ||
-                      selectedAction.action_type === "submit_claim_sandbox") && (
+                    {/* 3. Formulir Klaim (PDF Ringkasan + Daftar Lampiran + Kirim ke penyedia sandbox) */}
+                    {selectedAction.action_type === "draft_claim_form" && (
                       <div className="space-y-3 text-xs">
                         <p className="text-emerald-900">
                           Ringkasan klaim PDF beserta daftar lampiran telah dibuat dengan nomor polis tersamar (<strong>{String(selectedAction.payload?.policy_number ?? "****1234")}</strong>).
@@ -1290,21 +1403,201 @@ function ActionsPageContent() {
                             <Download size={14} />
                             Unduh PDF Ringkasan Klaim
                           </Button>
-                          {selectedAction.action_type === "draft_claim_form" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              data-testid="btn-create-sandbox-action"
-                              disabled={pending}
-                              onClick={() =>
-                                void handleCreateSandboxSubmissionFromForm(selectedAction)
-                              }
-                              className="text-xs flex items-center gap-1.5 bg-white border-amber-400 text-amber-950 hover:bg-amber-50 font-bold"
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            data-testid="btn-create-sandbox-action"
+                            disabled={pending}
+                            onClick={() =>
+                              void handleCreateSandboxSubmissionFromForm(selectedAction)
+                            }
+                            className="text-xs flex items-center gap-1.5 bg-white border-amber-400 text-amber-950 hover:bg-amber-50 font-bold"
+                          >
+                            <Send size={13} />
+                            Kirim ke penyedia (sandbox)
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 4. Kirim Klaim ke Penyedia (Sandbox) — US-10-04 */}
+                    {(selectedAction.action_type === "claim_submit" ||
+                      selectedAction.action_type === "submit_claim_sandbox") && (
+                      <div
+                        data-testid="sandbox-submission-result"
+                        className="p-4 rounded-xl bg-white border-2 border-indigo-200 space-y-3.5 text-xs"
+                      >
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded bg-indigo-900 text-white tracking-wider uppercase">
+                              SANDBOX
+                            </span>
+                            <span className="font-bold text-slate-900">
+                              {String(
+                                selectedExecResult.provider_label ??
+                                  selectedAction.payload?.provider_label ??
+                                  "Sandbox – bukan penyedia nyata",
+                              )}
+                            </span>
+                          </div>
+                          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900">
+                            Status Awal: {String(selectedExecResult.initial_status ?? selectedExecResult.status ?? "Diterima")}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                            <div className="text-[10px] uppercase font-bold text-slate-500">
+                              Nomor Klaim Sandbox (claim_ref)
+                            </div>
+                            <div
+                              data-testid="sandbox-claim-ref"
+                              className="text-sm font-extrabold font-mono text-indigo-950 mt-0.5"
                             >
-                              <Send size={13} />
-                              Kirim ke penyedia (sandbox)
-                            </Button>
-                          )}
+                              {String(selectedExecResult.claim_ref ?? "-")}
+                            </div>
+                          </div>
+                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                            <div className="text-[10px] uppercase font-bold text-slate-500">
+                              Status Kasus Klaim
+                            </div>
+                            <div
+                              data-testid="sandbox-case-status"
+                              className="text-sm font-extrabold text-emerald-800 mt-0.5"
+                            >
+                              {String(
+                                selectedExecResult.claim_case_status_label ??
+                                  selectedExecResult.status ??
+                                  "Diajukan",
+                              )}
+                            </div>
+                          </div>
+                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                            <div className="text-[10px] uppercase font-bold text-slate-500">
+                              Waktu Pengiriman
+                            </div>
+                            <div className="text-xs font-semibold text-slate-800 mt-0.5">
+                              {formatDateTimeId(
+                                String(
+                                  selectedExecResult.submitted_at ??
+                                    selectedAction.executed_at ??
+                                    "",
+                                ),
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Simulated Timeline (Diajukan -> Diproses -> Disetujui / Ditolak) */}
+                        {Array.isArray(selectedExecResult.status_timeline) && (
+                          <div className="p-3 rounded-lg bg-indigo-50/60 border border-indigo-200 space-y-2">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <span className="font-bold text-indigo-950">
+                                Simulasi Progres Status Sandbox (≤ 1 menit):
+                              </span>
+                              {typeof selectedExecResult.claim_ref === "string" && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  data-testid="btn-advance-sandbox-status"
+                                  disabled={pending}
+                                  onClick={() =>
+                                    void handleAdvanceSandboxStatus(
+                                      String(selectedExecResult.claim_ref),
+                                    )
+                                  }
+                                  className="h-7 px-2.5 text-[11px] bg-white border-indigo-300 text-indigo-950 hover:bg-indigo-100"
+                                >
+                                  Simulasikan Status Berikutnya (Diajukan → Diproses → Disetujui)
+                                </Button>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              {(
+                                selectedExecResult.status_timeline as Array<
+                                  Record<string, unknown>
+                                >
+                              ).map((stepObj, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-2 rounded bg-white border border-indigo-100 text-[11px]"
+                                >
+                                  <div className="font-bold text-indigo-950">
+                                    {idx + 1}. {String(stepObj.status ?? "-")}
+                                  </div>
+                                  <div className="text-slate-600 mt-0.5">
+                                    {String(stepObj.note ?? "")}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Sent Attachment References (document_id + sha256) */}
+                        {Array.isArray(selectedExecResult.attachments_sent) && (
+                          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+                            <div className="font-bold text-slate-800">
+                              Referensi Lampiran Terkirim (document_id &amp; sha256, tanpa file mentah):
+                            </div>
+                            <ul className="space-y-1 font-mono text-[11px] text-slate-700">
+                              {(
+                                selectedExecResult.attachments_sent as Array<
+                                  Record<string, unknown>
+                                >
+                              ).map((att, idx) => (
+                                <li key={idx} className="break-all">
+                                  • doc_id: {String(att.document_id ?? "-")} | sha256:{" "}
+                                  {String(att.sha256 ?? "-")}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                          <Link
+                            href={`/claims?case_id=${encodeURIComponent(
+                              String(
+                                selectedExecResult.claim_case_id ??
+                                  selectedAction.payload?.claim_case_id ??
+                                  "",
+                              ),
+                            )}&claim_ref=${encodeURIComponent(
+                              String(selectedExecResult.claim_ref ?? ""),
+                            )}`}
+                            data-testid="btn-lihat-kasus"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-indigo-900 text-white text-xs font-bold hover:bg-indigo-950"
+                          >
+                            Lihat kasus <ExternalLink size={13} />
+                          </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleDownloadPdf(selectedAction)}
+                            className="text-xs flex items-center gap-1.5 bg-white"
+                          >
+                            <Download size={13} />
+                            Unduh PDF Ringkasan Klaim
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleExportSandboxLogs("json")}
+                            className="text-xs flex items-center gap-1.5 bg-white border-emerald-400 text-emerald-950"
+                          >
+                            <Download size={13} />
+                            Ekspor log sandbox (JSON)
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleExportSandboxLogs("csv")}
+                            className="text-xs flex items-center gap-1.5 bg-white border-emerald-400 text-emerald-950"
+                          >
+                            <Download size={13} />
+                            Ekspor log sandbox (CSV)
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -1504,9 +1797,17 @@ function ActionsPageContent() {
                     >
                       <div className="flex items-start gap-2.5">
                         <ShieldAlert size={18} className="text-amber-800 shrink-0 mt-0.5" />
-                        <div className="space-y-1 text-xs">
-                          <div className="font-bold text-amber-950 uppercase tracking-wide">
-                            Konfirmasi Tingkat L2 Diperlukan
+                        <div className="space-y-2 text-xs w-full">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <span className="font-bold text-amber-950 uppercase tracking-wide">
+                              Konfirmasi Tingkat L2 Diperlukan
+                            </span>
+                            {(selectedAction.action_type === "claim_submit" ||
+                              selectedAction.action_type === "submit_claim_sandbox") && (
+                              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-indigo-900 text-white tracking-wider uppercase">
+                                SANDBOX – BUKAN PENYEDIA NYATA
+                              </span>
+                            )}
                           </div>
                           <p className="text-amber-900 font-medium">
                             Ringkasan dampak:{" "}
@@ -1517,6 +1818,46 @@ function ActionsPageContent() {
                               )}
                             </strong>
                           </p>
+                          {(selectedAction.action_type === "claim_submit" ||
+                            selectedAction.action_type === "submit_claim_sandbox") && (
+                            <div className="p-3 rounded-lg bg-white border border-amber-200 space-y-1.5 text-slate-800">
+                              <div>
+                                <strong>Penyedia tujuan:</strong>{" "}
+                                {String(
+                                  selectedAction.payload?.provider ??
+                                    "Allianz Care Australia",
+                                )}{" "}
+                                <span className="inline-block px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-950 font-bold text-[10px]">
+                                  Sandbox – bukan penyedia nyata
+                                </span>
+                              </div>
+                              <div>
+                                <strong>Ringkasan isi:</strong> Polis{" "}
+                                {String(selectedAction.payload?.policy_number ?? "****1234")} ·
+                                Diagnosis{" "}
+                                {String(selectedAction.payload?.diagnosis_code ?? "-")} ·
+                                Nominal{" "}
+                                {String(selectedAction.payload?.claim_amount ?? "-")}
+                              </div>
+                              {Array.isArray(selectedAction.payload?.attachments) && (
+                                <div>
+                                  <strong>Daftar lampiran (referensi document_id &amp; sha256):</strong>
+                                  <ul className="list-disc list-inside font-mono text-[11px] text-slate-700 mt-0.5 space-y-0.5">
+                                    {(
+                                      selectedAction.payload?.attachments as Array<
+                                        Record<string, unknown>
+                                      >
+                                    ).map((att, idx) => (
+                                      <li key={idx} className="break-all">
+                                        {String(att.filename ?? att.document_id ?? "-")} (sha256:{" "}
+                                        {String(att.sha256 ?? "-").slice(0, 16)}...)
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-900 pt-1">

@@ -1197,6 +1197,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sandbox/insurer/claims/{claim_ref}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sandbox Claim Status */
+        get: operations["sandbox_claim_status_api_v1_sandbox_insurer_claims__claim_ref__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sandbox/insurer/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sandbox Logs */
+        get: operations["sandbox_logs_api_v1_sandbox_insurer_logs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/home/summary": {
         parameters: {
             query?: never;
@@ -3279,9 +3313,90 @@ export interface components {
             status: string;
             /**
              * Sandbox
+             * @default true
              * @constant
              */
             sandbox: true;
+            /** Action Id */
+            action_id?: string | null;
+            /** Claim Case Id */
+            claim_case_id?: string | null;
+            /**
+             * Claim Case Status
+             * @default SUBMITTED
+             */
+            claim_case_status: string;
+            /**
+             * Claim Case Status Label
+             * @default Diajukan
+             */
+            claim_case_status_label: string;
+            /** Submitted At */
+            submitted_at?: string | null;
+            /**
+             * Provider Label
+             * @default Sandbox – bukan penyedia nyata
+             */
+            provider_label: string;
+            /** Status Timeline */
+            status_timeline?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Rejection Reason */
+            rejection_reason?: string | null;
+        };
+        /** SandboxLogEntry */
+        SandboxLogEntry: {
+            /**
+             * Timestamp
+             * Format: date-time
+             */
+            timestamp: string;
+            /**
+             * Action Id
+             * Format: uuid
+             */
+            action_id: string;
+            /** Claim Case Id */
+            claim_case_id?: string | null;
+            /** Claim Ref */
+            claim_ref: string;
+            /**
+             * Sandbox
+             * @default true
+             * @constant
+             */
+            sandbox: true;
+            /**
+             * Environment Label
+             * @default SANDBOX – Bukan penyedia nyata
+             */
+            environment_label: string;
+            /**
+             * Tool Called
+             * @default submit_claim_sandbox
+             */
+            tool_called: string;
+            /**
+             * Outcome
+             * @default SUCCESS
+             * @enum {string}
+             */
+            outcome: "SUCCESS" | "VALIDATION_FAILED";
+            /** Initial Status */
+            initial_status: string;
+            /** Case Status */
+            case_status: string;
+            /** Case Status Label */
+            case_status_label: string;
+            /** Request Summary */
+            request_summary?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Response Summary */
+            response_summary?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
         };
         /** SavedDecision */
         SavedDecision: {
@@ -12086,6 +12201,200 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SandboxClaimResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    sandbox_claim_status_api_v1_sandbox_insurer_claims__claim_ref__get: {
+        parameters: {
+            query?: {
+                advance?: boolean;
+            };
+            header?: {
+                "x-demo-session"?: string | null;
+            };
+            path: {
+                claim_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SandboxClaimResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    sandbox_logs_api_v1_sandbox_insurer_logs_get: {
+        parameters: {
+            query?: {
+                format?: string;
+            };
+            header?: {
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SandboxLogEntry"][];
                 };
             };
             /** @description Unauthorized */
