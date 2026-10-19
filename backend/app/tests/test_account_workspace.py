@@ -354,3 +354,119 @@ def test_guardrail_highlight_subtypes_and_demo_scenario(client, demo):
     assert expected_subtypes.issubset(found_subtypes)
     assert all(e["category"] == "guardrail" and e["subtype"] for e in guardrail_events)
     assert all("8899001234" not in (e["input_summary"] or "") for e in guardrail_events)
+
+
+def test_action_approve_edit_reject_l2_and_unapproved_guardrail(client, demo):
+    from app.services.approval import payload_sha256
+
+    _, headers = demo("raka")
+    assert (
+        client.put(
+            "/api/v1/consent", headers=headers, json={"processing_consent": True}
+        ).status_code
+        == 200
+    )
+
+    actions_res = client.get("/api/v1/actions?seed_demo=true", headers=headers)
+    assert actions_res.status_code == 200
+    actions_list = actions_res.json()
+    assert len(actions_list) == 3
+
+    l2_action = next(a for a in actions_list if a["permission_level"] == "L2")
+    l1_edit_action = next(a for a in actions_list if a["action_type"] == "draft_message")
+    l1_reject_action = next(a for a in actions_list if a["action_type"] == "create_reminder")
+
+    # 1. Execute PENDING action -> 403 and logs GUARDRAIL_UNAPPROVED_ACTION in SC-11
+    exec_pending = client.post(
+        f"/api/v1/actions/{l2_action['id']}/execute",
+        headers=headers,
+        json={"approved_payload_sha256": "a" * 64},
+    )
+    assert exec_pending.status_code == 403
+    assert exec_pending.json()["code"] == "ACTION_APPROVAL_REQUIRED"
+
+    audit_after_unapproved = client.get("/api/v1/audit", headers=headers).json()
+    assert any(
+        e["event_type"] == "GUARDRAIL_UNAPPROVED_ACTION"
+        and e["subtype"] == "Tindakan tanpa persetujuan diblokir"
+        for e in audit_after_unapproved
+    )
+
+    # 2. L2 action requires confirmed=True; confirmed=False is rejected (422)
+    l2_unconfirmed = client.post(
+        f"/api/v1/actions/{l2_action['id']}/approve",
+        headers=headers,
+        json={"confirmed": False},
+    )
+    assert l2_unconfirmed.status_code == 422
+    assert l2_unconfirmed.json()["code"] == "L2_CONFIRMATION_REQUIRED"
+
+    l2_confirmed = client.post(
+        f"/api/v1/actions/{l2_action['id']}/approve",
+        headers=headers,
+        json={"confirmed": True},
+    )
+    assert l2_confirmed.status_code == 200
+    assert l2_confirmed.json()["status"] == "APPROVED"
+
+    # Once APPROVED, cannot edit or approve again (409)
+    assert (
+        client.post(
+            f"/api/v1/actions/{l2_action['id']}/approve",
+            headers=headers,
+            json={"edited_payload": {"message": "Ubah setelah setuju"}, "confirmed": True},
+        ).status_code
+        == 409
+    )
+
+    # 3. Edit message then approve -> edited payload hash is bound and audit logs the edit
+    edited_payload = {
+        **(l1_edit_action["payload"] or {}),
+        "message": "Pesan telah diubah oleh pengguna sebelum disetujui.",
+    }
+    edit_approve = client.post(
+        f"/api/v1/actions/{l1_edit_action['id']}/approve",
+        headers=headers,
+        json={"edited_payload": edited_payload, "confirmed": True},
+    )
+    assert edit_approve.status_code == 200
+    assert edit_approve.json()["status"] == "APPROVED"
+
+    updated_detail = client.get(f"/api/v1/actions/{l1_edit_action['id']}", headers=headers).json()
+    expected_hash = payload_sha256(edited_payload)
+    assert updated_detail["approved_payload_sha256"] == expected_hash
+    assert (
+        updated_detail["payload"]["message"]
+        == "Pesan telah diubah oleh pengguna sebelum disetujui."
+    )
+
+    # Execution with edited payload hash passes approval check (returns 501 executor boundary)
+    assert (
+        client.post(
+            f"/api/v1/actions/{l1_edit_action['id']}/execute",
+            headers=headers,
+            json={"approved_payload_sha256": expected_hash},
+        ).status_code
+        == 501
+    )
+
+    # 4. Reject with reason "Isi salah" -> status REJECTED and reason saved in action + audit
+    reject_res = client.post(
+        f"/api/v1/actions/{l1_reject_action['id']}/reject",
+        headers=headers,
+        json={"reason": "Isi salah"},
+    )
+    assert reject_res.status_code == 200
+    assert reject_res.json()["status"] == "REJECTED"
+
+    rejected_detail = client.get(
+        f"/api/v1/actions/{l1_reject_action['id']}", headers=headers
+    ).json()
+    assert rejected_detail["status"] == "REJECTED"
+    assert rejected_detail["reason"] == "Isi salah"
+
+    action_audits = client.get("/api/v1/audit?type=action", headers=headers).json()
+    assert any(e["event_type"] == "ACTION_EDITED_AND_APPROVED" for e in action_audits)
+    assert any(
+        e["event_type"] == "ACTION_REJECTED" and e["reason"] == "Isi salah" for e in action_audits
+    )
