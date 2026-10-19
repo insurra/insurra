@@ -26,3 +26,10 @@ The initial `0001` migration is immutable. Phase 1.5 adds revisions `0002` (scop
 Feature owner-bearing tables remain explicitly demo-session scoped. Google authentication adds account identity without silently transferring demo-owned data. Composite foreign keys on extraction-to-document and action-to-claim references prevent crossing sessions even through direct writes. UUID and JSON representations remain portable to SQLite/PostgreSQL; money remains a decimal string. No CREATE ALL, dropping existing tables, or silent database reset is permitted.
 
 Revision 0002 requires an online database for its historical consent backfill. Offline full migration SQL export is unsupported; PostgreSQL table DDL compilation is tested without claiming a live PostgreSQL upgrade.
+
+
+## Workspace storage activation — 19 October 2026
+
+Additive revision 0008 extends existing storage without changing released 0001–0007. `app/models/workspace_state.py` registers five state tables: clause_chunks (owned retained page offsets/hashes, no copied raw text), recommendation_states (rule/subject dismissal/handled), ask_limits (optimistic version and bounded rolling timestamps), chat_sessions (last ten turns only when retention permits), pathway_decisions (short-lived owner/context/KB choice proofs without symptoms). Each shared state row has exactly one account or demo owner; clause offsets reference account-owned documents/coverages/pages with composite foreign keys.
+
+Existing claim_cases, defined in foundation models, gains optional account ownership, comparison/key/payload hash, masked summary and uniqueness; it is never duplicated. Existing action-to-demo-claim relationships remain intact. Reviewed benefits are read from coverage-linked AccountFieldRow values, avoiding a second benefits authority. Retention, document deletion and account deletion invalidate/purge the derived state. All 27 registered table definitions compile identically before/after the responsibility-based naming refactor. No migration or constraint was renamed by that refactor.

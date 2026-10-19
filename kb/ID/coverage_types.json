@@ -1,29 +1,45 @@
 {
   "schema_version": "1.5",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
   "data": [
     {
       "code": "BPJS",
-      "label": "BPJS"
+      "label": "BPJS",
+      "aliases": [
+        "bpjs_card"
+      ]
     },
     {
       "code": "EMPLOYER",
-      "label": "EMPLOYER"
+      "label": "EMPLOYER",
+      "aliases": [
+        "employer_policy",
+        "hr_benefit"
+      ]
     },
     {
       "code": "PERSONAL_HEALTH",
-      "label": "PERSONAL_HEALTH"
+      "label": "PERSONAL_HEALTH",
+      "aliases": [
+        "personal_health"
+      ]
     },
     {
       "code": "TRAVEL",
-      "label": "TRAVEL"
+      "label": "TRAVEL",
+      "aliases": [
+        "travel"
+      ]
     },
     {
       "code": "LIFE",
-      "label": "LIFE"
+      "label": "LIFE",
+      "aliases": [
+        "life"
+      ]
     }
   ]
 }

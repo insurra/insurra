@@ -16,6 +16,7 @@ import {
   Wallet,
   ListChecks,
   BarChart3,
+  Building2,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
@@ -262,13 +263,24 @@ export default function MyProtectionParentPage() {
     },
     {
       title: "Coverage Needs",
-      description: "Protection needs analysis is not available yet.",
-      href: null,
+      description: "Analyze protection requirements, gaps, and mandatory coverage.",
+      href: "/coverage-needs",
       icon: <BarChart3 size={21} />,
       tone: "purple",
       image: "/protection-coverage-checklist.png",
       imageAlt: "",
-      pill: "Not available yet",
+      pill: "Gap analysis ready",
+      pillTone: "success",
+    },
+    {
+      title: "Employer Benefits",
+      description: "Review workplace insurance packages, limits, and deductible overlaps.",
+      href: "/employer-benefits",
+      icon: <Building2 size={21} />,
+      tone: "blue",
+      image: "/protection-documents.png",
+      imageAlt: "",
+      pill: "Group & corporate cover",
       pillTone: "neutral",
     },
     {

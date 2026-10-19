@@ -1,10 +1,11 @@
 """Authenticated profile, consent, completeness and privacy endpoints."""
 
 from datetime import UTC, date, datetime, timedelta
+from typing import Annotated, Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Query
-from sqlalchemy import delete, func, select
+from fastapi import APIRouter, Query, Response
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import DB, KB, ActiveAccount
@@ -17,6 +18,7 @@ from app.models import (
     AccountDocumentRow,
     AccountFieldRow,
     AccountProfileRow,
+    ClaimCaseRow,
     FamilyMemberRow,
 )
 from app.schemas.account_workspace import (
@@ -37,19 +39,28 @@ from app.schemas.account_workspace import (
     FamilyMember,
     FamilyMemberCreate,
 )
+from app.schemas.audit import AuditCategory, AuditEvent
 from app.schemas.common import CompletenessStatus
 from app.schemas.consent import POLICY_VERSION, ConsentPurpose, PurposeConsentUpdate
 from app.schemas.profile import ProfileData, ProfileUpdate, UserProfile
+from app.services.audit_logger import (
+    CATEGORY_EVENT_TYPES,
+    enrich_audit_event,
+    ensure_account_guardrail_events,
+)
+from app.services.policy_guard import PolicyGuard
+from app.services.rules_engine import uncovered_interval
+from app.services.workspace_privacy import purge_content, purge_workspace
 
 router = APIRouter(prefix="/account", tags=["Authenticated workspace"])
 
 
-def audit(db: Session, account_id: UUID, event_type: str, **metadata: str | int | bool) -> None:
+def audit(db: Session, account_id: UUID, event_type: str, **metadata: Any) -> None:
     db.add(
         AccountAuditRow(
             account_id=account_id,
             event_type=event_type,
-            metadata_json=metadata,
+            metadata_json=PolicyGuard().redact_audit_metadata(metadata),
             created_at=datetime.now(UTC),
         )
     )
@@ -163,6 +174,8 @@ def update_consent(body: PurposeConsentUpdate, db: DB, account: ActiveAccount):
             select(AccountDocumentRow).where(AccountDocumentRow.account_id == account.id)
         ):
             document.content = None
+    if not body.granted:
+        purge_content(db, account.id, pages=body.purpose == ConsentPurpose.RETENTION)
     audit(db, account.id, "CONSENT_CHANGED", purpose=body.purpose.value, granted=body.granted)
     db.commit()
     return get_consents(db, account)
@@ -192,6 +205,8 @@ def decide_consents(body: BulkConsentDecision, db: DB, account: ActiveAccount):
                 select(AccountDocumentRow).where(AccountDocumentRow.account_id == account.id)
             ):
                 document.content = None
+    if not all(decisions.values()):
+        purge_content(db, account.id, pages=not decisions[ConsentPurpose.RETENTION.value])
     audit(db, account.id, "CONSENTS_DECIDED", skip=body.skip, **decisions)
     db.commit()
     return get_consents(db, account)
@@ -424,109 +439,60 @@ def completeness(
                 suggested_doc=requirement.suggested_doc,
             )
         )
-    if task == "coverage_continuity":
-        continuity_fields = {
-            "arrival_date": "Declared period start date",
-            "visa_expiry_date": "Declared period end date",
-            "coverage_start_date": "Policy coverage start date",
-            "coverage_end_date": "Policy coverage end date",
-        }
-        existing_keys = {item.field_key for item in items}
-        for key, label in continuity_fields.items():
-            if key in existing_keys:
-                continue
-            status, value, row = _field_value(key, profile, fields)
-            items.append(
-                AccountCompletenessItem(
-                    field_key=key,
-                    label=label,
-                    status=status,
-                    value=value,
-                    source_type=row.source_type if row else ("USER_PROVIDED" if value else None),
-                    document_id=row.document_id if row else None,
-                    source_page=row.source_page if row else None,
-                    suggested_doc=None,
-                )
-            )
     ready = sum(
         item.status in {CompletenessStatus.FOUND, CompletenessStatus.NOT_APPLICABLE}
         for item in items
     )
-    continuity = None
-    rule = next(
-        (
-            item
-            for item in country.rules
-            if item.kind == "coverage_continuity"
-            and (
-                not item.applicability.occupation
-                or profile.occupation in item.applicability.occupation
-            )
-            and (
-                not item.applicability.residence_context
-                or profile.residence_context in item.applicability.residence_context
-            )
-        ),
-        None,
-    )
-    if task == "coverage_continuity":
+    visa_gap = None
+    rule = next((item for item in country.rules if item.kind == "visa_coverage"), None)
+    from app.schemas.actor import Actor
+    from app.services.coverage_matching import visa_assessment
+    from app.services.workspace import coverages
+
+    actor = Actor(actor_type="AUTHENTICATED_ACCOUNT", account_id=account.id)
+    normalized = coverages(db, actor, kb)
+    if task == "visa_cover" and normalized:
+        report = visa_assessment(db, actor, kb, profile, normalized)
+        source = report.rule_source
+        visa_gap = AccountVisaGap(
+            status=report.assessment_status.value,
+            gap_days=report.gap_days,
+            explanation=report.explanation,
+            source_url=source.source_url if source else None,
+            checked_at=source.checked_at.isoformat() if source and source.checked_at else None,
+            verification_status=source.verification_status if source else "UNVERIFIED",
+        )
+    elif rule and profile.occupation.value == "STUDENT" and task == "visa_cover":
         by_key = {item.field_key: item for item in items}
         needed = ("arrival_date", "visa_expiry_date", "coverage_start_date", "coverage_end_date")
-        dates_available = all(
+        if not all(
             key in by_key and by_key[key].status == CompletenessStatus.FOUND for key in needed
-        )
-        rule_verified = bool(
-            rule
-            and rule.verification_status.value == "VERIFIED"
-            and country.manifest.verification_status.value == "VERIFIED"
-            and rule.source_url
-            and rule.checked_at
-        )
-        if not dates_available:
-            continuity = AccountVisaGap(
-                status="UNABLE_TO_DETERMINE",
-                explanation=(
-                    "Unable to determine continuity because confirmed policy and period dates "
-                    "are incomplete."
-                ),
-                source_url=rule.source_url if rule else None,
-                checked_at=rule.checked_at.isoformat() if rule and rule.checked_at else None,
-                verification_status=rule.verification_status
-                if rule
-                else country.manifest.verification_status,
+        ):
+            visa_gap = AccountVisaGap(
+                status="NEEDS_VERIFICATION",
+                explanation="Tanggal yang diperlukan belum lengkap atau belum terverifikasi.",
+                source_url=rule.source_url,
+                checked_at=rule.checked_at.isoformat() if rule.checked_at else None,
+                verification_status=rule.verification_status,
             )
         else:
             arrival = date.fromisoformat(str(by_key["arrival_date"].value))
             visa_end = date.fromisoformat(str(by_key["visa_expiry_date"].value))
             cover_start = date.fromisoformat(str(by_key["coverage_start_date"].value))
             cover_end = date.fromisoformat(str(by_key["coverage_end_date"].value))
-            covered_start = max(arrival, cover_start)
-            covered_end = min(visa_end, cover_end)
-            if covered_start > covered_end:
-                gap = (visa_end - arrival).days + 1
-            else:
-                gap = (covered_start - arrival).days + (visa_end - covered_end).days
-            continuity = AccountVisaGap(
-                status=(
-                    "POTENTIAL_COVERAGE_GAP"
-                    if gap and rule_verified
-                    else "DATE_DIFFERENCE_DETECTED"
-                    if gap
-                    else "NO_DATE_DIFFERENCE"
-                ),
-                requirement_status="VERIFIED" if rule_verified else "NEEDS_VERIFICATION",
+            gap, _ = uncovered_interval(arrival, visa_end, [(cover_start, cover_end)])
+            visa_gap = AccountVisaGap(
+                status="GAP_FOUND" if gap else "PASS",
                 gap_days=gap,
                 explanation=(
-                    f"A {gap}-day difference was detected between the declared period "
-                    "and policy dates."
+                    f"Potensi jeda perlindungan {gap} hari. "
+                    "Konfirmasi dengan penyedia dan sumber resmi."
                     if gap
-                    else "No date difference was detected for the dates provided."
+                    else "Tanggal perlindungan mencakup interval yang diperiksa."
                 ),
-                source_url=rule.source_url if rule else None,
-                checked_at=rule.checked_at.isoformat() if rule and rule.checked_at else None,
-                verification_status=rule.verification_status
-                if rule
-                else country.manifest.verification_status,
+                source_url=rule.source_url,
+                checked_at=rule.checked_at.isoformat() if rule.checked_at else None,
+                verification_status=rule.verification_status,
             )
     return AccountCompleteness(
         task_code=task,
@@ -535,8 +501,7 @@ def completeness(
         total_count=len(items),
         ready_pct=round(ready * 100 / len(items)) if items else 0,
         items=items,
-        visa_gap=continuity,
-        coverage_continuity=continuity,
+        visa_gap=visa_gap,
         kb_version=country.manifest.version,
         verification_status=country.resources.required_fields.verification_status,
     )
@@ -561,7 +526,10 @@ def inventory(db: DB, account: ActiveAccount):
         document_count=len(documents),
         structured_field_count=fields or 0,
         coverage_count=coverages or 0,
-        claim_case_count=0,
+        claim_case_count=db.scalar(
+            select(func.count(ClaimCaseRow.id)).where(ClaimCaseRow.account_id == account.id)
+        )
+        or 0,
         action_count=0,
         documents=[document_summary(row) for row in documents],
     )
@@ -570,6 +538,7 @@ def inventory(db: DB, account: ActiveAccount):
 @router.delete("/data", response_model=Deleted)
 def delete_all_data(body: DeleteRequest, db: DB, account: ActiveAccount):
     current_consents = consent_rows(db, account.id)
+    purge_workspace(db, account.id)
     document_count = (
         db.scalar(
             select(func.count(AccountDocumentRow.id)).where(
@@ -646,7 +615,6 @@ def list_policies(db: DB, account: ActiveAccount):
             start_date=row.start_date,
             end_date=row.end_date,
             status=_policy_status(row.end_date),
-            evidence_status="SELF_REPORTED" if row.document_id is None else "NEEDS_REVIEW",
             created_at=row.created_at,
         )
         for row in rows
@@ -708,7 +676,6 @@ def get_policy(policy_id: UUID, db: DB, account: ActiveAccount):
         start_date=row.start_date,
         end_date=row.end_date,
         status=_policy_status(row.end_date),
-        evidence_status="SELF_REPORTED" if row.document_id is None else "NEEDS_REVIEW",
         created_at=row.created_at,
         benefits=benefits,
         exclusions=exclusions,
@@ -735,7 +702,7 @@ def list_family_members(db: DB, account: ActiveAccount):
             birth_date=row.birth_date,
             consent_at=row.consent_at,
             created_at=row.created_at,
-            active_coverage_count=None,
+            active_coverage_count=0,
         )
         for row in rows
     ]
@@ -769,7 +736,7 @@ def add_family_member(body: FamilyMemberCreate, db: DB, account: ActiveAccount):
         birth_date=member.birth_date,
         consent_at=member.consent_at,
         created_at=member.created_at,
-        active_coverage_count=None,
+        active_coverage_count=0,
     )
 
 
@@ -787,3 +754,106 @@ def delete_family_member(member_id: UUID, db: DB, account: ActiveAccount):
     audit(db, account.id, "FAMILY_MEMBER_DELETED", member_id=str(member_id))
     db.commit()
     return Deleted(deleted=True)
+
+
+@router.get(
+    "/audit",
+    response_model=list[AuditEvent],
+    responses={
+        200: {
+            "headers": {
+                "X-Total-Count": {
+                    "schema": {"type": "integer"},
+                    "description": "Scoped filtered account audit event count",
+                },
+            }
+        }
+    },
+)
+def list_account_audit(
+    db: DB,
+    account: ActiveAccount,
+    response: Response,
+    event_type: Annotated[str | None, Query(max_length=100)] = None,
+    category: Annotated[
+        AuditCategory | None,
+        Query(alias="type"),
+    ] = None,
+    limit: Annotated[int | None, Query(ge=1, le=100)] = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+):
+    if category == "guardrail":
+        ensure_account_guardrail_events(db, account.id)
+    query = select(AccountAuditRow).where(AccountAuditRow.account_id == account.id)
+    if event_type:
+        query = query.where(AccountAuditRow.event_type == event_type)
+    if category:
+        prefixes = CATEGORY_EVENT_TYPES[category]
+        clauses = []
+        for p in prefixes:
+            clauses.append(AccountAuditRow.event_type == p)
+            clauses.append(AccountAuditRow.event_type.startswith(p + "_"))
+        query = query.where(or_(*clauses))
+    response.headers["X-Total-Count"] = str(
+        db.scalar(select(func.count()).select_from(query.subquery()))
+    )
+    query = query.order_by(AccountAuditRow.created_at.desc(), AccountAuditRow.id).offset(offset)
+    if limit is not None:
+        query = query.limit(limit)
+    return [
+        enrich_audit_event(
+            id=row.id,
+            session_id=row.account_id,
+            event_type=row.event_type,
+            outcome="SUCCESS",
+            metadata=row.metadata_json,
+            created_at=row.created_at,
+        )
+        for row in db.scalars(query)
+    ]
+
+
+@router.post("/audit/demo-guardrails", response_model=list[AuditEvent])
+def run_account_guardrail_scenario(db: DB, account: ActiveAccount):
+    ensure_account_guardrail_events(db, account.id)
+    prefixes = CATEGORY_EVENT_TYPES["guardrail"]
+    clauses = []
+    for p in prefixes:
+        clauses.append(AccountAuditRow.event_type == p)
+        clauses.append(AccountAuditRow.event_type.startswith(p + "_"))
+    query = (
+        select(AccountAuditRow)
+        .where(AccountAuditRow.account_id == account.id, or_(*clauses))
+        .order_by(AccountAuditRow.created_at.desc(), AccountAuditRow.id)
+    )
+    return [
+        enrich_audit_event(
+            id=row.id,
+            session_id=row.account_id,
+            event_type=row.event_type,
+            outcome="SUCCESS",
+            metadata=row.metadata_json,
+            created_at=row.created_at,
+        )
+        for row in db.scalars(query)
+    ]
+
+
+@router.get("/audit/{event_id}", response_model=AuditEvent)
+def get_account_audit_detail(event_id: UUID, db: DB, account: ActiveAccount):
+    row = db.scalar(
+        select(AccountAuditRow).where(
+            AccountAuditRow.id == event_id,
+            AccountAuditRow.account_id == account.id,
+        )
+    )
+    if row is None:
+        raise AppError(404, "RESOURCE_NOT_FOUND", "Entri audit tidak ditemukan.")
+    return enrich_audit_event(
+        id=row.id,
+        session_id=row.account_id,
+        event_type=row.event_type,
+        outcome="SUCCESS",
+        metadata=row.metadata_json,
+        created_at=row.created_at,
+    )

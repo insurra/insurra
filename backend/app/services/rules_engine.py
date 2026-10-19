@@ -7,6 +7,27 @@ from app.schemas.profile import UserProfile
 from app.services.kb_loader import CountryKBLoader
 
 
+def uncovered_interval(start: date, end: date, intervals: list[tuple[date, date]]):
+    """Union/clamp inclusive calendar intervals. Shared by demo, SC-04 and SC-14."""
+    ranges = sorted(
+        (max(start.toordinal(), left.toordinal()), min(end.toordinal(), right.toordinal()))
+        for left, right in intervals
+    )
+    cursor, end_day = start.toordinal(), end.toordinal()
+    gaps: list[DateRange] = []
+    for left, right in ranges:
+        if left > right:
+            continue
+        if left > cursor:
+            gaps.append(
+                DateRange(start_date=date.fromordinal(cursor), end_date=date.fromordinal(left - 1))
+            )
+        cursor = max(cursor, right + 1)
+    if cursor <= end_day:
+        gaps.append(DateRange(start_date=date.fromordinal(cursor), end_date=end))
+    return sum((g.end_date - g.start_date + timedelta(days=1)).days for g in gaps), gaps
+
+
 class RulesEngine:
     def __init__(self, kb_loader: CountryKBLoader):
         self.kb_loader = kb_loader
@@ -18,7 +39,7 @@ class RulesEngine:
         applicable_rules = [
             rule
             for rule in kb.rules
-            if rule.kind == "coverage_continuity"
+            if rule.kind in {"coverage_continuity", "visa_coverage"}
             and (
                 not rule.applicability.occupation
                 or profile.occupation in rule.applicability.occupation
@@ -123,13 +144,24 @@ class RulesEngine:
             and source.source_url is not None
             and source.checked_at is not None
         )
-        status = (
-            AssessmentStatus.POTENTIAL_COVERAGE_GAP
-            if days and verified
-            else AssessmentStatus.DATE_DIFFERENCE_DETECTED
-            if days
-            else AssessmentStatus.NO_DATE_DIFFERENCE
-        )
+        if rule and rule.kind == "visa_coverage":
+            status = (
+                AssessmentStatus.GAP_FOUND
+                if days and verified
+                else AssessmentStatus.NEEDS_VERIFICATION
+                if days
+                else AssessmentStatus.PASS
+                if verified
+                else AssessmentStatus.NEEDS_VERIFICATION
+            )
+        else:
+            status = (
+                AssessmentStatus.POTENTIAL_COVERAGE_GAP
+                if days and verified
+                else AssessmentStatus.DATE_DIFFERENCE_DETECTED
+                if days
+                else AssessmentStatus.NO_DATE_DIFFERENCE
+            )
         return VisaCoverageAssessment(
             applicable=bool(rule),
             assessment_status=status,

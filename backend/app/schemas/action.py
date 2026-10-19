@@ -34,9 +34,24 @@ class ProposedAction(Contract):
     created_at: datetime | None = None
     payload_version: int | None = None
     approved_at: datetime | None = None
+    executed_at: datetime | None = None
     payload: dict[str, JsonValue] | None = None
     reason: str | None = None
     permission_level: ActionPermissionLevel | None = None
     source_screen: str | None = None
     approved_payload_sha256: str | None = None
     proposed_payload_sha256: str | None = None
+    title: str | None = None
+    is_stale: bool = False
+    stale_label: str | None = None
+    failure_reason: str | None = None
+    execution_result: dict[str, JsonValue] | None = None
+
+
+class ActionProposeRequest(Contract):
+    action_type: str
+    title: str | None = None
+    reason: str | None = None
+    source_screen: str | None = None
+    permission_level: str | None = None
+    payload: dict[str, JsonValue] | None = None

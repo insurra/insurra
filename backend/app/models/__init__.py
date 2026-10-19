@@ -47,6 +47,13 @@ from app.models.foundation import (
     ExtractedFieldRow,
     PurposeConsentRow,
 )
+from app.models.workspace_state import (
+    AskLimitRow,
+    ChatSessionRow,
+    ClauseChunkRow,
+    PathwayDecisionRow,
+    RecommendationStateRow,
+)
 
 __all__ = [
     "AccountRow",
@@ -71,6 +78,11 @@ __all__ = [
     "DocumentRow",
     "ExtractedFieldRow",
     "PurposeConsentRow",
+    "AskLimitRow",
+    "ChatSessionRow",
+    "ClauseChunkRow",
+    "PathwayDecisionRow",
+    "RecommendationStateRow",
 ]
 
 __all__ += [

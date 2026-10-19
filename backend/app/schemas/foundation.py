@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import Field, JsonValue, SecretStr, StrictBool, model_validator
+from pydantic import Field, JsonValue, SecretStr, StrictBool, field_validator, model_validator
 
 from app.schemas.actor import Actor, ActorType
 from app.schemas.chat import AnswerCertainty
@@ -20,6 +20,14 @@ from app.schemas.common import (
     RuleSource,
 )
 from app.schemas.document import ProcessingStatus, SourceEvidence
+from app.schemas.workspace import (
+    CoverageCard,
+    EmergencyInfo,
+    NumericFact,
+    ServiceChoice,
+    VerificationQuestion,
+    WorkspaceContext,
+)
 
 ShortCode = Annotated[str, Field(min_length=1, max_length=100)]
 Email = Annotated[str, Field(max_length=254, pattern=r"^[^\s@]+@[^\s@]+\.[^\s@]+$")]
@@ -198,6 +206,12 @@ class Recommendation(Contract):
     title: str
     explanation: str
     source: RuleSource | None = None
+    priority: int = 0
+    subject: str = "context"
+    action_url: str = "/documents"
+    dismissible: bool = True
+    handled: bool = False
+    visa_related: bool = False
 
 
 class HomeSummary(Contract):
@@ -205,14 +219,31 @@ class HomeSummary(Contract):
     expiring_30d: int = Field(ge=0)
     needs_verification: int = Field(ge=0)
     recommendations: list[Recommendation] = Field(max_length=3)
+    context: WorkspaceContext | None = None
+    coverages: list[CoverageCard] = Field(default_factory=list)
+    emergency: EmergencyInfo = Field(default_factory=EmergencyInfo)
+    warnings: list[str] = Field(default_factory=list)
+    question_examples: list[str] = Field(default_factory=list, max_length=4)
+    service_types: list[ServiceChoice] = Field(default_factory=list)
+    triage_available: bool = False
+    pathway_help: str = "Jelaskan kebutuhan layanan non-darurat."
 
 
 class AskRequest(Contract):
     question: str = Field(min_length=1, max_length=500)
     coverage_id: UUID | None = None
+    chat_session_id: UUID | None = None
+
+    @field_validator("question")
+    @classmethod
+    def meaningful_question(cls, value):
+        if not value.strip():
+            raise ValueError("Question must not be blank")
+        return value.strip()
 
 
 class AnswerCitation(Contract):
+    document_name: str | None = None
     doc: UUID
     page: int = Field(ge=1)
     quote: str = Field(min_length=1)
@@ -233,6 +264,23 @@ class AnswerPoint(Contract):
 class AskAnswer(Contract):
     answer_points: list[AnswerPoint] = Field(max_length=5)
     warnings: list[str] = Field(default_factory=list)
+    numeric_facts: list[NumericFact] = Field(default_factory=list, max_length=5)
+    verification_steps: list[str] = Field(default_factory=list)
+    context_country_code: CountryCode | None = None
+    disposition: Literal["answered", "no_match", "declined"] = "answered"
+    chat_session_id: UUID | None = None
+    answer_id: UUID | None = None
+
+
+class ChatTurn(Contract):
+    id: UUID
+    question: str
+    answer: AskAnswer
+
+
+class ChatHistory(Contract):
+    chat_session_id: UUID
+    turns: list[ChatTurn] = Field(max_length=10)
 
 
 class EmergencyRedirect(Contract):
@@ -259,8 +307,21 @@ class StreamErrorEvent(Contract):
     data: ApiError
 
 
+class ProgressData(Contract):
+    stage: Literal["retrieving", "validating"]
+
+
+class AskProgressEvent(Contract):
+    event: Literal["progress"]
+    data: ProgressData
+
+
 AskStreamEvent = Annotated[
-    AnswerPointEvent | AnswerCompleteEvent | EmergencyRedirectEvent | StreamErrorEvent,
+    AnswerPointEvent
+    | AnswerCompleteEvent
+    | EmergencyRedirectEvent
+    | StreamErrorEvent
+    | AskProgressEvent,
     Field(discriminator="event"),
 ]
 
@@ -269,6 +330,14 @@ class PathwayComparisonRequest(Contract):
     complaint: str = Field(min_length=1, max_length=300)
     service_type: ShortCode
     city: str | None = Field(default=None, max_length=100)
+    timeframe: Literal["today", "this_week", "unknown"] = "unknown"
+
+    @field_validator("complaint", "service_type")
+    @classmethod
+    def not_blank(cls, value):
+        if not value.strip():
+            raise ValueError("Must not be blank")
+        return value.strip()
 
 
 class MoneyEstimate(Contract):
@@ -276,6 +345,7 @@ class MoneyEstimate(Contract):
     maximum: Money
     currency: CurrencyCode
     source_reference: RuleSource
+    synthetic: bool = False
 
     @model_validator(mode="after")
     def valid_amount_range(self):
@@ -296,10 +366,21 @@ class PathwayOption(Contract):
     docs: list[str]
     uncertainties: list[str]
     sources: list[RuleSource]
+    description: str = ""
+    coverage_label: str | None = None
+    coverage_status: Literal["MATCHED", "NEEDS_CHECK"] = "NEEDS_CHECK"
+    emergency: bool = False
+    best_for_priority: bool = False
+    priority_reason: str | None = None
+    direct_billing: bool | None = None
 
 
 class PathwayComparison(Contract):
-    paths: list[PathwayOption]
+    paths: list[PathwayOption] = Field(max_length=3)
+    comparison_id: UUID | None = None
+    uncertainties: list[VerificationQuestion] = Field(default_factory=list, max_length=5)
+    warnings: list[str] = Field(default_factory=list)
+    context_country_code: CountryCode | None = None
 
 
 class TriageRequest(Contract):
@@ -343,6 +424,7 @@ class ClaimCaseStatus(StrEnum):
 class ClaimCaseCreate(Contract):
     path: ShortCode
     coverage_id: UUID
+    comparison_id: UUID | None = None
 
 
 class ClaimCaseCreated(Contract):

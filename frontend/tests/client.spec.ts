@@ -82,10 +82,12 @@ test("204 responses are not parsed as JSON", async () => {
 });
 
 test("profile PUT unwraps the canonical envelope and GET keeps the legacy shape", async () => {
-  const updated = fixture(Response.json({
-    profile: { display_name: "Synthetic", city: "Synthetic" },
-    suggested_docs: [],
-  }));
+  const updated = fixture(
+    Response.json({
+      profile: { display_name: "Synthetic", city: "Synthetic" },
+      suggested_docs: [],
+    }),
+  );
   const result = await updated.client.put("/api/v1/profile", "synthetic", {
     city: "Synthetic",
     priorities: [],
@@ -94,7 +96,9 @@ test("profile PUT unwraps the canonical envelope and GET keeps the legacy shape"
   expect(name).toBe("Synthetic");
   expect(result.suggested_docs).toEqual([]);
   const existing = fixture(Response.json(result.profile));
-  expect((await existing.client.get("/api/v1/profile", "synthetic")).display_name).toBe(name);
+  expect(
+    (await existing.client.get("/api/v1/profile", "synthetic")).display_name,
+  ).toBe(name);
 });
 
 test("stream transport exposes bytes, and still rejects API errors", async () => {
@@ -169,3 +173,16 @@ function contractChecks(client: ReturnType<typeof createApiClient>) {
   void client.request("get", "/api/v1/ask", {});
 }
 void contractChecks;
+
+test("missing deployment API configuration fails clearly without a localhost request", async () => {
+  let calls = 0;
+  const client = createApiClient("", async () => {
+    calls += 1;
+    return new Response("{}");
+  });
+  await expect(client.get("/api/v1/home/summary")).rejects.toMatchObject({
+    status: 0,
+    error: { code: "BACKEND_NOT_CONFIGURED" },
+  });
+  expect(calls).toBe(0);
+});

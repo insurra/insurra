@@ -35,7 +35,8 @@ def test_purposes_are_explicit_independent_and_revocable(client, app, demo):
     assert ask().status_code == 403
     processing = grant(client, h, "process_documents")
     assert processing["granted_at"] and processing["policy_version"] == "1.5"
-    assert ask().status_code == 501
+    assert ask().status_code == 503
+    assert ask().json()["code"] == "TRIAGE_UNAVAILABLE"
     revoked = grant(client, h, "external_ai", False)
     assert revoked["revoked_at"] and revoked["granted_at"]
     assert ask().status_code == 403
@@ -360,11 +361,17 @@ def test_remaining_scoped_contract_routes(client, demo, method, path, body, need
     _, h = demo()
     url = "/api/v1" + path
     assert client.request(method, url, json=body).status_code == 401
+    implemented = path in {"/home/summary", "/coverage-needs"}
     assert client.request(method, url, headers=h, json=body).status_code == (
-        403 if needs_consent else 501
+        403 if needs_consent else 200 if implemented else 501
     )
     grant(client, h, "process_documents")
-    assert client.request(method, url, headers=h, json=body).status_code == 501
+    result = client.request(method, url, headers=h, json=body)
+    assert result.status_code == (
+        200 if implemented else 503 if path == "/pathways/compare" else 501
+    )
+    if path == "/pathways/compare":
+        assert result.json()["code"] == "TRIAGE_UNAVAILABLE"
 
 
 def test_upload_and_evidence_stubs_need_both_purposes(client, resources):

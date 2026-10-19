@@ -26,48 +26,24 @@ import { useUserContext } from "@/lib/user-context";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { href: "/dashboard", label: "Home", icon: Home },
+  { href: "/home", label: "Home", icon: Home },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
   { href: "/claims", label: "Claims Center", icon: ClipboardCheck },
-  { href: "/actions", label: "Action Approvals", icon: ShieldCheck },
-  { href: "/emergency", label: "Emergency Guidance", icon: PhoneCall },
-  { href: "/employer-benefits", label: "Employer Benefits", icon: Building2 },
   { href: "/documents", label: "Documents", icon: FileText },
-  {
-    href: "/ask-policy",
-    label: "Ask INSURRA",
-    icon: Sparkles,
-    soon: true,
-  },
-  { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
-  {
-    href: "/audit",
-    label: "Activity & Audit",
-    icon: Activity,
-  },
+  { href: "/ask", label: "Ask INSURRA", icon: Sparkles },
+  { href: "/pathways", label: "Care Pathways", icon: HeartPulse },
+  { href: "/audit", label: "Activity & Audit", icon: Activity },
   { href: "/settings/privacy", label: "Settings & Privacy", icon: Settings },
 ];
 
 const accountNavigation = [
-  { href: "/account", label: "Home", icon: Home },
+  { href: "/home", label: "Home", icon: Home },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
   { href: "/claims", label: "Claims Center", icon: ClipboardCheck },
-  { href: "/actions", label: "Action Approvals", icon: ShieldCheck },
-  { href: "/emergency", label: "Emergency Guidance", icon: PhoneCall },
-  { href: "/employer-benefits", label: "Employer Benefits", icon: Building2 },
   { href: "/documents", label: "Documents", icon: FileText },
-  {
-    href: "/ask-policy",
-    label: "Ask INSURRA",
-    icon: Sparkles,
-    soon: true,
-  },
-  { href: "/care", label: "Care Pathways", icon: HeartPulse, soon: true },
-  {
-    href: "/audit",
-    label: "Activity & Audit",
-    icon: Activity,
-  },
+  { href: "/ask", label: "Ask INSURRA", icon: Sparkles },
+  { href: "/pathways", label: "Care Pathways", icon: HeartPulse },
+  { href: "/audit", label: "Activity & Audit", icon: Activity },
   { href: "/settings/privacy", label: "Settings & Privacy", icon: Settings },
 ];
 
@@ -107,6 +83,9 @@ function PrivateShell({
 
   const isNavActive = (href: string) => {
     if (href === pathname) return true;
+    if (href === "/home") {
+      return pathname === "/home" || pathname === "/dashboard" || pathname === "/account";
+    }
     if (href === "/protection") {
       return (
         pathname === "/protection" ||
@@ -114,25 +93,42 @@ function PrivateShell({
         pathname.startsWith("/completeness") ||
         pathname.startsWith("/family") ||
         pathname.startsWith("/coverage") ||
+        pathname.startsWith("/coverage-needs") ||
         pathname.startsWith("/employer-benefits")
       );
+    }
+    if (href === "/claims") {
+      return pathname === "/claims" || pathname.startsWith("/claims/") || pathname === "/actions";
     }
     if (href === "/documents") {
       return pathname === "/documents" || pathname.startsWith("/documents/");
     }
-    if (href === "/dashboard" || href === "/account") {
-      return pathname === "/dashboard" || pathname === "/account";
+    if (href === "/ask") {
+      return pathname === "/ask" || pathname === "/ask-policy";
+    }
+    if (href === "/pathways") {
+      return pathname === "/pathways" || pathname === "/care";
+    }
+    if (href === "/audit") {
+      return pathname === "/audit";
+    }
+    if (href === "/settings/privacy") {
+      return pathname === "/settings/privacy" || pathname === "/account/privacy";
     }
     return false;
   };
 
   const pageTitle =
-    pathname === "/protection"
+    pathname === "/home" || pathname === "/dashboard" || pathname === "/account"
+      ? "Home"
+      : pathname === "/protection"
       ? "My Protection"
       : pathname.startsWith("/claims/")
       ? "Claim Detail"
+      : pathname === "/claims"
+      ? "Claims Center"
       : pathname === "/actions"
-      ? "Action Approval"
+      ? "Action Approvals"
       : pathname === "/emergency"
       ? "Emergency Guidance"
       : pathname === "/products/compare"
@@ -145,10 +141,14 @@ function PrivateShell({
       ? "Family Coverage"
       : pathname === "/documents" || pathname.startsWith("/documents/")
       ? "Documents"
-      : pathname === "/coverage"
+      : pathname === "/coverage-needs" || pathname === "/coverage"
       ? "Coverage Needs"
       : pathname === "/employer-benefits"
       ? "Employer Benefits"
+      : pathname === "/ask" || pathname === "/ask-policy"
+      ? "Ask INSURRA"
+      : pathname === "/pathways" || pathname === "/care"
+      ? "Care Pathways"
       : pathname === "/audit"
       ? "Activity & Audit"
       : pathname === "/settings/privacy"
@@ -156,14 +156,15 @@ function PrivateShell({
       : pathname === "/onboarding"
       ? "User Context"
       : items.find((item) => item.href === pathname)?.label ?? "Dashboard";
-  const breadcrumbParent = pathname.startsWith("/claims/")
+
+  const breadcrumbParent = pathname.startsWith("/claims/") || pathname === "/actions"
     ? { href: "/claims", label: "Claims Center" }
-    : pathname === "/policies" || pathname === "/employer-benefits"
+    : pathname === "/policies" || pathname === "/employer-benefits" || pathname === "/coverage-needs" || pathname === "/completeness" || pathname === "/family"
     ? { href: "/protection", label: "My Protection" }
     : pathname === "/products/compare"
     ? { href: "/policies", label: "Policy Wallet" }
     : null;
-  const workspaceHref = accountMode ? "/account" : "/dashboard";
+  const workspaceHref = "/home";
 
   return (
     <div className="app-frame">
@@ -196,32 +197,6 @@ function PrivateShell({
               )}
             </Link>
           ))}
-          {!accountMode && (
-            <Link
-              href="/audit"
-              aria-current={pathname === "/audit" ? "page" : undefined}
-              className={cn(
-                "nav-item mobile-utility",
-                pathname === "/audit" && "active"
-              )}
-            >
-              <Activity size={18} />
-              Audit History
-            </Link>
-          )}
-          {!accountMode && (
-            <Link
-              href="/onboarding"
-              aria-current={pathname === "/onboarding" ? "page" : undefined}
-              className={cn(
-                "nav-item mobile-utility",
-                pathname === "/onboarding" && "active"
-              )}
-            >
-              <SlidersHorizontal size={18} />
-              Privacy & Consent
-            </Link>
-          )}
         </nav>
         <div className="sidebar-bottom">
           <div className="sidebar-bottom-nav" style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>

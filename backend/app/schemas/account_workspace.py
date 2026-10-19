@@ -109,6 +109,9 @@ class AccountVisaGap(Contract):
         "NO_DATE_DIFFERENCE",
         "DATE_DIFFERENCE_DETECTED",
         "POTENTIAL_COVERAGE_GAP",
+        "PASS",
+        "GAP_FOUND",
+        "NEEDS_VERIFICATION",
     ]
     requirement_status: Literal["VERIFIED", "NEEDS_VERIFICATION"] = "NEEDS_VERIFICATION"
     gap_days: int | None = None

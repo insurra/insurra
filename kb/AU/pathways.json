@@ -1,6 +1,6 @@
 {
   "schema_version": "1.5",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
@@ -8,29 +8,87 @@
     "pathways": [
       {
         "pathway_code": "GP",
-        "label": "Dokter umum",
-        "description": "Placeholder konfigurasi demo. Syarat dan jaringan fasilitas belum diverifikasi.",
-        "required_documents": [],
+        "label": "Dokter umum (GP)",
+        "description": "Panduan pertanyaan untuk menyiapkan layanan; belum memverifikasi syarat fasilitas atau polis Anda.",
+        "required_documents": [
+          "Kartu kepesertaan atau ringkasan polis, jika diminta fasilitas.",
+          "Rujukan dan bukti layanan atau pembayaran, bila berlaku; pastikan kepada fasilitas."
+        ],
         "estimated_out_of_pocket": null,
         "currency": "AUD",
         "uncertainties": [
-          "Biaya, waktu tunggu, kelayakan, dan dokumen belum diverifikasi."
+          "Daftar ini berisi langkah verifikasi, bukan konfirmasi kelayakan atau pembayaran."
         ],
-        "source_url": null,
-        "verification_status": "UNVERIFIED"
+        "source_url": "https://www.healthdirect.gov.au/the-role-of-a-gp",
+        "verification_status": "UNVERIFIED",
+        "service_types": [
+          "GP"
+        ],
+        "policy_types": [
+          "OSHC",
+          "PERSONAL_HEALTH"
+        ],
+        "benefit_category": "outpatient",
+        "verification_codes": [
+          "provider_network",
+          "referral",
+          "claim_mode",
+          "benefit"
+        ],
+        "steps": [
+          "Konfirmasi kelayakan layanan dan manfaat dengan penyedia atau fasilitas.",
+          "Periksa jaringan, prosedur rujukan, dan cara pembayaran sebelum berangkat.",
+          "Cek jadwal atau booking online melalui kanal fasilitas.",
+          "Tanyakan dokumen yang diperlukan; simpan bukti layanan dan pembayaran jika diminta."
+        ],
+        "requirements": [
+          "Kepesertaan aktif dan manfaat yang sesuai perlu dikonfirmasi.",
+          "Jaringan provider, rujukan, dan direct billing atau reimbursement mengikuti dokumen serta konfirmasi fasilitas."
+        ],
+        "checked_at": null,
+        "tariff": null
       },
       {
         "pathway_code": "URGENT_CARE",
         "label": "Layanan perawatan mendesak",
-        "description": "Placeholder konfigurasi demo. Syarat dan jaringan fasilitas belum diverifikasi.",
-        "required_documents": [],
+        "description": "Sumber pemerintah menjelaskan Medicare UCC untuk kebutuhan mendesak yang tidak mengancam jiwa. Kelayakan dan biaya untuk pemegang OSHC belum dikonfirmasi; tanyakan langsung kepada klinik.",
+        "required_documents": [
+          "Kartu kepesertaan atau ringkasan polis, jika diminta fasilitas.",
+          "Rujukan dan bukti layanan atau pembayaran, bila berlaku; pastikan kepada fasilitas."
+        ],
         "estimated_out_of_pocket": null,
         "currency": "AUD",
         "uncertainties": [
-          "Biaya, waktu tunggu, kelayakan, dan dokumen belum diverifikasi."
+          "Daftar ini berisi langkah verifikasi, bukan konfirmasi kelayakan atau pembayaran."
         ],
-        "source_url": null,
-        "verification_status": "UNVERIFIED"
+        "source_url": "https://www.health.gov.au/our-work/medicare-urgent-care-clinics/about-medicare-urgent-care-clinics",
+        "verification_status": "VERIFIED",
+        "service_types": [
+          "GP"
+        ],
+        "policy_types": [
+          "OSHC",
+          "PERSONAL_HEALTH"
+        ],
+        "benefit_category": "outpatient",
+        "verification_codes": [
+          "provider_network",
+          "referral",
+          "claim_mode",
+          "benefit"
+        ],
+        "steps": [
+          "Konfirmasi kelayakan layanan dan manfaat dengan penyedia atau fasilitas.",
+          "Periksa jaringan, prosedur rujukan, dan cara pembayaran sebelum berangkat.",
+          "Cek jadwal atau booking online melalui kanal fasilitas.",
+          "Tanyakan dokumen yang diperlukan; simpan bukti layanan dan pembayaran jika diminta."
+        ],
+        "requirements": [
+          "Kepesertaan aktif dan manfaat yang sesuai perlu dikonfirmasi.",
+          "Jaringan provider, rujukan, dan direct billing atau reimbursement mengikuti dokumen serta konfirmasi fasilitas."
+        ],
+        "checked_at": "2026-10-19",
+        "tariff": null
       }
     ],
     "emergency": {
@@ -39,6 +97,23 @@
       "source_url": null,
       "checked_at": null,
       "verification_status": "UNVERIFIED"
-    }
+    },
+    "service_types": [
+      {
+        "code": "GP",
+        "label": "Dokter umum (GP)"
+      }
+    ],
+    "help_text": "Sampaikan kebutuhan layanan non-darurat. Keluhan tidak dipakai untuk diagnosis dan tidak disimpan lengkap.",
+    "priority_rules": [
+      {
+        "codes": [
+          "low_cost",
+          "Biaya berobat rendah"
+        ],
+        "kind": "lowest_cost",
+        "explanation": "Rentang perkiraan biaya pribadi paling rendah dari tarif dan manfaat yang dapat diverifikasi; bukan penilaian medis."
+      }
+    ]
   }
 }

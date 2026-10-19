@@ -1,7 +1,7 @@
 """Canonical PRD routes with a limited persisted demo claim slice."""
 
 from typing import Annotated
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from fastapi import APIRouter, File, Form, Query, UploadFile
 from sqlalchemy import func, select
@@ -11,20 +11,15 @@ from app.core.errors import AppError, not_implemented
 from app.models import ClaimCaseRow
 from app.models.foundation import ClaimCaseEventRow
 from app.repositories.ownership import approved_action, owned_resource
-from app.repositories.session_data import insurance_row, profile_row
+from app.repositories.session_data import profile_row
 from app.schemas.action import ProposedAction
-from app.schemas.assessment import CoverageNeed
 from app.schemas.audit import AuditEvent
 from app.schemas.common import CountryCode, VerificationStatus
 from app.schemas.foundation import (
     ActionExecutionRequest,
-    AskAnswer,
-    AskRequest,
     AuthMessage,
     AuthSession,
     ClaimCase,
-    ClaimCaseCreate,
-    ClaimCaseCreated,
     ClaimCaseDetail,
     ClaimCaseEvent,
     ClaimCasePage,
@@ -37,14 +32,10 @@ from app.schemas.foundation import (
     DocumentDetail,
     DocumentUploadAccepted,
     EmailRequest,
-    EmergencyRedirect,
     EvidenceMatchResult,
     FieldReviewRequest,
-    HomeSummary,
     LoginRequest,
     PageMeta,
-    PathwayComparison,
-    PathwayComparisonRequest,
     RegisterRequest,
     ReviewedField,
     SandboxClaimRequest,
@@ -56,7 +47,6 @@ from app.schemas.foundation import (
 )
 from app.schemas.kb import EmergencyDirectory
 from app.services.approval import payload_sha256
-from app.services.audit_logger import log_event
 
 router = APIRouter(tags=["Phase 1.5 contracts (501)"])
 
@@ -128,36 +118,6 @@ def check_completeness(
     not_implemented()
 
 
-@router.get("/home/summary", response_model=HomeSummary)
-def home_summary(session: ActiveSession):
-    not_implemented()
-
-
-@router.post(
-    "/ask",
-    response_model=AskAnswer | EmergencyRedirect,
-    responses={
-        200: {
-            "content": {
-                "text/event-stream": {
-                    "schema": {"type": "string"},
-                    "description": "Named SSE events; data is JSON matching AskStreamEvent.",
-                }
-            }
-        }
-    },
-)
-def ask_policy(body: AskRequest, session: AISession, actor: ActiveActor, db: DB):
-    if body.coverage_id:
-        owned_resource(db, actor, "coverage", body.coverage_id)
-    not_implemented()
-
-
-@router.post("/pathways/compare", response_model=PathwayComparison | EmergencyRedirect)
-def compare_pathways(body: PathwayComparisonRequest, session: ConsentedSession):
-    not_implemented()
-
-
 @router.get("/emergency", response_model=EmergencyDirectory)
 def emergency_directory(country_code: CountryCode, kb: KB):
     resource = kb.load(country_code).resources.emergency
@@ -202,47 +162,6 @@ def triage(body: TriageRequest, session: ActiveSession, db: DB, kb: KB):
         flows.append("SELF_HARM_SUPPORT")
     # Positive phrase detection only. An unmatched text is never a medical clearance.
     return TriageResult(red_flag=bool(matched), matched=matched, safety_flows=flows)
-
-
-@router.post("/claims", response_model=ClaimCaseCreated, status_code=201)
-def create_claim(body: ClaimCaseCreate, session: ConsentedSession, actor: ActiveActor, db: DB):
-    owned_resource(db, actor, "coverage", body.coverage_id)
-    existing = db.scalar(
-        select(ClaimCaseRow).where(
-            ClaimCaseRow.session_id == session.id,
-            ClaimCaseRow.coverage_id == body.coverage_id,
-            ClaimCaseRow.path == body.path,
-            ClaimCaseRow.status == ClaimCaseStatus.DRAFT.value,
-        )
-    )
-    if existing is not None:
-        raise AppError(
-            409, "CLAIM_ALREADY_EXISTS", "Kasus draf untuk perlindungan dan jalur ini sudah ada."
-        )
-    record = insurance_row(db, session.id)
-    case = ClaimCaseRow(
-        id=uuid4(),
-        session_id=session.id,
-        coverage_id=body.coverage_id,
-        country_code=record.payload["country_code"],
-        path=body.path,
-        status=ClaimCaseStatus.DRAFT.value,
-        monitoring_state="NOT_CONFIGURED",
-    )
-    db.add(case)
-    db.flush()
-    db.add(
-        ClaimCaseEventRow(
-            id=uuid4(),
-            session_id=session.id,
-            claim_case_id=case.id,
-            event_type="CASE_CREATED",
-            status_snapshot=case.status,
-        )
-    )
-    log_event(db, session.id, "CLAIM_CREATED", feature="claims", claim_case_id=str(case.id))
-    db.commit()
-    return ClaimCaseCreated(claim_case_id=case.id)
 
 
 def claim_case_detail(row: ClaimCaseRow, db: DB) -> ClaimCaseDetail:
@@ -333,11 +252,6 @@ def data_inventory(session: ActiveSession):
 
 @router.delete("/data", response_model=DeletionResult)
 def delete_data(body: DeleteConfirmation, session: ActiveSession):
-    not_implemented()
-
-
-@router.get("/coverage-needs", response_model=list[CoverageNeed])
-def coverage_needs(session: ConsentedSession):
     not_implemented()
 
 

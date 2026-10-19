@@ -1,7 +1,7 @@
 {
   "country_code": "AU",
   "label": "Australia",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "checked_at": null,
   "sources": [],
   "supported_features": [
@@ -10,5 +10,19 @@
     "visa_gap"
   ],
   "verification_status": "UNVERIFIED",
-  "schema_version": "1.5"
+  "schema_version": "1.5",
+  "default_timezone": "Australia/Melbourne",
+  "city_timezones": {
+    "melbourne": "Australia/Melbourne",
+    "sydney": "Australia/Sydney",
+    "perth": "Australia/Perth",
+    "brisbane": "Australia/Brisbane",
+    "adelaide": "Australia/Adelaide"
+  },
+  "official_source_hosts": [
+    "www.ombudsman.gov.au",
+    "immi.homeaffairs.gov.au",
+    "www.health.gov.au",
+    "www.healthdirect.gov.au"
+  ]
 }

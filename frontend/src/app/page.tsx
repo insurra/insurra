@@ -24,9 +24,9 @@ export default function Home() {
     setDemoError(null);
     const ok = await selectPersona(persona === "corporate" ? "sinta" : "raka");
     if (ok) {
-      router.push("/dashboard");
+      router.push("/home");
     } else {
-      setDemoError("Demo belum bisa dibuka. Silakan coba lagi.");
+      setDemoError("Demo could not be launched. Please try again.");
       setIsLaunching(false);
     }
   };

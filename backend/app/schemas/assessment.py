@@ -1,5 +1,6 @@
 from enum import StrEnum
 from typing import Literal
+from uuid import UUID
 
 from pydantic import Field
 
@@ -34,6 +35,12 @@ class CoverageNeed(Contract):
     ownership_status: OwnershipStatus
     explanation: str
     source_reference: RuleSource | None = None
+    requirement_confirmed: bool = False
+    coverage_ids: list[UUID] = Field(default_factory=list)
+    verification_steps: list[str] = Field(default_factory=list)
+    action_url: str = "/documents"
+    visa_assessment: "VisaCoverageAssessment | None" = None
+    exclusion: SourceEvidence | None = None
 
 
 class AssessmentStatus(StrEnum):
@@ -55,3 +62,6 @@ class VisaCoverageAssessment(Contract):
     gap_periods: list[DateRange]
     explanation: str
     rule_source: RuleSource | None = None
+
+
+CoverageNeed.model_rebuild()

@@ -14,8 +14,10 @@ from app.api.v1 import (
     documents,
     foundation,
     insurance,
+    policy_qa,
     profiles,
     sessions,
+    workspace,
 )
 from app.core.errors import ERROR_RESPONSES
 from app.workflow.router import router as workflow_router
@@ -39,5 +41,7 @@ for module in (
     actions,
     audit,
     foundation,
+    workspace,
+    policy_qa,
 ):
     router.include_router(module.router)

@@ -2937,6 +2937,462 @@
         }
       }
     },
+    "/api/v1/account/audit": {
+      "get": {
+        "tags": [
+          "Authenticated workspace"
+        ],
+        "summary": "List Account Audit",
+        "operationId": "list_account_audit_api_v1_account_audit_get",
+        "parameters": [
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Event Type"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "answer",
+                    "compare",
+                    "action",
+                    "guardrail",
+                    "deletion",
+                    "consent"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 100,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEvent"
+                  },
+                  "title": "Response List Account Audit Api V1 Account Audit Get"
+                }
+              }
+            },
+            "headers": {
+              "X-Total-Count": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Scoped filtered account audit event count"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/account/audit/demo-guardrails": {
+      "post": {
+        "tags": [
+          "Authenticated workspace"
+        ],
+        "summary": "Run Account Guardrail Scenario",
+        "operationId": "run_account_guardrail_scenario_api_v1_account_audit_demo_guardrails_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEvent"
+                  },
+                  "title": "Response Run Account Guardrail Scenario Api V1 Account Audit Demo Guardrails Post"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/account/audit/{event_id}": {
+      "get": {
+        "tags": [
+          "Authenticated workspace"
+        ],
+        "summary": "Get Account Audit Detail",
+        "operationId": "get_account_audit_detail_api_v1_account_audit__event_id__get",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Event Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditEvent"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/api/v1/account/documents": {
       "get": {
         "tags": [
@@ -11382,6 +11838,130 @@
         }
       }
     },
+    "/api/v1/audit/demo-guardrails": {
+      "post": {
+        "tags": [
+          "Audit"
+        ],
+        "summary": "Run Demo Guardrail Scenario",
+        "operationId": "run_demo_guardrail_scenario_api_v1_audit_demo_guardrails_post",
+        "parameters": [
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEvent"
+                  },
+                  "title": "Response Run Demo Guardrail Scenario Api V1 Audit Demo Guardrails Post"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -12493,408 +13073,6 @@
         }
       }
     },
-    "/api/v1/home/summary": {
-      "get": {
-        "tags": [
-          "Phase 1.5 contracts (501)"
-        ],
-        "summary": "Home Summary",
-        "operationId": "home_summary_api_v1_home_summary_get",
-        "parameters": [
-          {
-            "name": "x-demo-session",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "maxLength": 128
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Demo-Session"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomeSummary"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unprocessable Content"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "501": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Implemented"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
-    "/api/v1/ask": {
-      "post": {
-        "tags": [
-          "Phase 1.5 contracts (501)"
-        ],
-        "summary": "Ask Policy",
-        "operationId": "ask_policy_api_v1_ask_post",
-        "parameters": [
-          {
-            "name": "x-demo-session",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "maxLength": 128
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Demo-Session"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AskRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/AskAnswer"
-                    },
-                    {
-                      "$ref": "#/components/schemas/EmergencyRedirect"
-                    }
-                  ],
-                  "title": "Response Ask Policy Api V1 Ask Post"
-                }
-              },
-              "text/event-stream": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Named SSE events; data is JSON matching AskStreamEvent."
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unprocessable Content"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "501": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Implemented"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
-    "/api/v1/pathways/compare": {
-      "post": {
-        "tags": [
-          "Phase 1.5 contracts (501)"
-        ],
-        "summary": "Compare Pathways",
-        "operationId": "compare_pathways_api_v1_pathways_compare_post",
-        "parameters": [
-          {
-            "name": "x-demo-session",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "maxLength": 128
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Demo-Session"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PathwayComparisonRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/PathwayComparison"
-                    },
-                    {
-                      "$ref": "#/components/schemas/EmergencyRedirect"
-                    }
-                  ],
-                  "title": "Response Compare Pathways Api V1 Pathways Compare Post"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unprocessable Content"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "501": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Implemented"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
     "/api/v1/emergency": {
       "get": {
         "tags": [
@@ -13139,13 +13317,52 @@
       }
     },
     "/api/v1/claims": {
-      "post": {
+      "get": {
         "tags": [
           "Phase 1.5 contracts (501)"
         ],
-        "summary": "Create Claim",
-        "operationId": "create_claim_api_v1_claims_post",
+        "summary": "List Claims",
+        "operationId": "list_claims_api_v1_claims_get",
         "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ClaimCaseStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
           {
             "name": "x-demo-session",
             "in": "header",
@@ -13164,23 +13381,13 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ClaimCaseCreate"
-              }
-            }
-          }
-        },
         "responses": {
-          "201": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClaimCaseCreated"
+                  "$ref": "#/components/schemas/ClaimCasePage"
                 }
               }
             }
@@ -13267,50 +13474,44 @@
           }
         }
       },
-      "get": {
+      "post": {
         "tags": [
-          "Phase 1.5 contracts (501)"
+          "Workspace"
         ],
-        "summary": "List Claims",
-        "operationId": "list_claims_api_v1_claims_get",
+        "summary": "Create Claim Case",
+        "operationId": "create_claim_case_api_v1_claims_post",
         "parameters": [
           {
-            "name": "status",
-            "in": "query",
+            "name": "idempotency-key",
+            "in": "header",
             "required": false,
             "schema": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/ClaimCaseStatus"
+                  "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "Status"
+              "title": "Idempotency-Key"
             }
           },
           {
-            "name": "limit",
-            "in": "query",
+            "name": "authorization",
+            "in": "header",
             "required": false,
             "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 20,
-              "title": "Limit"
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "default": 0,
-              "title": "Offset"
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
             }
           },
           {
@@ -13331,13 +13532,23 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimCaseCreate"
+              }
+            }
+          }
+        },
         "responses": {
-          "200": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClaimCasePage"
+                  "$ref": "#/components/schemas/ClaimCaseCreated"
                 }
               }
             }
@@ -14073,130 +14284,6 @@
         }
       }
     },
-    "/api/v1/coverage-needs": {
-      "get": {
-        "tags": [
-          "Phase 1.5 contracts (501)"
-        ],
-        "summary": "Coverage Needs",
-        "operationId": "coverage_needs_api_v1_coverage_needs_get",
-        "parameters": [
-          {
-            "name": "x-demo-session",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "maxLength": 128
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Demo-Session"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CoverageNeed"
-                  },
-                  "title": "Response Coverage Needs Api V1 Coverage Needs Get"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Unprocessable Content"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "501": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Not Implemented"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiError"
-                }
-              }
-            },
-            "description": "Service Unavailable"
-          }
-        }
-      }
-    },
     "/api/v1/audit/{event_id}": {
       "get": {
         "tags": [
@@ -14593,6 +14680,1454 @@
               }
             },
             "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/home/summary": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "Home Summary",
+        "operationId": "home_summary_api_v1_home_summary_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeSummary"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/home/recommendations/decision": {
+      "post": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "Recommendation Decision",
+        "operationId": "recommendation_decision_api_v1_home_recommendations_decision_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommendationDecision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedDecision"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/coverage-needs": {
+      "get": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "Coverage Needs",
+        "operationId": "coverage_needs_api_v1_coverage_needs_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CoverageNeed"
+                  },
+                  "title": "Response Coverage Needs Api V1 Coverage Needs Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/pathways/compare": {
+      "post": {
+        "tags": [
+          "Workspace"
+        ],
+        "summary": "Compare Pathways",
+        "operationId": "compare_pathways_api_v1_pathways_compare_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PathwayComparisonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PathwayComparison"
+                    },
+                    {
+                      "$ref": "#/components/schemas/EmergencyRedirect"
+                    }
+                  ],
+                  "title": "Response Compare Pathways Api V1 Pathways Compare Post"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/ask": {
+      "post": {
+        "tags": [
+          "Policy Q&A"
+        ],
+        "summary": "Ask",
+        "operationId": "ask_api_v1_ask_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/AskAnswer"
+                    },
+                    {
+                      "$ref": "#/components/schemas/EmergencyRedirect"
+                    }
+                  ],
+                  "title": "Response Ask Api V1 Ask Post"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Named SSE events with JSON AskStreamEvent payloads and comment heartbeats."
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/api/v1/ask/sessions/{chat_session_id}": {
+      "get": {
+        "tags": [
+          "Policy Q&A"
+        ],
+        "summary": "History",
+        "operationId": "history_api_v1_ask_sessions__chat_session_id__get",
+        "parameters": [
+          {
+            "name": "chat_session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Chat Session Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatHistory"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Policy Q&A"
+        ],
+        "summary": "Clear History",
+        "operationId": "clear_history_api_v1_ask_sessions__chat_session_id__delete",
+        "parameters": [
+          {
+            "name": "chat_session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Chat Session Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedDecision"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/api/v1/ask/sessions/{chat_session_id}/feedback": {
+      "post": {
+        "tags": [
+          "Policy Q&A"
+        ],
+        "summary": "Feedback",
+        "operationId": "feedback_api_v1_ask_sessions__chat_session_id__feedback_post",
+        "parameters": [
+          {
+            "name": "chat_session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Chat Session Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerFeedback"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedDecision"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/api/v1/ask/sources/{document_id}/{page}": {
+      "get": {
+        "tags": [
+          "Policy Q&A"
+        ],
+        "summary": "Source",
+        "operationId": "source_api_v1_ask_sources__document_id___page__get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 30,
+              "minimum": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-demo-session",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Demo-Session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourcePage"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Implemented"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Bad Gateway"
           }
         }
       }
@@ -15813,7 +17348,10 @@
               "UNABLE_TO_DETERMINE",
               "NO_DATE_DIFFERENCE",
               "DATE_DIFFERENCE_DETECTED",
-              "POTENTIAL_COVERAGE_GAP"
+              "POTENTIAL_COVERAGE_GAP",
+              "PASS",
+              "GAP_FOUND",
+              "NEEDS_VERIFICATION"
             ],
             "title": "Status"
           },
@@ -16074,6 +17612,17 @@
       },
       "AnswerCitation": {
         "properties": {
+          "document_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Name"
+          },
           "doc": {
             "type": "string",
             "format": "uuid",
@@ -16098,6 +17647,43 @@
           "quote"
         ],
         "title": "AnswerCitation"
+      },
+      "AnswerFeedback": {
+        "properties": {
+          "answer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Answer Id"
+          },
+          "helpful": {
+            "type": "boolean",
+            "title": "Helpful"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "unclear",
+                  "incorrect_source",
+                  "missing_detail",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "answer_id",
+          "helpful"
+        ],
+        "title": "AnswerFeedback"
       },
       "AnswerPoint": {
         "properties": {
@@ -16197,6 +17783,67 @@
             },
             "type": "array",
             "title": "Warnings"
+          },
+          "numeric_facts": {
+            "items": {
+              "$ref": "#/components/schemas/NumericFact"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Numeric Facts"
+          },
+          "verification_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Verification Steps"
+          },
+          "context_country_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Country Code"
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "answered",
+              "no_match",
+              "declined"
+            ],
+            "title": "Disposition",
+            "default": "answered"
+          },
+          "chat_session_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chat Session Id"
+          },
+          "answer_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Id"
           }
         },
         "additionalProperties": false,
@@ -16225,6 +17872,18 @@
               }
             ],
             "title": "Coverage Id"
+          },
+          "chat_session_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chat Session Id"
           }
         },
         "additionalProperties": false,
@@ -16279,6 +17938,104 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "answer",
+                  "compare",
+                  "action",
+                  "guardrail",
+                  "deletion",
+                  "consent"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "subtype": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Instruksi di dokumen diabaikan",
+                  "Tanda bahaya → arahan darurat",
+                  "Jawaban tanpa sumber ditolak",
+                  "Tindakan tanpa persetujuan diblokir"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtype"
+          },
+          "source_screen": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Screen"
+          },
+          "input_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Summary"
+          },
+          "tools_called": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools Called"
+          },
+          "result_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Summary"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "approval_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Status"
           }
         },
         "additionalProperties": false,
@@ -16624,6 +18381,54 @@
         ],
         "title": "CaseChecklistItem"
       },
+      "ChatHistory": {
+        "properties": {
+          "chat_session_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Chat Session Id"
+          },
+          "turns": {
+            "items": {
+              "$ref": "#/components/schemas/ChatTurn"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Turns"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "chat_session_id",
+          "turns"
+        ],
+        "title": "ChatHistory"
+      },
+      "ChatTurn": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "$ref": "#/components/schemas/AskAnswer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "question",
+          "answer"
+        ],
+        "title": "ChatTurn"
+      },
       "ChecklistStatus": {
         "type": "string",
         "enum": [
@@ -16695,6 +18500,18 @@
             "type": "string",
             "format": "uuid",
             "title": "Coverage Id"
+          },
+          "comparison_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Id"
           },
           "id": {
             "type": "string",
@@ -16790,6 +18607,18 @@
             "type": "string",
             "format": "uuid",
             "title": "Coverage Id"
+          },
+          "comparison_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Id"
           }
         },
         "additionalProperties": false,
@@ -17275,6 +19104,25 @@
           },
           "verification_status": {
             "$ref": "#/components/schemas/VerificationStatus"
+          },
+          "default_timezone": {
+            "type": "string",
+            "title": "Default Timezone",
+            "default": "UTC"
+          },
+          "city_timezones": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "City Timezones"
+          },
+          "official_source_hosts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Official Source Hosts"
           }
         },
         "additionalProperties": false,
@@ -17289,6 +19137,96 @@
           "verification_status"
         ],
         "title": "CountryManifest"
+      },
+      "CoverageCard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "country_code": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "title": "Country Code"
+          },
+          "country_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Label"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "expiring_30d": {
+            "type": "boolean",
+            "title": "Expiring 30D"
+          },
+          "needs_verification": {
+            "type": "boolean",
+            "title": "Needs Verification"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "kind",
+          "country_code",
+          "start_date",
+          "end_date",
+          "active",
+          "expiring_30d",
+          "needs_verification"
+        ],
+        "title": "CoverageCard"
       },
       "CoverageItem": {
         "properties": {
@@ -17383,6 +19321,51 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RuleSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requirement_confirmed": {
+            "type": "boolean",
+            "title": "Requirement Confirmed",
+            "default": false
+          },
+          "coverage_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Coverage Ids"
+          },
+          "verification_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Verification Steps"
+          },
+          "action_url": {
+            "type": "string",
+            "title": "Action Url",
+            "default": "/documents"
+          },
+          "visa_assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VisaCoverageAssessment"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exclusion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceEvidence"
               },
               {
                 "type": "null"
@@ -18071,6 +20054,57 @@
         ],
         "title": "EmergencyDirectory"
       },
+      "EmergencyInfo": {
+        "properties": {
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "default": "Darurat? Periksa layanan darurat setempat."
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked At"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "EmergencyInfo"
+      },
       "EmergencyRedirect": {
         "properties": {
           "redirect": {
@@ -18321,6 +20355,58 @@
             "type": "array",
             "maxItems": 3,
             "title": "Recommendations"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorkspaceContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coverages": {
+            "items": {
+              "$ref": "#/components/schemas/CoverageCard"
+            },
+            "type": "array",
+            "title": "Coverages"
+          },
+          "emergency": {
+            "$ref": "#/components/schemas/EmergencyInfo"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "question_examples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Question Examples"
+          },
+          "service_types": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceChoice"
+            },
+            "type": "array",
+            "title": "Service Types"
+          },
+          "triage_available": {
+            "type": "boolean",
+            "title": "Triage Available",
+            "default": false
+          },
+          "pathway_help": {
+            "type": "string",
+            "title": "Pathway Help",
+            "default": "Jelaskan kebutuhan layanan non-darurat."
           }
         },
         "additionalProperties": false,
@@ -18529,6 +20615,11 @@
           },
           "source_reference": {
             "$ref": "#/components/schemas/RuleSource"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -18540,6 +20631,129 @@
           "source_reference"
         ],
         "title": "MoneyEstimate"
+      },
+      "NumericFact": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "coverage_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage Id"
+          },
+          "policy_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Label"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "used": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Used"
+          },
+          "remaining": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "label": {
+            "$ref": "#/components/schemas/AnswerCertainty"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "over_limit": {
+            "type": "boolean",
+            "title": "Over Limit",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category",
+          "label",
+          "explanation"
+        ],
+        "title": "NumericFact"
       },
       "Occupation": {
         "type": "string",
@@ -18594,7 +20808,47 @@
               "$ref": "#/components/schemas/PathwayOption"
             },
             "type": "array",
+            "maxItems": 3,
             "title": "Paths"
+          },
+          "comparison_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Id"
+          },
+          "uncertainties": {
+            "items": {
+              "$ref": "#/components/schemas/VerificationQuestion"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Uncertainties"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "context_country_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Country Code"
           }
         },
         "additionalProperties": false,
@@ -18629,6 +20883,16 @@
               }
             ],
             "title": "City"
+          },
+          "timeframe": {
+            "type": "string",
+            "enum": [
+              "today",
+              "this_week",
+              "unknown"
+            ],
+            "title": "Timeframe",
+            "default": "unknown"
           }
         },
         "additionalProperties": false,
@@ -18705,6 +20969,63 @@
             },
             "type": "array",
             "title": "Sources"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "coverage_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage Label"
+          },
+          "coverage_status": {
+            "type": "string",
+            "enum": [
+              "MATCHED",
+              "NEEDS_CHECK"
+            ],
+            "title": "Coverage Status",
+            "default": "NEEDS_CHECK"
+          },
+          "emergency": {
+            "type": "boolean",
+            "title": "Emergency",
+            "default": false
+          },
+          "best_for_priority": {
+            "type": "boolean",
+            "title": "Best For Priority",
+            "default": false
+          },
+          "priority_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority Reason"
+          },
+          "direct_billing": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direct Billing"
           }
         },
         "additionalProperties": false,
@@ -19188,6 +21509,18 @@
             ],
             "title": "Approved At"
           },
+          "executed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Executed At"
+          },
           "payload": {
             "anyOf": [
               {
@@ -19255,6 +21588,58 @@
               }
             ],
             "title": "Proposed Payload Sha256"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "is_stale": {
+            "type": "boolean",
+            "title": "Is Stale",
+            "default": false
+          },
+          "stale_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stale Label"
+          },
+          "failure_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Reason"
+          },
+          "execution_result": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Result"
           }
         },
         "additionalProperties": false,
@@ -19375,6 +21760,36 @@
                 "type": "null"
               }
             ]
+          },
+          "priority": {
+            "type": "integer",
+            "title": "Priority",
+            "default": 0
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject",
+            "default": "context"
+          },
+          "action_url": {
+            "type": "string",
+            "title": "Action Url",
+            "default": "/documents"
+          },
+          "dismissible": {
+            "type": "boolean",
+            "title": "Dismissible",
+            "default": true
+          },
+          "handled": {
+            "type": "boolean",
+            "title": "Handled",
+            "default": false
+          },
+          "visa_related": {
+            "type": "boolean",
+            "title": "Visa Related",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -19385,6 +21800,43 @@
           "explanation"
         ],
         "title": "Recommendation"
+      },
+      "RecommendationDecision": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Rule Id"
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Subject"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "dismiss",
+              "handled"
+            ],
+            "title": "Decision"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rule_id",
+          "subject",
+          "decision"
+        ],
+        "title": "RecommendationDecision"
       },
       "RegisterRequest": {
         "properties": {
@@ -19693,6 +22145,38 @@
         ],
         "title": "SandboxClaimResponse"
       },
+      "SavedDecision": {
+        "properties": {
+          "saved": {
+            "type": "boolean",
+            "const": true,
+            "title": "Saved",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SavedDecision"
+      },
+      "ServiceChoice": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "ServiceChoice"
+      },
       "ServicingDraftRequest": {
         "properties": {
           "request_type": {
@@ -19831,6 +22315,32 @@
           "original_text"
         ],
         "title": "SourceEvidence"
+      },
+      "SourcePage": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Page"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "document_id",
+          "page",
+          "text"
+        ],
+        "title": "SourcePage"
       },
       "SuggestedDocument": {
         "properties": {
@@ -20246,6 +22756,44 @@
         ],
         "title": "ValidationError"
       },
+      "VerificationQuestion": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "label",
+          "steps"
+        ],
+        "title": "VerificationQuestion"
+      },
       "VerificationRequest": {
         "properties": {
           "token": {
@@ -20369,6 +22917,114 @@
         ],
         "title": "VisaCoverageAssessment"
       },
+      "WorkspaceContext": {
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "title": "First Name"
+          },
+          "country_code": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "title": "Country Code"
+          },
+          "country_label": {
+            "type": "string",
+            "title": "Country Label"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "occupation_label": {
+            "type": "string",
+            "title": "Occupation Label"
+          },
+          "today": {
+            "type": "string",
+            "format": "date",
+            "title": "Today"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "days_since_arrival": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Since Arrival"
+          },
+          "arrival_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arrival Date"
+          },
+          "visa_expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visa Expiry Date"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic"
+          },
+          "process_documents": {
+            "type": "boolean",
+            "title": "Process Documents"
+          },
+          "external_ai": {
+            "type": "boolean",
+            "title": "External Ai"
+          },
+          "retention": {
+            "type": "boolean",
+            "title": "Retention"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "first_name",
+          "country_code",
+          "country_label",
+          "city",
+          "occupation_label",
+          "today",
+          "timezone",
+          "synthetic",
+          "process_documents",
+          "external_ai",
+          "retention"
+        ],
+        "title": "WorkspaceContext"
+      },
       "AnswerCompleteEvent": {
         "additionalProperties": false,
         "properties": {
@@ -20407,6 +23063,25 @@
         "title": "AnswerPointEvent",
         "type": "object"
       },
+      "AskProgressEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "event": {
+            "const": "progress",
+            "title": "Event",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProgressData"
+          }
+        },
+        "required": [
+          "event",
+          "data"
+        ],
+        "title": "AskProgressEvent",
+        "type": "object"
+      },
       "EmergencyRedirectEvent": {
         "additionalProperties": false,
         "properties": {
@@ -20424,6 +23099,24 @@
           "data"
         ],
         "title": "EmergencyRedirectEvent",
+        "type": "object"
+      },
+      "ProgressData": {
+        "additionalProperties": false,
+        "properties": {
+          "stage": {
+            "enum": [
+              "retrieving",
+              "validating"
+            ],
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage"
+        ],
+        "title": "ProgressData",
         "type": "object"
       },
       "StreamErrorEvent": {
@@ -20451,6 +23144,7 @@
             "answer_point": "#/components/schemas/AnswerPointEvent",
             "complete": "#/components/schemas/AnswerCompleteEvent",
             "error": "#/components/schemas/StreamErrorEvent",
+            "progress": "#/components/schemas/AskProgressEvent",
             "redirect": "#/components/schemas/EmergencyRedirectEvent"
           },
           "propertyName": "event"
@@ -20467,6 +23161,9 @@
           },
           {
             "$ref": "#/components/schemas/StreamErrorEvent"
+          },
+          {
+            "$ref": "#/components/schemas/AskProgressEvent"
           }
         ]
       },
@@ -20486,6 +23183,30 @@
             },
             "title": "Occupation",
             "type": "array"
+          },
+          "has_dependents": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Has Dependents"
+          },
+          "requires_visa_context": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Requires Visa Context"
           }
         },
         "title": "Applicability",
@@ -20609,6 +23330,40 @@
             ],
             "default": null,
             "title": "Checked At"
+          },
+          "applicability": {
+            "$ref": "#/components/schemas/Applicability"
+          },
+          "benefit_categories": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Benefit Categories",
+            "type": "array"
+          },
+          "explanation": {
+            "default": "Verifikasi kebutuhan sesuai situasi Anda.",
+            "title": "Explanation",
+            "type": "string"
+          },
+          "verification_steps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Verification Steps",
+            "type": "array"
+          },
+          "task_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Task Code"
           }
         },
         "required": [
@@ -20764,6 +23519,76 @@
           },
           "verification_status": {
             "$ref": "#/components/schemas/VerificationStatus"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checked At"
+          },
+          "service_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Service Types",
+            "type": "array"
+          },
+          "policy_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Policy Types",
+            "type": "array"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Steps",
+            "type": "array"
+          },
+          "requirements": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Requirements",
+            "type": "array"
+          },
+          "benefit_category": {
+            "default": "outpatient",
+            "title": "Benefit Category",
+            "type": "string"
+          },
+          "verification_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Verification Codes",
+            "type": "array"
+          },
+          "emergency": {
+            "default": false,
+            "title": "Emergency",
+            "type": "boolean"
+          },
+          "tariff": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReferenceTariff"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
           }
         },
         "required": [
@@ -20778,6 +23603,53 @@
         "title": "PathwayConfig",
         "type": "object"
       },
+      "PathwayPriority": {
+        "additionalProperties": false,
+        "properties": {
+          "codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Codes",
+            "type": "array"
+          },
+          "kind": {
+            "const": "lowest_cost",
+            "title": "Kind",
+            "type": "string"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "codes",
+          "kind",
+          "explanation"
+        ],
+        "title": "PathwayPriority",
+        "type": "object"
+      },
+      "PathwayService": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "PathwayService",
+        "type": "object"
+      },
       "PathwaysResource": {
         "additionalProperties": false,
         "properties": {
@@ -20790,6 +23662,25 @@
           },
           "emergency": {
             "$ref": "#/components/schemas/EmergencyConfig"
+          },
+          "service_types": {
+            "items": {
+              "$ref": "#/components/schemas/PathwayService"
+            },
+            "title": "Service Types",
+            "type": "array"
+          },
+          "help_text": {
+            "default": "Jelaskan kebutuhan layanan non-darurat; sistem tidak memberi diagnosis.",
+            "title": "Help Text",
+            "type": "string"
+          },
+          "priority_rules": {
+            "items": {
+              "$ref": "#/components/schemas/PathwayPriority"
+            },
+            "title": "Priority Rules",
+            "type": "array"
           }
         },
         "required": [
@@ -20833,6 +23724,58 @@
             ],
             "default": null,
             "title": "Task Code"
+          },
+          "explanation_template": {
+            "default": "Periksa data dan sumber sebelum mengambil keputusan.",
+            "title": "Explanation Template",
+            "type": "string"
+          },
+          "action_url": {
+            "default": "/documents",
+            "title": "Action Url",
+            "type": "string"
+          },
+          "visa_related": {
+            "default": false,
+            "title": "Visa Related",
+            "type": "boolean"
+          },
+          "regulatory": {
+            "default": false,
+            "title": "Regulatory",
+            "type": "boolean"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checked At"
+          },
+          "verification_status": {
+            "$ref": "#/components/schemas/VerificationStatus",
+            "default": "UNVERIFIED"
+          },
+          "applicability": {
+            "$ref": "#/components/schemas/Applicability"
           }
         },
         "required": [
@@ -20934,6 +23877,53 @@
           "destination_code"
         ],
         "title": "RedFlagConfig",
+        "type": "object"
+      },
+      "ReferenceTariff": {
+        "additionalProperties": false,
+        "properties": {
+          "minimum": {
+            "pattern": "^\\d+(\\.\\d+)?$",
+            "title": "Minimum",
+            "type": "string"
+          },
+          "maximum": {
+            "pattern": "^\\d+(\\.\\d+)?$",
+            "title": "Maximum",
+            "type": "string"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          },
+          "checked_at": {
+            "format": "date",
+            "title": "Checked At",
+            "type": "string"
+          },
+          "verification_status": {
+            "$ref": "#/components/schemas/VerificationStatus"
+          },
+          "synthetic": {
+            "default": false,
+            "title": "Synthetic",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "minimum",
+          "maximum",
+          "currency",
+          "source_url",
+          "checked_at",
+          "verification_status"
+        ],
+        "title": "ReferenceTariff",
         "type": "object"
       },
       "RequiredFieldConfig": {
@@ -21088,6 +24078,37 @@
             },
             "title": "Steps",
             "type": "array"
+          },
+          "field_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Field Key"
+          },
+          "known_values": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Known Values",
+            "type": "array"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Impact"
           }
         },
         "required": [
@@ -21204,6 +24225,67 @@
           "data"
         ],
         "title": "VersionedResource[PathwaysResource]",
+        "type": "object"
+      },
+      "VersionedResource_dict_str__list_str___": {
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": "1.5",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "version": {
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "title": "Version",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked At"
+          },
+          "verification_status": {
+            "$ref": "#/components/schemas/VerificationStatus"
+          },
+          "data": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Data",
+            "type": "object"
+          }
+        },
+        "required": [
+          "schema_version",
+          "version",
+          "source_url",
+          "checked_at",
+          "verification_status",
+          "data"
+        ],
+        "title": "VersionedResource[dict[str, list[str]]]",
         "type": "object"
       },
       "VersionedResource_dict_str__str__": {
@@ -21844,6 +24926,64 @@
         "title": "VersionedResource[list[VocabularyEntry]]",
         "type": "object"
       },
+      "VersionedResource_list_str__": {
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": "1.5",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "version": {
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "title": "Version",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked At"
+          },
+          "verification_status": {
+            "$ref": "#/components/schemas/VerificationStatus"
+          },
+          "data": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "schema_version",
+          "version",
+          "source_url",
+          "checked_at",
+          "verification_status",
+          "data"
+        ],
+        "title": "VersionedResource[list[str]]",
+        "type": "object"
+      },
       "VocabularyEntry": {
         "additionalProperties": false,
         "properties": {
@@ -21856,6 +24996,13 @@
             "minLength": 1,
             "title": "Label",
             "type": "string"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Aliases",
+            "type": "array"
           }
         },
         "required": [
@@ -21909,6 +25056,12 @@
           },
           "emergency": {
             "$ref": "#/components/schemas/VersionedResource_EmergencyConfig_"
+          },
+          "example_questions": {
+            "$ref": "#/components/schemas/VersionedResource_list_str__"
+          },
+          "retrieval_terms": {
+            "$ref": "#/components/schemas/VersionedResource_dict_str__list_str___"
           }
         },
         "required": [
@@ -21925,7 +25078,9 @@
           "recommendation_rules",
           "verification_steps",
           "red_flags",
-          "emergency"
+          "emergency",
+          "example_questions",
+          "retrieval_terms"
         ],
         "title": "CountryResources",
         "type": "object"

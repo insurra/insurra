@@ -1,7 +1,7 @@
 {
   "country_code": "ID",
   "label": "Indonesia",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "checked_at": null,
   "sources": [],
   "supported_features": [
@@ -9,5 +9,18 @@
     "care_placeholders"
   ],
   "verification_status": "UNVERIFIED",
-  "schema_version": "1.5"
+  "schema_version": "1.5",
+  "default_timezone": "Asia/Jakarta",
+  "city_timezones": {
+    "jakarta": "Asia/Jakarta",
+    "surabaya": "Asia/Jakarta",
+    "denpasar": "Asia/Makassar",
+    "jayapura": "Asia/Jayapura"
+  },
+  "official_source_hosts": [
+    "bpjs-kesehatan.go.id",
+    "www.bpjs-kesehatan.go.id",
+    "kemkes.go.id",
+    "www.kemkes.go.id"
+  ]
 }

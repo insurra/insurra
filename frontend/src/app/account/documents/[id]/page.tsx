@@ -51,6 +51,15 @@ export default function AccountDocumentDetail() {
     if (fileUrl) URL.revokeObjectURL(fileUrl);
   }, [fileUrl]);
 
+  useEffect(() => {
+    if (!document || !/^#page-\d+$/.test(window.location.hash)) return;
+    const target = window.document.getElementById(window.location.hash.slice(1));
+    if (target instanceof HTMLDetailsElement) {
+      target.open = true;
+      target.scrollIntoView();
+    }
+  }, [document]);
+
   async function openOriginal() {
     if (!token || !document) return;
     setError(null);
@@ -181,7 +190,7 @@ export default function AccountDocumentDetail() {
               </div>
               {document.original_file_status === "DELETED" && (
                 <p className="account-note">
-                  Original binary file was deleted because retention consent is off. Page text remains available.
+                  Original files and source pages are not retained. Reviewed structured fields remain available.
                 </p>
               )}
               {fileUrl &&
@@ -198,7 +207,7 @@ export default function AccountDocumentDetail() {
                   />
                 ))}
               {document.pages.map((page, index) => (
-                <details key={index} className="account-source-page">
+                <details key={index} id={`page-${String(page.page_no ?? index + 1)}`} className="account-source-page">
                   <summary>
                     <FileText size={16} /> Page {String(page.page_no ?? index + 1)} {page.ocr_used ? "(OCR)" : "(Native text)"}
                   </summary>
