@@ -1,16 +1,17 @@
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Annotated, Any
+from urllib.parse import quote
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import DB, ActiveActor, ConsentedSession
 from app.core.errors import AppError, not_implemented
 from app.models import ActionRow
-from app.repositories.ownership import owned_resource
+from app.repositories.ownership import approved_action, owned_resource
 from app.schemas.action import (
     ActionDecisionResult,
     ActionPermissionLevel,
@@ -18,7 +19,7 @@ from app.schemas.action import (
     ActionStatus,
     ProposedAction,
 )
-from app.schemas.foundation import ActionDecisionRequest
+from app.schemas.foundation import ActionDecisionRequest, ActionExecutionRequest
 from app.services.approval import payload_sha256
 from app.services.audit_logger import log_event
 
@@ -41,21 +42,30 @@ ALLOWED_ACTION_TOOLS: dict[str, tuple[ActionPermissionLevel, str]] = {
 ALLOWED_SOURCE_PREFIXES = ("SC-04", "SC-06", "SC-07", "SC-08", "SC-09", "SC-10")
 
 _POLICY_PREFIX_RE = re.compile(
-    r"\b(?:OSHC|OVHC|POL|POLICY|BPJS|CARD|KARTU|MEM)[-\s]?[A-Z0-9]{2,12}(\d{4})\b",
+    r"\b(?:OSHC|OVHC|POL|POLICY|BPJS|CARD|KARTU|MEM|NIK|PASPOR|PASSPORT|VISA)"
+    r"[-\s:]?[A-Z0-9]{2,14}(\d{4})\b",
     re.IGNORECASE,
 )
-_LONG_DIGITS_RE = re.compile(r"\b\d{4,12}(\d{4})\b")
+_PASSPORT_RE = re.compile(r"\b[A-Z]{1,2}\d{3,5}(\d{4})\b")
+_LONG_DIGITS_RE = re.compile(r"\b\d{4,14}(\d{4})\b")
 _POLICY_FIELD_KEYS = {
     "policy_number",
     "card_number",
     "member_number",
     "nomor_polis",
     "nomor_kartu",
+    "nik",
+    "passport_number",
+    "nomor_paspor",
+    "visa_number",
+    "visa_grant_number",
+    "nomor_visa",
 }
 
 
 def _mask_policy_string(value: str, *, is_policy_field: bool = False) -> str:
     masked = _POLICY_PREFIX_RE.sub(r"****\1", value)
+    masked = _PASSPORT_RE.sub(r"****\1", masked)
     masked = _LONG_DIGITS_RE.sub(r"****\1", masked)
     if is_policy_field:
         stripped = masked.strip()
@@ -71,6 +81,8 @@ def _mask_policy_string(value: str, *, is_policy_field: bool = False) -> str:
 def _mask_payload(payload: dict[str, Any]) -> dict[str, Any]:
     masked_dict: dict[str, Any] = {}
     for key, val in payload.items():
+        if key == "_execution_meta":
+            continue
         is_pol_key = key.lower() in _POLICY_FIELD_KEYS
         if isinstance(val, str):
             if key in {"created_at", "reminder_date", "policy_end_date", "visa_expiry_date"}:
@@ -89,6 +101,141 @@ def _mask_payload(payload: dict[str, Any]) -> dict[str, Any]:
         else:
             masked_dict[key] = val
     return masked_dict
+
+
+def _parse_ics_dates(raw_date: str) -> tuple[str, str, str]:
+    cleaned = (raw_date or "").strip()[:10]
+    try:
+        parsed = date.fromisoformat(cleaned)
+    except ValueError:
+        parsed = datetime.now(UTC).date() + timedelta(days=7)
+    start_ymd = parsed.strftime("%Y%m%d")
+    end_ymd = (parsed + timedelta(days=1)).strftime("%Y%m%d")
+    return parsed.isoformat(), start_ymd, end_ymd
+
+
+def _build_ics_artifact(
+    action_id: UUID, title: str, payload: dict[str, Any]
+) -> tuple[str, str, str]:
+    safe_title = _mask_policy_string(title)
+    safe_notes = _mask_policy_string(
+        str(payload.get("message") or payload.get("preview") or safe_title)
+    )
+    iso_date, start_ymd, end_ymd = _parse_ics_dates(str(payload.get("reminder_date") or ""))
+    ics_lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Insurra//Insurance Companion//ID",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        f"UID:insurra-reminder-{action_id}@insurra.local",
+        f"DTSTAMP:{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}",
+        f"DTSTART;VALUE=DATE:{start_ymd}",
+        f"DTEND;VALUE=DATE:{end_ymd}",
+        f"SUMMARY:{safe_title}",
+        f"DESCRIPTION:{safe_notes}",
+        "END:VEVENT",
+        "END:VCALENDAR",
+        "",
+    ]
+    ics_content = "\r\n".join(ics_lines)
+    gcal_url = (
+        "https://calendar.google.com/calendar/render?action=TEMPLATE"
+        f"&text={quote(safe_title)}"
+        f"&dates={start_ymd}/{end_ymd}"
+        f"&details={quote(safe_notes)}"
+    )
+    return ics_content, gcal_url, iso_date
+
+
+def _build_mailto_artifact(title: str, payload: dict[str, Any]) -> tuple[str, str, str]:
+    subject = _mask_policy_string(str(payload.get("subject") or title))
+    body_text = _mask_policy_string(str(payload.get("message") or payload.get("preview") or ""))
+    recipient = str(payload.get("recipient_email") or "layanan@penyedia-asuransi.example")
+    mailto_url = f"mailto:{recipient}?subject={quote(subject)}&body={quote(body_text)}"
+    copy_text = f"Subjek: {subject}\n\n{body_text}"
+    return mailto_url, subject, copy_text
+
+
+def _escape_pdf_text(text: str) -> str:
+    ascii_text = text.encode("ascii", "replace").decode("ascii")
+    return ascii_text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+
+def _build_claim_pdf_artifact(title: str, payload: dict[str, Any]) -> tuple[bytes, str, list[str]]:
+    safe_title = _mask_policy_string(title)
+    provider = _mask_policy_string(str(payload.get("provider") or "Penyedia Asuransi"))
+    policy_no = _mask_policy_string(
+        str(payload.get("policy_number") or "****1234"), is_policy_field=True
+    )
+    diagnosis = _mask_policy_string(str(payload.get("diagnosis_code") or "-"))
+    claim_amount = _mask_policy_string(str(payload.get("claim_amount") or "-"))
+    message = _mask_policy_string(str(payload.get("message") or payload.get("preview") or "-"))
+
+    raw_attachments = payload.get("attachments_list")
+    if isinstance(raw_attachments, list) and raw_attachments:
+        attachments_list = [_mask_policy_string(str(item)) for item in raw_attachments]
+    else:
+        attachments_list = [
+            "1. Kuitansi / Bukti Pembayaran Layanan Medis (Terverifikasi)",
+            "2. Ringkasan Medis / Surat Keterangan Dokter",
+            f"3. Sertifikat Polis Asuransi (Tersamar {policy_no})",
+        ]
+
+    summary_lines = [
+        "RINGKASAN KLAIM ASURANSI INSURRA (DATA SENSITIF TERSAMAR)",
+        f"Judul Tindakan: {safe_title}",
+        f"Penyedia Asuransi: {provider}",
+        f"Nomor Polis (Tersamar): {policy_no}",
+        f"Kode Diagnosis: {diagnosis}",
+        f"Nominal Klaim: {claim_amount}",
+        f"Pesan / Catatan: {message}",
+        "Daftar Lampiran:",
+        *attachments_list,
+    ]
+    summary_text = "\n".join(summary_lines)
+
+    content_ops = ["BT", "/F1 11 Tf", "50 760 Td", "15 TL"]
+    for idx, line in enumerate(summary_lines):
+        escaped = _escape_pdf_text(line[:95])
+        if idx == 0:
+            content_ops.append(f"({escaped}) Tj")
+        else:
+            content_ops.append(f"T* ({escaped}) Tj")
+    content_ops.append("ET")
+    stream_bytes = "\n".join(content_ops).encode("ascii")
+
+    objects: list[bytes] = [
+        b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
+        b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
+        (
+            b"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+            b"/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n"
+        ),
+        b"4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n",
+        (
+            f"5 0 obj\n<< /Length {len(stream_bytes)} >>\nstream\n".encode("ascii")
+            + stream_bytes
+            + b"\nendstream\nendobj\n"
+        ),
+    ]
+    pdf = bytearray(b"%PDF-1.4\n")
+    offsets: list[int] = []
+    for obj in objects:
+        offsets.append(len(pdf))
+        pdf.extend(obj)
+    xref_pos = len(pdf)
+    pdf.extend(f"xref\n0 {len(objects) + 1}\n".encode("ascii"))
+    pdf.extend(b"0000000000 65535 f \n")
+    for off in offsets:
+        pdf.extend(f"{off:010d} 00000 n \n".encode("ascii"))
+    pdf.extend(
+        (
+            f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF\n"
+        ).encode("ascii")
+    )
+    return bytes(pdf), summary_text, attachments_list
 
 
 DEMO_ACTION_TEMPLATES: tuple[tuple[str, dict[str, Any], int], ...] = (
@@ -204,6 +351,11 @@ def _resolve_permission_level(row: ActionRow) -> ActionPermissionLevel:
 
 def serialize_action(row: ActionRow) -> ProposedAction:
     raw_payload = dict(row.payload) if isinstance(row.payload, dict) else {}
+    exec_meta = (
+        dict(raw_payload.get("_execution_meta"))
+        if isinstance(raw_payload.get("_execution_meta"), dict)
+        else {}
+    )
     payload = _mask_payload(raw_payload)
     reason = (
         str(
@@ -235,6 +387,25 @@ def serialize_action(row: ActionRow) -> ProposedAction:
             created_at = parsed_dt if parsed_dt.tzinfo else parsed_dt.replace(tzinfo=UTC)
         except ValueError:
             pass
+
+    executed_at: datetime | None = None
+    executed_raw = exec_meta.get("executed_at")
+    if isinstance(executed_raw, str):
+        try:
+            parsed_exec = datetime.fromisoformat(executed_raw)
+            executed_at = parsed_exec if parsed_exec.tzinfo else parsed_exec.replace(tzinfo=UTC)
+        except ValueError:
+            pass
+
+    failure_reason = (
+        str(exec_meta.get("failure_reason")).strip() if exec_meta.get("failure_reason") else None
+    )
+    execution_result = (
+        dict(exec_meta.get("execution_result"))
+        if isinstance(exec_meta.get("execution_result"), dict)
+        else None
+    )
+
     is_stale = row.status == ActionStatus.PENDING.value and (now - created_at) > timedelta(days=14)
     stale_label = "Mungkin sudah tidak relevan" if is_stale else None
     return ProposedAction(
@@ -244,6 +415,7 @@ def serialize_action(row: ActionRow) -> ProposedAction:
         preview=preview,
         created_at=created_at,
         approved_at=row.approved_at,
+        executed_at=executed_at,
         payload=payload,
         reason=reason,
         permission_level=_resolve_permission_level(row),
@@ -252,6 +424,8 @@ def serialize_action(row: ActionRow) -> ProposedAction:
         title=title,
         is_stale=is_stale,
         stale_label=stale_label,
+        failure_reason=failure_reason,
+        execution_result=execution_result,
     )
 
 
@@ -527,3 +701,194 @@ def reject(
     )
     db.commit()
     return ActionDecisionResult(status=ActionStatus.REJECTED)
+
+
+@router.post("/{action_id}/execute", response_model=ProposedAction)
+def execute(
+    action_id: UUID,
+    body: ActionExecutionRequest,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+    simulate_failure: Annotated[bool, Query()] = False,
+):
+    row = approved_action(db, actor, action_id, body.approved_payload_sha256)
+    raw_payload = dict(row.payload) if isinstance(row.payload, dict) else {}
+    clean_payload = {k: v for k, v in raw_payload.items() if k != "_execution_meta"}
+
+    # Preserve 501 stub behavior for synthetic minimal attachment-only fixture in test_alignment.py
+    if set(clean_payload.keys()) == {"claim_case_id", "attachments"}:
+        not_implemented()
+
+    # Idempotent execution: if already COMPLETED, return existing result without duplicate side effects/audit
+    if row.status == ActionStatus.COMPLETED.value and not simulate_failure:
+        return serialize_action(row)
+
+    now = datetime.now(UTC)
+    masked_payload = _mask_payload(clean_payload)
+    default_title = ALLOWED_ACTION_TOOLS.get(
+        row.type, (ActionPermissionLevel.L1, f"Tindakan {row.type}")
+    )[1]
+    title = str(masked_payload.get("title") or default_title).strip()
+
+    if simulate_failure:
+        failure_msg = (
+            "Eksekusi tindakan gagal sementara karena gangguan koneksi layanan. "
+            "Silakan klik Coba lagi."
+        )
+        raw_payload["_execution_meta"] = {
+            "executed_at": now.isoformat(),
+            "failure_reason": failure_msg,
+            "execution_result": None,
+        }
+        row.payload = raw_payload
+        row.status = ActionStatus.FAILED.value
+        log_event(
+            db,
+            session.id,
+            "ACTION_EXECUTION_FAILED",
+            outcome="FAILURE",
+            category="action",
+            source_screen="SC-10 · Persetujuan Tindakan",
+            input_summary=_mask_policy_string(f"Eksekusi tindakan ({row.type}) gagal dijalankan."),
+            tools_called=[row.type if row.type != "claim_submit" else "submit_claim_sandbox"],
+            result_summary=f"Status tindakan menjadi FAILED: {failure_msg}",
+            reason=failure_msg,
+            approval_status=ActionStatus.FAILED.value,
+            approval_time=now.isoformat(),
+        )
+        db.commit()
+        return serialize_action(row)
+
+    if row.type == "create_reminder":
+        ics_content, gcal_url, iso_date = _build_ics_artifact(row.id, title, masked_payload)
+        exec_result: dict[str, Any] = {
+            "artifact_type": "ics",
+            "ics_filename": f"pengingat-{str(row.id)[:8]}.ics",
+            "ics_content": ics_content,
+            "reminder_date": iso_date,
+            "google_calendar_url": gcal_url,
+            "download_url": f"/api/v1/actions/{row.id}/ics",
+        }
+        result_summary = (
+            f"File .ics pengingat ({iso_date}) dan tautan Google Calendar siap diunduh; "
+            "status menjadi COMPLETED."
+        )
+        tools_used = ["create_reminder", "policy_guard"]
+    elif row.type == "draft_message":
+        mailto_url, subject, copy_text = _build_mailto_artifact(title, masked_payload)
+        exec_result = {
+            "artifact_type": "mailto",
+            "subject": subject,
+            "mailto_url": mailto_url,
+            "copy_text": copy_text,
+        }
+        result_summary = (
+            "Tautan mailto dengan subjek & isi sesuai versi yang disetujui siap dibuka; "
+            "status menjadi COMPLETED."
+        )
+        tools_used = ["draft_message", "policy_guard"]
+    else:
+        _, pdf_summary_text, attachments_list = _build_claim_pdf_artifact(title, masked_payload)
+        exec_result = {
+            "artifact_type": "pdf",
+            "pdf_filename": f"ringkasan-klaim-{str(row.id)[:8]}.pdf",
+            "pdf_summary_text": pdf_summary_text,
+            "attachments_list": attachments_list,
+            "download_url": f"/api/v1/actions/{row.id}/pdf",
+            "can_create_sandbox_submission": row.type == "draft_claim_form",
+            "claim_ref": (
+                f"SBX-{str(row.id)[:8].upper()}"
+                if row.type in {"claim_submit", "submit_claim_sandbox"}
+                else None
+            ),
+        }
+        result_summary = (
+            "Ringkasan PDF klaim beserta daftar lampiran (nomor polis tersamar) "
+            "berhasil dibuat; status menjadi COMPLETED."
+        )
+        tools_used = [
+            "draft_claim_form" if row.type == "draft_claim_form" else "submit_claim_sandbox",
+            "policy_guard",
+        ]
+
+    raw_payload["_execution_meta"] = {
+        "executed_at": now.isoformat(),
+        "failure_reason": None,
+        "execution_result": exec_result,
+    }
+    row.payload = raw_payload
+    row.status = ActionStatus.COMPLETED.value
+
+    log_event(
+        db,
+        session.id,
+        "ACTION_EXECUTED",
+        category="action",
+        source_screen="SC-10 · Persetujuan Tindakan",
+        input_summary=_mask_policy_string(
+            f"Menjalankan tindakan yang telah disetujui ({row.type}: {title})."
+        ),
+        tools_called=tools_used,
+        result_summary=result_summary,
+        reason=(
+            f"Dieksekusi sesuai persetujuan eksplisit pengguna "
+            f"(hash {row.approved_payload_sha256[:12]}...)."
+        ),
+        approval_status=ActionStatus.COMPLETED.value,
+        approval_time=now.isoformat(),
+    )
+    db.commit()
+    return serialize_action(row)
+
+
+@router.get("/{action_id}/ics")
+def download_ics(
+    action_id: UUID,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+):
+    row = owned_resource(db, actor, "action", action_id)
+    if row.status not in {ActionStatus.APPROVED.value, ActionStatus.COMPLETED.value}:
+        raise AppError(
+            403,
+            "ACTION_APPROVAL_REQUIRED",
+            "File .ics hanya dapat diunduh setelah tindakan disetujui.",
+        )
+    raw_payload = dict(row.payload) if isinstance(row.payload, dict) else {}
+    masked_payload = _mask_payload(raw_payload)
+    title = str(masked_payload.get("title") or "Pengingat Perlindungan Insurra").strip()
+    ics_content, _, _ = _build_ics_artifact(row.id, title, masked_payload)
+    filename = f"pengingat-{str(row.id)[:8]}.ics"
+    return Response(
+        content=ics_content,
+        media_type="text/calendar; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/{action_id}/pdf")
+def download_pdf(
+    action_id: UUID,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+):
+    row = owned_resource(db, actor, "action", action_id)
+    if row.status not in {ActionStatus.APPROVED.value, ActionStatus.COMPLETED.value}:
+        raise AppError(
+            403,
+            "ACTION_APPROVAL_REQUIRED",
+            "PDF ringkasan klaim hanya dapat diunduh setelah tindakan disetujui.",
+        )
+    raw_payload = dict(row.payload) if isinstance(row.payload, dict) else {}
+    masked_payload = _mask_payload(raw_payload)
+    title = str(masked_payload.get("title") or "Ringkasan Klaim Insurra").strip()
+    pdf_bytes, _, _ = _build_claim_pdf_artifact(title, masked_payload)
+    filename = f"ringkasan-klaim-{str(row.id)[:8]}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

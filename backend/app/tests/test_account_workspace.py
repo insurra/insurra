@@ -440,15 +440,14 @@ def test_action_approve_edit_reject_l2_and_unapproved_guardrail(client, demo):
         == "Pesan telah diubah oleh pengguna sebelum disetujui."
     )
 
-    # Execution with edited payload hash passes approval check (returns 501 executor boundary)
-    assert (
-        client.post(
-            f"/api/v1/actions/{l1_edit_action['id']}/execute",
-            headers=headers,
-            json={"approved_payload_sha256": expected_hash},
-        ).status_code
-        == 501
+    # Execution with edited payload hash passes approval check and completes
+    exec_edited = client.post(
+        f"/api/v1/actions/{l1_edit_action['id']}/execute",
+        headers=headers,
+        json={"approved_payload_sha256": expected_hash},
     )
+    assert exec_edited.status_code == 200
+    assert exec_edited.json()["status"] == "COMPLETED"
 
     # 4. Reject with reason "Isi salah" -> status REJECTED and reason saved in action + audit
     reject_res = client.post(
@@ -549,3 +548,170 @@ def test_actions_queue_pending_cards_stale_masking_and_forbidden_tool_guardrail(
     assert "****5678" in created["preview"]
     assert "9988775678" not in created["preview"]
     assert "9988775678" not in str(created["payload"])
+
+
+def test_action_execution_ics_mailto_pdf_idempotency_and_hash_guardrail(client, demo):
+    _, headers = demo("raka")
+    assert (
+        client.put(
+            "/api/v1/consent", headers=headers, json={"processing_consent": True}
+        ).status_code
+        == 200
+    )
+
+    actions_list = client.get("/api/v1/actions?seed_demo=true", headers=headers).json()
+    reminder = next(a for a in actions_list if a["action_type"] == "create_reminder")
+    message_draft = next(a for a in actions_list if a["action_type"] == "draft_message")
+
+    # 1. Approve & execute create_reminder -> .ics downloaded with right date, COMPLETED, no full policy/NIK/passport/visa
+    assert (
+        client.post(
+            f"/api/v1/actions/{reminder['id']}/approve",
+            headers=headers,
+            json={"confirmed": True},
+        ).status_code
+        == 200
+    )
+    reminder_approved = client.get(f"/api/v1/actions/{reminder['id']}", headers=headers).json()
+    rem_hash = reminder_approved["approved_payload_sha256"]
+
+    # Mismatched hash is cancelled (403) and logs guardrail
+    mismatch_res = client.post(
+        f"/api/v1/actions/{reminder['id']}/execute",
+        headers=headers,
+        json={"approved_payload_sha256": "b" * 64},
+    )
+    assert mismatch_res.status_code == 403
+    assert mismatch_res.json()["code"] == "APPROVED_PAYLOAD_MISMATCH"
+    guardrails = client.get("/api/v1/audit?type=guardrail", headers=headers).json()
+    assert any(
+        e["event_type"] == "GUARDRAIL_UNAPPROVED_ACTION"
+        and e["subtype"] == "Tindakan tanpa persetujuan diblokir"
+        for e in guardrails
+    )
+
+    # First execution succeeds -> status COMPLETED, .ics has DTSTART;VALUE=DATE:20270315
+    exec1 = client.post(
+        f"/api/v1/actions/{reminder['id']}/execute",
+        headers=headers,
+        json={"approved_payload_sha256": rem_hash},
+    )
+    assert exec1.status_code == 200
+    exec1_body = exec1.json()
+    assert exec1_body["status"] == "COMPLETED"
+    assert exec1_body["executed_at"] is not None
+    ics_text = exec1_body["execution_result"]["ics_content"]
+    assert "DTSTART;VALUE=DATE:20270315" in ics_text
+    assert "****1234" in ics_text
+    assert (
+        "calendar.google.com/calendar/render"
+        in exec1_body["execution_result"]["google_calendar_url"]
+    )
+
+    # Direct .ics download endpoint
+    ics_dl = client.get(f"/api/v1/actions/{reminder['id']}/ics", headers=headers)
+    assert ics_dl.status_code == 200
+    assert "DTSTART;VALUE=DATE:20270315" in ics_dl.text
+
+    # Triggering execute a second time is idempotent -> only ONE ACTION_EXECUTED audit entry for this reminder
+    exec2 = client.post(
+        f"/api/v1/actions/{reminder['id']}/execute",
+        headers=headers,
+        json={"approved_payload_sha256": rem_hash},
+    )
+    assert exec2.status_code == 200
+    assert exec2.json()["executed_at"] == exec1_body["executed_at"]
+    action_audits = client.get("/api/v1/audit?type=action", headers=headers).json()
+    executed_events = [e for e in action_audits if e["event_type"] == "ACTION_EXECUTED"]
+    assert len(executed_events) == 1
+
+    # 2. Approve (with edited message) & execute draft_message -> mailto has approved subject & body
+    edited_msg_payload = {
+        **(message_draft["payload"] or {}),
+        "subject": "Konfirmasi Manfaat Klinik GP — Polis ****1234",
+        "message": "Halo tim layanan, mohon konfirmasi direct billing klinik GP untuk polis ****1234.",
+    }
+    assert (
+        client.post(
+            f"/api/v1/actions/{message_draft['id']}/approve",
+            headers=headers,
+            json={"edited_payload": edited_msg_payload, "confirmed": True},
+        ).status_code
+        == 200
+    )
+    msg_approved = client.get(f"/api/v1/actions/{message_draft['id']}", headers=headers).json()
+    msg_exec = client.post(
+        f"/api/v1/actions/{message_draft['id']}/execute",
+        headers=headers,
+        json={"approved_payload_sha256": msg_approved["approved_payload_sha256"]},
+    )
+    assert msg_exec.status_code == 200
+    mailto_url = msg_exec.json()["execution_result"]["mailto_url"]
+    assert mailto_url.startswith("mailto:")
+    assert "Konfirmasi%20Manfaat%20Klinik%20GP" in mailto_url
+    assert "mohon%20konfirmasi%20direct%20billing" in mailto_url
+
+    # 3. Propose draft_claim_form with sensitive IDs (full policy, NIK, passport, visa), approve, simulate failure, retry -> PDF masks all sensitive IDs
+    claim_form_res = client.post(
+        "/api/v1/actions",
+        headers=headers,
+        json={
+            "action_type": "draft_claim_form",
+            "title": "Formulir Klaim Rawat Jalan",
+            "reason": "Dibuat dari checklist kesiapan klaim",
+            "source_screen": "SC-09 · Kesiapan Klaim",
+            "payload": {
+                "provider": "Allianz Care Australia",
+                "policy_number": "OSHC-8899001234",
+                "nik": "3171012345678901",
+                "passport_number": "C9876543",
+                "visa_grant_number": "VISA-1122334455667",
+                "diagnosis_code": "J06.9",
+                "claim_amount": "125.00 AUD",
+                "message": "Klaim polis OSHC-8899001234 paspor C9876543 NIK 3171012345678901.",
+            },
+        },
+    )
+    assert claim_form_res.status_code == 201
+    claim_form = claim_form_res.json()
+    assert (
+        client.post(
+            f"/api/v1/actions/{claim_form['id']}/approve",
+            headers=headers,
+            json={"confirmed": True},
+        ).status_code
+        == 200
+    )
+    cf_approved = client.get(f"/api/v1/actions/{claim_form['id']}", headers=headers).json()
+    cf_hash = cf_approved["approved_payload_sha256"]
+
+    # Simulate failure -> status FAILED with failure_reason
+    failed_exec = client.post(
+        f"/api/v1/actions/{claim_form['id']}/execute?simulate_failure=true",
+        headers=headers,
+        json={"approved_payload_sha256": cf_hash},
+    )
+    assert failed_exec.status_code == 200
+    assert failed_exec.json()["status"] == "FAILED"
+    assert failed_exec.json()["failure_reason"]
+
+    # Retry -> status COMPLETED and PDF download contains no full policy/NIK/passport/visa
+    retry_exec = client.post(
+        f"/api/v1/actions/{claim_form['id']}/execute",
+        headers=headers,
+        json={"approved_payload_sha256": cf_hash},
+    )
+    assert retry_exec.status_code == 200
+    retry_body = retry_exec.json()
+    assert retry_body["status"] == "COMPLETED"
+    assert retry_body["execution_result"]["can_create_sandbox_submission"] is True
+
+    pdf_res = client.get(f"/api/v1/actions/{claim_form['id']}/pdf", headers=headers)
+    assert pdf_res.status_code == 200
+    assert pdf_res.content.startswith(b"%PDF-1.4")
+    pdf_text_raw = pdf_res.content.decode("latin-1")
+    assert "8899001234" not in pdf_text_raw
+    assert "3171012345678901" not in pdf_text_raw
+    assert "C9876543" not in pdf_text_raw
+    assert "1122334455667" not in pdf_text_raw
+    assert "****1234" in pdf_text_raw

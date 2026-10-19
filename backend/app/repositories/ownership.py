@@ -44,7 +44,7 @@ def approved_action(db: Session, actor: Actor, action_id: UUID, approved_payload
 
     action = owned_resource(db, actor, "action", action_id)
     if (
-        action.status != "APPROVED"
+        action.status not in {"APPROVED", "COMPLETED", "FAILED"}
         or action.approved_at is None
         or not action.approved_payload_sha256
     ):

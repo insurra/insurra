@@ -33,6 +33,7 @@ class ProposedAction(Contract):
     preview: str
     created_at: datetime
     approved_at: datetime | None = None
+    executed_at: datetime | None = None
     payload: dict[str, JsonValue] | None = None
     reason: str | None = None
     permission_level: ActionPermissionLevel | None = None
@@ -41,6 +42,8 @@ class ProposedAction(Contract):
     title: str | None = None
     is_stale: bool = False
     stale_label: str | None = None
+    failure_reason: str | None = None
+    execution_result: dict[str, JsonValue] | None = None
 
 
 class ActionProposeRequest(Contract):

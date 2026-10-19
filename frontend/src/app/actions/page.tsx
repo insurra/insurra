@@ -6,8 +6,11 @@ import { useSearchParams } from "next/navigation";
 import {
   AlertTriangle,
   Bell,
+  CalendarPlus,
   CheckCircle2,
   Clock,
+  Copy,
+  Download,
   Edit3,
   ExternalLink,
   FileText,
@@ -16,6 +19,7 @@ import {
   Mail,
   Play,
   RefreshCw,
+  RotateCcw,
   Send,
   Shield,
   ShieldAlert,
@@ -26,6 +30,7 @@ import {
 import { useSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
 import { api, ApiClientError } from "@/lib/api/client";
+import { publicConfig } from "@/lib/config";
 import type { components } from "@/lib/api/types.gen";
 import { Button } from "@/components/ui/button";
 import { SessionRequired } from "@/components/session-required";
@@ -148,6 +153,32 @@ function formatAbsoluteDateId(iso: string): string {
   }).format(date);
 }
 
+function formatDateTimeId(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(date);
+}
+
+function triggerBrowserDownload(filename: string, content: BlobPart, mimeType: string) {
+  if (typeof window === "undefined") return;
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}
+
 function ActionsPageContent() {
   const searchParams = useSearchParams();
   const forceEmpty = searchParams.get("empty") === "true";
@@ -160,6 +191,7 @@ function ActionsPageContent() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
+  const [copiedText, setCopiedText] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
     type: "success" | "warning" | "error";
@@ -245,7 +277,10 @@ function ActionsPageContent() {
 
   const pendingItems = actionsList.filter((item) => item.status === "PENDING");
   const completedItems = actionsList.filter(
-    (item) => item.status === "APPROVED" || item.status === "COMPLETED",
+    (item) =>
+      item.status === "APPROVED" ||
+      item.status === "COMPLETED" ||
+      item.status === "FAILED",
   );
   const rejectedItems = actionsList.filter((item) => item.status === "REJECTED");
 
@@ -267,6 +302,7 @@ function ActionsPageContent() {
     setIsEditing(false);
     setL2Checked(false);
     setShowRejectModal(false);
+    setCopiedText(false);
     setFeedback(null);
     setDraftPayload({ ...(action.payload ?? {}) });
   };
@@ -275,6 +311,7 @@ function ActionsPageContent() {
     setActiveTab(tab);
     setIsEditing(false);
     setL2Checked(false);
+    setCopiedText(false);
     const listForTab =
       tab === "PENDING"
         ? pendingItems
@@ -353,13 +390,45 @@ function ActionsPageContent() {
         },
       });
 
+      const approvedDetail = await api.request("get", "/api/v1/actions/{action_id}", {
+        headers: { "X-Demo-Session": storedToken },
+        params: { action_id: action.id },
+      });
+
+      if (approvedDetail.approved_payload_sha256) {
+        const executed = await api.request(
+          "post",
+          "/api/v1/actions/{action_id}/execute",
+          {
+            headers: { "X-Demo-Session": storedToken },
+            params: { action_id: action.id },
+            body: {
+              approved_payload_sha256: approvedDetail.approved_payload_sha256,
+            },
+          },
+        );
+        const execResult = (executed.execution_result ?? {}) as Record<string, unknown>;
+        if (
+          executed.action_type === "create_reminder" &&
+          typeof execResult.ics_content === "string"
+        ) {
+          triggerBrowserDownload(
+            String(execResult.ics_filename || `pengingat-${action.id.slice(0, 8)}.ics`),
+            execResult.ics_content,
+            "text/calendar;charset=utf-8",
+          );
+        }
+      }
+
       setIsEditing(false);
+      setActiveTab("COMPLETED");
+      setSelectedId(action.id);
       setFeedback({
         type: "success",
         message:
           isEditing && hasPayloadChanges
-            ? "Perubahan disimpan dan tindakan berhasil disetujui. Hash versi terbaru tercatat di server dan log audit."
-            : "Tindakan berhasil disetujui dengan hash payload terikat di server.",
+            ? "Perubahan disimpan, disetujui, dan dieksekusi dengan versi terbaru. Status menjadi Selesai dan tercatat di log audit."
+            : "Tindakan berhasil disetujui dan dijalankan. Status menjadi Selesai dan bukti eksekusi tercatat di Riwayat Audit.",
       });
       setRevision((r) => r + 1);
     } catch (err) {
@@ -405,7 +474,10 @@ function ActionsPageContent() {
     }
   };
 
-  const handleTestExecute = async (action: ProposedAction) => {
+  const handleExecuteAction = async (
+    action: ProposedAction,
+    options?: { tamperHash?: boolean; simulateFailure?: boolean },
+  ) => {
     const storedToken =
       typeof window !== "undefined"
         ? window.sessionStorage.getItem("insurra.demo-session")
@@ -416,30 +488,146 @@ function ActionsPageContent() {
     setError(null);
     setFeedback(null);
     try {
-      const hashToUse = action.approved_payload_sha256 || "0".repeat(64);
-      await api.request("post", "/api/v1/actions/{action_id}/execute", {
-        headers: { "X-Demo-Session": storedToken },
-        params: { action_id: action.id },
-        body: {
-          approved_payload_sha256: hashToUse,
+      const hashToUse = options?.tamperHash
+        ? "f".repeat(64)
+        : action.approved_payload_sha256 || "0".repeat(64);
+      const executed = await api.request(
+        "post",
+        "/api/v1/actions/{action_id}/execute",
+        {
+          headers: { "X-Demo-Session": storedToken },
+          params: { action_id: action.id },
+          query: options?.simulateFailure ? { simulate_failure: true } : undefined,
+          body: {
+            approved_payload_sha256: hashToUse,
+          },
         },
-      });
+      );
+      setSelectedId(executed.id);
+      if (executed.status === "FAILED") {
+        setFeedback({
+          type: "error",
+          message: `Eksekusi gagal: ${executed.failure_reason ?? "Kendala layanan sementara."} Gunakan tombol "Coba lagi".`,
+        });
+      } else {
+        setFeedback({
+          type: "success",
+          message:
+            action.status === "COMPLETED"
+              ? "Eksekusi idempoten terverifikasi: menekan tombol dua kali tidak menghasilkan efek ganda atau duplikasi log audit."
+              : "Tindakan berhasil dieksekusi dan status menjadi Selesai.",
+        });
+      }
+      setRevision((r) => r + 1);
     } catch (err) {
       if (err instanceof ApiClientError && err.status === 403) {
         setFeedback({
           type: "error",
-          message:
-            "Server menolak eksekusi (403 ACTION_APPROVAL_REQUIRED): Tindakan belum disetujui. Peristiwa guardrail 'Tindakan tanpa persetujuan diblokir' telah dicatat di Riwayat Audit (SC-11).",
-        });
-      } else if (err instanceof ApiClientError && err.status === 501) {
-        setFeedback({
-          type: "success",
-          message: `Verifikasi persetujuan server & hash payload (${action.approved_payload_sha256?.slice(0, 12)}...) valid! Eksekutor sandbox berada pada batas kontrak 501.`,
+          message: options?.tamperHash
+            ? "Eksekusi dibatalkan (403 APPROVED_PAYLOAD_MISMATCH): Hash payload tidak cocok dengan versi yang disetujui. Audit guardrail telah tercatat."
+            : "Server menolak eksekusi (403 ACTION_APPROVAL_REQUIRED): Tindakan belum disetujui. Peristiwa guardrail 'Tindakan tanpa persetujuan diblokir' telah dicatat di Riwayat Audit (SC-11).",
         });
       } else {
         setError(err instanceof Error ? err.message : "Gagal memanggil endpoint eksekusi.");
       }
     } finally {
+      setPending(false);
+    }
+  };
+
+  const handleDownloadIcs = async (action: ProposedAction) => {
+    const execResult = (action.execution_result ?? {}) as Record<string, unknown>;
+    if (typeof execResult.ics_content === "string") {
+      triggerBrowserDownload(
+        String(execResult.ics_filename || `pengingat-${action.id.slice(0, 8)}.ics`),
+        execResult.ics_content,
+        "text/calendar;charset=utf-8",
+      );
+      return;
+    }
+    const storedToken =
+      typeof window !== "undefined"
+        ? window.sessionStorage.getItem("insurra.demo-session")
+        : null;
+    if (!storedToken) return;
+    const res = await fetch(`${publicConfig.apiBaseUrl}/api/v1/actions/${action.id}/ics`, {
+      headers: { "X-Demo-Session": storedToken },
+    });
+    if (res.ok) {
+      const text = await res.text();
+      triggerBrowserDownload(
+        `pengingat-${action.id.slice(0, 8)}.ics`,
+        text,
+        "text/calendar;charset=utf-8",
+      );
+    }
+  };
+
+  const handleDownloadPdf = async (action: ProposedAction) => {
+    const storedToken =
+      typeof window !== "undefined"
+        ? window.sessionStorage.getItem("insurra.demo-session")
+        : null;
+    if (!storedToken) return;
+    const res = await fetch(`${publicConfig.apiBaseUrl}/api/v1/actions/${action.id}/pdf`, {
+      headers: { "X-Demo-Session": storedToken },
+    });
+    if (res.ok) {
+      const bytes = await res.arrayBuffer();
+      triggerBrowserDownload(
+        `ringkasan-klaim-${action.id.slice(0, 8)}.pdf`,
+        bytes,
+        "application/pdf",
+      );
+    }
+  };
+
+  const handleCopyMessageText = async (textToCopy: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      await navigator.clipboard.writeText(textToCopy);
+      setCopiedText(true);
+      setTimeout(() => setCopiedText(false), 2500);
+    }
+  };
+
+  const handleCreateSandboxSubmissionFromForm = async (action: ProposedAction) => {
+    const storedToken =
+      typeof window !== "undefined"
+        ? window.sessionStorage.getItem("insurra.demo-session")
+        : null;
+    if (!storedToken) return;
+
+    setPending(true);
+    setError(null);
+    setFeedback(null);
+    try {
+      const created = await api.request("post", "/api/v1/actions", {
+        headers: { "X-Demo-Session": storedToken },
+        body: {
+          action_type: "submit_claim_sandbox",
+          title: "Kirim klaim ke penyedia (sandbox) — Lanjutan Formulir Klaim",
+          reason:
+            "Dibuat dari formulir klaim yang telah selesai untuk dikirim ke penyedia (sandbox)",
+          source_screen: "SC-10 · Persetujuan Tindakan",
+          permission_level: "L2",
+          payload: {
+            ...(action.payload ?? {}),
+            summary_action: "Klaim akan dikirim ke penyedia (sandbox)",
+          } as unknown as Record<string, never>,
+        },
+      });
+      setActiveTab("PENDING");
+      setSelectedId(created.id);
+      setFeedback({
+        type: "success",
+        message:
+          "Tindakan lanjutan 'Kirim ke penyedia (sandbox)' (Tingkat L2) berhasil dibuat dan masuk ke tab Menunggu.",
+      });
+      setRevision((r) => r + 1);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Gagal membuat tindakan pengiriman sandbox.",
+      );
       setPending(false);
     }
   };
@@ -483,6 +671,11 @@ function ActionsPageContent() {
     if (sessionLoading || authLoading) return null;
     return <SessionRequired />;
   }
+
+  const selectedExecResult = (selectedAction?.execution_result ?? {}) as Record<
+    string,
+    unknown
+  >;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16">
@@ -614,10 +807,11 @@ function ActionsPageContent() {
             <div className="space-y-1">
               <p className="font-semibold">{feedback.message}</p>
               <Link
-                href="/audit?type=guardrail"
+                href="/audit"
                 className="inline-flex items-center gap-1 underline font-bold"
               >
-                Buka Sorotan Guardrail di Riwayat Audit <ExternalLink size={11} />
+                Lihat Bukti Eksekusi &amp; Guardrail di Riwayat Audit (SC-11){" "}
+                <ExternalLink size={11} />
               </Link>
             </div>
           </div>
@@ -744,7 +938,7 @@ function ActionsPageContent() {
                 Daftar Kartu Tindakan ({filteredItems.length})
               </span>
               <span className="text-[11px] text-slate-500">
-                Klik kartu untuk pratinjau lengkap
+                Klik kartu untuk pratinjau &amp; eksekusi
               </span>
             </div>
             {filteredItems.map((item) => {
@@ -799,7 +993,7 @@ function ActionsPageContent() {
                         className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase ${
                           item.status === "APPROVED" || item.status === "COMPLETED"
                             ? "bg-emerald-100 text-emerald-800"
-                            : item.status === "REJECTED"
+                            : item.status === "REJECTED" || item.status === "FAILED"
                               ? "bg-rose-100 text-rose-800"
                               : "bg-amber-100 text-amber-900"
                         }`}
@@ -828,6 +1022,20 @@ function ActionsPageContent() {
                     <span className="font-semibold text-slate-900">Alasan: </span>
                     {cardReason}
                   </p>
+
+                  {/* Execution Timestamp or Failure Reason on Card */}
+                  {item.status === "COMPLETED" && item.executed_at && (
+                    <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md flex items-center gap-1.5">
+                      <CheckCircle2 size={12} className="shrink-0" />
+                      <span>Selesai dieksekusi: {formatDateTimeId(item.executed_at)}</span>
+                    </div>
+                  )}
+                  {item.status === "FAILED" && (
+                    <div className="text-[11px] font-semibold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md flex items-center gap-1.5">
+                      <AlertTriangle size={12} className="shrink-0" />
+                      <span>Gagal: {item.failure_reason ?? "Klik untuk mencoba lagi"}</span>
+                    </div>
+                  )}
 
                   {/* Footer Meta: Source Screen & Created Date */}
                   <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 pt-0.5">
@@ -868,7 +1076,8 @@ function ActionsPageContent() {
                         selectedAction.status === "APPROVED" ||
                         selectedAction.status === "COMPLETED"
                           ? "bg-emerald-100 text-emerald-800"
-                          : selectedAction.status === "REJECTED"
+                          : selectedAction.status === "REJECTED" ||
+                              selectedAction.status === "FAILED"
                             ? "bg-rose-100 text-rose-800"
                             : "bg-amber-100 text-amber-900"
                       }`}
@@ -895,27 +1104,240 @@ function ActionsPageContent() {
               </div>
 
               <div className="p-6 space-y-6">
-                {/* Immutable Notice if already APPROVED or REJECTED */}
+                {/* Immutable Notice if already APPROVED / COMPLETED / FAILED / REJECTED */}
                 {selectedAction.status !== "PENDING" && (
                   <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3 text-xs text-slate-700">
                     <Lock size={16} className="text-slate-500 shrink-0 mt-0.5" />
-                    <div className="space-y-1">
-                      <div className="font-bold text-slate-900">
-                        Status Tindakan: {STATUS_LABELS[selectedAction.status]}
+                    <div className="space-y-1 w-full">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <span className="font-bold text-slate-900">
+                          Status Akhir: {STATUS_LABELS[selectedAction.status]}
+                        </span>
+                        {selectedAction.executed_at && (
+                          <span
+                            data-testid="action-executed-at"
+                            className="text-emerald-800 font-semibold"
+                          >
+                            Waktu eksekusi: {formatDateTimeId(selectedAction.executed_at)}
+                          </span>
+                        )}
                       </div>
                       <p>
                         Payload tidak bisa diubah setelah disetujui; perubahan harus lewat draf baru.
                       </p>
                       {selectedAction.approved_payload_sha256 && (
-                        <p className="font-mono text-[11px] text-emerald-800 pt-1">
+                        <p className="font-mono text-[11px] text-emerald-800 pt-1 break-all">
                           SHA-256 Terikat: {selectedAction.approved_payload_sha256}
                         </p>
                       )}
                       {selectedAction.reason && (
-                        <p className="text-rose-800 font-semibold pt-1">
-                          Alasan tercatat: {selectedAction.reason}
+                        <p className="text-slate-800 font-semibold pt-1">
+                          Alasan: {selectedAction.reason}
                         </p>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Failed State Banner + "Coba lagi" Button (US-10-03) */}
+                {selectedAction.status === "FAILED" && (
+                  <div
+                    role="alert"
+                    data-testid="execution-failed-box"
+                    className="p-4 rounded-xl border-2 border-rose-300 bg-rose-50 text-rose-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1">
+                      <div className="font-bold flex items-center gap-1.5">
+                        <AlertTriangle size={15} className="text-rose-700" />
+                        Eksekusi Tindakan Gagal
+                      </div>
+                      <p>{selectedAction.failure_reason ?? "Terjadi kendala saat menjalankan tindakan."}</p>
+                    </div>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      data-testid="btn-retry-execute"
+                      disabled={pending}
+                      onClick={() => void handleExecuteAction(selectedAction)}
+                      className="shrink-0 text-xs bg-rose-700 hover:bg-rose-800 text-white flex items-center gap-1.5"
+                    >
+                      <RotateCcw size={13} />
+                      Coba lagi
+                    </Button>
+                  </div>
+                )}
+
+                {/* US-10-03 Execution Output & Artifact Controls when COMPLETED */}
+                {selectedAction.status === "COMPLETED" && (
+                  <div
+                    data-testid="execution-artifacts-panel"
+                    className="p-5 rounded-xl border-2 border-emerald-300 bg-emerald-50/60 space-y-4"
+                  >
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-950 uppercase tracking-wide">
+                        <CheckCircle2 size={16} className="text-emerald-700" />
+                        <span>Hasil Eksekusi Tindakan (Data Sensitif Tersamar)</span>
+                      </div>
+                      {selectedAction.executed_at && (
+                        <span className="text-[11px] font-semibold text-emerald-900">
+                          Dieksekusi: {formatDateTimeId(selectedAction.executed_at)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 1. Pengingat (.ics download + Google Calendar) */}
+                    {selectedAction.action_type === "create_reminder" && (
+                      <div className="space-y-3 text-xs">
+                        <p className="text-emerald-900">
+                          File kalender <strong>.ics</strong> telah disiapkan untuk tanggal{" "}
+                          <strong>{String(selectedExecResult.reminder_date ?? selectedAction.payload?.reminder_date ?? "-")}</strong>{" "}
+                          tanpa memuat nomor polis lengkap, NIK, paspor, atau visa.
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            data-testid="btn-download-ics"
+                            onClick={() => void handleDownloadIcs(selectedAction)}
+                            className="text-xs flex items-center gap-1.5"
+                          >
+                            <Download size={14} />
+                            Unduh File .ics
+                          </Button>
+                          {typeof selectedExecResult.google_calendar_url === "string" && (
+                            <a
+                              href={selectedExecResult.google_calendar_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              data-testid="btn-google-calendar"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-emerald-400 bg-white text-xs font-bold text-emerald-900 hover:bg-emerald-100"
+                            >
+                              <CalendarPlus size={14} />
+                              Tambah ke Google Calendar
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. Draf Pesan (mailto + Salin teks) */}
+                    {selectedAction.action_type === "draft_message" && (
+                      <div className="space-y-3 text-xs">
+                        <p className="text-emerald-900">
+                          Aplikasi tidak mengirim email sendiri. Gunakan tombol di bawah untuk membuka aplikasi email Anda dengan subjek dan isi sesuai versi yang disetujui:
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          <a
+                            href={String(selectedExecResult.mailto_url ?? "mailto:")}
+                            data-testid="btn-open-mailto"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800"
+                          >
+                            <Mail size={14} />
+                            Buka di aplikasi email
+                          </a>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            data-testid="btn-copy-message"
+                            onClick={() =>
+                              void handleCopyMessageText(
+                                String(
+                                  selectedExecResult.copy_text ??
+                                    selectedAction.payload?.message ??
+                                    "",
+                                ),
+                              )
+                            }
+                            className="text-xs flex items-center gap-1.5 bg-white"
+                          >
+                            <Copy size={13} />
+                            {copiedText ? "Teks Tersalin!" : "Salin teks"}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3. Formulir Klaim / Kirim Klaim (PDF Ringkasan + Daftar Lampiran + Kirim ke penyedia sandbox) */}
+                    {(selectedAction.action_type === "draft_claim_form" ||
+                      selectedAction.action_type === "claim_submit" ||
+                      selectedAction.action_type === "submit_claim_sandbox") && (
+                      <div className="space-y-3 text-xs">
+                        <p className="text-emerald-900">
+                          Ringkasan klaim PDF beserta daftar lampiran telah dibuat dengan nomor polis tersamar (<strong>{String(selectedAction.payload?.policy_number ?? "****1234")}</strong>).
+                        </p>
+                        {Array.isArray(selectedExecResult.attachments_list) && (
+                          <div className="p-3 rounded-lg bg-white border border-emerald-200 space-y-1">
+                            <div className="font-bold text-slate-800">
+                              Daftar Lampiran Klaim:
+                            </div>
+                            <ul className="list-disc list-inside text-slate-700 space-y-0.5">
+                              {(selectedExecResult.attachments_list as string[]).map(
+                                (att, idx) => (
+                                  <li key={idx}>{att}</li>
+                                ),
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            data-testid="btn-download-pdf"
+                            onClick={() => void handleDownloadPdf(selectedAction)}
+                            className="text-xs flex items-center gap-1.5"
+                          >
+                            <Download size={14} />
+                            Unduh PDF Ringkasan Klaim
+                          </Button>
+                          {selectedAction.action_type === "draft_claim_form" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              data-testid="btn-create-sandbox-action"
+                              disabled={pending}
+                              onClick={() =>
+                                void handleCreateSandboxSubmissionFromForm(selectedAction)
+                              }
+                              className="text-xs flex items-center gap-1.5 bg-white border-amber-400 text-amber-950 hover:bg-amber-50 font-bold"
+                            >
+                              <Send size={13} />
+                              Kirim ke penyedia (sandbox)
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Idempotency & Hash Guardrail Verification Controls */}
+                    <div className="pt-3 border-t border-emerald-200/80 flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[11px] text-emerald-900">
+                        Verifikasi keamanan eksekusi server:
+                      </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          data-testid="btn-execute-idempotent"
+                          disabled={pending}
+                          onClick={() => void handleExecuteAction(selectedAction)}
+                          className="text-[11px] bg-white h-7 px-2.5"
+                        >
+                          Jalankan Ulang (Uji Idempoten)
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          data-testid="btn-test-hash-mismatch"
+                          disabled={pending}
+                          onClick={() =>
+                            void handleExecuteAction(selectedAction, { tamperHash: true })
+                          }
+                          className="text-[11px] bg-white border-amber-300 text-amber-950 h-7 px-2.5"
+                        >
+                          Uji Hash Tidak Cocok (403)
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1159,7 +1581,7 @@ function ActionsPageContent() {
                       variant="ghost"
                       size="sm"
                       disabled={pending}
-                      onClick={() => void handleTestExecute(selectedAction)}
+                      onClick={() => void handleExecuteAction(selectedAction)}
                       className="text-xs text-amber-900 hover:bg-amber-100 flex items-center gap-1.5"
                     >
                       <Shield size={13} />
@@ -1173,14 +1595,14 @@ function ActionsPageContent() {
                         <CheckCircle2 size={15} /> Disetujui — Tombol Ubah dikunci demi integritas hash payload.
                       </span>
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
                         disabled={pending}
-                        onClick={() => void handleTestExecute(selectedAction)}
+                        onClick={() => void handleExecuteAction(selectedAction)}
                         className="text-xs flex items-center gap-1.5"
                       >
                         <Play size={13} />
-                        Eksekusi Versi Disetujui
+                        Jalankan Tindakan
                       </Button>
                     </div>
                   )
