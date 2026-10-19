@@ -21,7 +21,6 @@ import {
   Search,
   Shield,
   ShieldCheck,
-  Sparkles,
   User,
   Users,
   X,
@@ -1203,7 +1202,13 @@ function AccountOnboardingContent() {
         <section className="onboarding-chat-card" aria-label="Interactive Onboarding Chat">
           <div className="chat-header">
             <div className="chat-bot-avatar">
-              <Sparkles size={18} color="#0ea58a" />
+              <Image
+                src="/mascot-bubble.png"
+                width={52}
+                height={52}
+                alt=""
+                className="chat-bot-mascot"
+              />
             </div>
             <div>
               <h3>INSURRA Insurance Companion</h3>
@@ -2273,27 +2278,45 @@ function AccountOnboardingContent() {
             </div>
           </div>
 
-          {/* Dynamic Suggested Documents */}
+          {/* Dynamic document guidance */}
           <div className="suggested-docs-container">
             <div className="suggested-docs-head">
-              <h4>Suggested Documents</h4>
+              <div>
+                <span className="suggested-docs-eyebrow">AFTER ONBOARDING</span>
+                <h4>Documents you can add later</h4>
+              </div>
+              <span className="suggestion-not-required">Not all required</span>
             </div>
             <p className="suggested-docs-sub">
-              Tailored to your location, situation, and declared coverage categories.
+              Based on your answers. Upload only what you already have—INSURRA will guide you
+              through the rest after setup.
             </p>
 
             <div className="suggested-docs-list">
-              {dynamicSuggestedDocs.map((doc) => (
+              {dynamicSuggestedDocs.slice(0, 3).map((doc, index) => (
                 <div key={doc.id} className="suggested-doc-card">
                   <div className="doc-card-top">
-                    <FileText size={16} color="#0ea58a" />
+                    <span className="doc-order">{index + 1}</span>
                     <h5>{doc.title}</h5>
-                    <span className={`doc-status-badge ${doc.statusType}`}>{doc.status}</span>
+                    <span className={`doc-status-badge ${doc.statusType}`}>
+                      {doc.statusType === "required"
+                        ? "Needed for this task"
+                        : doc.statusType === "recommended"
+                          ? "Good to upload"
+                          : "If available"}
+                    </span>
                   </div>
                   <p className="doc-desc">{doc.description}</p>
-                  <span className="doc-reason">{doc.sourceReason}</span>
+                  <details className="doc-reason-details">
+                    <summary>Why this helps</summary>
+                    <p>{doc.sourceReason}</p>
+                  </details>
                 </div>
               ))}
+            </div>
+            <div className="suggested-docs-note">
+              <FileText size={15} aria-hidden="true" />
+              <span>You can skip this for now and continue setting up your profile.</span>
             </div>
           </div>
         </aside>
