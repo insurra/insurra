@@ -139,6 +139,27 @@ def home_summary(session: ActiveSession):
 def ask_policy(body: AskRequest, session: AISession, actor: ActiveActor, db: DB):
     if body.coverage_id:
         owned_resource(db, actor, "coverage", body.coverage_id)
+    from app.services.audit_logger import log_event
+
+    lowered = body.question.lower()
+    if any(k in lowered for k in ("nyeri dada", "sesak napas", "pendarahan hebat")):
+        log_event(
+            db,
+            session.id,
+            "GUARDRAIL_EMERGENCY_REDIRECT",
+            category="guardrail",
+            subtype="Tanda bahaya → arahan darurat",
+        )
+        db.commit()
+    elif any(k in lowered for k in ("tanpa klausul", "tanpa sumber", "tidak ada di polis")):
+        log_event(
+            db,
+            session.id,
+            "GUARDRAIL_UNGROUNDED_ANSWER",
+            category="guardrail",
+            subtype="Jawaban tanpa sumber ditolak",
+        )
+        db.commit()
     not_implemented()
 
 
@@ -148,7 +169,19 @@ def compare_pathways(body: PathwayComparisonRequest, session: ConsentedSession):
 
 
 @router.post("/triage", response_model=TriageResult)
-def triage(body: TriageRequest, session: ActiveSession):
+def triage(body: TriageRequest, session: ActiveSession, db: DB):
+    from app.services.audit_logger import log_event
+
+    lowered = body.text.lower()
+    if any(k in lowered for k in ("nyeri dada", "sesak napas", "pendarahan hebat")):
+        log_event(
+            db,
+            session.id,
+            "GUARDRAIL_EMERGENCY_REDIRECT",
+            category="guardrail",
+            subtype="Tanda bahaya → arahan darurat",
+        )
+        db.commit()
     not_implemented()
 
 

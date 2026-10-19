@@ -1,11 +1,12 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import AccountAuditRow, AuditRow
-from app.schemas.audit import AuditCategory, AuditEvent
+from app.schemas.audit import AuditCategory, AuditEvent, GuardrailSubtype
 from app.services.policy_guard import PolicyGuard
 
 CATEGORY_EVENT_TYPES: dict[AuditCategory, tuple[str, ...]] = {
@@ -29,9 +30,23 @@ CATEGORY_EVENT_TYPES: dict[AuditCategory, tuple[str, ...]] = {
     ),
     "compare": ("COMPARE",),
     "action": ("ACTION",),
-    "guardrail": ("GUARDRAIL", "INJECTION_FLAGGED"),
+    "guardrail": (
+        "GUARDRAIL",
+        "INJECTION_FLAGGED",
+        "GUARDRAIL_DOCUMENT_INJECTION",
+        "GUARDRAIL_EMERGENCY_REDIRECT",
+        "GUARDRAIL_UNGROUNDED_ANSWER",
+        "GUARDRAIL_UNAPPROVED_ACTION",
+    ),
     "deletion": ("DELETION", "DATA_DELETED", "DOCUMENT_DELETED", "FAMILY_MEMBER_DELETED"),
 }
+
+VALID_GUARDRAIL_SUBTYPES: tuple[GuardrailSubtype, ...] = (
+    "Instruksi di dokumen diabaikan",
+    "Tanda bahaya → arahan darurat",
+    "Jawaban tanpa sumber ditolak",
+    "Tindakan tanpa persetujuan diblokir",
+)
 
 
 def classify_event_category(
@@ -47,6 +62,34 @@ def classify_event_category(
             if upper == p.upper() or upper.startswith(p.upper() + "_"):
                 return category
     return "answer"
+
+
+def resolve_guardrail_subtype(
+    event_type: str, metadata: dict[str, Any] | None = None
+) -> GuardrailSubtype:
+    raw = str((metadata or {}).get("subtype") or "")
+    if raw in VALID_GUARDRAIL_SUBTYPES:
+        return raw  # type: ignore[return-value]
+    upper = event_type.upper()
+    if "INJECTION" in upper or raw in {"document_injection", "injection"}:
+        return "Instruksi di dokumen diabaikan"
+    if (
+        "EMERGENCY" in upper
+        or "RED_FLAG" in upper
+        or "TRIAGE" in upper
+        or raw in {"emergency_redirect", "red_flag"}
+    ):
+        return "Tanda bahaya → arahan darurat"
+    if (
+        "UNGROUNDED" in upper
+        or "CITATION" in upper
+        or "SOURCE" in upper
+        or raw in {"ungrounded_answer", "no_citation"}
+    ):
+        return "Jawaban tanpa sumber ditolak"
+    if "UNAPPROVED" in upper or "ACTION" in upper or raw == "unapproved_action":
+        return "Tindakan tanpa persetujuan diblokir"
+    return "Instruksi di dokumen diabaikan"
 
 
 def _default_enrichment(event_type: str, metadata: dict[str, Any]) -> dict[str, Any]:
@@ -174,16 +217,85 @@ def _default_enrichment(event_type: str, metadata: dict[str, Any]) -> dict[str, 
         },
         "INJECTION_FLAGGED": {
             "source_screen": "SC-03 · Dokumen Saya",
+            "subtype": "Instruksi di dokumen diabaikan",
             "input_summary": (
                 "Pemeriksaan keamanan teks dokumen terhadap pola instruksi mencurigakan."
             ),
             "tools_called": ["policy_guard", "extract_text_or_ocr"],
             "result_summary": (
-                "Instruksi mencurigakan (prompt injection) terdeteksi dan disaring dari dokumen."
+                "Instruksi mencurigakan (prompt injection) terdeteksi dan diabaikan dari dokumen."
             ),
             "reason": (
                 "Guardrail keamanan memperlakukan dokumen sebagai bukti pasif, "
                 "bukan instruksi sistem."
+            ),
+        },
+        "GUARDRAIL_DOCUMENT_INJECTION": {
+            "source_screen": "SC-03 · Dokumen Saya",
+            "subtype": "Instruksi di dokumen diabaikan",
+            "input_summary": (
+                "Unggah dokumen klaim dengan baris instruksi tersembunyi "
+                "(prompt injection) pada polis ****1234."
+            ),
+            "tools_called": ["policy_guard", "extract_text_or_ocr"],
+            "result_summary": (
+                "Baris instruksi mencurigakan di dokumen diabaikan; "
+                "ekstraksi hanya membaca fakta polis."
+            ),
+            "reason": (
+                "Guardrail keamanan memperlakukan dokumen sebagai bukti pasif, "
+                "bukan instruksi sistem."
+            ),
+        },
+        "GUARDRAIL_EMERGENCY_REDIRECT": {
+            "source_screen": "SC-06 · Tanya Polis",
+            "subtype": "Tanda bahaya → arahan darurat",
+            "input_summary": (
+                "Deteksi keluhan tanda bahaya medis (gejala nyeri dada akut) "
+                "pada percakapan pengguna."
+            ),
+            "tools_called": ["triage_check", "policy_guard"],
+            "result_summary": (
+                "Analisis polis dihentikan sementara; pengguna langsung diarahkan "
+                "ke layanan darurat lokal (000 / 119)."
+            ),
+            "reason": (
+                "Keselamatan medis pengguna menjadi prioritas mutlak di atas "
+                "pemrosesan administrasi asuransi."
+            ),
+        },
+        "GUARDRAIL_UNGROUNDED_ANSWER": {
+            "source_screen": "SC-06 · Tanya Polis",
+            "subtype": "Jawaban tanpa sumber ditolak",
+            "input_summary": (
+                "Pertanyaan manfaat khusus yang klausulnya tidak ditemukan "
+                "pada dokumen polis ****1234."
+            ),
+            "tools_called": ["retrieve_clause", "policy_guard"],
+            "result_summary": (
+                "Draf jawaban tanpa kutipan klausul resmi ditolak; status "
+                "dikembalikan sebagai PERLU VERIFIKASI."
+            ),
+            "reason": (
+                "Guardrail anti-halusinasi melarang agen memberikan kepastian "
+                "manfaat tanpa bukti kutipan halaman dokumen."
+            ),
+        },
+        "GUARDRAIL_UNAPPROVED_ACTION": {
+            "source_screen": "SC-10 · Persetujuan Tindakan",
+            "subtype": "Tindakan tanpa persetujuan diblokir",
+            "input_summary": (
+                "Percobaan eksekusi pengiriman draf klaim keluar sebelum "
+                "persetujuan eksplisit pengguna."
+            ),
+            "tools_called": ["policy_guard", "draft_claim_form"],
+            "result_summary": (
+                "Eksekusi tindakan keluar diblokir karena belum memiliki "
+                "persetujuan hash payload yang sah dari pemilik sesi."
+            ),
+            "reason": (
+                "Setiap tindakan keluar wajib disetujui secara eksplisit oleh "
+                "pengguna sebelum dieksekusi."
             ),
         },
         "FIELD_REVIEWED": {
@@ -295,11 +407,13 @@ def _default_enrichment(event_type: str, metadata: dict[str, Any]) -> dict[str, 
             "approval_status": "PENDING",
         }
     if category == "guardrail":
+        resolved_sub = resolve_guardrail_subtype(event_type, metadata)
         return {
             "source_screen": "SC-08 · Guardrail Keamanan",
+            "subtype": resolved_sub,
             "input_summary": "Pemeriksaan keamanan dan tanda bahaya (guardrail).",
             "tools_called": ["triage_check", "policy_guard"],
-            "result_summary": "Peristiwa guardrail tercatat dan perlindungan keamanan diterapkan.",
+            "result_summary": f"Peristiwa guardrail diterapkan: {resolved_sub}.",
             "reason": (
                 "Melindungi keselamatan pengguna dan mencegah pemrosesan instruksi tidak aman."
             ),
@@ -354,6 +468,11 @@ def enrich_audit_event(
     if category == "action" and not approval_status:
         approval_status = "PENDING"
 
+    subtype: GuardrailSubtype | None = None
+    if category == "guardrail":
+        subtype = resolve_guardrail_subtype(event_type, safe_meta)
+        safe_meta["subtype"] = subtype
+
     if category == "answer":
         if "citations" not in safe_meta and event_type in {"ANSWER", "POLICY_QUESTION_ANSWERED"}:
             safe_meta["citations"] = [
@@ -383,6 +502,7 @@ def enrich_audit_event(
         metadata=safe_meta,
         created_at=created_at,
         category=category,
+        subtype=subtype,
         source_screen=source_screen,
         input_summary=guard.mask_sensitive_numbers(raw_input),
         tools_called=tools_called,
@@ -415,3 +535,153 @@ def log_account_event(db: Session, account_id: UUID, event_type: str, **metadata
             created_at=datetime.now(UTC),
         )
     )
+
+
+DEMO_GUARDRAIL_SCENARIOS: tuple[tuple[str, dict[str, Any]], ...] = (
+    (
+        "INJECTION_FLAGGED",
+        {
+            "category": "guardrail",
+            "subtype": "Instruksi di dokumen diabaikan",
+            "source_screen": "SC-03 · Dokumen Saya",
+            "input_summary": (
+                "Unggah dokumen klaim dengan baris instruksi tersembunyi "
+                "(prompt injection) pada polis OSHC-8899001234."
+            ),
+            "tools_called": ["policy_guard", "extract_text_or_ocr"],
+            "result_summary": (
+                "Baris instruksi mencurigakan di dokumen diabaikan; "
+                "ekstraksi hanya membaca fakta polis ****1234."
+            ),
+            "reason": (
+                "Guardrail keamanan memperlakukan dokumen sebagai bukti pasif, "
+                "bukan instruksi sistem."
+            ),
+            "injection_flag": True,
+        },
+    ),
+    (
+        "GUARDRAIL_EMERGENCY_REDIRECT",
+        {
+            "category": "guardrail",
+            "subtype": "Tanda bahaya → arahan darurat",
+            "source_screen": "SC-06 · Tanya Polis",
+            "input_summary": (
+                "Pesan pengguna menyebutkan keluhan tanda bahaya medis (nyeri dada akut)."
+            ),
+            "tools_called": ["triage_check", "policy_guard"],
+            "result_summary": (
+                "Tanda bahaya terdeteksi; analisis klaim dihentikan dan pengguna "
+                "diarahkan ke nomor darurat lokal (000 / 119)."
+            ),
+            "reason": (
+                "Keselamatan medis pengguna menjadi prioritas utama di atas "
+                "pemrosesan administrasi asuransi."
+            ),
+            "rule_id": "RULE-REDFLAG-CHEST-PAIN",
+        },
+    ),
+    (
+        "GUARDRAIL_UNGROUNDED_ANSWER",
+        {
+            "category": "guardrail",
+            "subtype": "Jawaban tanpa sumber ditolak",
+            "source_screen": "SC-06 · Tanya Polis",
+            "input_summary": (
+                "Pertanyaan manfaat tanpa klausul pendukung pada dokumen polis OSHC-8899001234."
+            ),
+            "tools_called": ["retrieve_clause", "policy_guard"],
+            "result_summary": (
+                "Jawaban tanpa kutipan klausul resmi ditolak; status dikembalikan "
+                "sebagai PERLU VERIFIKASI."
+            ),
+            "reason": (
+                "Guardrail anti-halusinasi menolak klaim manfaat yang tidak memiliki "
+                "kutipan halaman dokumen terverifikasi."
+            ),
+        },
+    ),
+    (
+        "GUARDRAIL_UNAPPROVED_ACTION",
+        {
+            "category": "guardrail",
+            "subtype": "Tindakan tanpa persetujuan diblokir",
+            "source_screen": "SC-10 · Persetujuan Tindakan",
+            "input_summary": (
+                "Percobaan eksekusi pengiriman draf klaim polis OSHC-8899001234 "
+                "tanpa token persetujuan pengguna."
+            ),
+            "tools_called": ["policy_guard", "draft_claim_form"],
+            "result_summary": (
+                "Eksekusi tindakan keluar diblokir karena belum disetujui "
+                "secara eksplisit oleh pemilik sesi."
+            ),
+            "reason": (
+                "Agen dilarang mengeksekusi tindakan keluar tanpa persetujuan "
+                "hash payload canonical dari pengguna."
+            ),
+            "approval_status": "PENDING",
+        },
+    ),
+)
+
+
+def ensure_demo_guardrail_events(db: Session, session_id: UUID) -> None:
+    existing_types = set(
+        db.scalars(
+            select(AuditRow.event_type).where(
+                AuditRow.session_id == session_id,
+                AuditRow.event_type.in_(
+                    [etype for etype, _ in DEMO_GUARDRAIL_SCENARIOS]
+                ),
+            )
+        )
+    )
+    now = datetime.now(UTC)
+    guard = PolicyGuard()
+    added = False
+    for idx, (event_type, meta) in enumerate(DEMO_GUARDRAIL_SCENARIOS):
+        if event_type not in existing_types:
+            db.add(
+                AuditRow(
+                    id=uuid4(),
+                    session_id=session_id,
+                    event_type=event_type,
+                    outcome="SUCCESS",
+                    event_metadata=guard.redact_audit_metadata(meta),
+                    created_at=now + timedelta(milliseconds=idx * 10),
+                )
+            )
+            added = True
+    if added:
+        db.commit()
+
+
+def ensure_account_guardrail_events(db: Session, account_id: UUID) -> None:
+    existing_types = set(
+        db.scalars(
+            select(AccountAuditRow.event_type).where(
+                AccountAuditRow.account_id == account_id,
+                AccountAuditRow.event_type.in_(
+                    [etype for etype, _ in DEMO_GUARDRAIL_SCENARIOS]
+                ),
+            )
+        )
+    )
+    now = datetime.now(UTC)
+    guard = PolicyGuard()
+    added = False
+    for idx, (event_type, meta) in enumerate(DEMO_GUARDRAIL_SCENARIOS):
+        if event_type not in existing_types:
+            db.add(
+                AccountAuditRow(
+                    id=uuid4(),
+                    account_id=account_id,
+                    event_type=event_type,
+                    metadata_json=guard.redact_audit_metadata(meta),
+                    created_at=now + timedelta(milliseconds=idx * 10),
+                )
+            )
+            added = True
+    if added:
+        db.commit()

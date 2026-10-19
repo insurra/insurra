@@ -92,6 +92,19 @@ class PolicyGuard:
             "reason",
             "policy_number_masked",
         }
+        subtype_aliases = {
+            "document_injection": "Instruksi di dokumen diabaikan",
+            "injection": "Instruksi di dokumen diabaikan",
+            "Instruksi di dokumen diabaikan": "Instruksi di dokumen diabaikan",
+            "emergency_redirect": "Tanda bahaya → arahan darurat",
+            "red_flag": "Tanda bahaya → arahan darurat",
+            "Tanda bahaya → arahan darurat": "Tanda bahaya → arahan darurat",
+            "ungrounded_answer": "Jawaban tanpa sumber ditolak",
+            "no_citation": "Jawaban tanpa sumber ditolak",
+            "Jawaban tanpa sumber ditolak": "Jawaban tanpa sumber ditolak",
+            "unapproved_action": "Tindakan tanpa persetujuan diblokir",
+            "Tindakan tanpa persetujuan diblokir": "Tindakan tanpa persetujuan diblokir",
+        }
         plain_str_keys = {
             "source_screen",
             "screen_label",
@@ -125,6 +138,8 @@ class PolicyGuard:
                 output[key] = value
             elif key in allowed_values and isinstance(value, str) and value in allowed_values[key]:
                 output[key] = value
+            elif key == "subtype" and isinstance(value, str) and value in subtype_aliases:
+                output[key] = subtype_aliases[value]
             elif key == "tools_called" and isinstance(value, list):
                 clean_tools = [t for t in value if isinstance(t, str) and t in allowed_tools]
                 output[key] = clean_tools[:10]

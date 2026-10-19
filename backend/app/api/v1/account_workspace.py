@@ -42,7 +42,11 @@ from app.schemas.audit import AuditCategory, AuditEvent
 from app.schemas.common import CompletenessStatus
 from app.schemas.consent import POLICY_VERSION, ConsentPurpose, PurposeConsentUpdate
 from app.schemas.profile import ProfileData, ProfileUpdate, UserProfile
-from app.services.audit_logger import CATEGORY_EVENT_TYPES, enrich_audit_event
+from app.services.audit_logger import (
+    CATEGORY_EVENT_TYPES,
+    enrich_audit_event,
+    ensure_account_guardrail_events,
+)
 from app.services.policy_guard import PolicyGuard
 
 router = APIRouter(prefix="/account", tags=["Authenticated workspace"])
@@ -750,6 +754,8 @@ def list_account_audit(
     limit: Annotated[int | None, Query(ge=1, le=100)] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
 ):
+    if category == "guardrail":
+        ensure_account_guardrail_events(db, account.id)
     query = select(AccountAuditRow).where(AccountAuditRow.account_id == account.id)
     if event_type:
         query = query.where(AccountAuditRow.event_type == event_type)
@@ -766,6 +772,32 @@ def list_account_audit(
     query = query.order_by(AccountAuditRow.created_at.desc(), AccountAuditRow.id).offset(offset)
     if limit is not None:
         query = query.limit(limit)
+    return [
+        enrich_audit_event(
+            id=row.id,
+            session_id=row.account_id,
+            event_type=row.event_type,
+            outcome="SUCCESS",
+            metadata=row.metadata_json,
+            created_at=row.created_at,
+        )
+        for row in db.scalars(query)
+    ]
+
+
+@router.post("/audit/demo-guardrails", response_model=list[AuditEvent])
+def run_account_guardrail_scenario(db: DB, account: ActiveAccount):
+    ensure_account_guardrail_events(db, account.id)
+    prefixes = CATEGORY_EVENT_TYPES["guardrail"]
+    clauses = []
+    for p in prefixes:
+        clauses.append(AccountAuditRow.event_type == p)
+        clauses.append(AccountAuditRow.event_type.startswith(p + "_"))
+    query = (
+        select(AccountAuditRow)
+        .where(AccountAuditRow.account_id == account.id, or_(*clauses))
+        .order_by(AccountAuditRow.created_at.desc(), AccountAuditRow.id)
+    )
     return [
         enrich_audit_event(
             id=row.id,
