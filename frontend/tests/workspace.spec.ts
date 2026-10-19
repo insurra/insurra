@@ -138,7 +138,7 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
   page,
 }) => {
   const fixture = await pathwayFixture(page);
-  fixture.comparison.paths[0].direct_billing = true;
+  fixture.comparison.paths![0].direct_billing = true;
   const requests: { key: string | undefined; body: unknown }[] = [];
   const caseId = crypto.randomUUID();
   await page.route("**/api/v1/claims", async (route) => {
@@ -212,8 +212,8 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
 
 test("SC-07 emergency card never sends case creation", async ({ page }) => {
   const fixture = await pathwayFixture(page);
-  fixture.comparison.paths[0].emergency = true;
-  fixture.comparison.paths[0].name = "IGD · synthetic UI fixture";
+  fixture.comparison.paths![0].emergency = true;
+  fixture.comparison.paths![0].name = "IGD · synthetic UI fixture";
   let calls = 0;
   await page.route("**/api/v1/claims", (route) => {
     calls += 1;

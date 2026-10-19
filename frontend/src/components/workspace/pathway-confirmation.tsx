@@ -46,7 +46,7 @@ export function PathwayConfirmation({
       setError(
         cause instanceof Error
           ? cause.message
-          : "Kasus belum dapat dibuat. Coba kembali dengan konfirmasi ini.",
+          : "Claim draft could not be created. Retry with this confirmation.",
       );
     } finally {
       sending.current = false;
@@ -64,7 +64,7 @@ export function PathwayConfirmation({
       }}
     >
       <div className="vn">
-        <h2 id="pathway-confirm-title">Konfirmasi jalur</h2>
+        <h2 id="pathway-confirm-title">Confirm Care Pathway</h2>
         <h3>{path.name}</h3>
         <p>{path.coverage_label}</p>
         <ul>
@@ -74,17 +74,12 @@ export function PathwayConfirmation({
         </ul>
         {path.direct_billing === true && (
           <p>
-            Kamu mungkin tidak perlu klaim sendiri, tapi tetap simpan dokumen
-            ini.
+            Direct billing may apply under your policy, but keep all receipts and medical records.
           </p>
         )}
         <p>
-          Kasus berstatus Draft hanya menyimpan pilihan jalur dan ringkasan
-          tersamar. Ini belum mengajukan klaim.
-        </p>
-        <p>
-          Kesiapan klaim SC-09 belum tersedia. Kasus dapat dibuat, tetapi
-          checklist belum dapat dibuka.
+          A Draft claim case records your selected pathway and a redacted summary for checklist
+          preparation. It does not submit a claim or book an appointment.
         </p>
         {error && (
           <p role="alert" className="vn-error">
@@ -93,10 +88,10 @@ export function PathwayConfirmation({
         )}
         <div className="vn-actions">
           <button className="vn-primary" disabled={busy} onClick={confirm}>
-            {busy ? "Membuat kasus…" : "Buat kasus klaim"}
+            {busy ? "Creating draft..." : "Create claim draft"}
           </button>
           <button disabled={busy} onClick={onClose}>
-            Batal
+            Cancel
           </button>
         </div>
       </div>

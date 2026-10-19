@@ -19,6 +19,20 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api/client";
+import { safeRedirectPath } from "@/lib/safe-redirect";
+
+const EMAIL_DELIVERY_NOTICE =
+  "Email delivery is not configured on this server. Verification and reset emails cannot be sent.";
+
+function EmailDeliveryNotice() {
+  return (
+    <div className="journey-alert warning" role="status" data-testid="email-delivery-notice">
+      <ShieldAlert className="w-4 h-4 flex-none" />
+      <span>{EMAIL_DELIVERY_NOTICE}</span>
+    </div>
+  );
+}
 
 export default function AuthPage() {
   return (
@@ -39,7 +53,7 @@ export default function AuthPage() {
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTarget = searchParams.get("redirect") || "/onboarding";
+  const redirectTarget = safeRedirectPath(searchParams.get("redirect"), "/onboarding");
   const actionParam = searchParams.get("action");
   const tokenParam = searchParams.get("token");
 
@@ -90,6 +104,23 @@ function AuthContent() {
   const passwordId = useId();
   const confirmPasswordId = useId();
   const termsId = useId();
+
+  // Email delivery is reported by the server; assume unavailable until it says otherwise.
+  const [emailDelivery, setEmailDelivery] = useState(false);
+  useEffect(() => {
+    let active = true;
+    api
+      .request("get", "/api/v1/auth/capabilities", {})
+      .then((value) => {
+        if (active) setEmailDelivery(value.email_delivery);
+      })
+      .catch(() => {
+        if (active) setEmailDelivery(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Handle URL tokens for verification
   useEffect(() => {
@@ -258,7 +289,11 @@ function AuthContent() {
     const result = await resendVerification(targetEmail);
     if (result.success) {
       setCooldown(60);
-      setFormSuccess("Verification email resent. Please check your inbox.");
+      setFormSuccess(
+        emailDelivery
+          ? "Verification email resent. Please check your inbox."
+          : "Request recorded. No email was sent because email delivery is not configured.",
+      );
     } else {
       if (result.code === "COOLDOWN_ACTIVE" && result.retryAfter) {
         setCooldown(result.retryAfter);
@@ -279,7 +314,11 @@ function AuthContent() {
     const result = await forgotPassword(email.trim());
     setIsSubmitting(false);
     if (result.success) {
-      setFormSuccess("If this email is registered, password reset instructions have been sent.");
+      setFormSuccess(
+        emailDelivery
+          ? "If this email is registered, password reset instructions have been sent."
+          : "Request recorded. No email was sent because email delivery is not configured.",
+      );
     } else {
       setFormError(result.error || "Failed to process request.");
     }
@@ -525,11 +564,15 @@ function AuthContent() {
               <div className="journey-verify-icon">
                 <Mail className="w-8 h-8" />
               </div>
-              <h3>Check Your Email</h3>
-              <p>
-                We sent a verification link to <strong>{unverifiedEmail || "your email address"}</strong>.
-                Please check your inbox and click the link to activate your account.
-              </p>
+              <h3>{emailDelivery ? "Check Your Email" : "Account created"}</h3>
+              {emailDelivery ? (
+                <p>
+                  We sent a verification link to <strong>{unverifiedEmail || "your email address"}</strong>.
+                  Please check your inbox and click the link to activate your account.
+                </p>
+              ) : (
+                <EmailDeliveryNotice />
+              )}
 
               {formSuccess && (
                 <div className="journey-alert success w-full text-left mb-4" role="status">
@@ -547,7 +590,7 @@ function AuthContent() {
               <button
                 type="button"
                 className="journey-resend-btn w-full"
-                disabled={cooldown > 0}
+                disabled={cooldown > 0 || !emailDelivery}
                 onClick={handleResend}
               >
                 {cooldown > 0 ? `Resend Verification (${cooldown}s)` : "Resend Verification Email"}
@@ -574,8 +617,11 @@ function AuthContent() {
             <div>
               <h2>Reset your password</h2>
               <p className="journey-auth-lead">
-                Enter your registered email address and we will send you a password reset link.
+                {emailDelivery
+                  ? "Enter your registered email address and we will send you a password reset link."
+                  : "Password reset by email is currently unavailable."}
               </p>
+              {!emailDelivery && <EmailDeliveryNotice />}
 
               {formSuccess && (
                 <div className="journey-alert success" role="status">
@@ -610,7 +656,7 @@ function AuthContent() {
                 <button
                   type="submit"
                   className="journey-auth-submit"
-                  disabled={!isEmailValid || isSubmitting}
+                  disabled={!isEmailValid || isSubmitting || !emailDelivery}
                 >
                   {isSubmitting ? "Sending..." : "Send Reset Link"}
                   <ArrowRight className="w-4 h-4" />
@@ -742,6 +788,8 @@ function AuthContent() {
                   Register
                 </button>
               </div>
+
+              {mode === "register" && !emailDelivery && <EmailDeliveryNotice />}
 
               {/* Status and Error Alerts */}
               {formSuccess && (

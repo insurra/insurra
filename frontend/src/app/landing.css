@@ -1054,3 +1054,117 @@ footer {
     font-size: 9px;
   }
 }
+
+/* Interactive demo personas */
+.demo-section {
+  padding: 72px 0 40px;
+  background: #fff;
+  scroll-margin-top: 72px;
+}
+
+.demo-section h2 {
+  margin: 0 0 12px;
+  font-size: clamp(28px, 4vw, 38px);
+  text-align: center;
+}
+
+.demo-intro {
+  max-width: 680px;
+  margin: 0 auto 32px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.demo-status {
+  text-align: center;
+  color: var(--muted);
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  border: 1px solid #d5ebe8;
+  border-radius: 20px;
+  background: #f7fcfd;
+  box-shadow: var(--shadow);
+}
+
+.demo-card h3 {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+
+.demo-card p {
+  margin: 0;
+}
+
+.demo-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--light);
+  color: #046b5d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.demo-role {
+  font-weight: 700;
+}
+
+.demo-place {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.demo-desc {
+  color: var(--muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.demo-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-tags li {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #d5ebe8;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.demo-card .primary {
+  justify-content: center;
+}
+
+.demo-section .demo-error {
+  text-align: center;
+  margin-top: 16px;
+}

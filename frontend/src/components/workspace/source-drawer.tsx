@@ -5,7 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 
-type Citation = components["schemas"]["AnswerCitation"];
+type Citation = components["schemas"]["AnswerCitation"] & {
+  language?: string | null;
+  explanation_label?: string | null;
+};
+
 export function SourceDrawer({
   citation,
   headers,
@@ -31,7 +35,7 @@ export function SourceDrawer({
         if (!controller.signal.aborted) {
           if (!value.text.includes(citation.quote))
             setError(
-              "Kutipan telah berubah atau tidak lagi cocok. Mulai pertanyaan baru.",
+              "Quote has changed or no longer matches the source page. Start a new question.",
             );
           else setText(value.text);
         }
@@ -39,7 +43,7 @@ export function SourceDrawer({
       .catch((cause: unknown) => {
         if (!controller.signal.aborted)
           setError(
-            cause instanceof Error ? cause.message : "Sumber belum tersedia.",
+            cause instanceof Error ? cause.message : "Source page is not available.",
           );
       });
     return () => controller.abort();
@@ -54,19 +58,29 @@ export function SourceDrawer({
     >
       <div className="vn-list">
         <h2 id="source-title">
-          {citation.document_name ?? "Dokumen"} · hal. {citation.page}
+          {citation.document_name ?? "Document"} · p. {citation.page}
         </h2>
-        <button onClick={onClose}>Tutup sumber</button>
+        <button onClick={onClose}>Close source</button>
         {error ? (
           <p role="alert">{error}</p>
         ) : text ? (
           <>
             <span className="vn-badge">
-              Kutipan cocok dengan halaman sumber saat ini
+              Exact substring verified against retained source page
             </span>
-            <blockquote lang="">{citation.quote}</blockquote>
+            {citation.language && (
+              <span className="vn-badge" data-testid="citation-language">
+                Source language: {citation.language}
+              </span>
+            )}
+            {citation.explanation_label && (
+              <span className="vn-badge" data-testid="citation-explanation-label">
+                {citation.explanation_label}
+              </span>
+            )}
+            <blockquote lang={citation.language ?? ""}>{citation.quote}</blockquote>
             <details>
-              <summary>Halaman asli</summary>
+              <summary>Original page text</summary>
               <pre>
                 {text.slice(0, position)}
                 <mark>{citation.quote}</mark>
@@ -76,11 +90,11 @@ export function SourceDrawer({
             <Link
               href={`/documents/${encodeURIComponent(citation.doc)}#page-${citation.page}`}
             >
-              Buka dokumen · halaman {citation.page}
+              Open document · page {citation.page}
             </Link>
           </>
         ) : (
-          <p role="status">Memeriksa halaman dan persetujuan…</p>
+          <p role="status">Verifying source page and retention permissions…</p>
         )}
       </div>
     </dialog>

@@ -3,10 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   Activity,
   Bell,
-  Building2,
   ChevronDown,
   ClipboardCheck,
   FileText,
@@ -15,7 +15,6 @@ import {
   LogOut,
   PhoneCall,
   ShieldCheck,
-  SlidersHorizontal,
   Sparkles,
   Settings,
   User,
@@ -23,7 +22,21 @@ import {
 import { useSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
 import { useUserContext } from "@/lib/user-context";
+import { SessionRequired } from "@/components/session-required";
+import { signInUrl } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/layout/notification-bell";
+import { DemoBanner } from "@/components/layout/demo-banner";
+
+// Account-only routes send visitors without an account to sign in.
+const accountOnlyRoute = (pathname: string) =>
+  pathname.startsWith("/account") ||
+  pathname === "/completeness" ||
+  pathname === "/policies" ||
+  pathname === "/family";
+
+// Safety guidance stays reachable without a session.
+const sessionFreeRoute = (pathname: string) => pathname === "/emergency";
 
 const navigation = [
   { href: "/home", label: "Home", icon: Home },
@@ -68,18 +81,29 @@ function PrivateShell({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { data, loading, error, clearSession } = useSession();
-  const { account, token, logout } = useAuth();
+  const { data, loading, error } = useSession();
+  const { account, token, loading: authLoading, logout } = useAuth();
   const { residenceCountry, countryFlag } = useUserContext();
   const accountMode =
     Boolean(token && account) ||
     pathname.startsWith("/account") ||
     pathname === "/completeness" ||
-    pathname === "/settings/privacy" ||
     pathname === "/policies" ||
     pathname === "/family";
 
   const items = accountMode ? accountNavigation : navigation;
+  const demoMode = !accountMode && Boolean(data);
+
+  const sessionsReady = !authLoading && !loading;
+  const hasAccount = Boolean(token && account);
+  const needsSignIn = sessionsReady && !hasAccount && accountOnlyRoute(pathname);
+  const needsSession =
+    sessionsReady && !hasAccount && !data && !accountOnlyRoute(pathname) && !sessionFreeRoute(pathname);
+
+  useEffect(() => {
+    if (!needsSignIn) return;
+    router.replace(signInUrl(`${pathname}${window.location.search}`));
+  }, [needsSignIn, pathname, router]);
 
   const isNavActive = (href: string) => {
     if (href === pathname) return true;
@@ -113,7 +137,11 @@ function PrivateShell({
       return pathname === "/audit";
     }
     if (href === "/settings/privacy") {
-      return pathname === "/settings/privacy" || pathname === "/account/privacy";
+      return (
+        pathname === "/settings/privacy" ||
+        pathname === "/account/privacy" ||
+        pathname.startsWith("/settings")
+      );
     }
     return false;
   };
@@ -151,7 +179,11 @@ function PrivateShell({
       ? "Care Pathways"
       : pathname === "/audit"
       ? "Activity & Audit"
-      : pathname === "/settings/privacy"
+      : pathname === "/notifications"
+      ? "Notifications"
+      : pathname === "/profile"
+      ? "Profile"
+      : pathname.startsWith("/settings") || pathname === "/account/privacy"
       ? "Settings & Privacy"
       : pathname === "/onboarding"
       ? "User Context"
@@ -201,17 +233,18 @@ function PrivateShell({
         <div className="sidebar-bottom">
           <div className="sidebar-bottom-nav" style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
             <Link
-              href="/dashboard"
+              href="/notifications"
+              aria-current={pathname === "/notifications" ? "page" : undefined}
               className={cn("nav-item", pathname === "/notifications" && "active")}
               style={{ display: "flex", alignItems: "center", gap: 10 }}
             >
               <Bell size={19} />
               <span>Notifications</span>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", marginLeft: "auto" }} />
             </Link>
             <Link
-              href="/onboarding?mode=edit"
-              className={cn("nav-item", pathname.startsWith("/onboarding") && "active")}
+              href="/profile"
+              aria-current={pathname === "/profile" ? "page" : undefined}
+              className={cn("nav-item", pathname === "/profile" && "active")}
               style={{ display: "flex", alignItems: "center", gap: 10 }}
             >
               <User size={19} />
@@ -257,13 +290,10 @@ function PrivateShell({
             </Link>
 
             {/* Notification Bell */}
-            <div className="figma-topbar-bell" title="Notifications">
-              <Bell size={17} />
-              <span className="dot" />
-            </div>
+            <NotificationBell />
 
             {/* User Profile Avatar */}
-            <Link href="/onboarding?mode=edit" title="User Profile">
+            <Link href="/profile" title="Profile" aria-label="Profile">
               <div
                 style={{
                   width: 36,
@@ -283,7 +313,7 @@ function PrivateShell({
               </div>
             </Link>
 
-            {accountMode ? (
+            {accountMode && (
               <button
                 type="button"
                 onClick={async () => {
@@ -296,22 +326,10 @@ function PrivateShell({
                 <LogOut size={14} />
                 <span>Log out</span>
               </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  clearSession();
-                  router.push("/");
-                }}
-                className="topbar-logout-btn"
-                title="Exit demo session"
-              >
-                <LogOut size={14} />
-                <span>Exit Demo</span>
-              </button>
             )}
           </div>
         </header>
+        {demoMode && <DemoBanner />}
         <main id="main-content" className="main-content">
           {!accountMode && error && (
             <div role="alert" className="alert error">
@@ -323,7 +341,7 @@ function PrivateShell({
               Connecting session...
             </div>
           )}
-          {children}
+          {needsSignIn ? null : needsSession ? <SessionRequired /> : children}
         </main>
         <footer className="page-footer">
           <span>

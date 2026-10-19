@@ -10,16 +10,12 @@ interface HeroSectionProps {
   persona: PersonaType;
   onSelectPersona: (p: PersonaType) => void;
   onOpenDemo: () => void;
-  demoLoading: boolean;
-  demoError: string | null;
 }
 
 export function HeroSection({
   persona,
   onSelectPersona,
   onOpenDemo,
-  demoLoading,
-  demoError,
 }: HeroSectionProps) {
   const { account, loading } = useAuth();
   const signedIn = !loading && !!account;
@@ -56,27 +52,26 @@ export function HeroSection({
           </p>
 
           <div className="actions">
-            <button
-              type="button"
-              className="primary"
-              onClick={onOpenDemo}
-              disabled={demoLoading}
-            >
-              {demoLoading ? "Membuka demo..." : "Check Demo"}
-              {!demoLoading && <ArrowRight size={16} aria-hidden="true" />}
-            </button>
-
             {signedIn ? (
-              <Link href="/account" className="secondary">
+              <Link href="/home" className="primary">
                 Open workspace <ArrowRight size={16} aria-hidden="true" />
               </Link>
             ) : (
-              <Link href="/auth" className="secondary">
-                Log in
+              <Link href="/auth?action=register" className="primary">
+                Get Started <ArrowRight size={16} aria-hidden="true" />
               </Link>
             )}
+            <a
+              href="#demo"
+              className="secondary"
+              onClick={(event) => {
+                event.preventDefault();
+                onOpenDemo();
+              }}
+            >
+              Try Interactive Demo
+            </a>
           </div>
-          {demoError && <p className="demo-error" role="alert">{demoError}</p>}
 
           <div className="trust">
             <span>
@@ -95,7 +90,6 @@ export function HeroSection({
           persona={persona}
           onSelectPersona={onSelectPersona}
           onOpenDemo={onOpenDemo}
-          demoLoading={demoLoading}
         />
       </div>
 

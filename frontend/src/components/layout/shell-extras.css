@@ -1,0 +1,34 @@
+.bell-root { position: relative; }
+.bell-button { position: relative; border: 0; cursor: pointer; background: transparent; }
+.bell-button:focus-visible, .bell-item-main:focus-visible, .bell-item-read:focus-visible,
+.demo-banner button:focus-visible { outline: 2px solid #087f8c; outline-offset: 2px; }
+.bell-badge {
+  position: absolute; top: -5px; right: -6px; min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: 9px; background: #c73e4d; color: #fff; font-size: 10px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.bell-popover {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; width: min(360px, 92vw);
+  background: #fff; border: 1px solid #e2e9ed; border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(16, 42, 67, 0.16); padding: 10px;
+}
+.bell-popover-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px 8px; font-size: 13px; }
+.bell-popover-head a { color: #087f8c; font-weight: 700; font-size: 12px; }
+.bell-note { padding: 10px 6px; font-size: 12px; color: #526579; }
+.bell-list { list-style: none; margin: 0; padding: 0; max-height: 340px; overflow-y: auto; }
+.bell-item { display: flex; gap: 6px; align-items: flex-start; border-top: 1px solid #eef2f5; padding: 6px 4px; }
+.bell-item.unread { background: #f1faf7; }
+.bell-item-main { flex: 1; text-align: left; background: none; border: 0; cursor: pointer; display: flex; flex-direction: column; gap: 2px; padding: 4px; }
+.bell-item-title { font-size: 12.5px; font-weight: 700; color: #102a43; }
+.bell-item-body { font-size: 12px; color: #526579; }
+.bell-item-read { font-size: 11px; font-weight: 700; color: #087f8c; background: none; border: 0; cursor: pointer; padding: 6px; white-space: nowrap; }
+.demo-banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 9px 16px;
+  background: #fff6e9; border-bottom: 1px solid #f2dfb7; color: #8a5007; font-size: 12.5px;
+}
+.demo-banner p { margin: 0; flex: 1 1 260px; }
+.demo-banner-actions { display: flex; gap: 8px; }
+.demo-banner button { border: 1px solid #d9b46a; background: #fff; color: #8a5007; border-radius: 8px; padding: 5px 12px; font-weight: 700; font-size: 12px; cursor: pointer; }
+.demo-banner button:disabled { opacity: 0.55; cursor: not-allowed; }
+.demo-banner-error { color: #a2402d; font-size: 12px; }
+.sidebar-badge { margin-left: auto; min-width: 18px; height: 18px; border-radius: 9px; background: #c73e4d; color: #fff; font-size: 10px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }

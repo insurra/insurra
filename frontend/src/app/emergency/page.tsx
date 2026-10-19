@@ -171,8 +171,15 @@ export default function EmergencyPage() {
           <div className="space-y-3">
             {loading ? (
               <div className="p-6 text-center text-xs text-slate-500">Loading verified emergency contacts...</div>
+            ) : !data?.contacts || data.contacts.length === 0 ? (
+              <div
+                className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600"
+                data-testid="emergency-contacts-empty"
+              >
+                <span className="font-bold text-slate-800">Not available.</span> Verified emergency numbers are not available for this territory. Call local emergency services immediately.
+              </div>
             ) : (
-              data?.contacts.map((item) => (
+              data.contacts.map((item) => (
               <div
                 key={item.service_code}
                 className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-teal-500 transition-colors"
@@ -190,7 +197,7 @@ export default function EmergencyPage() {
               </div>
             )))}
 
-            {data?.mental_health_crisis_line && (
+            {data?.mental_health_crisis_line ? (
               <div className="p-3.5 bg-indigo-50/70 rounded-xl border border-indigo-200 mt-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -208,6 +215,10 @@ export default function EmergencyPage() {
                     <Phone size={12} /> {data.mental_health_crisis_line.phone_number}
                   </a>
                 </div>
+              </div>
+            ) : (
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 mt-4 text-xs text-slate-600">
+                <span className="font-bold text-slate-800">Crisis line: Not available</span> (no verified official crisis hotline in KB for this territory; contact local emergency services).
               </div>
             )}
           </div>

@@ -10,6 +10,8 @@ import {
 } from "react";
 import { api, ApiClientError } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
+import { purgeLegacyDemoTokens } from "@/lib/api/workflow-client";
+import { clearProfileCaches } from "@/lib/profile-cache";
 
 type S = components["schemas"];
 type SessionData = {
@@ -23,6 +25,10 @@ type SessionContextValue = {
   data: SessionData | null;
   loading: boolean;
   error: string | null;
+  /** True while a validated synthetic demo session is active. */
+  isDemo: boolean;
+  /** Opaque demo session token for X-Demo-Session, or null outside demo mode. */
+  demoToken: string | null;
   selectPersona: (id: string) => Promise<boolean>;
   setConsent: (value: boolean) => Promise<boolean>;
   getAudit: (eventType?: string) => Promise<S["AuditEvent"][]>;
@@ -58,11 +64,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [demoToken, setDemoToken] = useState<string | null>(null);
   const token = useRef<string | null>(null);
   const generation = useRef(0);
 
   useEffect(() => {
     let active = true;
+    purgeLegacyDemoTokens();
     async function restore() {
       try {
         const saved = sessionStorage.getItem(storageKey);
@@ -72,6 +80,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           : await Promise.resolve(null);
         if (!active) return;
         token.current = saved;
+        setDemoToken(saved);
         setData(restored);
       } catch (err) {
         if (!active) return;
@@ -90,7 +99,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const clearSession = useCallback(() => {
     generation.current += 1;
+    clearProfileCaches();
     token.current = null;
+    setDemoToken(null);
     sessionStorage.removeItem(storageKey);
     setData(null);
     setError(null);
@@ -100,7 +111,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const selectPersona = useCallback(async (id: string) => {
     const attempt = ++generation.current;
     token.current = null;
+    setDemoToken(null);
     sessionStorage.removeItem(storageKey);
+    clearProfileCaches();
     setData(null);
     setLoading(true);
     setError(null);
@@ -111,6 +124,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       const fresh = await loadSession(created.session_token);
       if (attempt !== generation.current) return false;
       token.current = created.session_token;
+      setDemoToken(created.session_token);
       sessionStorage.setItem(storageKey, created.session_token);
       setData(fresh);
       return true;
@@ -215,6 +229,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         data,
         loading,
         error,
+        isDemo: data !== null,
+        demoToken: data ? demoToken : null,
         selectPersona,
         setConsent,
         getAudit,

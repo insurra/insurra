@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Briefcase,
@@ -34,26 +34,10 @@ import {
 } from "@/lib/user-context";
 import "@/app/onboarding/onboarding.css";
 
-// Clean supported countries with flags (no demo notes or subtitles)
+// Clean supported countries with flags (only CN and ID are active knowledge markets)
 const COUNTRIES = [
   { code: "CN", name: "China", flag: "🇨🇳" },
   { code: "ID", name: "Indonesia", flag: "🇮🇩" },
-  { code: "AU", name: "Australia", flag: "🇦🇺" },
-  { code: "SG", name: "Singapore", flag: "🇸🇬" },
-  { code: "MY", name: "Malaysia", flag: "🇲🇾" },
-  { code: "US", name: "United States", flag: "🇺🇸" },
-  { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
-  { code: "JP", name: "Japan", flag: "🇯🇵" },
-  { code: "KR", name: "South Korea", flag: "🇰🇷" },
-  { code: "DE", name: "Germany", flag: "🇩🇪" },
-  { code: "FR", name: "France", flag: "🇫🇷" },
-  { code: "NL", name: "Netherlands", flag: "🇳🇱" },
-  { code: "CA", name: "Canada", flag: "🇨🇦" },
-  { code: "NZ", name: "New Zealand", flag: "🇳🇿" },
-  { code: "TH", name: "Thailand", flag: "🇹🇭" },
-  { code: "VN", name: "Vietnam", flag: "🇻🇳" },
-  { code: "PH", name: "Philippines", flag: "🇵🇭" },
-  { code: "IN", name: "India", flag: "🇮🇳" },
 ];
 
 const NATIONALITIES = [
@@ -80,7 +64,6 @@ const NATIONALITIES = [
 const CITY_PRESETS: Record<string, string[]> = {
   CN: ["Shenzhen", "Beijing", "Shanghai", "Guangzhou", "Hangzhou", "Chengdu", "Wuhan", "Nanjing", "Xi'an"],
   ID: ["Jakarta", "Surabaya", "Bandung", "Medan", "Yogyakarta", "Bali", "Semarang", "Makassar"],
-  AU: ["Melbourne", "Sydney", "Brisbane", "Perth", "Adelaide", "Canberra", "Gold Coast"],
   SG: ["Singapore", "Jurong", "Woodlands", "Tampines"],
   MY: ["Kuala Lumpur", "Penang", "Johor Bahru", "Petaling Jaya", "Kuching"],
   US: ["New York", "San Francisco", "Los Angeles", "Chicago", "Boston", "Seattle"],
@@ -339,7 +322,7 @@ const COVERAGE_CATEGORIES = [
   {
     id: "student_insurance",
     label: "Student Insurance",
-    sub: "International student or campus health scheme (e.g. Ping An Scheme in China, OSHC in AU)",
+    sub: "International student or campus health scheme (e.g. Comprehensive Medical Insurance in China)",
     exampleProvider: "Ping An Annuity / Allianz Care",
   },
   {
@@ -439,13 +422,11 @@ const BUDGET_CURRENCIES = [
   { code: "CNY", symbol: "¥", name: "Chinese Yuan (RMB)" },
   { code: "IDR", symbol: "Rp", name: "Indonesian Rupiah" },
   { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "AUD", symbol: "A$", name: "Australian Dollar" },
 ];
 
 const BUDGET_RANGES: Record<string, string[]> = {
   CNY: ["No additional budget", "< ¥300 / month", "¥300 - ¥800 / month", "¥800 - ¥2,000 / month", "> ¥2,000 / month"],
   IDR: ["No additional budget", "< Rp 250,000 / month", "Rp 250,000 - Rp 750,000 / month", "Rp 750,000 - Rp 1,500,000 / month", "> Rp 1,500,000 / month"],
-  AUD: ["No additional budget", "< $50 / month", "$50 - $150 / month", "$150 - $300 / month", "> $300 / month"],
   USD: ["No additional budget", "< $50 / month", "$50 - $150 / month", "$150 - $300 / month", "> $300 / month"],
 };
 
@@ -543,6 +524,94 @@ function AccountOnboardingContent() {
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
+  // Resume profile / draft from server if authenticated
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+    void Promise.resolve().then(async () => {
+      try {
+        const res = await api.request("get", "/api/v1/account/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!active) return;
+        if (res.completed) {
+          setIsCompleted(true);
+          setActiveStep(6);
+        }
+        const data = (res.draft || res.profile || {}) as Record<string, unknown>;
+        if (data.country_code) {
+          setResidenceCountry(data.country_code === "ID" ? "ID" : "CN");
+        }
+        if (typeof data.city === "string" && data.city) {
+          setCity(data.city);
+          setCityInput(data.city);
+        }
+        if (typeof data.nationality === "string" && data.nationality) {
+          setNationalityCode(data.nationality);
+          const matched = NATIONALITIES.find((n) => n.code === data.nationality);
+          if (matched) setNationality(matched.name);
+        }
+        if (data.occupation || data.situation) {
+          const sit = String(data.situation || data.occupation || "").toLowerCase();
+          if (sit === "student" || sit === "employee" || sit === "self_employed") {
+            setSegment(sit as "student" | "employee" | "self_employed");
+          }
+        }
+        if (typeof data.institution_name === "string" && data.institution_name) {
+          setInstitutionName(data.institution_name);
+        }
+        if (typeof data.employer_name === "string" && data.employer_name) {
+          setEmployerName(data.employer_name);
+        }
+        const permit = (data.permit_end_date || data.visa_expiry_date) as string | undefined;
+        if (typeof permit === "string" && permit) {
+          setResidencePermitExpiry(permit);
+        }
+        if (Array.isArray(data.owned_coverage) && data.owned_coverage.length > 0) {
+          setSelectedCoverages(
+            data.owned_coverage.map((cat: string) => ({
+              id: cat.toLowerCase().replace(/\s+/g, "_"),
+              category: cat,
+              label: cat,
+              status: "self_reported" as const,
+            }))
+          );
+        }
+        if (Array.isArray(data.dependents) && data.dependents.length > 0) {
+          setHouseholdScope("family");
+          setFamilyMembers(data.dependents as string[]);
+        }
+        if (typeof data.budget_range === "string" && data.budget_range) {
+          setSelectedBudgetRange(data.budget_range);
+        }
+        if (typeof data.currency === "string" && (data.currency === "CNY" || data.currency === "IDR" || data.currency === "USD")) {
+          setBudgetCurrency(data.currency as "CNY" | "IDR" | "USD");
+        }
+      } catch (err) {
+        console.warn("Could not restore profile draft from server:", err);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
+  // Persist draft step to server
+  const persistDraft = useCallback(
+    async (patch: Record<string, unknown>) => {
+      if (!token) return;
+      try {
+        await api.request("put", "/api/v1/account/profile/draft", {
+          headers: { Authorization: `Bearer ${token}` },
+          body: patch,
+        });
+      } catch {
+        // Non-blocking draft save
+      }
+    },
+    [token]
+  );
+
   // Auto-scroll chat on step change
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -582,6 +651,12 @@ function AccountOnboardingContent() {
       residenceCity: finalCity,
       preferredLanguage: language,
     });
+    void persistDraft({
+      country_code: residenceCountry,
+      city: finalCity,
+      nationality: nationalityCode === "CN" ? "CN" : "ID",
+      residence_context: residenceCountry === nationalityCode ? "DOMESTIC" : "ABROAD",
+    });
     proceedTo(2);
   }
 
@@ -605,6 +680,17 @@ function AccountOnboardingContent() {
       userSegment: segment,
       userSegmentLabel: SITUATION_OPTIONS.find((s) => s.id === segment)?.label || "Student",
       segmentDetails: segDetails,
+    });
+
+    const occ = segment === "student" ? "STUDENT" : segment === "employee" ? "EMPLOYEE" : "OTHER";
+    const sit = segment === "student" ? "STUDENT" : segment === "employee" ? "EMPLOYEE" : segment === "self_employed" ? "SELF_EMPLOYED" : "OTHER";
+    void persistDraft({
+      occupation: occ,
+      situation: sit,
+      institution_name: institutionName.trim() || null,
+      employer_name: finalBusinessName || null,
+      permit_end_date: residencePermitExpiry.trim() || null,
+      visa_expiry_date: residencePermitExpiry.trim() || null,
     });
     proceedTo(3);
   }
@@ -661,6 +747,9 @@ function AccountOnboardingContent() {
     userCtx.updateContext({
       declaredCoverages: selectedCoverages,
     });
+    void persistDraft({
+      owned_coverage: selectedCoverages.map((c) => c.category),
+    });
     proceedTo(4);
   }
 
@@ -672,12 +761,16 @@ function AccountOnboardingContent() {
       dependentCount: householdScope === "family" ? familyCount : 0,
       dependents: deps,
     });
+    void persistDraft({
+      dependents: householdScope === "family" ? familyMembers : [],
+    });
     proceedTo(5);
   }
 
   // Handle Step 5 Goals & Budget Submit
   async function handleStep5Submit(skipBudget = false) {
     setBusy(true);
+    setError(null);
     const budgetObj = skipBudget
       ? undefined
       : {
@@ -720,7 +813,9 @@ function AccountOnboardingContent() {
       try {
         const occ =
           segment === "student" ? "STUDENT" : segment === "employee" ? "EMPLOYEE" : "OTHER";
-        const cCode = (residenceCountry.toUpperCase() as "CN" | "ID" | "AU") || "CN";
+        const sit =
+          segment === "student" ? "STUDENT" : segment === "employee" ? "EMPLOYEE" : segment === "self_employed" ? "SELF_EMPLOYED" : "OTHER";
+        const cCode = (residenceCountry.toUpperCase() as "CN" | "ID") || "CN";
         const resContext = residenceCountry === nationalityCode ? "DOMESTIC" : "ABROAD";
 
         await api.request("put", "/api/v1/account/profile", {
@@ -729,9 +824,14 @@ function AccountOnboardingContent() {
             display_name: account?.display_name || "User",
             country_code: cCode,
             residence_context: resContext,
-            city,
+            city: city.trim() || (cCode === "CN" ? "Shenzhen" : "Jakarta"),
             occupation: occ,
-            institution_name: institutionName || null,
+            situation: sit,
+            institution_name: segment === "student" ? institutionName.trim() || null : null,
+            employer_name: (segment === "employee" || segment === "self_employed") ? (registeredBusinessName.trim() || employerName.trim()) || null : null,
+            permit_end_date: residencePermitExpiry.trim() || null,
+            visa_expiry_date: residencePermitExpiry.trim() || null,
+            nationality: nationalityCode === "CN" ? "CN" : "ID",
             dependents: householdScope === "family" ? familyMembers : [],
             owned_coverage: selectedCoverages.map((c) => c.category),
             priorities: selectedGoals.slice(0, 2),
@@ -739,8 +839,10 @@ function AccountOnboardingContent() {
             currency: budgetCurrency,
           },
         });
-      } catch {
-        // Continue gracefully even if network was slow
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Failed to save profile. Please review the form and retry.");
+        setBusy(false);
+        return;
       }
     }
 
@@ -754,7 +856,6 @@ function AccountOnboardingContent() {
     const docs: DynamicDocSuggestion[] = [];
     const isChina = residenceCountry === "CN";
     const isIndonesia = residenceCountry === "ID";
-    const isAustralia = residenceCountry === "AU";
     const isStudent = segment === "student";
     const isEmployee = segment === "employee";
     const isTraveler = segment === "traveler";
@@ -842,34 +943,6 @@ function AccountOnboardingContent() {
         description: "Official summary of covered inpatient treatments, surgical limits, and waiting periods.",
         sourceReason: "Helps detect out-of-pocket medical caps.",
       });
-    } else if (isAustralia) {
-      if (isStudent) {
-        docs.push({
-          id: "oshc_cert",
-          title: "OSHC Policy Certificate",
-          status: "Recommended",
-          statusType: "recommended",
-          description: "From Medibank, Bupa, Allianz Care, NIB, or AHM confirming Overseas Student Health Cover.",
-          sourceReason: "Required to verify Student Visa Condition 8501 health cover continuity.",
-        });
-        docs.push({
-          id: "visa_grant",
-          title: "Visa Grant Notice",
-          status: "Optional",
-          statusType: "optional",
-          description: "Department of Home Affairs notification letter confirming visa start and expiry dates.",
-          sourceReason: "Enables checking for potential uncovered gap periods before arrival or after study.",
-        });
-      } else {
-        docs.push({
-          id: "au_health_cert",
-          title: "Private Hospital Policy Schedule",
-          status: "Recommended",
-          statusType: "recommended",
-          description: "Australian private health or OVHC policy document.",
-          sourceReason: "Clarifies Medicare Benefits Schedule (MBS) percentages and private hospital excess.",
-        });
-      }
     } else if (isTraveler) {
       docs.push({
         id: "travel_policy",
@@ -1187,7 +1260,7 @@ function AccountOnboardingContent() {
                       </div>
                     )}
 
-                    {segment === "student" && residenceCountry !== "CN" && residenceCountry !== "AU" && (
+                    {segment === "student" && residenceCountry !== "CN" && (
                       <div className="conditional-group-card">
                         <span className="conditional-tag">Student Details in {activeCountryObj.name}</span>
                         <div className="field-row">
@@ -1319,7 +1392,7 @@ function AccountOnboardingContent() {
                           <input
                             type="text"
                             className="text-input-field"
-                            placeholder="e.g. China, Indonesia, Australia..."
+                            placeholder="e.g. China, Indonesia, Singapore..."
                             value={travelDestination}
                             onChange={(e) => setTravelDestination(e.target.value)}
                           />

@@ -8,71 +8,30 @@ import {
   CheckCircle2,
   Clock,
   Copy,
+  Edit3,
   ExternalLink,
   FileCheck2,
   KeyRound,
+  Play,
   ShieldCheck,
   User,
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConsentPrompt } from "@/components/workspace/consent-prompt";
 import { useAuth } from "@/lib/auth";
-import { ensureActiveDemoSession, getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
+import {
+  getWorkflowHeaders,
+  getWorkflowUrl,
+  type WorkflowActionQueueResponse,
+  type WorkflowActionView,
+  type WorkflowExecutionReceipt,
+} from "@/lib/api/workflow-client";
 import "./actions.css";
-
-interface ProposedAction {
-  id: string;
-  reference: string;
-  action_type: string;
-  title: string;
-  purpose: string;
-  status: string;
-  destination: string;
-  environment: string;
-  environment_label: string;
-  claim_id?: string | null;
-  claim_reference?: string | null;
-  payload: Record<string, unknown>;
-  payload_sha256: string;
-  payload_version: number;
-  approval_status?: string | null;
-  is_approved: boolean;
-  can_execute: boolean;
-  can_cancel: boolean;
-  expires_at?: string | null;
-  created_at: string;
-}
-
-interface ActionQueueResponse {
-  counts: {
-    pending: number;
-    completed: number;
-    rejected: number;
-    all: number;
-  };
-  actions: ProposedAction[];
-}
-
-interface ExecutionReceipt {
-  receipt_reference: string;
-  action_id: string;
-  action_reference: string;
-  action_title: string;
-  environment: string;
-  status: string;
-  claim_reference?: string | null;
-  payload_digest: string;
-  next_action?: string | null;
-  issued_at: string;
-  sandbox_claim?: {
-    claim_reference: string;
-    status: string;
-  } | null;
-}
 
 export default function ActionsPage() {
   const { account, token: accountToken } = useAuth();
-  const [data, setData] = useState<ActionQueueResponse | null>(null);
+  const [data, setData] = useState<WorkflowActionQueueResponse | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"PENDING" | "COMPLETED" | "REJECTED" | "ALL">("PENDING");
   const [loading, setLoading] = useState(true);
@@ -82,28 +41,46 @@ export default function ActionsPage() {
   const [deciding, setDeciding] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
-  const [receipt, setReceipt] = useState<ExecutionReceipt | null>(null);
+  const [receipt, setReceipt] = useState<WorkflowExecutionReceipt | null>(null);
   const [copied, setCopied] = useState(false);
+  const [requiredConsents, setRequiredConsents] = useState<string[] | null>(null);
+
+  // Edit payload states
+  const [editing, setEditing] = useState(false);
+  const [editDraft, setEditDraft] = useState<Record<string, string>>({});
 
   const loadActions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      if (!accountToken) {
-        await ensureActiveDemoSession();
-      }
       const headers = getWorkflowHeaders(accountToken);
       const res = await fetch(getWorkflowUrl("/api/v1/workflow/actions/queue"), { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const result: ActionQueueResponse = await res.json();
+      const result: WorkflowActionQueueResponse = await res.json();
       setData(result);
 
-      // Select first action if none selected or current no longer exists
+      const queryActionId =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("action")
+          : null;
+
       if (result.actions.length > 0) {
-        setSelectedId((curr) => {
-          if (curr && result.actions.some((a) => a.id === curr)) return curr;
-          return result.actions[0].id;
-        });
+        if (queryActionId && result.actions.some((a) => a.id === queryActionId)) {
+          const target = result.actions.find((a) => a.id === queryActionId)!;
+          if (
+            target.status !== "AWAITING_APPROVAL" &&
+            target.status !== "DRAFT" &&
+            target.status !== "APPROVED"
+          ) {
+            setActiveTab("ALL");
+          }
+          setSelectedId(queryActionId);
+        } else {
+          setSelectedId((curr) => {
+            if (curr && result.actions.some((a) => a.id === curr)) return curr;
+            return result.actions[0].id;
+          });
+        }
       } else {
         setSelectedId(null);
       }
@@ -119,7 +96,8 @@ export default function ActionsPage() {
     void Promise.resolve().then(loadActions);
   }, [loadActions]);
 
-  const selectedAction = data?.actions.find((a) => a.id === selectedId) || null;
+  const selectedAction: WorkflowActionView | null =
+    data?.actions.find((a) => a.id === selectedId) || null;
 
   // Load existing receipt if already executed
   useEffect(() => {
@@ -127,12 +105,16 @@ export default function ActionsPage() {
       void Promise.resolve().then(() => setReceipt(null));
       return;
     }
-    if (selectedAction.status === "COMPLETED" || selectedAction.is_approved) {
+    if (
+      selectedAction.status === "COMPLETED" ||
+      selectedAction.status === "HANDOFF_READY" ||
+      selectedAction.receipt_reference
+    ) {
       const headers = getWorkflowHeaders(accountToken);
       void Promise.resolve().then(() => {
         fetch(getWorkflowUrl(`/api/v1/workflow/actions/${selectedAction.id}/receipt`), { headers })
           .then((r) => (r.ok ? r.json() : null))
-          .then((rec) => setReceipt(rec))
+          .then((rec: WorkflowExecutionReceipt | null) => setReceipt(rec))
           .catch(() => setReceipt(null));
       });
     } else {
@@ -140,37 +122,100 @@ export default function ActionsPage() {
     }
   }, [selectedAction, accountToken]);
 
-  const handleApproveAndExecute = async () => {
+  const startEditing = () => {
+    if (!selectedAction) return;
+    const initial: Record<string, string> = {};
+    for (const field of selectedAction.editable_fields || []) {
+      const val = selectedAction.payload?.[field];
+      initial[field] = typeof val === "string" ? val : val != null ? String(val) : "";
+    }
+    setEditDraft(initial);
+    setEditing(true);
+  };
+
+  const handleSaveEdit = async () => {
     if (!selectedAction) return;
     setDeciding(true);
+    setError(null);
     try {
       const headers = getWorkflowHeaders(accountToken);
       headers["Content-Type"] = "application/json";
-
-      // 1. Ensure consent for process_documents
-      await fetch(getWorkflowUrl("/api/v1/consents"), {
-        method: "POST",
+      const res = await fetch(getWorkflowUrl(`/api/v1/workflow/actions/${selectedAction.id}`), {
+        method: "PATCH",
         headers,
-        body: JSON.stringify({ purpose: "process_documents", granted: true }),
+        body: JSON.stringify({ changes: editDraft }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to update action payload");
+      }
+      setEditing(false);
+      await loadActions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error saving payload edits");
+    } finally {
+      setDeciding(false);
+    }
+  };
 
-      // 2. Approve action with payload sha256
-      const appRes = await fetch(getWorkflowUrl(`/api/v1/workflow/actions/${selectedAction.id}/approve`), {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ payload_sha256: selectedAction.payload_sha256 }),
-      });
+  const handleApproveOnly = async () => {
+    if (!selectedAction) return;
+    setDeciding(true);
+    setError(null);
+    try {
+      const headers = getWorkflowHeaders(accountToken);
+      headers["Content-Type"] = "application/json";
+      const appRes = await fetch(
+        getWorkflowUrl(`/api/v1/workflow/actions/${selectedAction.id}/approve`),
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            payload_sha256: selectedAction.payload_sha256,
+            payload_version: selectedAction.payload_version ?? 1,
+          }),
+        }
+      );
+      if (appRes.status === 403) {
+        const appErr = await appRes.json().catch(() => ({}));
+        setRequiredConsents(appErr?.details?.required_purposes || ["process_documents"]);
+        return;
+      }
       if (!appRes.ok) {
         const appErr = await appRes.json().catch(() => ({}));
         throw new Error(appErr.message || "Approval failed");
       }
+      await loadActions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error approving action");
+    } finally {
+      setDeciding(false);
+    }
+  };
 
-      // 3. Execute action into Sandbox
-      const execRes = await fetch(getWorkflowUrl(`/api/v1/workflow/actions/${selectedAction.id}/execute`), {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ environment: "SANDBOX" }),
-      });
+  const handleExecuteOnly = async () => {
+    if (!selectedAction) return;
+    setDeciding(true);
+    setError(null);
+    try {
+      const headers = getWorkflowHeaders(accountToken);
+      headers["Content-Type"] = "application/json";
+      const execRes = await fetch(
+        getWorkflowUrl(`/api/v1/workflow/actions/${selectedAction.id}/execute`),
+        {
+          method: "POST",
+          headers,
+        }
+      );
+      if (execRes.status === 403) {
+        const execErr = await execRes.json().catch(() => ({}));
+        if (execErr?.code === "CONSENT_REQUIRED") {
+          setRequiredConsents(execErr?.details?.required_purposes || ["process_documents"]);
+          await loadActions();
+          return;
+        }
+        throw new Error(execErr.message || "Action execution blocked by approval boundary");
+      }
       if (!execRes.ok) {
         const execErr = await execRes.json().catch(() => ({}));
         throw new Error(execErr.message || "Execution failed");
@@ -179,7 +224,68 @@ export default function ActionsPage() {
       setReceipt(execData.receipt);
       await loadActions();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error executing action");
+      setError(err instanceof Error ? err.message : "Error executing action");
+    } finally {
+      setDeciding(false);
+    }
+  };
+
+  const handleApproveAndExecute = async () => {
+    if (!selectedAction) return;
+    setDeciding(true);
+    setError(null);
+    try {
+      const headers = getWorkflowHeaders(accountToken);
+      headers["Content-Type"] = "application/json";
+
+      if (!selectedAction.approved && selectedAction.requires_approval) {
+        const appRes = await fetch(
+          getWorkflowUrl(`/api/v1/workflow/actions/${selectedAction.id}/approve`),
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              payload_sha256: selectedAction.payload_sha256,
+              payload_version: selectedAction.payload_version ?? 1,
+            }),
+          }
+        );
+        if (appRes.status === 403) {
+          const appErr = await appRes.json().catch(() => ({}));
+          setRequiredConsents(appErr?.details?.required_purposes || ["process_documents"]);
+          return;
+        }
+        if (!appRes.ok) {
+          const appErr = await appRes.json().catch(() => ({}));
+          throw new Error(appErr.message || "Approval failed");
+        }
+      }
+
+      const execRes = await fetch(
+        getWorkflowUrl(`/api/v1/workflow/actions/${selectedAction.id}/execute`),
+        {
+          method: "POST",
+          headers,
+        }
+      );
+      if (execRes.status === 403) {
+        const execErr = await execRes.json().catch(() => ({}));
+        if (execErr?.code === "CONSENT_REQUIRED") {
+          setRequiredConsents(execErr?.details?.required_purposes || ["process_documents"]);
+          await loadActions();
+          return;
+        }
+        throw new Error(execErr.message || "Execution blocked");
+      }
+      if (!execRes.ok) {
+        const execErr = await execRes.json().catch(() => ({}));
+        throw new Error(execErr.message || "Execution failed");
+      }
+      const execData = await execRes.json();
+      setReceipt(execData.receipt);
+      await loadActions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error executing action");
     } finally {
       setDeciding(false);
     }
@@ -204,7 +310,7 @@ export default function ActionsPage() {
       setRejectionReason("");
       await loadActions();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error rejecting action");
+      setError(err instanceof Error ? err.message : "Error rejecting action");
     } finally {
       setDeciding(false);
     }
@@ -221,11 +327,20 @@ export default function ActionsPage() {
   const visibleActions = (data?.actions || []).filter((item) => {
     switch (activeTab) {
       case "PENDING":
-        return item.status === "AWAITING_APPROVAL" || item.status === "DRAFT";
+        return (
+          item.status === "AWAITING_APPROVAL" ||
+          item.status === "DRAFT" ||
+          item.status === "APPROVED"
+        );
       case "COMPLETED":
-        return item.status === "COMPLETED" || item.status === "APPROVED";
+        return item.status === "COMPLETED" || item.status === "HANDOFF_READY";
       case "REJECTED":
-        return item.status === "REJECTED" || item.status === "CANCELLED";
+        return (
+          item.status === "REJECTED" ||
+          item.status === "CANCELLED" ||
+          item.status === "EXPIRED" ||
+          item.status === "FAILED"
+        );
       default:
         return true;
     }
@@ -259,8 +374,33 @@ export default function ActionsPage() {
         </div>
       </div>
 
+      {requiredConsents && (
+        <ConsentPrompt
+          purposes={requiredConsents}
+          accountToken={accountToken}
+          onGranted={() => {
+            setRequiredConsents(null);
+            void handleApproveAndExecute();
+          }}
+          onCancel={() => setRequiredConsents(null)}
+        />
+      )}
+
       {error && (
-        <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b", padding: "12px 16px", borderRadius: 10, marginBottom: 16, fontSize: 13, fontWeight: 600 }}>
+        <div
+          role="alert"
+          data-testid="actions-error-alert"
+          style={{
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            color: "#991b1b",
+            padding: "12px 16px",
+            borderRadius: 10,
+            marginBottom: 16,
+            fontSize: 13,
+            fontWeight: 600,
+          }}
+        >
           {error}
         </div>
       )}
@@ -271,12 +411,12 @@ export default function ActionsPage() {
         <div>
           <strong>Cryptographic Approval Security Boundary</strong>
           <p>
-            Your approval is cryptographically bound to the SHA-256 hash of the exact reviewed payload. If the server or evidence changes, the approval is instantly invalidated.
+            Your approval is cryptographically bound to the SHA-256 hash and version of the exact reviewed payload. If the server or evidence changes, the approval is instantly invalidated.
           </p>
         </div>
       </div>
 
-      {/* 2-Column Layout (Screenshot 5) */}
+      {/* 2-Column Layout */}
       <div className="actions-grid">
         {/* Left Column: Action Queue */}
         <div className="actions-card">
@@ -317,7 +457,9 @@ export default function ActionsPage() {
               <div className="text-center py-12 text-slate-400">
                 <FileCheck2 size={32} className="mx-auto mb-2 opacity-40" />
                 <p className="text-sm font-semibold text-slate-600">No actions in this queue</p>
-                <p className="text-xs text-slate-400 mt-1">Actions appear when claim forms are prepared for submission.</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Actions appear when claim forms or inquiries are prepared for review.
+                </p>
               </div>
             )}
             {!loading &&
@@ -325,7 +467,11 @@ export default function ActionsPage() {
                 <button
                   type="button"
                   key={act.id}
-                  onClick={() => setSelectedId(act.id)}
+                  data-testid={`action-row-${act.id}`}
+                  onClick={() => {
+                    setSelectedId(act.id);
+                    setEditing(false);
+                  }}
                   className={`actions-row ${selectedId === act.id ? "selected" : ""}`}
                 >
                   <div>
@@ -338,20 +484,20 @@ export default function ActionsPage() {
                     className={`status-chip ${
                       act.status === "AWAITING_APPROVAL"
                         ? "status-chip-awaiting"
-                        : act.status === "COMPLETED"
+                        : act.status === "COMPLETED" || act.status === "HANDOFF_READY"
                         ? "status-chip-ready"
                         : "status-chip-draft"
                     }`}
                   >
-                    {act.status.replace("_", " ")}
+                    {act.status.replace(/_/g, " ")}
                   </span>
                 </button>
               ))}
           </div>
         </div>
 
-        {/* Right Column: Selected Action Inspector (Screenshot 5) */}
-        <div className="actions-card actions-review-panel">
+        {/* Right Column: Selected Action Inspector */}
+        <div className="actions-card actions-review-panel" data-testid="action-review-drawer">
           {selectedAction ? (
             <div>
               {/* Review Header */}
@@ -360,11 +506,11 @@ export default function ActionsPage() {
                   <h2 className="actions-review-title">{selectedAction.title}</h2>
                   <p className="actions-review-sub">
                     Action Reference: <strong className="text-slate-800">{selectedAction.reference}</strong> • Created:{" "}
-                    {new Date(selectedAction.created_at).toLocaleDateString()}
+                    {new Date(String(selectedAction.created_at)).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <span className="status-chip status-chip-awaiting">
+                  <span className="status-chip status-chip-awaiting" data-testid="action-status-badge">
                     {selectedAction.status}
                   </span>
                   <span className="status-chip status-chip-draft">
@@ -400,11 +546,14 @@ export default function ActionsPage() {
                 </div>
                 <div className="actions-info-item">
                   <span>Payload Version</span>
-                  <strong>Version {selectedAction.payload_version}</strong>
+                  <strong data-testid="action-payload-version">
+                    Version {selectedAction.payload_version}
+                    {selectedAction.approved ? " (Approved)" : " (Unapproved)"}
+                  </strong>
                 </div>
               </div>
 
-              {/* Cryptographic Hash Box (Screenshot 5) */}
+              {/* Cryptographic Hash Box */}
               <div className="actions-hash-box">
                 <div className="actions-hash-header">
                   <div className="actions-hash-label">
@@ -420,30 +569,38 @@ export default function ActionsPage() {
                     {copied ? "Copied" : "Copy Hash"}
                   </button>
                 </div>
-                <div className="actions-hash-value">{selectedAction.payload_sha256}</div>
+                <div className="actions-hash-value" data-testid="action-payload-sha256">
+                  {selectedAction.payload_sha256}
+                </div>
                 <div className="actions-hash-caption">
-                  This SHA-256 digest mathematically guarantees that INSURRA executes the exact reviewed payload with zero tampering or modification.
+                  {selectedAction.consequence} {selectedAction.privacy_note}
                 </div>
               </div>
 
-              {/* Consequences Alert Box (Screenshot 5) */}
-              {selectedAction.status === "AWAITING_APPROVAL" && (
+              {/* Consequences Alert Box */}
+              {(selectedAction.status === "AWAITING_APPROVAL" || selectedAction.status === "APPROVED") && (
                 <div className="actions-consequences-box">
                   <div className="actions-consequences-title">
                     <AlertTriangle size={16} />
-                    What happens when you approve this action?
+                    What happens when you approve and execute this action?
                   </div>
                   <ul className="actions-consequences-list">
-                    <li>Cryptographic authorization is signed with your active session credentials.</li>
-                    <li>The payload is submitted to the insurer&apos;s sandbox API for validation.</li>
-                    <li>A signed execution receipt is generated with timestamp and audit tracking.</li>
+                    <li>Cryptographic authorization is bound to payload version {selectedAction.payload_version} and SHA-256 digest.</li>
+                    <li>
+                      {selectedAction.environment === "MANUAL_HANDOFF"
+                        ? "Draft prepared. Not sent. INSURRA never sends messages to external insurers automatically."
+                        : selectedAction.environment === "SANDBOX"
+                        ? "Accepted by the INSURRA test sandbox. No insurer received this."
+                        : "Reminder scheduled in INSURRA."}
+                    </li>
+                    <li>Any edit to the payload increments the version and invalidates prior approval.</li>
                   </ul>
                 </div>
               )}
 
               {/* Execution Receipt Box (If already executed) */}
               {receipt && (
-                <div className="execution-receipt-card">
+                <div className="execution-receipt-card" data-testid="execution-receipt-card">
                   <div className="execution-receipt-header">
                     <div className="execution-receipt-title">
                       <CheckCircle2 size={18} /> Signed Execution Receipt
@@ -452,6 +609,9 @@ export default function ActionsPage() {
                       {receipt.status}
                     </span>
                   </div>
+                  <p className="text-xs text-emerald-950 font-semibold mb-3" data-testid="execution-receipt-notice">
+                    {receipt.notice}
+                  </p>
                   <div className="execution-receipt-details">
                     <div>
                       <dt>Receipt Reference</dt>
@@ -459,19 +619,95 @@ export default function ActionsPage() {
                     </div>
                     <div>
                       <dt>Execution Time</dt>
-                      <dd>{new Date(receipt.issued_at).toLocaleString()}</dd>
+                      <dd>{new Date(String(receipt.submitted_at)).toLocaleString()}</dd>
                     </div>
                     <div>
-                      <dt>Sandbox Claim Ref</dt>
-                      <dd>{receipt.sandbox_claim?.claim_reference || "SBX-2024-LIVE"}</dd>
+                      <dt>Claim Reference</dt>
+                      <dd>{receipt.claim_reference || "None"}</dd>
                     </div>
                     <div>
                       <dt>Payload Digest</dt>
                       <dd className="font-mono text-xs">{receipt.payload_digest.slice(0, 20)}...</dd>
                     </div>
                   </div>
+                  {receipt.next_action && (
+                    <p className="text-xs text-emerald-900 mt-3">
+                      Next step: {receipt.next_action}
+                    </p>
+                  )}
                 </div>
               )}
+
+              {/* Editable Payload Fields */}
+              {selectedAction.editable_fields?.length > 0 &&
+                (selectedAction.status === "AWAITING_APPROVAL" || selectedAction.status === "APPROVED") && (
+                  <div className="mb-4">
+                    {!editing ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        data-testid="edit-action-btn"
+                        onClick={startEditing}
+                      >
+                        <Edit3 size={14} className="mr-1.5" /> Edit Draft Payload
+                      </Button>
+                    ) : (
+                      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                        <div className="text-xs font-bold uppercase text-slate-700">
+                          Edit Draft Payload (Editing invalidates existing approval)
+                        </div>
+                        {selectedAction.editable_fields.map((field) => (
+                          <div key={field}>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">
+                              {field}
+                            </label>
+                            {field === "body" || field === "detail" ? (
+                              <textarea
+                                data-testid={`edit-field-${field}`}
+                                value={editDraft[field] ?? ""}
+                                onChange={(e) =>
+                                  setEditDraft((prev) => ({ ...prev, [field]: e.target.value }))
+                                }
+                                rows={3}
+                                className="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs"
+                              />
+                            ) : (
+                              <input
+                                type="text"
+                                data-testid={`edit-field-${field}`}
+                                value={editDraft[field] ?? ""}
+                                onChange={(e) =>
+                                  setEditDraft((prev) => ({ ...prev, [field]: e.target.value }))
+                                }
+                                className="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs"
+                              />
+                            )}
+                          </div>
+                        ))}
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditing(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            data-testid="save-action-edit-btn"
+                            disabled={deciding}
+                            onClick={handleSaveEdit}
+                          >
+                            Save Payload Changes
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
               {/* Payload JSON Inspector */}
               <h3 className="actions-section-title">Submitted Payload Content</h3>
@@ -526,8 +762,10 @@ export default function ActionsPage() {
                   <div />
                 )}
 
-                {selectedAction.status === "AWAITING_APPROVAL" && (
-                  <div className="flex items-center gap-3">
+                {(selectedAction.status === "AWAITING_APPROVAL" ||
+                  selectedAction.status === "APPROVED" ||
+                  selectedAction.status === "DRAFT") && (
+                  <div className="flex flex-wrap items-center gap-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -537,15 +775,42 @@ export default function ActionsPage() {
                     >
                       <XCircle size={15} className="mr-1.5" /> Reject Action
                     </Button>
-                    <Button
-                      type="button"
-                      disabled={deciding}
-                      onClick={handleApproveAndExecute}
-                      className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold flex items-center gap-2"
-                    >
-                      <CheckCircle2 size={16} />
-                      {deciding ? "Executing..." : "Approve & Execute (Sandbox)"}
-                    </Button>
+                    {!selectedAction.approved && selectedAction.requires_approval && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        data-testid="approve-action-btn"
+                        disabled={deciding}
+                        onClick={handleApproveOnly}
+                      >
+                        <ShieldCheck size={15} className="mr-1.5" />
+                        Approve Hash Only
+                      </Button>
+                    )}
+                    {selectedAction.approved && (
+                      <Button
+                        type="button"
+                        data-testid="execute-action-btn"
+                        disabled={deciding}
+                        onClick={handleExecuteOnly}
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold flex items-center gap-2"
+                      >
+                        <Play size={15} />
+                        {deciding ? "Executing..." : "Execute Approved Action"}
+                      </Button>
+                    )}
+                    {!selectedAction.approved && (
+                      <Button
+                        type="button"
+                        data-testid="approve-and-execute-btn"
+                        disabled={deciding}
+                        onClick={handleApproveAndExecute}
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold flex items-center gap-2"
+                      >
+                        <CheckCircle2 size={16} />
+                        {deciding ? "Executing..." : "Approve & Execute (Sandbox)"}
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

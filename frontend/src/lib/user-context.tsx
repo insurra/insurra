@@ -37,7 +37,7 @@ export type SharedUserContext = {
   nationality: string;
   nationalityCode: string;
   residenceCountry: string;
-  countryCode: "CN" | "ID" | "AU" | string;
+  countryCode: "CN" | "ID" | string;
   countryFlag: string;
   residenceCity: string;
   preferredLanguage: string;
@@ -65,7 +65,6 @@ const STORAGE_KEY = "insurra.active-profile";
 const COUNTRY_FLAGS: Record<string, string> = {
   CN: "🇨🇳",
   ID: "🇮🇩",
-  AU: "🇦🇺",
   SG: "🇸🇬",
   MY: "🇲🇾",
   US: "🇺🇸",
@@ -75,7 +74,6 @@ const COUNTRY_FLAGS: Record<string, string> = {
 const COUNTRY_NAMES: Record<string, string> = {
   CN: "China",
   ID: "Indonesia",
-  AU: "Australia",
   SG: "Singapore",
   MY: "Malaysia",
   US: "United States",
@@ -94,9 +92,9 @@ export const DEFAULT_USER_CONTEXT: SharedUserContext = {
   userSegment: "student",
   userSegmentLabel: "International Student",
   segmentDetails: {
-    institutionName: "Shenzhen University",
-    studyPeriod: "2024 - 2026",
-    residencePermitExpiry: "2026-09-30",
+    institutionName: "Shenzhen Demo International University (synthetic)",
+    studyPeriod: "2026 - 2027",
+    residencePermitExpiry: "2027-06-30",
   },
   householdScope: "self",
   dependentCount: 0,
@@ -106,15 +104,15 @@ export const DEFAULT_USER_CONTEXT: SharedUserContext = {
       id: "student_scheme",
       category: "Student Insurance",
       label: "Comprehensive Medical Insurance for Foreigners",
-      provider: "Ping An Annuity",
-      policyName: "Foreign Student Medical Scheme",
+      provider: "Synthetic Student Health Plan (demo)",
+      policyName: "Synthetic Student Health Plan (demo)",
       status: "self_reported",
     },
   ],
   protectionGoals: ["understand", "claims", "documents"],
   additionalBudget: {
-    range: "$50 - $150",
-    currency: "USD",
+    range: "¥300 - ¥800",
+    currency: "CNY",
     period: "monthly",
   },
   profileSetupComplete: true,
@@ -166,22 +164,26 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
             : state.userSegment === "employee"
             ? "EMPLOYEE"
             : "OTHER";
-        const cCode = (state.countryCode.toUpperCase() as "CN" | "ID" | "AU") || "CN";
+        const cCode = (state.countryCode.toUpperCase() as "CN" | "ID") || "CN";
         const resContext = state.countryCode === state.nationalityCode ? "DOMESTIC" : "ABROAD";
 
-        await api.request("put", "/api/v1/account/profile", {
+        const endpoint = state.profileSetupComplete
+          ? "/api/v1/account/profile"
+          : "/api/v1/account/profile/draft";
+
+        await api.request("put", endpoint, {
           body: {
             display_name: account.display_name || "User",
             country_code: cCode,
             residence_context: resContext,
-            city: state.residenceCity || "Shenzhen",
+            city: state.residenceCity || (cCode === "CN" ? "Shenzhen" : "Jakarta"),
             occupation: occ,
             institution_name: state.segmentDetails.institutionName || null,
             dependents: state.dependents.filter((d) => d !== "None"),
             owned_coverage: state.declaredCoverages.map((c) => c.category),
             priorities: state.protectionGoals.slice(0, 2),
             budget_range: state.additionalBudget?.range || null,
-            currency: state.additionalBudget?.currency || (cCode === "CN" ? "CNY" : cCode === "ID" ? "IDR" : "AUD"),
+            currency: state.additionalBudget?.currency || (cCode === "CN" ? "CNY" : "IDR"),
           },
           headers: { Authorization: `Bearer ${token}` },
         });

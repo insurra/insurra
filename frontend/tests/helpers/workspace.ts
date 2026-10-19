@@ -4,11 +4,11 @@ import { expect, type Page } from "@playwright/test";
 
 export async function accountWorkspace(
   page: Page,
-  country: "AU" | "ID" = "AU",
+  country: "CN" | "ID" = "CN",
 ) {
   const root = path.resolve(__dirname, "../../..");
   const raw = execFileSync(
-    path.join(root, ".tools/bin/uv"),
+    "uv",
     ["run", "python", "-m", "app.tests.seed_workspace_e2e"],
     {
       cwd: path.join(root, "backend"),
@@ -30,7 +30,7 @@ export async function accountWorkspace(
     headers: Record<string, string>;
   } = JSON.parse(raw.trim());
   const response = await page.request.post(
-    "http://localhost:8000/api/v1/account/auth/login",
+    "http://127.0.0.1:8177/api/v1/account/auth/login",
     { data: { email: fixture.email, password: fixture.password } },
   );
   if (response.status() !== 200)
@@ -43,11 +43,7 @@ export async function accountWorkspace(
   }, session.access_token);
   await page.goto("/home");
   // Wait for account restoration before a test starts another full-page navigation.
-  await expect(
-    page.getByRole("heading", {
-      name: country === "ID" ? "Halo, Sinta." : "Halo, Raka.",
-    }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Home", exact: true })).toBeVisible();
   return {
     ...fixture,
     headers: { Authorization: `Bearer ${session.access_token}` },

@@ -17,8 +17,9 @@ import {
   Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConsentPrompt } from "@/components/workspace/consent-prompt";
 import { useAuth } from "@/lib/auth";
-import { ensureActiveDemoSession, getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
+import { getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
 import "../claims.css";
 
 interface ChecklistItem {
@@ -150,14 +151,13 @@ export default function ClaimDetailPage() {
   const [generatingDraft, setGeneratingDraft] = useState(false);
   const [sendingApproval, setSendingApproval] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [requiredConsents, setRequiredConsents] = useState<string[] | null>(null);
+  const [pendingActionAfterConsent, setPendingActionAfterConsent] = useState<(() => Promise<void>) | null>(null);
 
   const loadCaseDetail = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      if (!accountToken) {
-        await ensureActiveDemoSession();
-      }
       const headers = getWorkflowHeaders(accountToken);
       const res = await fetch(getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}`), { headers });
       if (!res.ok) {
@@ -207,28 +207,35 @@ export default function ClaimDetailPage() {
       const headers = getWorkflowHeaders(accountToken);
       headers["Content-Type"] = "application/json";
 
-      // 1. Ensure consent for process_documents is granted
-      await fetch(getWorkflowUrl("/api/v1/consents"), {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ purpose: "process_documents", granted: true }),
-      });
-
-      // 2. Confirm draft
+      // 1. Confirm draft
       const confRes = await fetch(getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}/draft/confirm`), {
         method: "POST",
         headers,
       });
+      if (confRes.status === 403) {
+        const confErr = await confRes.json().catch(() => ({}));
+        const purposes = confErr?.details?.required_purposes || ["process_documents"];
+        setRequiredConsents(purposes);
+        setPendingActionAfterConsent(() => handleConfirmAndSendApproval);
+        return;
+      }
       if (!confRes.ok) {
         const confErr = await confRes.json().catch(() => ({}));
         throw new Error(confErr.message || "Draft confirmation failed");
       }
 
-      // 3. Send to approval
+      // 2. Send to approval (requires explicit process_documents consent)
       const sendRes = await fetch(getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}/send-to-approval`), {
         method: "POST",
         headers,
       });
+      if (sendRes.status === 403) {
+        const sendErr = await sendRes.json().catch(() => ({}));
+        const purposes = sendErr?.details?.required_purposes || ["process_documents"];
+        setRequiredConsents(purposes);
+        setPendingActionAfterConsent(() => handleConfirmAndSendApproval);
+        return;
+      }
       if (!sendRes.ok) {
         const sendErr = await sendRes.json().catch(() => ({}));
         throw new Error(sendErr.message || "Sending to approval failed");
@@ -243,24 +250,46 @@ export default function ClaimDetailPage() {
     }
   };
 
-  const handleUploadSimulatedEvidence = async (kind: string, filename: string) => {
+  const handleUploadSimulatedEvidence = async (kind: string, filename: string, fileObj?: File) => {
     setUploading(true);
     try {
       const headers = getWorkflowHeaders(accountToken);
-      headers["Content-Type"] = "application/json";
-      const res = await fetch(getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}/evidence`), {
+      // Do not set Content-Type manually so browser attaches multipart/form-data boundary
+      delete headers["Content-Type"];
+
+      const formData = new FormData();
+      if (fileObj) {
+        formData.append("file", fileObj, fileObj.name || filename);
+      } else {
+        const sampleText = [
+          "Electronic Medical Invoice",
+          "Hospital: Shenzhen University General Hospital",
+          "Date: 2026-10-12",
+          "Amount: CNY 450.00",
+          "Patient: Raka Pratama",
+        ].join("\n");
+        const blob = new Blob([sampleText], { type: "text/plain" });
+        formData.append("file", blob, filename);
+      }
+
+      const url = getWorkflowUrl(
+        `/api/v1/workflow/claims/cases/${claimId}/evidence?evidence_kind=${encodeURIComponent(kind)}`
+      );
+      const res = await fetch(url, {
         method: "POST",
         headers,
-        body: JSON.stringify({
-          evidence_kind: kind,
-          filename: filename,
-          source_type: "SIMULATED_UPLOAD",
-          synthetic: true,
-          content_text: `Electronic Medical Invoice\nShenzhen University Hospital\nDate: 2026-10-12\nAmount: CNY 450.00\nPatient: Self`,
-        }),
+        body: formData,
       });
+      if (res.status === 403) {
+        const err = await res.json().catch(() => ({}));
+        const purposes = err?.details?.required_purposes || ["process_documents"];
+        setRequiredConsents(purposes);
+        setPendingActionAfterConsent(() => () => handleUploadSimulatedEvidence(kind, filename, fileObj));
+        return;
+      }
       if (!res.ok) {
-        throw new Error("Upload simulation failed");
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Evidence upload failed");
       }
       await loadCaseDetail();
     } catch (err) {
@@ -329,6 +358,25 @@ export default function ClaimDetailPage() {
           </Button>
         </div>
       </div>
+
+      {requiredConsents && (
+        <ConsentPrompt
+          purposes={requiredConsents}
+          accountToken={accountToken}
+          onGranted={() => {
+            setRequiredConsents(null);
+            const retry = pendingActionAfterConsent;
+            setPendingActionAfterConsent(null);
+            if (retry) {
+              void retry();
+            }
+          }}
+          onCancel={() => {
+            setRequiredConsents(null);
+            setPendingActionAfterConsent(null);
+          }}
+        />
+      )}
 
       {/* Top Banner if Ready for Approval (Screenshot 2 Top Card) */}
       {caseData.status === "READY_FOR_APPROVAL" && (
@@ -650,7 +698,7 @@ export default function ClaimDetailPage() {
                           <span className="text-slate-400 block text-[10px] uppercase font-semibold">
                             {f.label}
                           </span>
-                          <span className="font-bold text-slate-800">{f.value || "—"}</span>
+                          <span className="font-bold text-slate-800">{f.value || "Not available"}</span>
                         </div>
                       ))}
                     </div>
@@ -750,7 +798,7 @@ export default function ClaimDetailPage() {
                             )}
                           </div>
                           <div className="font-bold text-slate-900 text-sm">
-                            {field.value || "—"}
+                            {field.value || "Not available"}
                           </div>
                         </div>
                       ))}

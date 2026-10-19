@@ -9,7 +9,7 @@ import {
   Scale,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { ensureActiveDemoSession, getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
+import { getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
 
 interface StatutoryScheme {
   scheme_id: string;
@@ -54,9 +54,6 @@ export default function EmployerBenefitsPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      if (!accountToken) {
-        await ensureActiveDemoSession();
-      }
       const headers = getWorkflowHeaders(accountToken);
       const res = await fetch(getWorkflowUrl(`/api/v1/workflow/employer-benefits/overview?country_code=${country}`), { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

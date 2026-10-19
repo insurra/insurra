@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { ensureActiveDemoSession, getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
+import { getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
 import "./claims.css";
 
 interface WorkflowOverview {
@@ -87,9 +87,6 @@ export default function ClaimsPage() {
     setLoading(true);
     setError(null);
     try {
-      if (!accountToken) {
-        await ensureActiveDemoSession();
-      }
       const headers = getWorkflowHeaders(accountToken);
       const [overviewRes, casesRes] = await Promise.all([
         fetch(getWorkflowUrl("/api/v1/workflow/claims/overview"), { headers }).then((r) => {

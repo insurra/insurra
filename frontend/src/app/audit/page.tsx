@@ -15,29 +15,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { ensureActiveDemoSession, getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
-
-interface WorkflowAuditEvent {
-  id: string;
-  event_type: string;
-  category: string;
-  title: string;
-  summary: string;
-  actor_type: string;
-  tool?: string | null;
-  claim_id?: string | null;
-  action_id?: string | null;
-  payload_sha256?: string | null;
-  details?: Record<string, unknown> | null;
-  created_at: string;
-}
-
-interface TimelineResponse {
-  total: number;
-  limit: number;
-  offset: number;
-  events: WorkflowAuditEvent[];
-}
+import {
+  getWorkflowHeaders,
+  getWorkflowUrl,
+  type WorkflowAuditEvent,
+  type WorkflowAuditTimelineResponse,
+} from "@/lib/api/workflow-client";
 
 export default function AuditPage() {
   const { account, token: accountToken } = useAuth();
@@ -56,9 +39,6 @@ export default function AuditPage() {
     setLoading(true);
     setError(null);
     try {
-      if (!accountToken) {
-        await ensureActiveDemoSession();
-      }
       const headers = getWorkflowHeaders(accountToken);
       const params = new URLSearchParams();
       if (categoryTab !== "ALL") params.set("category", categoryTab);
@@ -67,7 +47,7 @@ export default function AuditPage() {
 
       const res = await fetch(getWorkflowUrl(`/api/v1/workflow/audit/timeline?${params.toString()}`), { headers });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: TimelineResponse = await res.json();
+      const data: WorkflowAuditTimelineResponse = await res.json();
       setEvents(data.events || []);
       setTotal(data.total || 0);
     } catch (err) {
@@ -103,7 +83,7 @@ export default function AuditPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
-            Activity & Audit Trail
+            Activity &amp; Audit Trail
           </h1>
           <p className="text-sm text-slate-500">
             Immutable log of all user decisions, evidence confirmations, draft generations, and sandbox executions.
@@ -116,7 +96,7 @@ export default function AuditPage() {
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-3 py-1.5 rounded-full">
-              <ShieldCheck size={13} /> Demo Session Audit
+              <ShieldCheck size={13} /> Demo Session Audit (Synthetic)
             </span>
           )}
           <Button
@@ -200,6 +180,7 @@ export default function AuditPage() {
             {events.map((ev) => (
               <div
                 key={ev.id}
+                data-testid={`audit-event-${ev.id}`}
                 className="p-5 hover:bg-slate-50/70 transition-colors flex items-start justify-between gap-4"
               >
                 <div className="flex items-start gap-4">
@@ -215,7 +196,7 @@ export default function AuditPage() {
                     )}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
                       <span className="font-bold text-slate-900 text-sm">{ev.title}</span>
                       <span
                         className={`text-[10px] font-bold uppercase tracking-wider border rounded px-2 py-0.5 ${getCategoryBadgeClass(
@@ -227,20 +208,31 @@ export default function AuditPage() {
                       <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
                         {ev.actor_type}
                       </span>
+                      {ev.synthetic && (
+                        <span
+                          data-testid="audit-synthetic-badge"
+                          className="text-[10px] font-semibold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded"
+                        >
+                          SYNTHETIC
+                        </span>
+                      )}
+                      {ev.source_table && (
+                        <span className="text-[10px] font-mono text-slate-400">
+                          {ev.source_table}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed mb-2">{ev.summary}</p>
                     <div className="flex items-center gap-4 text-[11px] text-slate-400 font-mono">
                       <span>Event: {ev.event_type}</span>
-                      {ev.payload_sha256 && (
-                        <span>SHA: {ev.payload_sha256.slice(0, 16)}...</span>
-                      )}
+                      {ev.receipt_ref && <span>Receipt: {ev.receipt_ref}</span>}
                     </div>
                   </div>
                 </div>
 
                 <div className="text-right flex-shrink-0">
                   <span className="text-xs text-slate-400 block mb-2 font-medium">
-                    {new Date(ev.created_at).toLocaleString("en-US", {
+                    {new Date(String(ev.created_at)).toLocaleString("en-US", {
                       month: "short",
                       day: "numeric",
                       hour: "2-digit",
@@ -302,26 +294,15 @@ export default function AuditPage() {
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                   <span className="text-slate-400 uppercase font-semibold block mb-0.5">Timestamp</span>
                   <strong className="text-slate-800">
-                    {new Date(selectedEvent.created_at).toLocaleString()}
+                    {new Date(String(selectedEvent.created_at)).toLocaleString()}
                   </strong>
                 </div>
               </div>
 
-              {selectedEvent.payload_sha256 && (
-                <div>
-                  <span className="font-semibold text-slate-500 uppercase block mb-1">
-                    Bound Payload SHA-256
-                  </span>
-                  <div className="font-mono bg-slate-900 text-teal-400 p-2.5 rounded-lg break-all">
-                    {selectedEvent.payload_sha256}
-                  </div>
-                </div>
-              )}
-
               {selectedEvent.details && Object.keys(selectedEvent.details).length > 0 && (
                 <div>
                   <span className="font-semibold text-slate-500 uppercase block mb-1">
-                    Event Details JSON
+                    Sanitized Event Details JSON
                   </span>
                   <pre className="font-mono bg-slate-900 text-slate-200 p-3 rounded-lg max-h-48 overflow-auto">
                     {JSON.stringify(selectedEvent.details, null, 2)}

@@ -836,6 +836,24 @@ export default function AccountDocuments() {
             <strong>Action Error</strong>
             <p style={{ margin: "2px 0 0", fontSize: 12.5 }}>{error}</p>
           </div>
+          {(error.includes("Privasi") || error.includes("CONSENT_REQUIRED") || error.includes("persetujuan")) && (
+            <Link
+              href="/account/privacy"
+              className="figma-btn-primary"
+              style={{ height: 32, fontSize: 12, padding: "0 14px", textDecoration: "none", whiteSpace: "nowrap" }}
+            >
+              Aktifkan di Privasi &amp; Data
+            </Link>
+          )}
+          {(error.includes("profil") || error.includes("PROFILE_REQUIRED")) && (
+            <Link
+              href="/account/onboarding"
+              className="figma-btn-primary"
+              style={{ height: 32, fontSize: 12, padding: "0 14px", textDecoration: "none", whiteSpace: "nowrap" }}
+            >
+              Lengkapi Profil
+            </Link>
+          )}
           <button type="button" onClick={() => setError(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#991b1b" }}>
             <X size={15} />
           </button>
