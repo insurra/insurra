@@ -27,6 +27,7 @@ import {
   X,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
+import type { components } from "@/lib/api/types.gen";
 import { useAuth } from "@/lib/auth";
 import {
   useUserContext,
@@ -419,6 +420,21 @@ const GOAL_OPTIONS = [
   },
 ];
 
+const GOAL_API_VALUES: Record<string, components["schemas"]["Goal"]> = {
+  understand: "UNDERSTAND_COVERAGE",
+  coverage_adequacy: "DISCOVER_GAPS",
+  find_gaps: "DISCOVER_GAPS",
+  care_pathways: "FIND_CARE",
+  claims_help: "PREPARE_CLAIM",
+  compare_options: "COMPARE_OPTIONS",
+  organize_docs: "TRACK_RENEWALS",
+  family_group: "MANAGE_FAMILY",
+};
+
+const API_GOAL_VALUES = Object.fromEntries(
+  Object.entries(GOAL_API_VALUES).map(([key, value]) => [value, key])
+) as Record<components["schemas"]["Goal"], string>;
+
 const BUDGET_CURRENCIES = [
   { code: "CNY", symbol: "¥", name: "Chinese Yuan (RMB)" },
   { code: "IDR", symbol: "Rp", name: "Indonesian Rupiah" },
@@ -440,6 +456,12 @@ export interface DynamicDocSuggestion {
   sourceReason: string;
 }
 
+type LifeContextValue = "STUDY" | "WORK" | "LIVING" | "TRAVEL" | "OTHER";
+type AgeRangeValue = "UNDER_18" | "18_24" | "25_34" | "35_44" | "45_54" | "55_64" | "65_PLUS";
+type AnswerStateValue = "YES" | "NO" | "UNKNOWN";
+type CoverageIntentValue = "YES" | "NO" | "UNSURE";
+type DecisionPreferenceValue = "LOWER_PREMIUM" | "WIDER_BENEFITS" | "FLEXIBILITY";
+
 function AccountOnboardingContent() {
   const { account, token } = useAuth();
   const router = useRouter();
@@ -458,6 +480,7 @@ function AccountOnboardingContent() {
   const [residenceCountry, setResidenceCountry] = useState<string>(userCtx.countryCode || "CN");
   const [city, setCity] = useState<string>(userCtx.residenceCity || "Shenzhen");
   const [cityInput, setCityInput] = useState<string>("");
+  const [lifeContext, setLifeContext] = useState<LifeContextValue>("STUDY");
   const language = "English";
 
   // Step 2: Your Situation
@@ -486,8 +509,12 @@ function AccountOnboardingContent() {
   );
   const [visaType, setVisaType] = useState<string>(userCtx.segmentDetails?.visaType || "Student Visa");
   const [travelDestination, setTravelDestination] = useState<string>(userCtx.segmentDetails?.travelDestination || "");
+  const [ageRange, setAgeRange] = useState<AgeRangeValue | "">("");
+  const [visaStatus, setVisaStatus] = useState<string>("");
+  const [employmentType, setEmploymentType] = useState<string>("");
+  const [employerCoverageEligibility, setEmployerCoverageEligibility] = useState<AnswerStateValue>("UNKNOWN");
 
-  // Step 3: Existing Protection (Multi-select)
+  // Step 4: Existing Protection (Multi-select)
   const [selectedCoverages, setSelectedCoverages] = useState<DeclaredCoverageItem[]>(
     userCtx.declaredCoverages?.length
       ? userCtx.declaredCoverages
@@ -503,8 +530,12 @@ function AccountOnboardingContent() {
         ]
   );
   const [customProviderInput, setCustomProviderInput] = useState<string>("");
+  const [insuranceSources, setInsuranceSources] = useState<string[]>([]);
+  const [policyExpiryKnown, setPolicyExpiryKnown] = useState<boolean | null>(null);
+  const [policyExpiryDate, setPolicyExpiryDate] = useState<string>("");
+  const [policyDocumentsAvailable, setPolicyDocumentsAvailable] = useState<boolean | null>(null);
 
-  // Step 4: Who Needs Coverage
+  // Step 3: Who Needs Coverage
   const [householdScope, setHouseholdScope] = useState<"self" | "family" | "team">(
     userCtx.householdScope || "self"
   );
@@ -512,17 +543,22 @@ function AccountOnboardingContent() {
     userCtx.dependents?.filter((d) => d !== "None") || []
   );
   const [familyCount, setFamilyCount] = useState<number>(userCtx.dependentCount || 1);
+  const [dependentAgeGroups, setDependentAgeGroups] = useState<string[]>([]);
+  const [dependentInsuranceStatus, setDependentInsuranceStatus] = useState<AnswerStateValue>("UNKNOWN");
+  const [financialResponsibilities, setFinancialResponsibilities] = useState<string[]>([]);
 
-  // Step 5: Goals & Budget
+  // Steps 5–6: Goals, then budget and review
   const [selectedGoals, setSelectedGoals] = useState<string[]>(
     userCtx.protectionGoals?.length
       ? userCtx.protectionGoals
-      : ["understand", "claims_help", "organize_docs"]
+      : ["understand", "claims_help"]
   );
   const [budgetCurrency, setBudgetCurrency] = useState<string>(
     residenceCountry === "CN" ? "CNY" : residenceCountry === "ID" ? "IDR" : residenceCountry === "AU" ? "AUD" : "USD"
   );
   const [selectedBudgetRange, setSelectedBudgetRange] = useState<string>("No additional budget");
+  const [additionalCoverageIntent, setAdditionalCoverageIntent] = useState<CoverageIntentValue>("UNSURE");
+  const [decisionPreference, setDecisionPreference] = useState<DecisionPreferenceValue>("FLEXIBILITY");
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
@@ -582,12 +618,62 @@ function AccountOnboardingContent() {
         if (Array.isArray(data.dependents) && data.dependents.length > 0) {
           setHouseholdScope("family");
           setFamilyMembers(data.dependents as string[]);
+          setFamilyCount(data.dependents.length);
+        }
+        if (Array.isArray(data.priorities) && data.priorities.length > 0) {
+          setSelectedGoals((data.priorities as string[]).slice(0, 2));
+        } else if (Array.isArray(data.goals) && data.goals.length > 0) {
+          setSelectedGoals(
+            (data.goals as components["schemas"]["Goal"][])
+              .map((goal) => API_GOAL_VALUES[goal])
+              .filter(Boolean)
+              .slice(0, 2)
+          );
         }
         if (typeof data.budget_range === "string" && data.budget_range) {
           setSelectedBudgetRange(data.budget_range);
         }
         if (typeof data.currency === "string" && (data.currency === "CNY" || data.currency === "IDR" || data.currency === "USD")) {
           setBudgetCurrency(data.currency as "CNY" | "IDR" | "USD");
+        }
+        if (typeof data.life_context === "string") setLifeContext(data.life_context as LifeContextValue);
+        if (typeof data.age_range === "string") setAgeRange(data.age_range as AgeRangeValue);
+        if (typeof data.visa_status === "string") setVisaStatus(data.visa_status);
+        if (typeof data.employment_type === "string") setEmploymentType(data.employment_type);
+        if (typeof data.employer_coverage_eligibility === "string") {
+          setEmployerCoverageEligibility(data.employer_coverage_eligibility as AnswerStateValue);
+        }
+        if (Array.isArray(data.insurance_sources)) setInsuranceSources(data.insurance_sources as string[]);
+        if (typeof data.policy_expiry_known === "boolean") setPolicyExpiryKnown(data.policy_expiry_known);
+        if (typeof data.policy_expiry_date === "string") setPolicyExpiryDate(data.policy_expiry_date);
+        if (typeof data.policy_documents_available === "boolean") {
+          setPolicyDocumentsAvailable(data.policy_documents_available);
+        }
+        if (Array.isArray(data.dependent_age_groups)) {
+          setDependentAgeGroups(data.dependent_age_groups as string[]);
+        }
+        if (typeof data.dependent_insurance_status === "string") {
+          setDependentInsuranceStatus(data.dependent_insurance_status as AnswerStateValue);
+        }
+        if (Array.isArray(data.financial_responsibilities)) {
+          setFinancialResponsibilities(data.financial_responsibilities as string[]);
+        }
+        if (typeof data.willing_additional_coverage === "string") {
+          setAdditionalCoverageIntent(data.willing_additional_coverage as CoverageIntentValue);
+        }
+        if (typeof data.decision_preference === "string") {
+          setDecisionPreference(data.decision_preference as DecisionPreferenceValue);
+        }
+        if ((data.priorities as unknown[] | undefined)?.length || (data.goals as unknown[] | undefined)?.length) {
+          setActiveStep(6);
+        } else if (Array.isArray(data.owned_coverage) && data.owned_coverage.length > 0) {
+          setActiveStep(5);
+        } else if ("has_dependents" in data) {
+          setActiveStep(4);
+        } else if (data.occupation || data.situation) {
+          setActiveStep(3);
+        } else if (data.country_code) {
+          setActiveStep(2);
         }
       } catch (err) {
         console.warn("Could not restore profile draft from server:", err);
@@ -637,6 +723,12 @@ function AccountOnboardingContent() {
     }, 380);
   }
 
+  function editStep(step: number) {
+    setIsCompleted(false);
+    setError(null);
+    setActiveStep(step);
+  }
+
   // Handle Step 1 Submit
   function handleStep1Submit() {
     const finalCity = (cityInput || city).trim();
@@ -646,18 +738,23 @@ function AccountOnboardingContent() {
     }
     setCity(finalCity);
     // Update active context immediately
-    userCtx.updateContext({
-      nationality,
-      nationalityCode,
-      countryCode: residenceCountry,
-      residenceCity: finalCity,
-      preferredLanguage: language,
-    });
+    userCtx.updateContext(
+      {
+        nationality,
+        nationalityCode,
+        countryCode: residenceCountry,
+        residenceCity: finalCity,
+        preferredLanguage: language,
+        profileSetupComplete: false,
+      },
+      { sync: false }
+    );
     void persistDraft({
       country_code: residenceCountry,
       city: finalCity,
       nationality: nationalityCode === "CN" ? "CN" : "ID",
       residence_context: residenceCountry === nationalityCode ? "DOMESTIC" : "ABROAD",
+      life_context: lifeContext,
     });
     proceedTo(2);
   }
@@ -678,11 +775,15 @@ function AccountOnboardingContent() {
       travelDestination: travelDestination.trim() || undefined,
     };
 
-    userCtx.updateContext({
-      userSegment: segment,
-      userSegmentLabel: SITUATION_OPTIONS.find((s) => s.id === segment)?.label || "Student",
-      segmentDetails: segDetails,
-    });
+    userCtx.updateContext(
+      {
+        userSegment: segment,
+        userSegmentLabel: SITUATION_OPTIONS.find((s) => s.id === segment)?.label || "Student",
+        segmentDetails: segDetails,
+        profileSetupComplete: false,
+      },
+      { sync: false }
+    );
 
     const occ = segment === "student" ? "STUDENT" : segment === "employee" ? "EMPLOYEE" : "OTHER";
     const sit = segment === "student" ? "STUDENT" : segment === "employee" ? "EMPLOYEE" : segment === "self_employed" ? "SELF_EMPLOYED" : "OTHER";
@@ -693,11 +794,16 @@ function AccountOnboardingContent() {
       employer_name: finalBusinessName || null,
       permit_end_date: residencePermitExpiry.trim() || null,
       visa_expiry_date: residencePermitExpiry.trim() || null,
+      age_range: ageRange || null,
+      visa_status: visaStatus.trim() || null,
+      employment_type: employmentType || null,
+      employer_coverage_eligibility:
+        segment === "employee" ? employerCoverageEligibility : null,
     });
     proceedTo(3);
   }
 
-  // Handle Step 3 Coverage toggle
+  // Handle Step 4 Coverage toggle
   function toggleCoverageCategory(catId: string) {
     if (catId === "none") {
       setSelectedCoverages([
@@ -746,31 +852,64 @@ function AccountOnboardingContent() {
   }
 
   function handleStep3Submit() {
-    userCtx.updateContext({
-      declaredCoverages: selectedCoverages,
-    });
+    userCtx.updateContext(
+      { declaredCoverages: selectedCoverages, profileSetupComplete: false },
+      { sync: false }
+    );
     void persistDraft({
       owned_coverage: selectedCoverages.map((c) => c.category),
-    });
-    proceedTo(4);
-  }
-
-  // Handle Step 4 Scope toggle
-  function handleStep4Submit() {
-    const deps = householdScope === "family" ? familyMembers : ["None"];
-    userCtx.updateContext({
-      householdScope,
-      dependentCount: householdScope === "family" ? familyCount : 0,
-      dependents: deps,
-    });
-    void persistDraft({
-      dependents: householdScope === "family" ? familyMembers : [],
+      has_existing_insurance: selectedCoverages.some((c) => c.id === "none")
+        ? "NO"
+        : selectedCoverages.some((c) => c.id === "not_sure")
+          ? "NOT_SURE"
+          : "YES",
+      insurance_sources: insuranceSources,
+      insurer_name: customProviderInput.trim() || null,
+      policy_expiry_known: policyExpiryKnown,
+      policy_expiry_date: policyExpiryKnown ? policyExpiryDate || null : null,
+      policy_documents_available: policyDocumentsAvailable,
     });
     proceedTo(5);
   }
 
-  // Handle Step 5 Goals & Budget Submit
-  async function handleStep5Submit(skipBudget = false) {
+  // Handle Step 3 Scope toggle
+  function handleStep4Submit() {
+    const deps = householdScope === "family" ? familyMembers : ["None"];
+    userCtx.updateContext(
+      {
+        householdScope,
+        dependentCount: householdScope === "family" ? familyCount : 0,
+        dependents: deps,
+        profileSetupComplete: false,
+      },
+      { sync: false }
+    );
+    void persistDraft({
+      dependents: householdScope === "family" ? familyMembers : [],
+      has_dependents: householdScope === "family",
+      dependent_age_groups: householdScope === "family" ? dependentAgeGroups : [],
+      dependent_insurance_status:
+        householdScope === "family" ? dependentInsuranceStatus : null,
+      financial_responsibilities: financialResponsibilities,
+    });
+    proceedTo(4);
+  }
+
+  function handleStep5Continue() {
+    if (selectedGoals.length === 0) {
+      setError("Choose at least one priority so INSURRA can personalize your next steps.");
+      return;
+    }
+    void persistDraft({
+      priorities: selectedGoals.slice(0, 2),
+      goals: [...new Set(selectedGoals.map((goal) => GOAL_API_VALUES[goal]))],
+      primary_concern: selectedGoals[0] || null,
+    });
+    proceedTo(6);
+  }
+
+  // Handle Step 6 Budget & Review Submit
+  async function handleStep6Submit(skipBudget = false) {
     setBusy(true);
     setError(null);
     const budgetObj = skipBudget
@@ -803,12 +942,19 @@ function AccountOnboardingContent() {
       dependents: householdScope === "family" ? familyMembers : ["None"],
       declaredCoverages: selectedCoverages,
       protectionGoals: selectedGoals,
+      lifeContext,
+      ageRange: ageRange || undefined,
+      dependentAgeGroups,
+      financialResponsibilities,
+      insuranceSources,
+      employerCoverageEligibility:
+        segment === "employee" ? employerCoverageEligibility : undefined,
+      additionalCoverageIntent: skipBudget ? "UNSURE" : additionalCoverageIntent,
+      decisionPreference: skipBudget ? undefined : decisionPreference,
       additionalBudget: budgetObj,
       profileSetupComplete: true,
       insuranceVerificationStatus: "not_started" as const,
     };
-
-    userCtx.updateContext(finalContext);
 
     // Save to backend if authenticated
     if (token) {
@@ -837,6 +983,31 @@ function AccountOnboardingContent() {
             dependents: householdScope === "family" ? familyMembers : [],
             owned_coverage: selectedCoverages.map((c) => c.category),
             priorities: selectedGoals.slice(0, 2),
+            goals: [...new Set(selectedGoals.map((goal) => GOAL_API_VALUES[goal]))],
+            life_context: lifeContext,
+            age_range: ageRange || null,
+            visa_status: visaStatus.trim() || null,
+            employment_type: employmentType || null,
+            employer_coverage_eligibility:
+              segment === "employee" ? employerCoverageEligibility : null,
+            has_dependents: householdScope === "family",
+            dependent_age_groups: householdScope === "family" ? dependentAgeGroups : [],
+            dependent_insurance_status:
+              householdScope === "family" ? dependentInsuranceStatus : null,
+            financial_responsibilities: financialResponsibilities,
+            has_existing_insurance: selectedCoverages.some((c) => c.id === "none")
+              ? "NO"
+              : selectedCoverages.some((c) => c.id === "not_sure")
+                ? "NOT_SURE"
+                : "YES",
+            insurance_sources: insuranceSources,
+            insurer_name: customProviderInput.trim() || null,
+            policy_expiry_known: policyExpiryKnown,
+            policy_expiry_date: policyExpiryKnown ? policyExpiryDate || null : null,
+            policy_documents_available: policyDocumentsAvailable,
+            primary_concern: selectedGoals[0] || null,
+            willing_additional_coverage: skipBudget ? "UNSURE" : additionalCoverageIntent,
+            decision_preference: skipBudget ? null : decisionPreference,
             budget_range: skipBudget ? null : selectedBudgetRange,
             currency: budgetCurrency,
           },
@@ -848,6 +1019,7 @@ function AccountOnboardingContent() {
       }
     }
 
+    userCtx.updateContext(finalContext, { sync: false });
     setBusy(false);
     setIsCompleted(true);
     proceedTo(6);
@@ -999,8 +1171,8 @@ function AccountOnboardingContent() {
           {[
             { num: 1, label: "Location" },
             { num: 2, label: "Situation" },
-            { num: 3, label: "Protection" },
-            { num: 4, label: "Scope" },
+            { num: 3, label: "Family" },
+            { num: 4, label: "Insurance" },
             { num: 5, label: "Goals" },
             { num: 6, label: "Review" },
           ].map((s) => {
@@ -1041,7 +1213,7 @@ function AccountOnboardingContent() {
 
           <div className="chat-stream" ref={chatScrollRef}>
             {/* Step 1: Location & Background */}
-            <div className="chat-turn">
+            <div className="chat-turn" style={{ order: 1 }}>
               <div className="chat-assistant-bubble">
                 <p>
                   Let&apos;s start with where you are. This helps me understand which insurance rules
@@ -1070,6 +1242,22 @@ function AccountOnboardingContent() {
                         if (match) setNationalityCode(match.code);
                       }}
                     />
+                  </div>
+
+                  <div className="form-group-card">
+                    <label className="field-label">What brings you here?</label>
+                    <select
+                      className="text-input-field"
+                      aria-label="What brings you here?"
+                      value={lifeContext}
+                      onChange={(event) => setLifeContext(event.target.value as LifeContextValue)}
+                    >
+                      <option value="STUDY">Study</option>
+                      <option value="WORK">Work</option>
+                      <option value="LIVING">Living</option>
+                      <option value="TRAVEL">Travel</option>
+                      <option value="OTHER">Other</option>
+                    </select>
                   </div>
 
                   {/* Current Residence Country Dropdown */}
@@ -1145,7 +1333,7 @@ function AccountOnboardingContent() {
                   <button
                     type="button"
                     className="edit-answer-btn"
-                    onClick={() => setActiveStep(1)}
+                    onClick={() => editStep(1)}
                     title="Edit Location"
                   >
                     <Edit2 size={13} />
@@ -1156,13 +1344,32 @@ function AccountOnboardingContent() {
 
             {/* Step 2: What Describes You? */}
             {activeStep >= 2 && (
-              <div className="chat-turn">
+              <div className="chat-turn" style={{ order: 2 }}>
                 <div className="chat-assistant-bubble">
                   <p>What best describes your current situation?</p>
                 </div>
 
                 {activeStep === 2 && (
                   <div className="chat-form-interactive">
+                    <div className="form-group-card">
+                      <label className="field-label">Age range (optional)</label>
+                      <select
+                        className="text-input-field"
+                        aria-label="Age range (optional)"
+                        value={ageRange}
+                        onChange={(event) => setAgeRange(event.target.value as AgeRangeValue | "")}
+                      >
+                        <option value="">Prefer not to say</option>
+                        <option value="UNDER_18">Under 18</option>
+                        <option value="18_24">18–24</option>
+                        <option value="25_34">25–34</option>
+                        <option value="35_44">35–44</option>
+                        <option value="45_54">45–54</option>
+                        <option value="55_64">55–64</option>
+                        <option value="65_PLUS">65+</option>
+                      </select>
+                      <small className="field-helper">We only need a range, never your full birth date.</small>
+                    </div>
                     <div className="situation-card-grid">
                       {SITUATION_OPTIONS.map((item) => {
                         const Icon = item.icon;
@@ -1187,6 +1394,51 @@ function AccountOnboardingContent() {
                         );
                       })}
                     </div>
+
+                    {residenceCountry !== nationalityCode && (
+                      <div className="conditional-group-card">
+                        <span className="conditional-tag">International residence</span>
+                        <div className="field-row">
+                          <label className="field-label">Visa / residence status (optional)</label>
+                          <select
+                            className="text-input-field"
+                            value={visaStatus}
+                            onChange={(event) => setVisaStatus(event.target.value)}
+                          >
+                            <option value="">Prefer not to say</option>
+                            <option value="VALID">Valid</option>
+                            <option value="PENDING">Pending / renewal in progress</option>
+                            <option value="UNKNOWN">Not sure</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    {segment === "employee" && (
+                      <div className="conditional-group-card">
+                        <span className="conditional-tag">Employment benefits</span>
+                        <div className="field-grid-2">
+                          <div>
+                            <label className="field-label">Employment type</label>
+                            <select className="text-input-field" value={employmentType} onChange={(event) => setEmploymentType(event.target.value)}>
+                              <option value="">Not specified</option>
+                              <option value="FULL_TIME">Full-time</option>
+                              <option value="CONTRACT">Contract</option>
+                              <option value="FREELANCE">Freelance</option>
+                              <option value="OTHER">Other</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="field-label">Eligible for employer coverage?</label>
+                            <select className="text-input-field" value={employerCoverageEligibility} onChange={(event) => setEmployerCoverageEligibility(event.target.value as AnswerStateValue)}>
+                              <option value="YES">Yes</option>
+                              <option value="NO">No</option>
+                              <option value="UNKNOWN">Not sure</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Situation-driven conditional questions */}
                     {segment === "student" && residenceCountry === "CN" && (
@@ -1425,7 +1677,7 @@ function AccountOnboardingContent() {
                     <button
                       type="button"
                       className="edit-answer-btn"
-                      onClick={() => setActiveStep(2)}
+                      onClick={() => editStep(2)}
                       title="Edit Situation"
                     >
                       <Edit2 size={13} />
@@ -1435,14 +1687,14 @@ function AccountOnboardingContent() {
               </div>
             )}
 
-            {/* Step 3: What Protection Do You Have? */}
-            {activeStep >= 3 && (
-              <div className="chat-turn">
+            {/* Step 4: What Protection Do You Have? */}
+            {activeStep >= 4 && (
+              <div className="chat-turn" style={{ order: 4 }}>
                 <div className="chat-assistant-bubble">
                   <p>What types of insurance do you currently have? Select all that apply.</p>
                 </div>
 
-                {activeStep === 3 && (
+                {activeStep === 4 && (
                   <div className="chat-form-interactive">
                     <div className="coverage-multi-list">
                       {COVERAGE_CATEGORIES.map((cat) => {
@@ -1481,6 +1733,59 @@ function AccountOnboardingContent() {
                       />
                     </div>
 
+                    <div className="conditional-group-card">
+                      <span className="conditional-tag">Optional policy context</span>
+                      <label className="field-label">Where does your protection come from?</label>
+                      <div className="family-checkboxes">
+                        {["SELF_PURCHASED", "EMPLOYER", "GOVERNMENT", "UNIVERSITY"].map((source) => (
+                          <label key={source} className="checkbox-row">
+                            <input
+                              type="checkbox"
+                              checked={insuranceSources.includes(source)}
+                              onChange={() => setInsuranceSources((current) =>
+                                current.includes(source)
+                                  ? current.filter((item) => item !== source)
+                                  : [...current, source]
+                              )}
+                            />
+                            <span>{source.replaceAll("_", " ").toLowerCase()}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="field-grid-2" style={{ marginTop: 12 }}>
+                        <div>
+                          <label className="field-label">Know the policy expiry?</label>
+                          <select
+                            className="text-input-field"
+                            value={policyExpiryKnown === null ? "UNKNOWN" : policyExpiryKnown ? "YES" : "NO"}
+                            onChange={(event) => setPolicyExpiryKnown(event.target.value === "UNKNOWN" ? null : event.target.value === "YES")}
+                          >
+                            <option value="UNKNOWN">Not sure</option>
+                            <option value="YES">Yes</option>
+                            <option value="NO">No</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="field-label">Policy document available?</label>
+                          <select
+                            className="text-input-field"
+                            value={policyDocumentsAvailable === null ? "UNKNOWN" : policyDocumentsAvailable ? "YES" : "NO"}
+                            onChange={(event) => setPolicyDocumentsAvailable(event.target.value === "UNKNOWN" ? null : event.target.value === "YES")}
+                          >
+                            <option value="UNKNOWN">Not sure</option>
+                            <option value="YES">Yes</option>
+                            <option value="NO">No</option>
+                          </select>
+                        </div>
+                      </div>
+                      {policyExpiryKnown && (
+                        <div className="field-row" style={{ marginTop: 12 }}>
+                          <label className="field-label">Policy expiry date</label>
+                          <input type="date" className="text-input-field" value={policyExpiryDate} onChange={(event) => setPolicyExpiryDate(event.target.value)} />
+                        </div>
+                      )}
+                    </div>
+
                     <div className="guidance-notice">
                       <ShieldCheck size={16} />
                       <span>
@@ -1494,13 +1799,13 @@ function AccountOnboardingContent() {
                       className="chat-primary-btn"
                       onClick={handleStep3Submit}
                     >
-                      <span>Continue to Coverage Scope</span>
+                      <span>Continue to Goals</span>
                       <ArrowRight size={16} />
                     </button>
                   </div>
                 )}
 
-                {activeStep > 3 && (
+                {activeStep > 4 && (
                   <div className="chat-user-bubble">
                     <span>
                       {selectedCoverages.map((c) => c.category).join(", ")} (Self-Reported)
@@ -1508,7 +1813,7 @@ function AccountOnboardingContent() {
                     <button
                       type="button"
                       className="edit-answer-btn"
-                      onClick={() => setActiveStep(3)}
+                      onClick={() => editStep(4)}
                       title="Edit Coverage"
                     >
                       <Edit2 size={13} />
@@ -1518,14 +1823,14 @@ function AccountOnboardingContent() {
               </div>
             )}
 
-            {/* Step 4: Who Needs Coverage? */}
-            {activeStep >= 4 && (
-              <div className="chat-turn">
+            {/* Step 3: Who Needs Coverage? */}
+            {activeStep >= 3 && (
+              <div className="chat-turn" style={{ order: 3 }}>
                 <div className="chat-assistant-bubble">
                   <p>Are you managing insurance just for yourself or for others too?</p>
                 </div>
 
-                {activeStep === 4 && (
+                {activeStep === 3 && (
                   <div className="chat-form-interactive">
                     <div className="scope-selection-grid">
                       {[
@@ -1589,21 +1894,71 @@ function AccountOnboardingContent() {
                             );
                           })}
                         </div>
+                        <label className="field-label" style={{ marginTop: 14 }}>Dependent age groups (optional)</label>
+                        <div className="family-checkboxes">
+                          {["CHILD", "ADULT", "SENIOR"].map((group) => (
+                            <label key={group} className="checkbox-row">
+                              <input
+                                type="checkbox"
+                                checked={dependentAgeGroups.includes(group)}
+                                onChange={() => setDependentAgeGroups((current) =>
+                                  current.includes(group)
+                                    ? current.filter((item) => item !== group)
+                                    : [...current, group]
+                                )}
+                              />
+                              <span>{group.toLowerCase()}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="field-row" style={{ marginTop: 12 }}>
+                          <label className="field-label">Are they currently insured?</label>
+                          <select className="text-input-field" value={dependentInsuranceStatus} onChange={(event) => setDependentInsuranceStatus(event.target.value as AnswerStateValue)}>
+                            <option value="YES">Covered</option>
+                            <option value="NO">Not covered</option>
+                            <option value="UNKNOWN">Not sure</option>
+                          </select>
+                        </div>
                       </div>
                     )}
+
+                    <div className="conditional-group-card">
+                      <span className="conditional-tag">Optional financial context</span>
+                      <p style={{ margin: "4px 0 10px", fontSize: 13, color: "#64748b" }}>
+                        Select broad responsibilities only. We do not ask for your exact income.
+                      </p>
+                      <div className="family-checkboxes">
+                        {["HOUSEHOLD_EXPENSES", "EDUCATION_COSTS", "DEBT_OR_LOANS", "PARENT_SUPPORT", "NONE"].map((item) => (
+                          <label key={item} className="checkbox-row">
+                            <input
+                              type="checkbox"
+                              checked={financialResponsibilities.includes(item)}
+                              onChange={() => setFinancialResponsibilities((current) => {
+                                if (item === "NONE") return current.includes(item) ? [] : [item];
+                                const withoutNone = current.filter((value) => value !== "NONE");
+                                return withoutNone.includes(item)
+                                  ? withoutNone.filter((value) => value !== item)
+                                  : [...withoutNone, item];
+                              })}
+                            />
+                            <span>{item.replaceAll("_", " ").toLowerCase()}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
 
                     <button
                       type="button"
                       className="chat-primary-btn"
                       onClick={handleStep4Submit}
                     >
-                      <span>Continue to Goals</span>
+                      <span>Continue to Existing Insurance</span>
                       <ArrowRight size={16} />
                     </button>
                   </div>
                 )}
 
-                {activeStep > 4 && (
+                {activeStep > 3 && (
                   <div className="chat-user-bubble">
                     <span>
                       {householdScope === "self"
@@ -1615,7 +1970,7 @@ function AccountOnboardingContent() {
                     <button
                       type="button"
                       className="edit-answer-btn"
-                      onClick={() => setActiveStep(4)}
+                      onClick={() => editStep(3)}
                       title="Edit Scope"
                     >
                       <Edit2 size={13} />
@@ -1627,7 +1982,7 @@ function AccountOnboardingContent() {
 
             {/* Step 5: What Can We Help You With? */}
             {activeStep >= 5 && (
-              <div className="chat-turn">
+              <div className="chat-turn" style={{ order: 5 }}>
                 <div className="chat-assistant-bubble">
                   <p>What would you like INSURRA to help you with? Select your key priorities.</p>
                 </div>
@@ -1644,8 +1999,12 @@ function AccountOnboardingContent() {
                             onClick={() => {
                               if (isSelected) {
                                 setSelectedGoals(selectedGoals.filter((id) => id !== g.id));
+                                setError(null);
+                              } else if (selectedGoals.length >= 2) {
+                                setError("Choose up to two priorities. INSURRA can ask about other goals later when relevant.");
                               } else {
                                 setSelectedGoals([...selectedGoals, g.id]);
+                                setError(null);
                               }
                             }}
                           >
@@ -1660,64 +2019,13 @@ function AccountOnboardingContent() {
                         );
                       })}
                     </div>
+                    <p className="field-helper">{selectedGoals.length}/2 priorities selected</p>
+                    {error && <div className="chat-error-message">{error}</div>}
 
-                    {/* Optional Budget Section with explicit Skip */}
-                    <div className="conditional-group-card optional-budget-box">
-                      <span className="conditional-tag">Optional Personalization</span>
-                      <h4 style={{ margin: "4px 0 6px", fontSize: 14, fontWeight: 700 }}>
-                        Would you like to set a budget for additional coverage?
-                      </h4>
-                      <p style={{ margin: "0 0 12px", fontSize: 13, color: "#64748b" }}>
-                        Helpful if you plan to compare plans or add supplementary private coverage.
-                      </p>
-
-                      <div className="budget-currency-row">
-                        {BUDGET_CURRENCIES.map((cur) => (
-                          <button
-                            key={cur.code}
-                            type="button"
-                            className={`currency-pill ${budgetCurrency === cur.code ? "active" : ""}`}
-                            onClick={() => setBudgetCurrency(cur.code)}
-                          >
-                            {cur.symbol} {cur.code}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="budget-range-grid">
-                        {(BUDGET_RANGES[budgetCurrency] || BUDGET_RANGES.USD).map((rng) => (
-                          <button
-                            key={rng}
-                            type="button"
-                            className={`range-pill ${selectedBudgetRange === rng ? "selected" : ""}`}
-                            onClick={() => setSelectedBudgetRange(rng)}
-                          >
-                            {rng}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="chat-btn-row">
-                      <button
-                        type="button"
-                        className="chat-primary-btn"
-                        disabled={busy}
-                        onClick={() => handleStep5Submit(false)}
-                      >
-                        <span>Save & Complete Profile</span>
-                        <ArrowRight size={16} />
-                      </button>
-
-                      <button
-                        type="button"
-                        className="chat-secondary-btn"
-                        disabled={busy}
-                        onClick={() => handleStep5Submit(true)}
-                      >
-                        Skip budget for now
-                      </button>
-                    </div>
+                    <button type="button" className="chat-primary-btn" onClick={handleStep5Continue}>
+                      <span>Continue to Budget & Review</span>
+                      <ArrowRight size={16} />
+                    </button>
                   </div>
                 )}
 
@@ -1725,12 +2033,11 @@ function AccountOnboardingContent() {
                   <div className="chat-user-bubble">
                     <span>
                       {selectedGoals.length} priorities selected
-                      {selectedBudgetRange !== "No additional budget" ? ` · ${selectedBudgetRange}` : ""}
                     </span>
                     <button
                       type="button"
                       className="edit-answer-btn"
-                      onClick={() => setActiveStep(5)}
+                      onClick={() => editStep(5)}
                       title="Edit Goals"
                     >
                       <Edit2 size={13} />
@@ -1742,7 +2049,79 @@ function AccountOnboardingContent() {
 
             {/* Step 6: Review & Get Started */}
             {activeStep === 6 && (
-              <div className="chat-turn">
+              <div className="chat-turn" style={{ order: 6 }}>
+                {!isCompleted ? (
+                  <>
+                    <div className="chat-assistant-bubble">
+                      <p>
+                        Last step. Add an optional monthly budget, then review and save your profile.
+                      </p>
+                    </div>
+                    <div className="chat-form-interactive">
+                      <div className="conditional-group-card optional-budget-box">
+                        <span className="conditional-tag">Optional Personalization</span>
+                        <h4 style={{ margin: "4px 0 6px", fontSize: 14, fontWeight: 700 }}>
+                          Budget for additional coverage
+                        </h4>
+                        <p style={{ margin: "0 0 12px", fontSize: 13, color: "#64748b" }}>
+                          A broad range is enough. We never ask for exact income during initial onboarding.
+                        </p>
+
+                        <div className="field-grid-2" style={{ marginBottom: 12 }}>
+                          <div>
+                            <label className="field-label">Consider additional coverage?</label>
+                            <select className="text-input-field" value={additionalCoverageIntent} onChange={(event) => setAdditionalCoverageIntent(event.target.value as CoverageIntentValue)}>
+                              <option value="YES">Yes</option>
+                              <option value="NO">No</option>
+                              <option value="UNSURE">Unsure</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="field-label">Main decision preference</label>
+                            <select className="text-input-field" value={decisionPreference} onChange={(event) => setDecisionPreference(event.target.value as DecisionPreferenceValue)}>
+                              <option value="LOWER_PREMIUM">Lower premium</option>
+                              <option value="WIDER_BENEFITS">Wider benefits</option>
+                              <option value="FLEXIBILITY">Flexibility</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="budget-currency-row">
+                          {BUDGET_CURRENCIES.map((cur) => (
+                            <button key={cur.code} type="button" className={`currency-pill ${budgetCurrency === cur.code ? "active" : ""}`} onClick={() => setBudgetCurrency(cur.code)}>
+                              {cur.symbol} {cur.code}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="budget-range-grid">
+                          {(BUDGET_RANGES[budgetCurrency] || BUDGET_RANGES.USD).map((range) => (
+                            <button key={range} type="button" className={`range-pill ${selectedBudgetRange === range ? "selected" : ""}`} onClick={() => setSelectedBudgetRange(range)}>
+                              {range}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="profile-summary-review-card">
+                        <div className="summary-row"><span className="summary-label">Residence</span><strong className="summary-val">{city}, {activeCountryObj.name}</strong></div>
+                        <div className="summary-row"><span className="summary-label">Situation</span><strong className="summary-val">{SITUATION_OPTIONS.find((s) => s.id === segment)?.label}</strong></div>
+                        <div className="summary-row"><span className="summary-label">Household</span><strong className="summary-val">{householdScope === "family" ? `${familyCount} dependents` : householdScope}</strong></div>
+                        <div className="summary-row"><span className="summary-label">Priorities</span><strong className="summary-val">{selectedGoals.map((id) => GOAL_OPTIONS.find((goal) => goal.id === id)?.label).join(", ")}</strong></div>
+                      </div>
+
+                      {error && <div className="chat-error-message">{error}</div>}
+                      <div className="chat-btn-row">
+                        <button type="button" className="chat-primary-btn" disabled={busy} onClick={() => handleStep6Submit(false)}>
+                          <span>{busy ? "Saving…" : "Save & Complete Profile"}</span>
+                          <ArrowRight size={16} />
+                        </button>
+                        <button type="button" className="chat-secondary-btn" disabled={busy} onClick={() => handleStep6Submit(true)}>
+                          Skip budget for now
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
                 <div className="chat-assistant-bubble finish-bubble">
                   <div className="finish-head">
                     <CheckCircle2 size={24} color="#0ea58a" />
@@ -1815,6 +2194,7 @@ function AccountOnboardingContent() {
                     </Link>
                   </div>
                 </div>
+                )}
               </div>
             )}
           </div>
@@ -1832,10 +2212,10 @@ function AccountOnboardingContent() {
             <div className="metric-box">
               <span className="metric-title">Profile Setup</span>
               <div className="metric-val green">
-                {activeStep >= 6 || isCompleted ? "100%" : `${Math.round((activeStep / 6) * 100)}%`}
+                {isCompleted ? "100%" : `${Math.round(((activeStep - 1) / 6) * 100)}%`}
               </div>
               <p className="metric-sub">
-                {activeStep >= 6 || isCompleted
+                {isCompleted
                   ? "All required onboarding questions answered"
                   : `Step ${activeStep} of 6 in progress`}
               </p>

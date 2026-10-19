@@ -8,7 +8,19 @@ import {
   useState,
 } from "react";
 import { api } from "@/lib/api/client";
+import type { components } from "@/lib/api/types.gen";
 import { useAuth } from "@/lib/auth";
+
+const GOAL_API_VALUES: Record<string, components["schemas"]["Goal"]> = {
+  understand: "UNDERSTAND_COVERAGE",
+  coverage_adequacy: "DISCOVER_GAPS",
+  find_gaps: "DISCOVER_GAPS",
+  care_pathways: "FIND_CARE",
+  claims_help: "PREPARE_CLAIM",
+  compare_options: "COMPARE_OPTIONS",
+  organize_docs: "TRACK_RENEWALS",
+  family_group: "MANAGE_FAMILY",
+};
 
 export type DeclaredCoverageItem = {
   id: string;
@@ -49,6 +61,14 @@ export type SharedUserContext = {
   dependents: string[];
   declaredCoverages: DeclaredCoverageItem[];
   protectionGoals: string[];
+  lifeContext?: "STUDY" | "WORK" | "LIVING" | "TRAVEL" | "OTHER";
+  ageRange?: "UNDER_18" | "18_24" | "25_34" | "35_44" | "45_54" | "55_64" | "65_PLUS";
+  dependentAgeGroups: string[];
+  financialResponsibilities: string[];
+  insuranceSources: string[];
+  employerCoverageEligibility?: "YES" | "NO" | "UNKNOWN";
+  additionalCoverageIntent?: "YES" | "NO" | "UNSURE";
+  decisionPreference?: "LOWER_PREMIUM" | "WIDER_BENEFITS" | "FLEXIBILITY";
   additionalBudget?: {
     range?: string;
     currency?: string;
@@ -56,7 +76,10 @@ export type SharedUserContext = {
   };
   profileSetupComplete: boolean;
   insuranceVerificationStatus: "not_started" | "in_progress" | "needs_review" | "verified";
-  updateContext: (partial: Partial<SharedUserContext>) => void;
+  updateContext: (
+    partial: Partial<SharedUserContext>,
+    options?: { sync?: boolean }
+  ) => void;
   resetContext: () => void;
 };
 
@@ -109,7 +132,15 @@ export const DEFAULT_USER_CONTEXT: SharedUserContext = {
       status: "self_reported",
     },
   ],
-  protectionGoals: ["understand", "claims", "documents"],
+  protectionGoals: ["understand", "claims_help"],
+  lifeContext: "STUDY",
+  ageRange: undefined,
+  dependentAgeGroups: [],
+  financialResponsibilities: [],
+  insuranceSources: ["UNIVERSITY"],
+  employerCoverageEligibility: undefined,
+  additionalCoverageIntent: "UNSURE",
+  decisionPreference: "FLEXIBILITY",
   additionalBudget: {
     range: "¥300 - ¥800",
     currency: "CNY",
@@ -182,6 +213,16 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
             dependents: state.dependents.filter((d) => d !== "None"),
             owned_coverage: state.declaredCoverages.map((c) => c.category),
             priorities: state.protectionGoals.slice(0, 2),
+            goals: [...new Set(state.protectionGoals.map((goal) => GOAL_API_VALUES[goal]).filter(Boolean))],
+            life_context: state.lifeContext || null,
+            age_range: state.ageRange || null,
+            has_dependents: state.householdScope === "family",
+            dependent_age_groups: state.dependentAgeGroups,
+            financial_responsibilities: state.financialResponsibilities,
+            insurance_sources: state.insuranceSources,
+            employer_coverage_eligibility: state.employerCoverageEligibility || null,
+            willing_additional_coverage: state.additionalCoverageIntent || null,
+            decision_preference: state.decisionPreference || null,
             budget_range: state.additionalBudget?.range || null,
             currency: state.additionalBudget?.currency || (cCode === "CN" ? "CNY" : "IDR"),
           },
@@ -194,7 +235,7 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
   }, [account, token]);
 
   const updateContext = useCallback(
-    (partial: Partial<SharedUserContext>) => {
+    (partial: Partial<SharedUserContext>, options?: { sync?: boolean }) => {
       setContext((prev) => {
         const code = partial.countryCode || prev.countryCode;
         const next: SharedUserContext = {
@@ -204,7 +245,14 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
           countryFlag: COUNTRY_FLAGS[code] || "🌐",
           residenceCountry: COUNTRY_NAMES[code] || partial.residenceCountry || prev.residenceCountry,
         };
-        void syncToBackend(next);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+          } catch {
+            // storage disabled or full
+          }
+        }
+        if (options?.sync !== false) void syncToBackend(next);
         return next;
       });
     },

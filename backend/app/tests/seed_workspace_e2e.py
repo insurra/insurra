@@ -4,11 +4,12 @@ import json
 import os
 
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from app.api.auth import _hash_password
 from app.core.config import ROOT, Settings
 from app.main import create_app
-from app.models import AccountProfileRow, AccountRow
+from app.models import AccountConsentRow, AccountProfileRow, AccountRow
 from app.tests.workspace_fixtures import workspace
 
 
@@ -31,6 +32,14 @@ def main():
                 profile = db.get(AccountProfileRow, account)
                 if profile is not None:
                     profile.completed = False
+                    profile.payload = {}
+                consents = db.scalars(
+                    select(AccountConsentRow).where(AccountConsentRow.account_id == account)
+                )
+                for consent in consents:
+                    consent.granted = False
+                    consent.granted_at = None
+                    consent.revoked_at = None
             else:
                 row.consent_decided = True
             db.commit()
