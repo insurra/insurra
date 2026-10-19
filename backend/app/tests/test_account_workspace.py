@@ -328,3 +328,29 @@ def test_audit_timeline_masking_tools_and_rls_isolation(app, client, demo):
     assert "5566771234" not in first_ans["input_summary"]
     assert client.get(f"/api/v1/audit/{first_ans['id']}", headers=headers_a).status_code == 200
     assert client.get(f"/api/v1/audit/{first_ans['id']}", headers=headers_b).status_code == 404
+
+
+def test_guardrail_highlight_subtypes_and_demo_scenario(client, demo):
+    _, headers = demo("raka")
+    # Trigger emergency ("nyeri dada") via triage before opening guardrail view
+    assert (
+        client.post("/api/v1/triage", headers=headers, json={"text": "nyeri dada"}).status_code
+        == 501
+    )
+
+    # Opening /api/v1/audit?type=guardrail in demo returns >= 3 distinct guardrail subtypes
+    res = client.get("/api/v1/audit?type=guardrail", headers=headers)
+    assert res.status_code == 200
+    guardrail_events = res.json()
+    assert int(res.headers["X-Total-Count"]) == len(guardrail_events)
+    assert len(guardrail_events) >= 3
+
+    expected_subtypes = {
+        "Instruksi di dokumen diabaikan",
+        "Tanda bahaya → arahan darurat",
+        "Jawaban tanpa sumber ditolak",
+    }
+    found_subtypes = {e["subtype"] for e in guardrail_events}
+    assert expected_subtypes.issubset(found_subtypes)
+    assert all(e["category"] == "guardrail" and e["subtype"] for e in guardrail_events)
+    assert all("8899001234" not in (e["input_summary"] or "") for e in guardrail_events)
