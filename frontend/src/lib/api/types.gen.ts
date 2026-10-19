@@ -2555,15 +2555,15 @@ export interface components {
             currency?: string | null;
             /** Coverage Types */
             coverage_types: {
-                [key: string]: string;
+                [key: string]: components["schemas"]["JsonValue"];
             }[];
             /** Document Types */
             document_types: {
-                [key: string]: string;
+                [key: string]: components["schemas"]["JsonValue"];
             }[];
             /** Suggested Docs */
             suggested_docs: {
-                [key: string]: string | null;
+                [key: string]: components["schemas"]["JsonValue"];
             }[];
             /** Tasks */
             tasks: {

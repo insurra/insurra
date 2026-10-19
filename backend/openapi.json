@@ -22169,7 +22169,7 @@
           "coverage_types": {
             "items": {
               "additionalProperties": {
-                "type": "string"
+                "$ref": "#/components/schemas/JsonValue"
               },
               "type": "object"
             },
@@ -22179,7 +22179,7 @@
           "document_types": {
             "items": {
               "additionalProperties": {
-                "type": "string"
+                "$ref": "#/components/schemas/JsonValue"
               },
               "type": "object"
             },
@@ -22189,14 +22189,7 @@
           "suggested_docs": {
             "items": {
               "additionalProperties": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
+                "$ref": "#/components/schemas/JsonValue"
               },
               "type": "object"
             },

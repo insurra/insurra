@@ -36,9 +36,9 @@ class AccountSetup(Contract):
     kb_version: str
     verification_status: VerificationStatus
     currency: str | None = None
-    coverage_types: list[dict[str, str]]
-    document_types: list[dict[str, str]]
-    suggested_docs: list[dict[str, str | None]]
+    coverage_types: list[dict[str, JsonValue]]
+    document_types: list[dict[str, JsonValue]]
+    suggested_docs: list[dict[str, JsonValue]]
     tasks: list[dict[str, JsonValue]]
 
 

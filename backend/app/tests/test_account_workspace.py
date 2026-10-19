@@ -66,6 +66,21 @@ def grant(client, headers, purpose: str, granted: bool = True):
     assert response.status_code == 200, response.text
 
 
+def test_account_setup_returns_country_resources(app, client):
+    headers = account_headers(app, "setup")
+    headers["Origin"] = "http://127.0.0.1:3000"
+
+    response = client.get("/api/v1/account/setup/CN", headers=headers)
+
+    assert response.status_code == 200, response.text
+    assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:3000"
+    payload = response.json()
+    assert payload["country_code"] == "CN"
+    assert payload["coverage_types"]
+    assert payload["document_types"]
+    assert payload["tasks"]
+
+
 def test_account_profile_and_consent_are_separate_from_demo(app, client, demo):
     mine = account_headers(app, "rere")
     other = account_headers(app, "other")
