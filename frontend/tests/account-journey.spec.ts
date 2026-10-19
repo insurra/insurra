@@ -14,6 +14,14 @@ test("new account consents once, completes onboarding once, then follows documen
   await consentChoices.nth(1).check();
   await page.getByRole("button", { name: /Agree & Continue/ }).click();
   await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(page.getByLabel("What brings you here?")).toBeVisible();
+  await expect(page.getByText(/never your full birth date/i)).toHaveCount(0);
+  await page.getByRole("button", { name: "Continue to Situation" }).click();
+  await expect(page.getByLabel("Age range (optional)")).toBeVisible();
+  await expect(page.getByText(/never your full birth date/i)).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByLabel("Age range (optional)")).toBeVisible();
 
   const profile = await page.request.put("http://127.0.0.1:8177/api/v1/account/profile", {
     headers,

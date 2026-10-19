@@ -45,10 +45,26 @@ def test_new_fields_map_and_mirror():
             "permit_end_date": "2027-01-01",
             "goals": ["FIND_CARE"],
             "protection_scope": ["SELF", "SPOUSE"],
+            "life_context": "LIVING",
+            "age_range": "25_34",
+            "has_dependents": True,
+            "dependents": ["Child"],
+            "dependent_age_groups": ["0_5"],
+            "dependent_insurance_status": "UNKNOWN",
+            "financial_responsibilities": ["RENT", "FAMILY_SUPPORT"],
+            "has_existing_insurance": "YES",
+            "insurance_sources": ["UNIVERSITY"],
+            "policy_expiry_known": True,
+            "policy_expiry_date": "2027-01-01",
+            "policy_documents_available": False,
+            "willing_additional_coverage": "UNSURE",
+            "decision_preference": "FLEXIBILITY",
         }
     )
     assert profile.occupation.value == "OTHER"
     assert str(profile.visa_expiry_date) == "2027-01-01"
+    assert profile.age_range.value == "25_34"
+    assert profile.financial_responsibilities == ["RENT", "FAMILY_SUPPORT"]
 
 
 @pytest.mark.parametrize(
@@ -60,6 +76,9 @@ def test_new_fields_map_and_mirror():
         {"situation": "EMPLOYEE"},  # conflicts with occupation STUDENT
         {"nationality": "XYZ"},
         {"protection_scope": ["SELF", "SELF"]},
+        {"policy_expiry_known": False, "policy_expiry_date": "2027-01-01"},
+        {"has_dependents": False, "dependent_age_groups": ["0_5"]},
+        {"exact_income": 50_000_000},
     ],
 )
 def test_invalid_new_fields(extra):
@@ -121,13 +140,35 @@ def test_country_switch_clears_bound_fields_keeps_personal(app, client):
 def test_context_account_and_demo_and_isolation(app, client, demo):
     mine = account_headers(app, "mine")
     other = account_headers(app, "other")
-    body = {**profile_payload(), "situation": "STUDENT", "goals": ["FIND_CARE"], "currency": "CNY"}
+    body = {
+        **profile_payload(),
+        "situation": "STUDENT",
+        "goals": ["FIND_CARE"],
+        "currency": "CNY",
+        "life_context": "STUDY",
+        "age_range": "18_24",
+        "has_dependents": True,
+        "dependents": ["Child"],
+        "financial_responsibilities": ["TUITION"],
+        "insurance_sources": ["UNIVERSITY"],
+        "employer_coverage_eligibility": "UNKNOWN",
+        "willing_additional_coverage": "YES",
+        "decision_preference": "WIDER_BENEFITS",
+        "budget_range": "¥300 - ¥800 / month",
+    }
     client.put(ACCOUNT, headers=mine, json=body)
     ctx = client.get("/api/v1/context", headers=mine).json()
     assert ctx["mode"] == "ACCOUNT" and ctx["is_synthetic"] is False
     assert ctx["email"].startswith("mine_") and ctx["email_verified"] is True
     assert ctx["residence_country"] == "CN" and ctx["currency"] == "CNY"
     assert ctx["situation"] == "STUDENT" and ctx["goals"] == ["FIND_CARE"]
+    assert ctx["life_context"] == "STUDY" and ctx["age_range"] == "18_24"
+    assert ctx["has_dependents"] is True and ctx["dependent_count"] == 1
+    assert ctx["financial_responsibilities"] == ["TUITION"]
+    assert ctx["insurance_sources"] == ["UNIVERSITY"]
+    assert ctx["willing_additional_coverage"] == "YES"
+    assert ctx["decision_preference"] == "WIDER_BENEFITS"
+    assert ctx["budget_range"] == "¥300 - ¥800 / month"
     assert ctx["coverage_verified"] is False and ctx["fields_reviewed"] == 0
     leak = client.get("/api/v1/context", headers=other).json()
     assert (
