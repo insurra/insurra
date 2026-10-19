@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -441,6 +442,7 @@ export interface DynamicDocSuggestion {
 
 function AccountOnboardingContent() {
   const { account, token } = useAuth();
+  const router = useRouter();
   const userCtx = useUserContext();
 
   // Active conversational step: 1 to 6
@@ -535,8 +537,8 @@ function AccountOnboardingContent() {
         });
         if (!active) return;
         if (res.completed) {
-          setIsCompleted(true);
-          setActiveStep(6);
+          router.replace("/home");
+          return;
         }
         const data = (res.draft || res.profile || {}) as Record<string, unknown>;
         if (data.country_code) {
@@ -594,7 +596,7 @@ function AccountOnboardingContent() {
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [router, token]);
 
   // Persist draft step to server
   const persistDraft = useCallback(
@@ -1804,7 +1806,7 @@ function AccountOnboardingContent() {
                   </div>
 
                   <div className="chat-btn-row" style={{ marginTop: 20 }}>
-                    <Link href="/documents" className="chat-primary-btn" style={{ textDecoration: "none" }}>
+                    <Link href="/documents?tour=upload" className="chat-primary-btn" style={{ textDecoration: "none" }}>
                       <span>Continue to My Documents</span>
                       <ArrowRight size={16} />
                     </Link>

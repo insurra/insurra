@@ -26,6 +26,13 @@ export default function AccountCompleteness() {
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fromDocuments, setFromDocuments] = useState(false);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setFromDocuments(new URLSearchParams(window.location.search).get("from") === "documents");
+    });
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -117,6 +124,15 @@ export default function AccountCompleteness() {
 
   return (
     <main style={{ maxWidth: 1240, margin: "0 auto", padding: "18px 8px 56px" }}>
+      {fromDocuments && (
+        <div className="completeness-tour-banner">
+          <div>
+            <strong>Dokumenmu sudah ikut dihitung.</strong>
+            <span>Lihat perubahan kelengkapan di bawah, lalu lanjutkan ke beranda.</span>
+          </div>
+          <Link href="/home">Selesai, ke Home <ArrowRight size={15} /></Link>
+        </div>
+      )}
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20, flexWrap: "wrap", marginBottom: 24 }}>
         <div>
           <h1 style={{ margin: 0, color: "#10223c", fontSize: 28, fontWeight: 800 }}>Protection Completeness &amp; Continuity</h1>

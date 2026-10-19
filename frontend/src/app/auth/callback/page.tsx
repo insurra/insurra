@@ -18,7 +18,7 @@ export default function AuthCallbackPage() {
       return;
     }
     void acceptToken(token).then((success) => {
-      if (success) router.replace("/account/onboarding");
+      if (success) router.replace("/auth");
       else setMessage("Sesi tidak dapat diverifikasi. Silakan masuk kembali.");
     });
   }, [acceptToken, router]);

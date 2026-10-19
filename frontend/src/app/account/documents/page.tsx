@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -83,7 +84,7 @@ const FIELD_KEY_LABELS: Record<string, string> = {
 };
 
 export default function AccountDocuments() {
-  const { token } = useAuth();
+  const { account, token } = useAuth();
   const userCtx = useUserContext();
 
   const [activeTab, setActiveTab] = useState<"OVERVIEW" | "UPLOAD" | "RECOMMENDED" | "PROOF">("OVERVIEW");
@@ -124,12 +125,24 @@ export default function AccountDocuments() {
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [tourStep, setTourStep] = useState<"hidden" | "welcome" | "complete">("hidden");
   const [deleteConfirmDocId, setDeleteConfirmDocId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const countryCode = userCtx.countryCode || "CN";
   const countryName = userCtx.residenceCountry || "China";
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tour") !== "upload") return;
+    queueMicrotask(() => setTourStep("welcome"));
+  }, []);
+
+  const finishDocumentTour = useCallback(() => {
+    const owner = account?.id ?? "demo";
+    localStorage.setItem(`insurra.document-tour.${owner}`, "complete");
+  }, [account?.id]);
 
   // Available document kinds based on active residence country
   const availableKinds = useMemo(() => {
@@ -404,6 +417,10 @@ export default function AccountDocuments() {
           setSelectedDocId(res.document_id);
           setActiveTab("OVERVIEW");
         }
+        if (res.status === "COMPLETED") {
+          finishDocumentTour();
+          setTourStep("complete");
+        }
       } catch (err: unknown) {
         setError(
           err instanceof Error
@@ -645,6 +662,8 @@ export default function AccountDocuments() {
         setSelectedDetail(newDetail);
         setNotice("Document uploaded and extracted in demo sandbox.");
         setActiveTab("OVERVIEW");
+        finishDocumentTour();
+        setTourStep("complete");
 
         // Sync with user context policy list
         userCtx.updateContext({
@@ -802,6 +821,56 @@ export default function AccountDocuments() {
 
   return (
     <div className="figma-page-shell">
+      {tourStep !== "hidden" && (
+        <div className="document-tour-backdrop" role="dialog" aria-modal="true" aria-labelledby="document-tour-title">
+          <section className="document-tour-card">
+            <Image
+              src="/Winking%20Kangaroo%20Mascot%20with%20Document.png"
+              alt="Maskot Insurra membawa dokumen"
+              width={220}
+              height={220}
+              className="document-tour-mascot"
+              priority
+            />
+            {tourStep === "welcome" ? (
+              <>
+                <span className="document-tour-kicker">LANGKAH BERIKUTNYA</span>
+                <h2 id="document-tour-title">Yuk, isi brankas dokumenmu!</h2>
+                <p>
+                  Unggah polis, kartu asuransi, atau bukti manfaat. Insurra akan mengekstrak datanya dan memperbarui
+                  kelengkapan perlindunganmu.
+                </p>
+                <button
+                  type="button"
+                  className="figma-btn-primary document-tour-primary"
+                  onClick={() => {
+                    setTourStep("hidden");
+                    setActiveTab("UPLOAD");
+                  }}
+                >
+                  <UploadCloud size={17} /> Mulai unggah dokumen
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="document-tour-kicker success">EKSTRAKSI BERHASIL</span>
+                <h2 id="document-tour-title">Datamu sudah bertambah!</h2>
+                <p>
+                  Hasil ekstraksi sudah masuk ke profil. Cek nilai completeness sekarang, lalu lanjutkan ke beranda.
+                </p>
+                <div className="document-tour-actions">
+                  <Link href="/completeness?from=documents" className="figma-btn-primary document-tour-primary">
+                    Cek completeness <ArrowRight size={16} />
+                  </Link>
+                  <Link href="/home" className="figma-btn-outline document-tour-secondary">
+                    Ke Home
+                  </Link>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      )}
       {/* ---------------- Back Navigation ---------------- */}
       <Link href="/protection" className="figma-back-link">
         ← Back to My Protection

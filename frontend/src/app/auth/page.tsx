@@ -53,7 +53,7 @@ export default function AuthPage() {
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTarget = safeRedirectPath(searchParams.get("redirect"), "/onboarding");
+  const redirectTarget = safeRedirectPath(searchParams.get("redirect"), "/home");
   const actionParam = searchParams.get("action");
   const tokenParam = searchParams.get("token");
 
@@ -191,9 +191,9 @@ function AuthContent() {
     (consentDecided: boolean, profileCompleted: boolean) => {
       if (!consentDecided) return;
       if (profileCompleted) {
-        router.push(redirectTarget !== "/onboarding" ? redirectTarget : "/dashboard");
+        router.replace(redirectTarget === "/onboarding" ? "/home" : redirectTarget);
       } else {
-        router.push("/onboarding");
+        router.replace("/onboarding");
       }
     },
     [redirectTarget, router],
