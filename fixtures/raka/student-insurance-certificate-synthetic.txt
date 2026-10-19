@@ -1,0 +1,13 @@
+合成演示文件，仅用于演示。非真实保险产品，非官方要求。
+SYNTHETIC DEMO ONLY. Not a real insurer product and not an official requirement.
+
+学生健康保险证明（合成） / Student Health Insurance Certificate (synthetic)
+被保险人 / Insured: Raka
+学校 / Institution: Shenzhen Demo International University (synthetic) / 深圳示范国际大学（合成）
+保险计划 / Plan: Synthetic Student Health Plan (demo, not a real insurer product) / 合成学生健康计划（演示）
+保险期间 / Coverage period: 2026-09-01 至 2027-04-15
+保障项目与限额 / Benefits and limits: 未核实 / UNKNOWN (not verified)
+
+第一条 门诊医疗保障（合成演示条款）：被保险人在保险期间内于指定医疗机构接受普通门诊治疗的，需先核实医院网络及报销要求，凭正式医疗电子票据（发票）及病历申请理赔审核。
+第二条 住院医疗保障（合成演示条款）：被保险人因疾病或意外需住院治疗的，应向指定医院或服务机构确认住院直付或事后报销流程。
+第三条 药品与检查费用（合成演示条款）：门诊处方药品及基础检查费用需附具医生处方与费用明细清单，具体限额以保单核实结果为准。

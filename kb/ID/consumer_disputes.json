@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "dispute_id": "id-disp-ojk-157",
     "country_code": "ID",
     "authority_name": "Otoritas Jasa Keuangan (OJK)",
@@ -15,6 +18,6 @@
       "Attach identity card (KTP/KITAS) and statement confirming dispute is not currently in litigation"
     ],
     "source_url": "https://kontak157.ojk.go.id",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

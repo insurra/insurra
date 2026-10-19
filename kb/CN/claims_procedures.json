@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered procedure. Deadlines and channels were not machine-verified.",
     "procedure_id": "cn-claim-proc-lxbx",
     "country_code": "CN",
     "claims_administrator": "Ping An Pension Insurance Co., Ltd. (Foreign Student Claims Department)",
@@ -33,6 +36,6 @@
     "customer_support_contact": "400-810-5119 (Bilingual English and Chinese, 24/7 hotline)",
     "dispute_escalation_guidance": "Contact Ping An National Customer Service 95511 or escalate to NFRA Financial Consumer Protection Hotline 12378.",
     "source_url": "https://www.lxbx.net/claims_guide.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

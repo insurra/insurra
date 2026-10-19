@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered procedure. Deadlines and channels were not machine-verified.",
     "procedure_id": "id-claim-proc-bpjs-rujukan",
     "country_code": "ID",
     "claims_administrator": "BPJS Kesehatan & Rumah Sakit Rekanan",
@@ -33,9 +36,12 @@
     "customer_support_contact": "BPJS Care Center 165 (24 Jam)",
     "dispute_escalation_guidance": "Contact BPJS SATU (Siap Membantu) petugas di rumah sakit, atau hotline 165",
     "source_url": "https://www.bpjs-kesehatan.go.id/bpjs/pages/detail/2014/12",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered procedure. Deadlines and channels were not machine-verified.",
     "procedure_id": "id-claim-proc-allianz-reimbursement",
     "country_code": "ID",
     "claims_administrator": "PT Asuransi Allianz Life Indonesia (Claims Department)",
@@ -68,6 +74,6 @@
     "customer_support_contact": "1500-136",
     "dispute_escalation_guidance": "Internal Dispute Resolution Unit Allianz, or escalate to OJK Kontak 157 and LAPS SJK.",
     "source_url": "https://www.allianz.co.id/layanan/klaim/klaim-asuransi-kesehatan.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

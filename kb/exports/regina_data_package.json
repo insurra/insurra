@@ -1,9 +1,13 @@
 {
   "recipient": "Regina (Frontend & Client Architecture)",
-  "description": "Company registry, permitted brand logos, product catalog, document taxonomy, extraction schemas",
+  "description": "Company registry, placeholder brand artwork (not official logos), product catalog, document taxonomy, extraction schemas",
   "generated_at": "2026-10-18",
+  "evidence_notice": "No record in this package was fetched from an official source. Every record carries evidence_class and stays UNVERIFIED unless it has a real retrieved artifact hash.",
   "companies": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "cn-insurer-pingan",
       "legal_entity_name": "Ping An Insurance (Group) Company of China, Ltd.",
       "brand_name": "Ping An",
@@ -13,7 +17,7 @@
       "parent_company": null,
       "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
       "license_reference": "NFRA-B0002H111000001",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.pingan.com",
       "business_category": "Composite Financial & Insurance Group (Life, Health, Property & Casualty, Pension)",
       "public_customer_service_contact": "95511",
@@ -26,9 +30,12 @@
         "CN-SRC-PINGAN",
         "CN-SRC-NFRA"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "cn-insurer-picc",
       "legal_entity_name": "The People's Insurance Company (Group) of China Limited",
       "brand_name": "PICC",
@@ -38,7 +45,7 @@
       "parent_company": null,
       "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
       "license_reference": "NFRA-B0003H111000001",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.picc.com",
       "business_category": "Property & Casualty, Health, Life Insurance Group",
       "public_customer_service_contact": "95518",
@@ -51,9 +58,12 @@
         "CN-SRC-PICC",
         "CN-SRC-NFRA"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "cn-insurer-chinalife",
       "legal_entity_name": "China Life Insurance (Group) Company",
       "brand_name": "China Life",
@@ -63,7 +73,7 @@
       "parent_company": null,
       "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
       "license_reference": "NFRA-B0005H111000001",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.chinalife.com.cn",
       "business_category": "Life Insurance, Health Insurance, Pension, Asset Management",
       "public_customer_service_contact": "95519",
@@ -76,9 +86,12 @@
         "CN-SRC-CHINALIFE",
         "CN-SRC-NFRA"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "cn-insurer-cpic",
       "legal_entity_name": "China Pacific Insurance (Group) Co., Ltd.",
       "brand_name": "CPIC",
@@ -88,7 +101,7 @@
       "parent_company": null,
       "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
       "license_reference": "NFRA-B0006H111000001",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.cpic.com.cn",
       "business_category": "Life, Property & Casualty, Health Insurance",
       "public_customer_service_contact": "95500",
@@ -101,9 +114,12 @@
         "CN-SRC-CPIC",
         "CN-SRC-NFRA"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "cn-platform-lxbx",
       "legal_entity_name": "Ping An Pension Insurance Co., Ltd. (Underwriter for Foreign Student Scheme)",
       "brand_name": "Comprehensive Insurance for Foreigners Staying in China",
@@ -113,7 +129,7 @@
       "parent_company": "Ping An Insurance (Group) Company of China, Ltd.",
       "regulatory_authority": "National Financial Regulatory Administration (NFRA) & Ministry of Education",
       "license_reference": "NFRA-B0018H211000001",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.lxbx.net",
       "business_category": "National Foreign Student Insurance & Group Pension",
       "public_customer_service_contact": "400-810-5119",
@@ -126,9 +142,12 @@
         "CN-SRC-LXBX",
         "CN-SRC-SZU"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "id-public-bpjs-kesehatan",
       "legal_entity_name": "Badan Penyelenggara Jaminan Sosial Kesehatan (BPJS Kesehatan)",
       "brand_name": "BPJS Kesehatan",
@@ -138,7 +157,7 @@
       "parent_company": null,
       "regulatory_authority": "Dewan Jaminan Sosial Nasional (DJSN) & Otoritas Jasa Keuangan (OJK)",
       "license_reference": "Statutory Public Legal Entity under UU No. 24 Tahun 2011",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.bpjs-kesehatan.go.id",
       "business_category": "National Public Social Health Security Scheme (Program JKN)",
       "public_customer_service_contact": "BPJS Care Center 165",
@@ -151,9 +170,12 @@
         "ID-SRC-BPJS-KES",
         "ID-SRC-BPK-JDIH"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "id-insurer-allianz",
       "legal_entity_name": "PT Asuransi Allianz Life Indonesia",
       "brand_name": "Allianz Indonesia",
@@ -163,7 +185,7 @@
       "parent_company": "Allianz SE",
       "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
       "license_reference": "OJK KEP-238/KM.13/1989",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.allianz.co.id",
       "business_category": "Life and Health Insurance Company",
       "public_customer_service_contact": "1500-136",
@@ -176,9 +198,12 @@
         "ID-SRC-ALLIANZ",
         "ID-SRC-OJK"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "id-insurer-prudential",
       "legal_entity_name": "PT Prudential Life Assurance",
       "brand_name": "Prudential Indonesia",
@@ -188,7 +213,7 @@
       "parent_company": "Prudential plc",
       "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
       "license_reference": "OJK S-383/MK.17/1995",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.prudential.co.id",
       "business_category": "Life and Health Insurance, Syariah Insurance",
       "public_customer_service_contact": "1500085",
@@ -201,9 +226,12 @@
         "ID-SRC-PRUDENTIAL",
         "ID-SRC-OJK"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "id-insurer-aia",
       "legal_entity_name": "PT AIA FINANCIAL",
       "brand_name": "AIA Indonesia",
@@ -213,7 +241,7 @@
       "parent_company": "AIA Group Limited",
       "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
       "license_reference": "OJK KEP-138/KM.13/1992",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.aia-financial.co.id",
       "business_category": "Life and Health Insurance, Group Employee Benefits",
       "public_customer_service_contact": "1500-980",
@@ -226,9 +254,12 @@
         "ID-SRC-AIA",
         "ID-SRC-OJK"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "id-insurer-manulife",
       "legal_entity_name": "PT Asuransi Jiwa Manulife Indonesia",
       "brand_name": "Manulife Indonesia",
@@ -238,7 +269,7 @@
       "parent_company": "Manulife Financial Corporation",
       "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
       "license_reference": "OJK Kep-020/KM.13/1989",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.manulife.co.id",
       "business_category": "Life Insurance, Health Insurance, Group Pension (DPLK)",
       "public_customer_service_contact": "021-2555-7777",
@@ -251,9 +282,12 @@
         "ID-SRC-MANULIFE",
         "ID-SRC-OJK"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "id-insurer-axa-mandiri",
       "legal_entity_name": "PT AXA Mandiri Financial Services",
       "brand_name": "AXA Mandiri",
@@ -263,7 +297,7 @@
       "parent_company": "Joint Venture Bank Mandiri and AXA Group",
       "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
       "license_reference": "OJK S-071/MK.6/2004",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://www.axa-mandiri.co.id",
       "business_category": "Bancassurance Life and Health Insurance",
       "public_customer_service_contact": "1500-803",
@@ -276,9 +310,12 @@
         "ID-SRC-AXA-MANDIRI",
         "ID-SRC-OJK"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
       "insurer_id": "id-insurer-bri-life",
       "legal_entity_name": "PT Asuransi Jiwa BRI Life",
       "brand_name": "BRI Life",
@@ -288,7 +325,7 @@
       "parent_company": "PT Bank Rakyat Indonesia (Persero) Tbk",
       "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
       "license_reference": "OJK Kep-364/KM.13/1988",
-      "licensing_verification_status": "VERIFIED",
+      "licensing_verification_status": "UNVERIFIED",
       "official_website": "https://brilife.co.id",
       "business_category": "Life, Health, and Microinsurance",
       "public_customer_service_contact": "1500-087",
@@ -301,11 +338,14 @@
         "ID-SRC-BRI-LIFE",
         "ID-SRC-OJK"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "products": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "cn-prod-lxbx-student",
       "insurer_id": "cn-platform-lxbx",
       "original_product_name": "来华留学生综合医疗保险计划",
@@ -469,9 +509,12 @@
           "source_page": 5
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "cn-prod-picc-expatriate",
       "insurer_id": "cn-insurer-picc",
       "original_product_name": "人保健康外籍在华雇员综合医疗保障",
@@ -544,9 +587,12 @@
           "source_page": 6
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "cn-prod-pingan-travel",
       "insurer_id": "cn-insurer-pingan",
       "original_product_name": "平安行境外与境内旅游保障计划",
@@ -641,9 +687,12 @@
           "source_page": 4
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "cn-prod-pingan-fu",
       "insurer_id": "cn-insurer-pingan",
       "original_product_name": "平安福终身重大疾病保险",
@@ -742,9 +791,12 @@
           "source_page": 4
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "cn-prod-chinalife-kangning",
       "insurer_id": "cn-insurer-chinalife",
       "original_product_name": "中国人寿康宁终身重大疾病保险（2023版）",
@@ -817,9 +869,12 @@
           "source_page": 5
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "cn-prod-chinalife-furong",
       "insurer_id": "cn-insurer-chinalife",
       "original_product_name": "中国人寿国寿福荣定期寿险",
@@ -893,9 +948,12 @@
           "source_page": 3
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "cn-prod-pingan-accident",
       "insurer_id": "cn-insurer-pingan",
       "original_product_name": "平安一年期综合意外伤害保险",
@@ -995,9 +1053,12 @@
           "source_page": 3
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "cn-prod-pingan-eshengbao",
       "insurer_id": "cn-insurer-pingan",
       "original_product_name": "平安e生保长期医疗保险（费率可调）",
@@ -1071,9 +1132,12 @@
           "source_page": 4
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "id-prod-bpjs-jkn",
       "insurer_id": "id-public-bpjs-kesehatan",
       "original_product_name": "Program Jaminan Kesehatan Nasional (JKN)",
@@ -1224,9 +1288,12 @@
           "source_page": 12
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "id-prod-allianz-smarthealth",
       "insurer_id": "id-insurer-allianz",
       "original_product_name": "SmartHealth Maxi Violet",
@@ -1327,9 +1394,12 @@
           "source_page": 8
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "id-prod-prudential-pruwell",
       "insurer_id": "id-insurer-prudential",
       "original_product_name": "PRUWell Medical",
@@ -1403,9 +1473,12 @@
           "source_page": 14
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "id-prod-allianz-travelpro",
       "insurer_id": "id-insurer-allianz",
       "original_product_name": "Allianz TravelPro International",
@@ -1505,9 +1578,12 @@
           "source_page": 12
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "id-prod-prudential-prucritical88",
       "insurer_id": "id-insurer-prudential",
       "original_product_name": "Asuransi PRUCritical Benefit 88",
@@ -1607,9 +1683,12 @@
           "source_page": 11
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "id-prod-allianz-flexici",
       "insurer_id": "id-insurer-allianz",
       "original_product_name": "Allianz Flexi CI (Critical Illness)",
@@ -1682,9 +1761,12 @@
           "source_page": 9
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "id-prod-manulife-mea",
       "insurer_id": "id-insurer-manulife",
       "original_product_name": "Manulife Essential Assurance (MEA)",
@@ -1758,9 +1840,12 @@
           "source_page": 6
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "id-prod-allianz-pa",
       "insurer_id": "id-insurer-allianz",
       "original_product_name": "Asuransi Kecelakaan Diri Allianz (Personal Accident)",
@@ -1861,9 +1946,12 @@
           "source_page": 5
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
       "product_id": "id-prod-aia-corporate",
       "insurer_id": "id-insurer-aia",
       "original_product_name": "AIA Premier Hospital & Surgical Care Kumpulan",
@@ -1936,11 +2024,14 @@
           "source_page": 8
         }
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "brand_assets": [
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-cn-insurer-pingan-primary",
       "insurer_id": "cn-insurer-pingan",
       "product_id": null,
@@ -1954,15 +2045,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 541,
       "sha256": "24d896e3d0f42c010b979b4efec4caba6de8debb45cd96b459512d0bf18979be",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "Ping An Insurance (Group) Company of China, Ltd. Registered Trademark.",
+      "attribution_text": "Placeholder artwork for Ping An Insurance (中国平安). Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/cn-insurer-pingan/pingan_logo_official.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-cn-insurer-picc-primary",
       "insurer_id": "cn-insurer-picc",
       "product_id": null,
@@ -1976,15 +2070,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 605,
       "sha256": "6df5bfda809203172902ea99c1f910bfb70437800fb20983c174d594f548957d",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "The People's Insurance Company (Group) of China Limited. Official Brand Mark.",
+      "attribution_text": "Placeholder artwork for PICC (中国人保). Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/cn-insurer-picc/picc_logo_official.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-cn-insurer-chinalife-primary",
       "insurer_id": "cn-insurer-chinalife",
       "product_id": null,
@@ -1998,15 +2095,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 569,
       "sha256": "f6f23aa232bdbdb78f5173f05dc313257338a7688a265017e0fdd96d3c36cb29",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "China Life Insurance (Group) Company. Official Brand Identity.",
+      "attribution_text": "Placeholder artwork for China Life (中国人寿). Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/cn-insurer-chinalife/chinalife_logo_official.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-cn-insurer-cpic-primary",
       "insurer_id": "cn-insurer-cpic",
       "product_id": null,
@@ -2020,15 +2120,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 531,
       "sha256": "166ee864b6e62d87e9cee3253947ad7958bdf550c3968f45d91dc632f8d27f5c",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "China Pacific Insurance (Group) Co., Ltd. Official Brand Identity.",
+      "attribution_text": "Placeholder artwork for CPIC (中国太保). Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/cn-insurer-cpic/cpic_logo_official.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-cn-platform-lxbx-primary",
       "insurer_id": "cn-platform-lxbx",
       "product_id": null,
@@ -2042,15 +2145,18 @@
       "aspect_ratio": "340:80",
       "file_size_bytes": 646,
       "sha256": "58f2b21c39bf932d6a735df658c787454e5d540374bd96985ed55dddd580adc8",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China.",
+      "attribution_text": "Placeholder artwork for Comprehensive Student Insurance Scheme (来华留学生保险). Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/cn-platform-lxbx/lxbx_scheme_logo.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-id-public-bpjs-kesehatan-primary",
       "insurer_id": "id-public-bpjs-kesehatan",
       "product_id": null,
@@ -2064,15 +2170,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 576,
       "sha256": "00366d342d3e0be3e2e0d3c2ebdf1009981e51a8b9b95d612183ddc58236c4d4",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "Badan Penyelenggara Jaminan Sosial Kesehatan Republik Indonesia.",
+      "attribution_text": "Placeholder artwork for BPJS Kesehatan (JKN). Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/id-public-bpjs-kesehatan/bpjs_kesehatan_logo.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-id-insurer-allianz-primary",
       "insurer_id": "id-insurer-allianz",
       "product_id": null,
@@ -2086,15 +2195,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 669,
       "sha256": "d0e96cf759856237ff1fc1e281905ae205763c99ea3e599d708daf273a369f2d",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "PT Asuransi Allianz Life Indonesia. Licensed and supervised by OJK.",
+      "attribution_text": "Placeholder artwork for Allianz Indonesia. Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/id-insurer-allianz/allianz_indonesia_logo.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-id-insurer-prudential-primary",
       "insurer_id": "id-insurer-prudential",
       "product_id": null,
@@ -2108,15 +2220,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 532,
       "sha256": "f17f8bd185af0c9c15c740c22761d32517ae60bb5c9074a0f80a4815a80fb356",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "PT Prudential Life Assurance. Licensed and supervised by OJK.",
+      "attribution_text": "Placeholder artwork for Prudential Indonesia. Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/id-insurer-prudential/prudential_indonesia_logo.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-id-insurer-aia-primary",
       "insurer_id": "id-insurer-aia",
       "product_id": null,
@@ -2130,15 +2245,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 514,
       "sha256": "f48093eb44e4b157becaf834d8ca7915a81702c7aa99be5bfa27b207b22273db",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "PT AIA Financial. Licensed and supervised by OJK.",
+      "attribution_text": "Placeholder artwork for AIA Indonesia. Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/id-insurer-aia/aia_indonesia_logo.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-id-insurer-manulife-primary",
       "insurer_id": "id-insurer-manulife",
       "product_id": null,
@@ -2152,15 +2270,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 551,
       "sha256": "b2ecc8295e91607c2459c0981f681fe997c1543bc37b9b72e60092f1d902cca8",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "PT Asuransi Jiwa Manulife Indonesia. Licensed and supervised by OJK.",
+      "attribution_text": "Placeholder artwork for Manulife Indonesia. Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/id-insurer-manulife/manulife_indonesia_logo.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-id-insurer-axa-mandiri-primary",
       "insurer_id": "id-insurer-axa-mandiri",
       "product_id": null,
@@ -2174,15 +2295,18 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 599,
       "sha256": "3754e68827a131235e561311b03fdf5f3a37ae8820637d162e987b7075608f88",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "PT AXA Mandiri Financial Services. Licensed and supervised by OJK.",
+      "attribution_text": "Placeholder artwork for AXA Mandiri. Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/id-insurer-axa-mandiri/axa_mandiri_logo.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
       "asset_id": "asset-id-insurer-bri-life-primary",
       "insurer_id": "id-insurer-bri-life",
       "product_id": null,
@@ -2196,13 +2320,13 @@
       "aspect_ratio": "320:80",
       "file_size_bytes": 605,
       "sha256": "7615adb06e6f7ca2c9ff37bb2ef19ee86f821fa2c6ce17c91279d336a63730d7",
-      "license_status": "permitted_public_media",
-      "reuse_permission": "Official media identity for public consumer transparency and insurance comparison",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
       "attribution_required": true,
-      "attribution_text": "PT Asuransi Jiwa BRI Life. Bank BRI Group.",
+      "attribution_text": "Placeholder artwork for BRI Life. Not the official logo and no trademark license has been verified.",
       "local_storage_path": "/assets/insurers/id-insurer-bri-life/bri_life_logo.svg",
       "collection_date": "2026-10-18",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "document_taxonomy": {

@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
     "evidence_id": "id-ev-kuitansi-asli",
     "country_code": "ID",
     "insurer_id": "id-insurer-allianz",
@@ -15,9 +18,12 @@
     ],
     "special_conditions": "Duplicate or provisional receipts not accepted without official hospital confirmation seal.",
     "source_url": "https://www.allianz.co.id/layanan/klaim.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
     "evidence_id": "id-ev-resume-medis",
     "country_code": "ID",
     "insurer_id": null,
@@ -33,6 +39,6 @@
     ],
     "special_conditions": "Must explicitly state the cause of condition to verify policy exclusion criteria.",
     "source_url": "https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

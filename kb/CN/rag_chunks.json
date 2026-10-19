@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "cn-rag-lxbx-inpatient-01",
     "country": "CN",
     "jurisdiction": "CN-National",
@@ -15,9 +18,12 @@
     "topic": "Inpatient Medical Benefit and Limit",
     "effective_date": "2024-01-01",
     "source_url": "https://www.lxbx.net/product_details.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "cn-rag-lxbx-outpatient-02",
     "country": "CN",
     "jurisdiction": "CN-National",
@@ -33,9 +39,12 @@
     "topic": "Outpatient Emergency Benefit, Deductible, and Coinsurance",
     "effective_date": "2024-01-01",
     "source_url": "https://www.lxbx.net/product_details.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "cn-rag-lxbx-exclusion-03",
     "country": "CN",
     "jurisdiction": "CN-National",
@@ -51,9 +60,12 @@
     "topic": "Policy Exclusions: Pre-existing Conditions and Private Facilities",
     "effective_date": "2024-01-01",
     "source_url": "https://www.lxbx.net/product_details.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "cn-rag-szu-requirement-04",
     "country": "CN",
     "jurisdiction": "CN-Guangdong-Shenzhen",
@@ -69,9 +81,12 @@
     "topic": "University Mandatory Enrollment Rule",
     "effective_date": "2024-06-15",
     "source_url": "https://lxs.szu.edu.cn/info/1020/2198.htm",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "cn-rag-pinganfu-ci-05",
     "country": "CN",
     "jurisdiction": "CN-National",
@@ -87,9 +102,12 @@
     "topic": "Critical Illness 120 Conditions Lump Sum Benefit",
     "effective_date": "2023-01-01",
     "source_url": "https://life.pingan.com",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "cn-rag-chinalife-kangning-ci-06",
     "country": "CN",
     "jurisdiction": "CN-National",
@@ -105,9 +123,12 @@
     "topic": "100 Severe Diseases Waiting Period and Lump Sum",
     "effective_date": "2023-01-01",
     "source_url": "https://www.chinalife.com.cn",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "cn-rag-chinalife-furong-life-07",
     "country": "CN",
     "jurisdiction": "CN-National",
@@ -123,9 +144,12 @@
     "topic": "Term Life Death Benefit and Accidental Death",
     "effective_date": "2024-01-01",
     "source_url": "https://www.chinalife.com.cn",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "cn-rag-pingan-accident-08",
     "country": "CN",
     "jurisdiction": "CN-National",
@@ -141,6 +165,6 @@
     "topic": "Accidental Death and Dismemberment Schedule",
     "effective_date": "2024-01-01",
     "source_url": "https://insurance.pingan.com",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

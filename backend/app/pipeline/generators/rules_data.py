@@ -27,7 +27,7 @@ DETERMINISTIC_RULES: list[DeterministicRule] = [
         effective_to=None,
         exceptions=["Short-term cultural exchange under 30 days holding tourist L visa"],
         source_ids=["CN-SRC-MOE-ORDER42", "CN-SRC-SZU"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     DeterministicRule(
         rule_id="CN-RULE-FOREIGN-EMPLOYEE-SOCIAL-INSURANCE",
@@ -54,7 +54,7 @@ DETERMINISTIC_RULES: list[DeterministicRule] = [
             "Citizens of countries with bilateral social security exemption treaties (e.g. Germany, Korea, Japan) for specific pension contributions"
         ],
         source_ids=["CN-SRC-MOHRSS"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     DeterministicRule(
         rule_id="ID-RULE-JKN-MANDATORY-PARTICIPATION",
@@ -74,7 +74,7 @@ DETERMINISTIC_RULES: list[DeterministicRule] = [
         effective_to=None,
         exceptions=["Foreign tourists residing less than 6 months on visit visa"],
         source_ids=["ID-SRC-BPJS-KES", "ID-SRC-BPK-JDIH"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     DeterministicRule(
         rule_id="ID-RULE-JKN-TIERED-REFERRAL",
@@ -96,6 +96,6 @@ DETERMINISTIC_RULES: list[DeterministicRule] = [
             "Direct hospital admissions through Emergency Department (IGD) meeting emergency criteria"
         ],
         source_ids=["ID-SRC-BPJS-KES", "ID-SRC-KEMKES"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]

@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "cn-prod-lxbx-student",
     "insurer_id": "cn-platform-lxbx",
     "original_product_name": "来华留学生综合医疗保险计划",
@@ -163,9 +166,12 @@
         "source_page": 5
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "cn-prod-picc-expatriate",
     "insurer_id": "cn-insurer-picc",
     "original_product_name": "人保健康外籍在华雇员综合医疗保障",
@@ -238,9 +244,12 @@
         "source_page": 6
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "cn-prod-pingan-travel",
     "insurer_id": "cn-insurer-pingan",
     "original_product_name": "平安行境外与境内旅游保障计划",
@@ -335,9 +344,12 @@
         "source_page": 4
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "cn-prod-pingan-fu",
     "insurer_id": "cn-insurer-pingan",
     "original_product_name": "平安福终身重大疾病保险",
@@ -436,9 +448,12 @@
         "source_page": 4
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "cn-prod-chinalife-kangning",
     "insurer_id": "cn-insurer-chinalife",
     "original_product_name": "中国人寿康宁终身重大疾病保险（2023版）",
@@ -511,9 +526,12 @@
         "source_page": 5
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "cn-prod-chinalife-furong",
     "insurer_id": "cn-insurer-chinalife",
     "original_product_name": "中国人寿国寿福荣定期寿险",
@@ -587,9 +605,12 @@
         "source_page": 3
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "cn-prod-pingan-accident",
     "insurer_id": "cn-insurer-pingan",
     "original_product_name": "平安一年期综合意外伤害保险",
@@ -689,9 +710,12 @@
         "source_page": 3
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "cn-prod-pingan-eshengbao",
     "insurer_id": "cn-insurer-pingan",
     "original_product_name": "平安e生保长期医疗保险（费率可调）",
@@ -765,6 +789,6 @@
         "source_page": 4
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

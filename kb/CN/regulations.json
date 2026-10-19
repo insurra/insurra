@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "regulation_id": "CN-REG-MOHRSS-ORDER16",
     "country_code": "CN",
     "jurisdiction": "CN-National",
@@ -21,9 +24,12 @@
       "Enterprises registered in China"
     ],
     "source_url": "https://www.mohrss.gov.cn/xxgk2020/gwyxxgk/201109/t20110906_113038.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "regulation_id": "CN-REG-MOE-ORDER42",
     "country_code": "CN",
     "jurisdiction": "CN-National",
@@ -44,9 +50,12 @@
       "Higher education institutions in China"
     ],
     "source_url": "https://www.gov.cn/zhengce/2017-06/02/content_5199187.htm",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "regulation_id": "CN-REG-SZ-MED-2023",
     "country_code": "CN",
     "jurisdiction": "CN-Guangdong-Shenzhen",
@@ -68,9 +77,12 @@
       "Foreign employees participating in Shenzhen social insurance"
     ],
     "source_url": "https://www.sz.gov.cn/zfgb/2023/gb1299/content/post_10842270.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "regulation_id": "CN-REG-PIPL-2021",
     "country_code": "CN",
     "jurisdiction": "CN-National",
@@ -92,6 +104,6 @@
       "Insurance platforms handling health and claim data"
     ],
     "source_url": "https://www.gov.cn/xinwen/2021-08/20/content_5632486.htm",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

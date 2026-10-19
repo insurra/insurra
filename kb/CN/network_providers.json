@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "provider_id": "cn-hosp-szu-general",
     "country_code": "CN",
     "name_original": "深圳大学总医院",
@@ -17,9 +20,12 @@
     ],
     "cashless_direct_billing_verified": false,
     "source_url": "https://sugh.szu.edu.cn",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "provider_id": "cn-hosp-hku-sz",
     "country_code": "CN",
     "name_original": "香港大学深圳医院",
@@ -36,11 +42,14 @@
       "cn-insurer-picc",
       "cn-insurer-cpic"
     ],
-    "cashless_direct_billing_verified": true,
+    "cashless_direct_billing_verified": false,
     "source_url": "https://www.hku-szh.org",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "provider_id": "cn-hosp-pku-sz",
     "country_code": "CN",
     "name_original": "北京大学深圳医院",
@@ -58,6 +67,6 @@
     ],
     "cashless_direct_billing_verified": false,
     "source_url": "https://www.pkuszh.com",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

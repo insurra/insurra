@@ -4,40 +4,192 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Curated for China student healthcare pathways.",
   "data": {
     "pathways": [
       {
-        "pathway_code": "PUBLIC_TERTIARY_HOSPITAL",
-        "label": "Public Secondary & Tertiary Hospitals (二级及以上公立医院)",
-        "description": "Standard designated care network for students under Ping An Foreign Student Scheme. Inpatient and general outpatient departments.",
+        "pathway_code": "CN_PKUIH",
+        "label": "Peking University International Hospital (北京大学国际医院)",
+        "description": "Tertiary referral hospital with an international department and English-speaking staff. Direct billing depends on your active policy network status.",
         "required_documents": [
-          "insurance_certificate",
-          "medical_fapiao",
-          "diagnosis_certificate",
-          "cost_breakdown"
+          "Original passport",
+          "Student ID card",
+          "Active student or commercial insurance certificate"
         ],
         "estimated_out_of_pocket": null,
         "currency": "CNY",
         "uncertainties": [
-          "Outpatient deductible threshold applies (typically RMB 650); special VIP wards and foreign patient wings are excluded."
+          "This pathway lists verification steps, not a guarantee of coverage or direct billing."
         ],
-        "source_url": null,
-        "verification_status": "UNVERIFIED"
+        "source_url": "https://www.pkuih.edu.cn",
+        "verification_status": "UNVERIFIED",
+        "service_types": [
+          "OUTPATIENT",
+          "GENERAL_CHECKUP",
+          "RESPIRATORY",
+          "DIGESTIVE",
+          "DENTAL",
+          "VACCINATION"
+        ],
+        "policy_types": [
+          "STUDENT_COMPREHENSIVE",
+          "COMMERCIAL_HEALTH"
+        ],
+        "benefit_category": "outpatient",
+        "verification_codes": [
+          "provider_network",
+          "referral",
+          "claim_mode",
+          "benefit"
+        ],
+        "steps": [
+          "Book an appointment through the international desk or official hospital channel.",
+          "Present your passport, student ID, and insurance certificate at registration (挂号处).",
+          "Complete the outpatient consultation and keep the medical record (病历).",
+          "Confirm whether direct billing applies to your policy or obtain an official fapiao (医疗发票) for reimbursement."
+        ],
+        "requirements": [
+          "Active insurance policy covering outpatient care.",
+          "Direct billing requires prior confirmation that the hospital and department are in your insurer network."
+        ],
+        "checked_at": null,
+        "tariff": null
       },
       {
-        "pathway_code": "CAMPUS_HEALTH_CLINIC",
-        "label": "University Health Center & Campus Clinic (校医院)",
-        "description": "Primary consultations, triage, first-aid, and routine prescription services on university campus.",
+        "pathway_code": "CN_UFH",
+        "label": "United Family Healthcare (和睦家医疗)",
+        "description": "International private hospital with bilingual clinical staff. Out-of-pocket costs and direct billing depend on your policy terms and pre-authorization rules.",
         "required_documents": [
-          "admission_notice"
+          "Original passport",
+          "Commercial or student insurance card",
+          "Pre-authorization or claim form if required by your insurer"
         ],
         "estimated_out_of_pocket": null,
         "currency": "CNY",
         "uncertainties": [
-          "Direct billing and referral protocols depend on university arrangements."
+          "This pathway lists verification steps, not a guarantee of coverage or direct billing."
         ],
-        "source_url": null,
-        "verification_status": "UNVERIFIED"
+        "source_url": "https://beijing.ufh.com.cn",
+        "verification_status": "UNVERIFIED",
+        "service_types": [
+          "OUTPATIENT",
+          "GENERAL_CHECKUP",
+          "RESPIRATORY",
+          "DIGESTIVE",
+          "DENTAL",
+          "MENTAL_HEALTH",
+          "VACCINATION"
+        ],
+        "policy_types": [
+          "STUDENT_COMPREHENSIVE",
+          "COMMERCIAL_HEALTH"
+        ],
+        "benefit_category": "outpatient",
+        "verification_codes": [
+          "provider_network",
+          "referral",
+          "claim_mode",
+          "benefit"
+        ],
+        "steps": [
+          "Schedule an appointment via the hospital booking line or website.",
+          "Verify with your insurer whether private international clinics are covered under your plan.",
+          "Present your passport and insurance details before treatment.",
+          "Collect the itemized bill, medical record, and official fapiao if paying upfront."
+        ],
+        "requirements": [
+          "Check whether private international clinics are excluded or subject to a higher co-payment under your policy."
+        ],
+        "checked_at": null,
+        "tariff": null
+      },
+      {
+        "pathway_code": "CN_CHAOYANG",
+        "label": "Beijing Chaoyang Hospital (北京朝阳医院)",
+        "description": "Public Class 3A (三甲) hospital. Services are primarily in Mandarin with upfront payment at the hospital cashier and post-visit reimbursement via official fapiao.",
+        "required_documents": [
+          "Original passport",
+          "Hospital registration card or digital registration code",
+          "Official medical fapiao (医疗发票), itemized bill, and medical record for reimbursement"
+        ],
+        "estimated_out_of_pocket": null,
+        "currency": "CNY",
+        "uncertainties": [
+          "This pathway lists verification steps, not a guarantee of coverage or reimbursement."
+        ],
+        "source_url": "https://www.bjcyh.com.cn",
+        "verification_status": "UNVERIFIED",
+        "service_types": [
+          "OUTPATIENT",
+          "GENERAL_CHECKUP",
+          "RESPIRATORY",
+          "DIGESTIVE"
+        ],
+        "policy_types": [
+          "STUDENT_COMPREHENSIVE",
+          "SOCIAL_MEDICAL"
+        ],
+        "benefit_category": "outpatient",
+        "verification_codes": [
+          "provider_network",
+          "referral",
+          "claim_mode",
+          "benefit"
+        ],
+        "steps": [
+          "Register for an outpatient department number (挂号) at the hospital kiosk or counter.",
+          "Wait for your queue number in the outpatient clinic area.",
+          "Pay consultation, diagnostic, and medication charges at the hospital cashier.",
+          "Request the official medical fapiao (医疗发票), itemized expense list (费用清单), and outpatient medical record (门急诊病历) for claim filing."
+        ],
+        "requirements": [
+          "Upfront payment is generally required; submit official receipts afterward for reimbursement review.",
+          "Mandarin language support may be needed during registration and consultation."
+        ],
+        "checked_at": null,
+        "tariff": null
+      },
+      {
+        "pathway_code": "CN_EMERGENCY",
+        "label": "120 Emergency Department (急诊)",
+        "description": "Immediate emergency care for life-threatening or severe acute symptoms at the nearest emergency hospital.",
+        "required_documents": [
+          "Any available identification (passport or student card)",
+          "Emergency contact details"
+        ],
+        "estimated_out_of_pocket": null,
+        "currency": "CNY",
+        "uncertainties": [],
+        "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+        "verification_status": "UNVERIFIED",
+        "service_types": [
+          "OUTPATIENT",
+          "GENERAL_CHECKUP",
+          "RESPIRATORY",
+          "DIGESTIVE",
+          "DENTAL",
+          "MENTAL_HEALTH",
+          "VACCINATION"
+        ],
+        "policy_types": [
+          "STUDENT_COMPREHENSIVE",
+          "COMMERCIAL_HEALTH",
+          "SOCIAL_MEDICAL"
+        ],
+        "benefit_category": "outpatient",
+        "verification_codes": [],
+        "steps": [
+          "Call 120 for an ambulance immediately or go to the nearest hospital emergency department (急诊).",
+          "Prioritize medical stabilization before administrative paperwork.",
+          "Notify your insurer emergency assistance line as soon as practical."
+        ],
+        "requirements": [
+          "Seek immediate emergency medical care for severe chest pain, breathing difficulty, or other red-flag symptoms."
+        ],
+        "checked_at": null,
+        "emergency": true,
+        "tariff": null
       }
     ],
     "emergency": {
@@ -46,6 +198,7 @@
       "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
       "checked_at": "2026-10-19",
       "verification_status": "VERIFIED",
+      "evidence_class": "MANUALLY_CURATED",
       "contacts": [
         {
           "service_code": "medical",
@@ -54,6 +207,7 @@
           "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
           "checked_at": "2026-10-19",
           "verification_status": "VERIFIED",
+          "evidence_class": "MANUALLY_CURATED",
           "jurisdiction": "CN mainland"
         },
         {
@@ -63,6 +217,7 @@
           "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
           "checked_at": "2026-10-19",
           "verification_status": "VERIFIED",
+          "evidence_class": "MANUALLY_CURATED",
           "jurisdiction": "CN mainland"
         },
         {
@@ -72,9 +227,51 @@
           "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
           "checked_at": "2026-10-19",
           "verification_status": "VERIFIED",
+          "evidence_class": "MANUALLY_CURATED",
           "jurisdiction": "CN mainland"
         }
       ]
-    }
+    },
+    "service_types": [
+      {
+        "code": "OUTPATIENT",
+        "label": "General Outpatient"
+      },
+      {
+        "code": "GENERAL_CHECKUP",
+        "label": "General checkup"
+      },
+      {
+        "code": "RESPIRATORY",
+        "label": "Respiratory"
+      },
+      {
+        "code": "DIGESTIVE",
+        "label": "Digestive"
+      },
+      {
+        "code": "DENTAL",
+        "label": "Dental"
+      },
+      {
+        "code": "MENTAL_HEALTH",
+        "label": "Mental health"
+      },
+      {
+        "code": "VACCINATION",
+        "label": "Vaccination"
+      }
+    ],
+    "help_text": "Describe your non-emergency care need to compare KB-supported care pathways and verification steps.",
+    "priority_rules": [
+      {
+        "codes": [
+          "low_cost",
+          "Biaya berobat rendah"
+        ],
+        "kind": "lowest_cost",
+        "explanation": "Lowest estimated out-of-pocket range based on verified reference tariffs and confirmed policy fields."
+      }
+    ]
   }
 }

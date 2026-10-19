@@ -3,11 +3,14 @@ Covers China (CN) and Indonesia (ID) knowledge representation.
 Never use em dashes in strings or docstrings.
 """
 
+import re
 from datetime import date
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from app.schemas.common import EvidenceClass
 
 
 class PipelineVerificationStatus(StrEnum):
@@ -15,9 +18,40 @@ class PipelineVerificationStatus(StrEnum):
     COLLECTED = "COLLECTED"
     PARSED = "PARSED"
     NEEDS_REVIEW = "NEEDS_REVIEW"
+    UNVERIFIED = "UNVERIFIED"
     VERIFIED = "VERIFIED"
     OUTDATED = "OUTDATED"
     REJECTED = "REJECTED"
+
+
+_REAL_SHA256 = re.compile(r"^[0-9a-f]{64}$")
+_STATUS_FIELDS = ("verification_status", "licensing_verification_status")
+
+
+class ProvenancedRecord(BaseModel):
+    """Base for every pipeline record. VERIFIED requires a real retrieved artifact hash."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_class: EvidenceClass = EvidenceClass.MANUALLY_CURATED
+    retrieval_artifact_sha256: str | None = None
+    provenance_note: str | None = None
+
+    @model_validator(mode="after")
+    def verified_requires_retrieved_artifact(self):
+        claims_verified = any(
+            getattr(self, name, None) == PipelineVerificationStatus.VERIFIED
+            for name in _STATUS_FIELDS
+        )
+        if claims_verified and not (
+            self.evidence_class == EvidenceClass.RETRIEVED_OFFICIAL
+            and self.retrieval_artifact_sha256
+            and _REAL_SHA256.fullmatch(self.retrieval_artifact_sha256)
+        ):
+            raise ValueError(
+                "VERIFIED requires evidence_class RETRIEVED_OFFICIAL and a real artifact sha256"
+            )
+        return self
 
 
 class AccessDecision(StrEnum):
@@ -42,9 +76,7 @@ class SourceCategory(StrEnum):
     CONSUMER_PROTECTION = "consumer_protection"
 
 
-class SourceRegistryEntry(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class SourceRegistryEntry(ProvenancedRecord):
     source_id: str
     official_identity: str
     url: str
@@ -79,8 +111,11 @@ class InsurerEntityType(StrEnum):
     STUDENT_INSURANCE_PLATFORM = "student_insurance_platform"
 
 
-class InsuranceCompany(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class InsuranceCompany(ProvenancedRecord):
+    evidence_class: EvidenceClass = EvidenceClass.MANUALLY_CURATED
+    provenance_note: str | None = (
+        "Hand-entered entity data. License reference and contacts were not checked against the regulator register."
+    )
 
     insurer_id: str
     legal_entity_name: str
@@ -115,10 +150,14 @@ class LicenseStatus(StrEnum):
     METADATA_ONLY_NO_REDISTRIBUTION = "metadata_only_no_redistribution"
     RESTRICTED_COPYRIGHT = "restricted_copyright"
     PENDING_PERMISSION = "pending_permission"
+    NOT_VERIFIED = "NOT_VERIFIED"
 
 
-class BrandAsset(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class BrandAsset(ProvenancedRecord):
+    evidence_class: EvidenceClass = EvidenceClass.PLACEHOLDER
+    provenance_note: str | None = (
+        "Generated placeholder artwork. Not an official or retrieved brand asset."
+    )
 
     asset_id: str
     insurer_id: str
@@ -194,8 +233,11 @@ class InsuranceExclusion(BaseModel):
     source_page: int | None = None
 
 
-class InsuranceProduct(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class InsuranceProduct(ProvenancedRecord):
+    evidence_class: EvidenceClass = EvidenceClass.MANUALLY_CURATED
+    provenance_note: str | None = (
+        "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents."
+    )
 
     product_id: str
     insurer_id: str
@@ -220,9 +262,7 @@ class InsuranceProduct(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class CountryRegulation(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class CountryRegulation(ProvenancedRecord):
     regulation_id: str
     country_code: Literal["CN", "ID"]
     jurisdiction: str
@@ -240,9 +280,7 @@ class CountryRegulation(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class PublicInsuranceScheme(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class PublicInsuranceScheme(ProvenancedRecord):
     scheme_id: str
     country_code: Literal["CN", "ID"]
     jurisdiction: str
@@ -258,8 +296,11 @@ class PublicInsuranceScheme(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class UniversityInsuranceRequirement(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class UniversityInsuranceRequirement(ProvenancedRecord):
+    evidence_class: EvidenceClass = EvidenceClass.SYNTHETIC_FIXTURE
+    provenance_note: str | None = (
+        "Illustrative requirement authored by a developer. Not retrieved from the institution and not a source for any obligation or limit."
+    )
 
     requirement_id: str
     institution_id: str
@@ -282,8 +323,11 @@ class UniversityInsuranceRequirement(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class ClaimProcedure(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class ClaimProcedure(ProvenancedRecord):
+    evidence_class: EvidenceClass = EvidenceClass.MANUALLY_CURATED
+    provenance_note: str | None = (
+        "Hand-entered procedure. Deadlines and channels were not machine-verified."
+    )
 
     procedure_id: str
     country_code: Literal["CN", "ID"]
@@ -305,8 +349,11 @@ class ClaimProcedure(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class ClaimEvidenceRequirement(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class ClaimEvidenceRequirement(ProvenancedRecord):
+    evidence_class: EvidenceClass = EvidenceClass.MANUALLY_CURATED
+    provenance_note: str | None = (
+        "Hand-entered checklist item. Not machine-verified against insurer terms."
+    )
 
     evidence_id: str
     country_code: Literal["CN", "ID"]
@@ -323,9 +370,7 @@ class ClaimEvidenceRequirement(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class HealthcareProvider(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class HealthcareProvider(ProvenancedRecord):
     provider_id: str
     country_code: Literal["CN", "ID"]
     name_original: str
@@ -342,8 +387,11 @@ class HealthcareProvider(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class MedicalCostReference(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class MedicalCostReference(ProvenancedRecord):
+    evidence_class: EvidenceClass = EvidenceClass.MANUALLY_CURATED
+    provenance_note: str | None = (
+        "Hand-entered reference prices. Not retrieved from the fee schedule."
+    )
 
     cost_id: str
     country_code: Literal["CN", "ID"]
@@ -361,9 +409,7 @@ class MedicalCostReference(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class ConsumerDisputeProcedure(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class ConsumerDisputeProcedure(ProvenancedRecord):
     dispute_id: str
     country_code: Literal["CN", "ID"]
     authority_name: str
@@ -378,9 +424,7 @@ class ConsumerDisputeProcedure(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class MultilingualGlossaryEntry(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class MultilingualGlossaryEntry(ProvenancedRecord):
     term_id: str
     category: str
     simplified_chinese: str
@@ -394,9 +438,7 @@ class MultilingualGlossaryEntry(BaseModel):
     authoritative_source: str
 
 
-class DeterministicRule(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+class DeterministicRule(ProvenancedRecord):
     rule_id: str
     country_code: Literal["CN", "ID"]
     jurisdiction: str
@@ -414,8 +456,11 @@ class DeterministicRule(BaseModel):
     verification_status: PipelineVerificationStatus
 
 
-class RAGClauseChunk(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class RAGClauseChunk(ProvenancedRecord):
+    evidence_class: EvidenceClass = EvidenceClass.SYNTHETIC_FIXTURE
+    provenance_note: str | None = (
+        "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation."
+    )
 
     chunk_id: str
     country: Literal["CN", "ID"]

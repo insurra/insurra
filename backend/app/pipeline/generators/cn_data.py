@@ -35,7 +35,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         parent_company=None,
         regulatory_authority="National Financial Regulatory Administration (NFRA)",
         license_reference="NFRA-B0002H111000001",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.pingan.com",
         business_category="Composite Financial & Insurance Group (Life, Health, Property & Casualty, Pension)",
         public_customer_service_contact="95511",
@@ -43,7 +43,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.pingan.com/claims",
         brand_asset_ids=["asset-cn-insurer-pingan-primary"],
         source_references=["CN-SRC-PINGAN", "CN-SRC-NFRA"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="cn-insurer-picc",
@@ -55,7 +55,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         parent_company=None,
         regulatory_authority="National Financial Regulatory Administration (NFRA)",
         license_reference="NFRA-B0003H111000001",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.picc.com",
         business_category="Property & Casualty, Health, Life Insurance Group",
         public_customer_service_contact="95518",
@@ -63,7 +63,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.picc.com/claims",
         brand_asset_ids=["asset-cn-insurer-picc-primary"],
         source_references=["CN-SRC-PICC", "CN-SRC-NFRA"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="cn-insurer-chinalife",
@@ -75,7 +75,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         parent_company=None,
         regulatory_authority="National Financial Regulatory Administration (NFRA)",
         license_reference="NFRA-B0005H111000001",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.chinalife.com.cn",
         business_category="Life Insurance, Health Insurance, Pension, Asset Management",
         public_customer_service_contact="95519",
@@ -83,7 +83,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.chinalife.com.cn/service/claims",
         brand_asset_ids=["asset-cn-insurer-chinalife-primary"],
         source_references=["CN-SRC-CHINALIFE", "CN-SRC-NFRA"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="cn-insurer-cpic",
@@ -95,7 +95,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         parent_company=None,
         regulatory_authority="National Financial Regulatory Administration (NFRA)",
         license_reference="NFRA-B0006H111000001",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.cpic.com.cn",
         business_category="Life, Property & Casualty, Health Insurance",
         public_customer_service_contact="95500",
@@ -103,7 +103,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.cpic.com.cn/claims",
         brand_asset_ids=["asset-cn-insurer-cpic-primary"],
         source_references=["CN-SRC-CPIC", "CN-SRC-NFRA"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="cn-platform-lxbx",
@@ -115,7 +115,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         parent_company="Ping An Insurance (Group) Company of China, Ltd.",
         regulatory_authority="National Financial Regulatory Administration (NFRA) & Ministry of Education",
         license_reference="NFRA-B0018H211000001",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.lxbx.net",
         business_category="National Foreign Student Insurance & Group Pension",
         public_customer_service_contact="400-810-5119",
@@ -123,7 +123,7 @@ CN_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.lxbx.net/claims.html",
         brand_asset_ids=["asset-cn-platform-lxbx-primary"],
         source_references=["CN-SRC-LXBX", "CN-SRC-SZU"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -281,7 +281,7 @@ CN_PRODUCTS: list[InsuranceProduct] = [
                 source_page=5,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="cn-prod-picc-expatriate",
@@ -352,7 +352,7 @@ CN_PRODUCTS: list[InsuranceProduct] = [
                 source_page=6,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="cn-prod-pingan-travel",
@@ -441,7 +441,7 @@ CN_PRODUCTS: list[InsuranceProduct] = [
                 source_page=4,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="cn-prod-pingan-fu",
@@ -532,7 +532,7 @@ CN_PRODUCTS: list[InsuranceProduct] = [
                 source_page=4,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="cn-prod-chinalife-kangning",
@@ -603,7 +603,7 @@ CN_PRODUCTS: list[InsuranceProduct] = [
                 source_page=5,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="cn-prod-chinalife-furong",
@@ -670,7 +670,7 @@ CN_PRODUCTS: list[InsuranceProduct] = [
                 source_page=3,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="cn-prod-pingan-accident",
@@ -765,7 +765,7 @@ CN_PRODUCTS: list[InsuranceProduct] = [
                 source_page=3,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="cn-prod-pingan-eshengbao",
@@ -837,7 +837,7 @@ CN_PRODUCTS: list[InsuranceProduct] = [
                 source_page=4,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -864,7 +864,7 @@ CN_REGULATIONS: list[CountryRegulation] = [
             "Enterprises registered in China",
         ],
         source_url="https://www.mohrss.gov.cn/xxgk2020/gwyxxgk/201109/t20110906_113038.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     CountryRegulation(
         regulation_id="CN-REG-MOE-ORDER42",
@@ -887,7 +887,7 @@ CN_REGULATIONS: list[CountryRegulation] = [
             "Higher education institutions in China",
         ],
         source_url="https://www.gov.cn/zhengce/2017-06/02/content_5199187.htm",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     CountryRegulation(
         regulation_id="CN-REG-SZ-MED-2023",
@@ -911,7 +911,7 @@ CN_REGULATIONS: list[CountryRegulation] = [
             "Foreign employees participating in Shenzhen social insurance",
         ],
         source_url="https://www.sz.gov.cn/zfgb/2023/gb1299/content/post_10842270.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     CountryRegulation(
         regulation_id="CN-REG-PIPL-2021",
@@ -935,7 +935,7 @@ CN_REGULATIONS: list[CountryRegulation] = [
             "Insurance platforms handling health and claim data",
         ],
         source_url="https://www.gov.cn/xinwen/2021-08/20/content_5632486.htm",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -969,7 +969,7 @@ CN_PUBLIC_SCHEMES: list[PublicInsuranceScheme] = [
             "Employee receives Social Security Card (社保卡) or activates Digital Health Insurance Code (医保电子凭证).",
         ],
         source_url="https://www.nhsa.gov.cn/art/2021/6/30/art_37_5391.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1000,7 +1000,7 @@ CN_UNIVERSITY_REQUIREMENTS: list[UniversityInsuranceRequirement] = [
         relevant_deadlines="Must be paid and validated at least 7 days before university on-site registration deadline",
         policy_sources=["https://lxs.szu.edu.cn/info/1020/2198.htm"],
         administrative_guidance="Purchase online via www.lxbx.net, select Shenzhen University, enter passport number, complete UnionPay/WeChat Pay, download PDF certificate.",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     UniversityInsuranceRequirement(
         requirement_id="cn-req-cuhksz-student",
@@ -1025,7 +1025,7 @@ CN_UNIVERSITY_REQUIREMENTS: list[UniversityInsuranceRequirement] = [
         relevant_deadlines="Verification required during freshman orientation check-in",
         policy_sources=["https://www.cuhk.edu.cn/en/page/international-student-services"],
         administrative_guidance="Submit policy certificate via CUHK-Shenzhen student information portal prior to class commencement.",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     UniversityInsuranceRequirement(
         requirement_id="cn-req-tsinghua-student",
@@ -1049,7 +1049,7 @@ CN_UNIVERSITY_REQUIREMENTS: list[UniversityInsuranceRequirement] = [
         relevant_deadlines="Proof required during international student orientation registration window",
         policy_sources=["https://is.tsinghua.edu.cn/en/info/1020/1234.htm"],
         administrative_guidance="Complete online purchase on lxbx.net selecting Tsinghua University as designated institution.",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     UniversityInsuranceRequirement(
         requirement_id="cn-req-pku-student",
@@ -1073,7 +1073,7 @@ CN_UNIVERSITY_REQUIREMENTS: list[UniversityInsuranceRequirement] = [
         relevant_deadlines="Verification mandatory prior to course registration confirmation",
         policy_sources=["https://isd.pku.edu.cn/notice/insurance.htm"],
         administrative_guidance="Purchase via lxbx.net and present electronic insurance certificate barcode at registration counter.",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1110,7 +1110,7 @@ CN_CLAIM_PROCEDURES: list[ClaimProcedure] = [
         customer_support_contact="400-810-5119 (Bilingual English and Chinese, 24/7 hotline)",
         dispute_escalation_guidance="Contact Ping An National Customer Service 95511 or escalate to NFRA Financial Consumer Protection Hotline 12378.",
         source_url="https://www.lxbx.net/claims_guide.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1131,7 +1131,7 @@ CN_CLAIM_EVIDENCE: list[ClaimEvidenceRequirement] = [
         ],
         special_conditions="Patient name on fapiao must match passport name exactly. Invoices from private clinics without prior insurer approval are rejected.",
         source_url="https://www.lxbx.net/evidence_requirements.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     ClaimEvidenceRequirement(
         evidence_id="cn-ev-medical-record",
@@ -1146,7 +1146,7 @@ CN_CLAIM_EVIDENCE: list[ClaimEvidenceRequirement] = [
         accepted_formats=["PDF", "Original stamped doctor record copy"],
         special_conditions="Must explicitly indicate the onset date of symptoms to verify policy active period and rule out pre-existing exclusions.",
         source_url="https://www.lxbx.net/evidence_requirements.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     ClaimEvidenceRequirement(
         evidence_id="cn-ev-expense-breakdown",
@@ -1161,7 +1161,7 @@ CN_CLAIM_EVIDENCE: list[ClaimEvidenceRequirement] = [
         accepted_formats=["PDF", "Stamped computer printout"],
         special_conditions="Required for all hospitalization claims exceeding RMB 1,000.",
         source_url="https://www.lxbx.net/evidence_requirements.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1180,7 +1180,7 @@ CN_HEALTHCARE_PROVIDERS: list[HealthcareProvider] = [
         verified_insurer_affiliations=["cn-platform-lxbx", "cn-insurer-pingan", "cn-insurer-picc"],
         cashless_direct_billing_verified=False,
         source_url="https://sugh.szu.edu.cn",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     HealthcareProvider(
         provider_id="cn-hosp-hku-sz",
@@ -1199,9 +1199,9 @@ CN_HEALTHCARE_PROVIDERS: list[HealthcareProvider] = [
             "cn-insurer-picc",
             "cn-insurer-cpic",
         ],
-        cashless_direct_billing_verified=True,
+        cashless_direct_billing_verified=False,
         source_url="https://www.hku-szh.org",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     HealthcareProvider(
         provider_id="cn-hosp-pku-sz",
@@ -1217,7 +1217,7 @@ CN_HEALTHCARE_PROVIDERS: list[HealthcareProvider] = [
         verified_insurer_affiliations=["cn-platform-lxbx", "cn-insurer-pingan", "cn-insurer-picc"],
         cashless_direct_billing_verified=False,
         source_url="https://www.pkuszh.com",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1236,7 +1236,7 @@ CN_MEDICAL_COSTS: list[MedicalCostReference] = [
         effective_date=date(2023, 10, 1),
         limitations="Applies to regular clinic hours at public Grade 2 and Grade 3 hospitals in Shenzhen",
         source_url="https://hsa.sz.gov.cn/zwgk/zcfg/content/post_10842270.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     MedicalCostReference(
         cost_id="cn-cost-sz-emergency-consult",
@@ -1252,7 +1252,7 @@ CN_MEDICAL_COSTS: list[MedicalCostReference] = [
         effective_date=date(2023, 10, 1),
         limitations="Applies to 24-hour emergency room admissions at public tertiary hospitals",
         source_url="https://hsa.sz.gov.cn/zwgk/zcfg/content/post_10842270.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1273,6 +1273,6 @@ CN_CONSUMER_DISPUTES: list[ConsumerDisputeProcedure] = [
             "State explicit resolution demands (e.g., policy claim payment, clarification of denial basis)",
         ],
         source_url="https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1107775",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]

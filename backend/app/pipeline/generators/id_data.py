@@ -34,7 +34,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         parent_company=None,
         regulatory_authority="Dewan Jaminan Sosial Nasional (DJSN) & Otoritas Jasa Keuangan (OJK)",
         license_reference="Statutory Public Legal Entity under UU No. 24 Tahun 2011",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.bpjs-kesehatan.go.id",
         business_category="National Public Social Health Security Scheme (Program JKN)",
         public_customer_service_contact="BPJS Care Center 165",
@@ -42,7 +42,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://pcare.bpjs-kesehatan.go.id",
         brand_asset_ids=["asset-id-public-bpjs-kesehatan-primary"],
         source_references=["ID-SRC-BPJS-KES", "ID-SRC-BPK-JDIH"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="id-insurer-allianz",
@@ -54,7 +54,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         parent_company="Allianz SE",
         regulatory_authority="Otoritas Jasa Keuangan (OJK)",
         license_reference="OJK KEP-238/KM.13/1989",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.allianz.co.id",
         business_category="Life and Health Insurance Company",
         public_customer_service_contact="1500-136",
@@ -62,7 +62,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.allianz.co.id/klaim",
         brand_asset_ids=["asset-id-insurer-allianz-primary"],
         source_references=["ID-SRC-ALLIANZ", "ID-SRC-OJK"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="id-insurer-prudential",
@@ -74,7 +74,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         parent_company="Prudential plc",
         regulatory_authority="Otoritas Jasa Keuangan (OJK)",
         license_reference="OJK S-383/MK.17/1995",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.prudential.co.id",
         business_category="Life and Health Insurance, Syariah Insurance",
         public_customer_service_contact="1500085",
@@ -82,7 +82,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.prudential.co.id/id/claims-services/",
         brand_asset_ids=["asset-id-insurer-prudential-primary"],
         source_references=["ID-SRC-PRUDENTIAL", "ID-SRC-OJK"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="id-insurer-aia",
@@ -94,7 +94,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         parent_company="AIA Group Limited",
         regulatory_authority="Otoritas Jasa Keuangan (OJK)",
         license_reference="OJK KEP-138/KM.13/1992",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.aia-financial.co.id",
         business_category="Life and Health Insurance, Group Employee Benefits",
         public_customer_service_contact="1500-980",
@@ -102,7 +102,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.aia-financial.co.id/id/help-support/claims.html",
         brand_asset_ids=["asset-id-insurer-aia-primary"],
         source_references=["ID-SRC-AIA", "ID-SRC-OJK"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="id-insurer-manulife",
@@ -114,7 +114,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         parent_company="Manulife Financial Corporation",
         regulatory_authority="Otoritas Jasa Keuangan (OJK)",
         license_reference="OJK Kep-020/KM.13/1989",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.manulife.co.id",
         business_category="Life Insurance, Health Insurance, Group Pension (DPLK)",
         public_customer_service_contact="021-2555-7777",
@@ -122,7 +122,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.manulife.co.id/id/layanan/klaim.html",
         brand_asset_ids=["asset-id-insurer-manulife-primary"],
         source_references=["ID-SRC-MANULIFE", "ID-SRC-OJK"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="id-insurer-axa-mandiri",
@@ -134,7 +134,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         parent_company="Joint Venture Bank Mandiri and AXA Group",
         regulatory_authority="Otoritas Jasa Keuangan (OJK)",
         license_reference="OJK S-071/MK.6/2004",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://www.axa-mandiri.co.id",
         business_category="Bancassurance Life and Health Insurance",
         public_customer_service_contact="1500-803",
@@ -142,7 +142,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://www.axa-mandiri.co.id/layanan-nasabah/klaim",
         brand_asset_ids=["asset-id-insurer-axa-mandiri-primary"],
         source_references=["ID-SRC-AXA-MANDIRI", "ID-SRC-OJK"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceCompany(
         insurer_id="id-insurer-bri-life",
@@ -154,7 +154,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         parent_company="PT Bank Rakyat Indonesia (Persero) Tbk",
         regulatory_authority="Otoritas Jasa Keuangan (OJK)",
         license_reference="OJK Kep-364/KM.13/1988",
-        licensing_verification_status=PipelineVerificationStatus.VERIFIED,
+        licensing_verification_status=PipelineVerificationStatus.UNVERIFIED,
         official_website="https://brilife.co.id",
         business_category="Life, Health, and Microinsurance",
         public_customer_service_contact="1500-087",
@@ -162,7 +162,7 @@ ID_COMPANIES: list[InsuranceCompany] = [
         official_claim_portal="https://brilife.co.id/klaim",
         brand_asset_ids=["asset-id-insurer-bri-life-primary"],
         source_references=["ID-SRC-BRI-LIFE", "ID-SRC-OJK"],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -313,7 +313,7 @@ ID_PRODUCTS: list[InsuranceProduct] = [
                 source_page=12,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="id-prod-allianz-smarthealth",
@@ -403,7 +403,7 @@ ID_PRODUCTS: list[InsuranceProduct] = [
                 source_page=8,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="id-prod-prudential-pruwell",
@@ -469,7 +469,7 @@ ID_PRODUCTS: list[InsuranceProduct] = [
                 source_page=14,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="id-prod-allianz-travelpro",
@@ -561,7 +561,7 @@ ID_PRODUCTS: list[InsuranceProduct] = [
                 source_page=12,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="id-prod-prudential-prucritical88",
@@ -657,7 +657,7 @@ ID_PRODUCTS: list[InsuranceProduct] = [
                 source_page=11,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="id-prod-allianz-flexici",
@@ -726,7 +726,7 @@ ID_PRODUCTS: list[InsuranceProduct] = [
                 source_page=9,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="id-prod-manulife-mea",
@@ -798,7 +798,7 @@ ID_PRODUCTS: list[InsuranceProduct] = [
                 source_page=6,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="id-prod-allianz-pa",
@@ -895,7 +895,7 @@ ID_PRODUCTS: list[InsuranceProduct] = [
                 source_page=5,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     InsuranceProduct(
         product_id="id-prod-aia-corporate",
@@ -966,7 +966,7 @@ ID_PRODUCTS: list[InsuranceProduct] = [
                 source_page=8,
             ),
         ],
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -992,7 +992,7 @@ ID_REGULATIONS: list[CountryRegulation] = [
             "Foreigners residing and working for at least 6 months",
         ],
         source_url="https://peraturan.bpk.go.id/Details/40764/uu-no-40-tahun-2004",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     CountryRegulation(
         regulation_id="ID-REG-PERPRES-59-2024",
@@ -1015,7 +1015,7 @@ ID_REGULATIONS: list[CountryRegulation] = [
             "Healthcare provider facilities (FKTP and FKRTL) in Indonesia",
         ],
         source_url="https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     CountryRegulation(
         regulation_id="ID-REG-POJK-22-2023",
@@ -1038,7 +1038,7 @@ ID_REGULATIONS: list[CountryRegulation] = [
             "Insurance consumers and policyholders",
         ],
         source_url="https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     CountryRegulation(
         regulation_id="ID-REG-UU-27-2022",
@@ -1060,7 +1060,7 @@ ID_REGULATIONS: list[CountryRegulation] = [
             "Data controllers and data processors handling personal data of Indonesian residents"
         ],
         source_url="https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1104,7 +1104,7 @@ ID_PUBLIC_SCHEMES: list[PublicInsuranceScheme] = [
             "Display digital KIS card in Mobile JKN application or present NIK KTP during medical check-in.",
         ],
         source_url="https://www.bpjs-kesehatan.go.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1131,7 +1131,7 @@ ID_CLAIM_PROCEDURES: list[ClaimProcedure] = [
         customer_support_contact="BPJS Care Center 165 (24 Jam)",
         dispute_escalation_guidance="Contact BPJS SATU (Siap Membantu) petugas di rumah sakit, atau hotline 165",
         source_url="https://www.bpjs-kesehatan.go.id/bpjs/pages/detail/2014/12",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     ClaimProcedure(
         procedure_id="id-claim-proc-allianz-reimbursement",
@@ -1159,7 +1159,7 @@ ID_CLAIM_PROCEDURES: list[ClaimProcedure] = [
         customer_support_contact="1500-136",
         dispute_escalation_guidance="Internal Dispute Resolution Unit Allianz, or escalate to OJK Kontak 157 and LAPS SJK.",
         source_url="https://www.allianz.co.id/layanan/klaim/klaim-asuransi-kesehatan.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1180,7 +1180,7 @@ ID_CLAIM_EVIDENCE: list[ClaimEvidenceRequirement] = [
         ],
         special_conditions="Duplicate or provisional receipts not accepted without official hospital confirmation seal.",
         source_url="https://www.allianz.co.id/layanan/klaim.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     ClaimEvidenceRequirement(
         evidence_id="id-ev-resume-medis",
@@ -1198,7 +1198,7 @@ ID_CLAIM_EVIDENCE: list[ClaimEvidenceRequirement] = [
         ],
         special_conditions="Must explicitly state the cause of condition to verify policy exclusion criteria.",
         source_url="https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1221,9 +1221,9 @@ ID_HEALTHCARE_PROVIDERS: list[HealthcareProvider] = [
             "id-insurer-manulife",
             "id-insurer-aia",
         ],
-        cashless_direct_billing_verified=True,
+        cashless_direct_billing_verified=False,
         source_url="https://rscm.co.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     HealthcareProvider(
         provider_id="id-hosp-medistra",
@@ -1243,9 +1243,9 @@ ID_HEALTHCARE_PROVIDERS: list[HealthcareProvider] = [
             "id-insurer-aia",
             "id-insurer-axa-mandiri",
         ],
-        cashless_direct_billing_verified=True,
+        cashless_direct_billing_verified=False,
         source_url="https://www.medistra.com",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     HealthcareProvider(
         provider_id="id-hosp-siloam-mrccc",
@@ -1266,9 +1266,9 @@ ID_HEALTHCARE_PROVIDERS: list[HealthcareProvider] = [
             "id-insurer-aia",
             "id-insurer-axa-mandiri",
         ],
-        cashless_direct_billing_verified=True,
+        cashless_direct_billing_verified=False,
         source_url="https://www.siloamhospitals.com/hospitals-list/mrccc-siloam-hospitals-semanggi",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1287,7 +1287,7 @@ ID_MEDICAL_COSTS: list[MedicalCostReference] = [
         effective_date=date(2024, 1, 1),
         limitations="Does not include diagnostic procedures, medications, or specialized medical tests",
         source_url="https://dinkes.jakarta.go.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     MedicalCostReference(
         cost_id="id-cost-igd-emergency-admission",
@@ -1303,7 +1303,7 @@ ID_MEDICAL_COSTS: list[MedicalCostReference] = [
         effective_date=date(2024, 1, 1),
         limitations="Applies to emergency admissions meeting triage priority red or yellow criteria",
         source_url="https://dinkes.jakarta.go.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -1324,6 +1324,6 @@ ID_CONSUMER_DISPUTES: list[ConsumerDisputeProcedure] = [
             "Attach identity card (KTP/KITAS) and statement confirming dispute is not currently in litigation",
         ],
         source_url="https://kontak157.ojk.go.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]

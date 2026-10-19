@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "id-rag-jkn-perpres59-01",
     "country": "ID",
     "jurisdiction": "ID-National",
@@ -15,9 +18,12 @@
     "topic": "Standard Inpatient Class (KRIS) Implementation",
     "effective_date": "2024-05-08",
     "source_url": "https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "id-rag-jkn-perpres59-exclusions-02",
     "country": "ID",
     "jurisdiction": "ID-National",
@@ -33,9 +39,12 @@
     "topic": "Statutory JKN Non-Covered Exclusions",
     "effective_date": "2024-05-08",
     "source_url": "https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "id-rag-allianz-waiting-03",
     "country": "ID",
     "jurisdiction": "ID-National",
@@ -51,9 +60,12 @@
     "topic": "Waiting Periods for Illness and Specific Conditions",
     "effective_date": "2023-01-01",
     "source_url": "https://www.allianz.co.id/produk/asuransi-kesehatan/individu/smarthealth-maxi-violet.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "id-rag-bpjs-emergency-04",
     "country": "ID",
     "jurisdiction": "ID-National",
@@ -69,9 +81,12 @@
     "topic": "Direct Emergency Room Access Without Referral",
     "effective_date": "2024-01-01",
     "source_url": "https://www.bpjs-kesehatan.go.id",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "id-rag-prudential-prucritical88-05",
     "country": "ID",
     "jurisdiction": "ID-National",
@@ -87,9 +102,12 @@
     "topic": "Critical Illness 60 Conditions and 7-Day Survival Period",
     "effective_date": "2023-01-01",
     "source_url": "https://www.prudential.co.id",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "id-rag-allianz-flexici-06",
     "country": "ID",
     "jurisdiction": "ID-National",
@@ -105,9 +123,12 @@
     "topic": "Major Critical Illness Lump Sum Benefit",
     "effective_date": "2023-01-01",
     "source_url": "https://www.allianz.co.id",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "id-rag-manulife-mea-life-07",
     "country": "ID",
     "jurisdiction": "ID-National",
@@ -123,9 +144,12 @@
     "topic": "Whole Life Death Benefit and Suicide Contestability Clause",
     "effective_date": "2023-01-01",
     "source_url": "https://www.manulife.co.id",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "SYNTHETIC_FIXTURE",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
     "chunk_id": "id-rag-allianz-pa-08",
     "country": "ID",
     "jurisdiction": "ID-National",
@@ -141,6 +165,6 @@
     "topic": "Accidental Death and Disablement Coverage Limits",
     "effective_date": "2023-01-01",
     "source_url": "https://www.allianz.co.id",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
     "insurer_id": "id-public-bpjs-kesehatan",
     "legal_entity_name": "Badan Penyelenggara Jaminan Sosial Kesehatan (BPJS Kesehatan)",
     "brand_name": "BPJS Kesehatan",
@@ -9,7 +12,7 @@
     "parent_company": null,
     "regulatory_authority": "Dewan Jaminan Sosial Nasional (DJSN) & Otoritas Jasa Keuangan (OJK)",
     "license_reference": "Statutory Public Legal Entity under UU No. 24 Tahun 2011",
-    "licensing_verification_status": "VERIFIED",
+    "licensing_verification_status": "UNVERIFIED",
     "official_website": "https://www.bpjs-kesehatan.go.id",
     "business_category": "National Public Social Health Security Scheme (Program JKN)",
     "public_customer_service_contact": "BPJS Care Center 165",
@@ -22,9 +25,12 @@
       "ID-SRC-BPJS-KES",
       "ID-SRC-BPK-JDIH"
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
     "insurer_id": "id-insurer-allianz",
     "legal_entity_name": "PT Asuransi Allianz Life Indonesia",
     "brand_name": "Allianz Indonesia",
@@ -34,7 +40,7 @@
     "parent_company": "Allianz SE",
     "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
     "license_reference": "OJK KEP-238/KM.13/1989",
-    "licensing_verification_status": "VERIFIED",
+    "licensing_verification_status": "UNVERIFIED",
     "official_website": "https://www.allianz.co.id",
     "business_category": "Life and Health Insurance Company",
     "public_customer_service_contact": "1500-136",
@@ -47,9 +53,12 @@
       "ID-SRC-ALLIANZ",
       "ID-SRC-OJK"
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
     "insurer_id": "id-insurer-prudential",
     "legal_entity_name": "PT Prudential Life Assurance",
     "brand_name": "Prudential Indonesia",
@@ -59,7 +68,7 @@
     "parent_company": "Prudential plc",
     "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
     "license_reference": "OJK S-383/MK.17/1995",
-    "licensing_verification_status": "VERIFIED",
+    "licensing_verification_status": "UNVERIFIED",
     "official_website": "https://www.prudential.co.id",
     "business_category": "Life and Health Insurance, Syariah Insurance",
     "public_customer_service_contact": "1500085",
@@ -72,9 +81,12 @@
       "ID-SRC-PRUDENTIAL",
       "ID-SRC-OJK"
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
     "insurer_id": "id-insurer-aia",
     "legal_entity_name": "PT AIA FINANCIAL",
     "brand_name": "AIA Indonesia",
@@ -84,7 +96,7 @@
     "parent_company": "AIA Group Limited",
     "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
     "license_reference": "OJK KEP-138/KM.13/1992",
-    "licensing_verification_status": "VERIFIED",
+    "licensing_verification_status": "UNVERIFIED",
     "official_website": "https://www.aia-financial.co.id",
     "business_category": "Life and Health Insurance, Group Employee Benefits",
     "public_customer_service_contact": "1500-980",
@@ -97,9 +109,12 @@
       "ID-SRC-AIA",
       "ID-SRC-OJK"
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
     "insurer_id": "id-insurer-manulife",
     "legal_entity_name": "PT Asuransi Jiwa Manulife Indonesia",
     "brand_name": "Manulife Indonesia",
@@ -109,7 +124,7 @@
     "parent_company": "Manulife Financial Corporation",
     "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
     "license_reference": "OJK Kep-020/KM.13/1989",
-    "licensing_verification_status": "VERIFIED",
+    "licensing_verification_status": "UNVERIFIED",
     "official_website": "https://www.manulife.co.id",
     "business_category": "Life Insurance, Health Insurance, Group Pension (DPLK)",
     "public_customer_service_contact": "021-2555-7777",
@@ -122,9 +137,12 @@
       "ID-SRC-MANULIFE",
       "ID-SRC-OJK"
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
     "insurer_id": "id-insurer-axa-mandiri",
     "legal_entity_name": "PT AXA Mandiri Financial Services",
     "brand_name": "AXA Mandiri",
@@ -134,7 +152,7 @@
     "parent_company": "Joint Venture Bank Mandiri and AXA Group",
     "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
     "license_reference": "OJK S-071/MK.6/2004",
-    "licensing_verification_status": "VERIFIED",
+    "licensing_verification_status": "UNVERIFIED",
     "official_website": "https://www.axa-mandiri.co.id",
     "business_category": "Bancassurance Life and Health Insurance",
     "public_customer_service_contact": "1500-803",
@@ -147,9 +165,12 @@
       "ID-SRC-AXA-MANDIRI",
       "ID-SRC-OJK"
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
     "insurer_id": "id-insurer-bri-life",
     "legal_entity_name": "PT Asuransi Jiwa BRI Life",
     "brand_name": "BRI Life",
@@ -159,7 +180,7 @@
     "parent_company": "PT Bank Rakyat Indonesia (Persero) Tbk",
     "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
     "license_reference": "OJK Kep-364/KM.13/1988",
-    "licensing_verification_status": "VERIFIED",
+    "licensing_verification_status": "UNVERIFIED",
     "official_website": "https://brilife.co.id",
     "business_category": "Life, Health, and Microinsurance",
     "public_customer_service_contact": "1500-087",
@@ -172,6 +193,6 @@
       "ID-SRC-BRI-LIFE",
       "ID-SRC-OJK"
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

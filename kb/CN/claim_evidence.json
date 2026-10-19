@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
     "evidence_id": "cn-ev-fapiao",
     "country_code": "CN",
     "insurer_id": "cn-platform-lxbx",
@@ -15,9 +18,12 @@
     ],
     "special_conditions": "Patient name on fapiao must match passport name exactly. Invoices from private clinics without prior insurer approval are rejected.",
     "source_url": "https://www.lxbx.net/evidence_requirements.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
     "evidence_id": "cn-ev-medical-record",
     "country_code": "CN",
     "insurer_id": "cn-platform-lxbx",
@@ -33,9 +39,12 @@
     ],
     "special_conditions": "Must explicitly indicate the onset date of symptoms to verify policy active period and rule out pre-existing exclusions.",
     "source_url": "https://www.lxbx.net/evidence_requirements.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
     "evidence_id": "cn-ev-expense-breakdown",
     "country_code": "CN",
     "insurer_id": "cn-platform-lxbx",
@@ -51,6 +60,6 @@
     ],
     "special_conditions": "Required for all hospitalization claims exceeding RMB 1,000.",
     "source_url": "https://www.lxbx.net/evidence_requirements.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

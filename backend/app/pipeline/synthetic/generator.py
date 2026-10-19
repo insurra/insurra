@@ -8,10 +8,13 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
+from app.pipeline.schemas.models import EvidenceClass
+
 
 class SyntheticFixture(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    evidence_class: EvidenceClass = EvidenceClass.SYNTHETIC_FIXTURE
     fixture_id: str
     category: str
     country_code: str

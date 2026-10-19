@@ -66,6 +66,15 @@ from app.pipeline.generators.rules_data import DETERMINISTIC_RULES
 from app.pipeline.rag.chunker import CN_RAG_CHUNKS, ID_RAG_CHUNKS
 from app.pipeline.schemas.models import BrandAsset
 
+UNIVERSITY_NOTE = (
+    "Illustrative entries authored by a developer. Nothing here was retrieved from an institution "
+    "and none of it may back a requirement, limit or deadline."
+)
+PACKAGE_NOTICE = (
+    "No record in this package was fetched from an official source. Every record carries "
+    "evidence_class and stays UNVERIFIED unless it has a real retrieved artifact hash."
+)
+
 
 def serialize_pydantic_list(items: list) -> list[dict]:
     return [item.model_dump(mode="json") for item in items]
@@ -134,9 +143,21 @@ class KBExporter:
         (self.cn_dir / "insurance_schemes.json").write_text(
             json.dumps(serialize_pydantic_list(CN_PUBLIC_SCHEMES), indent=2, ensure_ascii=False)
         )
+        cn_manifest = json.loads((self.cn_dir / "manifest.json").read_text())
         (self.cn_dir / "university_requirements.json").write_text(
             json.dumps(
-                serialize_pydantic_list(CN_UNIVERSITY_REQUIREMENTS), indent=2, ensure_ascii=False
+                {
+                    "schema_version": "1.5",
+                    "version": cn_manifest["version"],
+                    "source_url": None,
+                    "checked_at": None,
+                    "verification_status": "UNVERIFIED",
+                    "evidence_class": "SYNTHETIC_FIXTURE",
+                    "provenance_note": UNIVERSITY_NOTE,
+                    "data": serialize_pydantic_list(CN_UNIVERSITY_REQUIREMENTS),
+                },
+                indent=2,
+                ensure_ascii=False,
             )
         )
         (self.cn_dir / "claims_procedures.json").write_text(
@@ -203,8 +224,9 @@ class KBExporter:
         # 4. Team-specific data packages
         regina_package = {
             "recipient": "Regina (Frontend & Client Architecture)",
-            "description": "Company registry, permitted brand logos, product catalog, document taxonomy, extraction schemas",
+            "description": "Company registry, placeholder brand artwork (not official logos), product catalog, document taxonomy, extraction schemas",
             "generated_at": date(2026, 10, 18).isoformat(),
+            "evidence_notice": PACKAGE_NOTICE,
             "companies": serialize_pydantic_list(CN_COMPANIES + ID_COMPANIES),
             "products": serialize_pydantic_list(CN_PRODUCTS + ID_PRODUCTS),
             "brand_assets": serialize_pydantic_list(brand_assets),
@@ -217,8 +239,9 @@ class KBExporter:
 
         valen_package = {
             "recipient": "Valen (RAG, Policy Verification, Coverage Assessment)",
-            "description": "Source-linked RAG policy clause chunks, benefits, exclusions, healthcare cost references, care pathways, glossary",
+            "description": "Illustrative RAG clause chunks (synthetic, not retrieved quotations), benefits, exclusions, healthcare cost references, care pathways, glossary",
             "generated_at": date(2026, 10, 18).isoformat(),
+            "evidence_notice": PACKAGE_NOTICE,
             "rag_chunks_cn": serialize_pydantic_list(CN_RAG_CHUNKS),
             "rag_chunks_id": serialize_pydantic_list(ID_RAG_CHUNKS),
             "medical_costs_cn": serialize_pydantic_list(CN_MEDICAL_COSTS),
@@ -235,6 +258,7 @@ class KBExporter:
             "recipient": "Joshua (Actions, Workflows, Claims, Regulatory Engine)",
             "description": "Regulations, public health schemes, university requirements, claims procedures, claim evidence checklists, dispute procedures",
             "generated_at": date(2026, 10, 18).isoformat(),
+            "evidence_notice": PACKAGE_NOTICE,
             "regulations_cn": serialize_pydantic_list(CN_REGULATIONS),
             "regulations_id": serialize_pydantic_list(ID_REGULATIONS),
             "schemes_cn": serialize_pydantic_list(CN_PUBLIC_SCHEMES),
@@ -257,6 +281,36 @@ class KBExporter:
     def ingest_into_database(self, db: Session, brand_assets: list[BrandAsset]) -> int:
         """Ingests normalized records into the relational catalog tables."""
         total_rows = 0
+
+        # Rows written by earlier runs may still carry VERIFIED or a granted logo license even
+        # though nothing was ever retrieved. Downgrade them in place (never delete data).
+        for row_cls in (
+            InsuranceEntityRow,
+            InsuranceProductRow,
+            InsuranceBrandAssetRow,
+            InsuranceClaimProcedureRow,
+            InsuranceEvidenceRequirementRow,
+            InsuranceEligibilityRuleRow,
+            InsuranceRegulationRow,
+            InsurancePublicSchemeRow,
+            UniversityInsuranceRequirementRow,
+            HealthcareProviderRow,
+            HealthcareCostReferenceRow,
+            SourceRegistryRow,
+        ):
+            for existing_row in db.query(row_cls).filter(
+                row_cls.verification_status.in_(("VERIFIED", "COLLECTED"))
+            ):
+                existing_row.verification_status = (
+                    "DISCOVERED" if row_cls is SourceRegistryRow else "UNVERIFIED"
+                )
+        for entity in db.query(InsuranceEntityRow).filter(
+            InsuranceEntityRow.licensing_verification_status == "VERIFIED"
+        ):
+            entity.licensing_verification_status = "UNVERIFIED"
+        for asset_row in db.query(InsuranceBrandAssetRow):
+            asset_row.license_status = "NOT_VERIFIED"
+        db.flush()
 
         # Ingest Sources
         for src in OFFICIAL_SOURCES:
@@ -341,6 +395,10 @@ class KBExporter:
         # Ingest Brand Assets
         for asset in brand_assets:
             existing = db.get(InsuranceBrandAssetRow, asset.asset_id)
+            if existing:
+                existing.reuse_permission = asset.reuse_permission
+                existing.attribution_text = asset.attribution_text
+                existing.verification_status = asset.verification_status.value
             if not existing:
                 row = InsuranceBrandAssetRow(
                     asset_id=asset.asset_id,

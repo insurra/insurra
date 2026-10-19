@@ -1,6 +1,8 @@
-"""Official Insurer Brand Asset Pipeline.
-Collects, sanitizes, hashes, and publishes official insurer brand logos for China and Indonesia.
-Generates the central frontend manifest.
+"""Insurer placeholder artwork pipeline.
+Generates placeholder SVG marks for China and Indonesia insurers, sanitizes and hashes them, and
+writes a manifest that labels every entry as a placeholder with an unverified license.
+No real logo is downloaded. The files are NOT official brand marks; legacy file names that contain
+"official" are kept only so existing paths keep working.
 Never use em dashes in strings or docstrings.
 """
 
@@ -12,12 +14,14 @@ from app.pipeline.brand_assets.sanitizer import AssetSanitizer
 from app.pipeline.schemas.models import (
     AssetType,
     BrandAsset,
+    EvidenceClass,
     LicenseStatus,
     PipelineVerificationStatus,
 )
 
-# Official clean vector brand marks with proper viewBox and styling
-OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
+# Generated placeholder artwork (not official marks). "source_url" is only the publisher domain
+# the real logo would have to be obtained from; it was never fetched.
+PLACEHOLDER_SVG_DEFINITIONS: dict[str, dict] = {
     "cn-insurer-pingan": {
         "insurer_id": "cn-insurer-pingan",
         "display_name": "Ping An Insurance (中国平安)",
@@ -31,7 +35,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#333333">PING AN INSURANCE</text>
 </svg>""",
         "original_filename": "pingan_logo_official.svg",
-        "attribution_text": "Ping An Insurance (Group) Company of China, Ltd. Registered Trademark.",
         "primary_color": "#EA5414",
     },
     "cn-insurer-picc": {
@@ -47,7 +50,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#333333">PEOPLE'S INSURANCE CO.</text>
 </svg>""",
         "original_filename": "picc_logo_official.svg",
-        "attribution_text": "The People's Insurance Company (Group) of China Limited. Official Brand Mark.",
         "primary_color": "#D81E06",
     },
     "cn-insurer-chinalife": {
@@ -64,7 +66,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#333333">CHINA LIFE INSURANCE</text>
 </svg>""",
         "original_filename": "chinalife_logo_official.svg",
-        "attribution_text": "China Life Insurance (Group) Company. Official Brand Identity.",
         "primary_color": "#008837",
     },
     "cn-insurer-cpic": {
@@ -80,7 +81,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#333333">CHINA PACIFIC INSURANCE</text>
 </svg>""",
         "original_filename": "cpic_logo_official.svg",
-        "attribution_text": "China Pacific Insurance (Group) Co., Ltd. Official Brand Identity.",
         "primary_color": "#005BAC",
     },
     "cn-platform-lxbx": {
@@ -96,7 +96,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="64" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">CSC COMPREHENSIVE SCHEME (PING AN)</text>
 </svg>""",
         "original_filename": "lxbx_scheme_logo.svg",
-        "attribution_text": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China.",
         "primary_color": "#1890FF",
     },
     "id-public-bpjs-kesehatan": {
@@ -113,7 +112,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#333333">JAMINAN KESEHATAN NASIONAL</text>
 </svg>""",
         "original_filename": "bpjs_kesehatan_logo.svg",
-        "attribution_text": "Badan Penyelenggara Jaminan Sosial Kesehatan Republik Indonesia.",
         "primary_color": "#008C44",
     },
     "id-insurer-allianz": {
@@ -131,7 +129,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">PT ASURANSI ALLIANZ LIFE INDONESIA</text>
 </svg>""",
         "original_filename": "allianz_indonesia_logo.svg",
-        "attribution_text": "PT Asuransi Allianz Life Indonesia. Licensed and supervised by OJK.",
         "primary_color": "#003781",
     },
     "id-insurer-prudential": {
@@ -147,7 +144,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">PT PRUDENTIAL LIFE ASSURANCE</text>
 </svg>""",
         "original_filename": "prudential_indonesia_logo.svg",
-        "attribution_text": "PT Prudential Life Assurance. Licensed and supervised by OJK.",
         "primary_color": "#ED1B2D",
     },
     "id-insurer-aia": {
@@ -163,7 +159,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">PT AIA FINANCIAL</text>
 </svg>""",
         "original_filename": "aia_indonesia_logo.svg",
-        "attribution_text": "PT AIA Financial. Licensed and supervised by OJK.",
         "primary_color": "#D31145",
     },
     "id-insurer-manulife": {
@@ -179,7 +174,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">PT ASURANSI JIWA MANULIFE INDONESIA</text>
 </svg>""",
         "original_filename": "manulife_indonesia_logo.svg",
-        "attribution_text": "PT Asuransi Jiwa Manulife Indonesia. Licensed and supervised by OJK.",
         "primary_color": "#00A758",
     },
     "id-insurer-axa-mandiri": {
@@ -195,7 +189,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">PT AXA MANDIRI FINANCIAL SERVICES</text>
 </svg>""",
         "original_filename": "axa_mandiri_logo.svg",
-        "attribution_text": "PT AXA Mandiri Financial Services. Licensed and supervised by OJK.",
         "primary_color": "#00008F",
     },
     "id-insurer-bri-life": {
@@ -211,7 +204,6 @@ OFFICIAL_SVG_DEFINITIONS: dict[str, dict] = {
   <text x="85" y="65" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">PT ASURANSI JIWA BRI LIFE (BANK BRI GROUP)</text>
 </svg>""",
         "original_filename": "bri_life_logo.svg",
-        "attribution_text": "PT Asuransi Jiwa BRI Life. Bank BRI Group.",
         "primary_color": "#00529C",
     },
 }
@@ -230,12 +222,16 @@ class BrandAssetPipeline:
         asset_records: list[BrandAsset] = []
         manifest_entries: list[dict] = []
 
-        for insurer_id, item in OFFICIAL_SVG_DEFINITIONS.items():
+        for insurer_id, item in PLACEHOLDER_SVG_DEFINITIONS.items():
             svg_raw = item["svg"].encode("utf-8")
             sanitized_bytes, width, height = AssetSanitizer.sanitize_svg(svg_raw)
             sha256 = AssetSanitizer.compute_sha256(sanitized_bytes)
 
             dest_filename = item["original_filename"]
+            placeholder_text = (
+                f"Placeholder artwork for {item['display_name']}. Not the official logo and no "
+                "trademark license has been verified."
+            )
             # Write to frontend public directory
             insurer_frontend_dir = self.frontend_asset_dir / insurer_id
             insurer_frontend_dir.mkdir(parents=True, exist_ok=True)
@@ -262,13 +258,14 @@ class BrandAssetPipeline:
                 aspect_ratio=f"{width}:{height}",
                 file_size_bytes=len(sanitized_bytes),
                 sha256=sha256,
-                license_status=LicenseStatus.PERMITTED_PUBLIC_MEDIA,
-                reuse_permission="Official media identity for public consumer transparency and insurance comparison",
+                license_status=LicenseStatus.NOT_VERIFIED,
+                reuse_permission="None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
                 attribution_required=True,
-                attribution_text=item["attribution_text"],
+                attribution_text=placeholder_text,
                 local_storage_path=f"/assets/insurers/{insurer_id}/{dest_filename}",
                 collection_date=date(2026, 10, 18),
-                verification_status=PipelineVerificationStatus.VERIFIED,
+                verification_status=PipelineVerificationStatus.UNVERIFIED,
+                evidence_class=EvidenceClass.PLACEHOLDER,
             )
             asset_records.append(asset_record)
 
@@ -277,9 +274,14 @@ class BrandAssetPipeline:
                     "insurer_id": insurer_id,
                     "display_name": item["display_name"],
                     "primary_color": item["primary_color"],
+                    "placeholder": True,
+                    "evidence_class": "PLACEHOLDER",
+                    "license_status": "NOT_VERIFIED",
                     "logo": {
                         "asset_id": asset_record.asset_id,
-                        "status": "permitted",
+                        "status": "placeholder",
+                        "fetched": False,
+                        "sha256_of": "generated_placeholder_file",
                         "public_url": f"/assets/insurers/{insurer_id}/{dest_filename}",
                         "width": width,
                         "height": height,
@@ -287,7 +289,7 @@ class BrandAssetPipeline:
                         "sha256": sha256,
                     },
                     "fallback": "insurance-category-icon",
-                    "attribution": item["attribution_text"],
+                    "attribution": placeholder_text,
                 }
             )
 
@@ -295,6 +297,11 @@ class BrandAssetPipeline:
             "schema_version": "1.5",
             "version": "1.0.0",
             "country_scope": ["CN", "ID"],
+            "notice": (
+                "All logos are generated placeholders, not official or retrieved brand assets. "
+                "License status is NOT_VERIFIED. Do not present them as official logos."
+            ),
+            "placeholder": True,
             "insurers_count": len(manifest_entries),
             "generated_at": date(2026, 10, 18).isoformat(),
             "insurers": manifest_entries,

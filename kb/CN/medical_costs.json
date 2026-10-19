@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
     "cost_id": "cn-cost-sz-general-consult",
     "country_code": "CN",
     "jurisdiction": "CN-Guangdong-Shenzhen",
@@ -13,9 +16,12 @@
     "effective_date": "2023-10-01",
     "limitations": "Applies to regular clinic hours at public Grade 2 and Grade 3 hospitals in Shenzhen",
     "source_url": "https://hsa.sz.gov.cn/zwgk/zcfg/content/post_10842270.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
     "cost_id": "cn-cost-sz-emergency-consult",
     "country_code": "CN",
     "jurisdiction": "CN-Guangdong-Shenzhen",
@@ -29,6 +35,6 @@
     "effective_date": "2023-10-01",
     "limitations": "Applies to 24-hour emergency room admissions at public tertiary hospitals",
     "source_url": "https://hsa.sz.gov.cn/zwgk/zcfg/content/post_10842270.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

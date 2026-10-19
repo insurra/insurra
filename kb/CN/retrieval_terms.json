@@ -4,5 +4,64 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
-  "data": {}
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer. Not retrieved or machine-verified.",
+  "data": {
+    "dental": [
+      "gigi",
+      "dental",
+      "dentist",
+      "牙科",
+      "牙齿",
+      "看牙",
+      "口腔"
+    ],
+    "gp": [
+      "gp",
+      "dokter umum",
+      "general practitioner",
+      "全科",
+      "普通门诊",
+      "社区门诊"
+    ],
+    "outpatient": [
+      "rawat jalan",
+      "outpatient",
+      "门诊",
+      "门诊医疗",
+      "普通门诊"
+    ],
+    "hospital": [
+      "rawat inap",
+      "inpatient",
+      "hospital",
+      "住院",
+      "住院医疗"
+    ],
+    "limits": [
+      "sisa",
+      "remaining",
+      "limit",
+      "terpakai",
+      "used",
+      "限额",
+      "额度",
+      "报销"
+    ],
+    "network": [
+      "jaringan",
+      "network",
+      "指定医疗机构",
+      "医院网络",
+      "定点医院"
+    ],
+    "pharmacy": [
+      "obat",
+      "medicine",
+      "pharmacy",
+      "处方药",
+      "药品",
+      "药费"
+    ]
+  }
 }

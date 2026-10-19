@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "dispute_id": "cn-disp-nfra-12378",
     "country_code": "CN",
     "authority_name": "National Financial Regulatory Administration Financial Consumer Protection Center",
@@ -15,6 +18,6 @@
       "State explicit resolution demands (e.g., policy claim payment, clarification of denial basis)"
     ],
     "source_url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1107775",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

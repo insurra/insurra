@@ -1,4 +1,5 @@
 {
+  "evidence_class": "SYNTHETIC_FIXTURE",
   "fixture_id": "synth-inj-override-deductible",
   "category": "prompt_injection_test",
   "country_code": "CN",

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "source_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
   "checked_at": "2026-10-18",
-  "verification_status": "VERIFIED",
+  "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Developer-authored test phrases that reference a public guideline. Not retrieved or machine-verified.",
   "data": [
     {
       "pattern_id": "INJ-001-SYSTEM-OVERRIDE",

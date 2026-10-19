@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "scheme_id": "cn-scheme-uebmi",
     "country_code": "CN",
     "jurisdiction": "CN-National",
@@ -28,6 +31,6 @@
       "Employee receives Social Security Card (社保卡) or activates Digital Health Insurance Code (医保电子凭证)."
     ],
     "source_url": "https://www.nhsa.gov.cn/art/2021/6/30/art_37_5391.html",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

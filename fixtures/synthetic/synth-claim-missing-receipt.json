@@ -1,4 +1,5 @@
 {
+  "evidence_class": "SYNTHETIC_FIXTURE",
   "fixture_id": "synth-claim-missing-receipt",
   "category": "synthetic_claim_evidence",
   "country_code": "ID",

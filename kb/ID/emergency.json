@@ -4,12 +4,15 @@
   "source_url": "https://layanan112.komdigi.go.id/tentang",
   "checked_at": "2026-10-19",
   "verification_status": "VERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer from a cited public page. Not retrieved or machine-verified.",
   "data": {
     "label": "Kontak darurat resmi Indonesia; cakupan pusat 112 bergantung wilayah.",
     "phone_number": "112",
     "source_url": "https://layanan112.komdigi.go.id/tentang",
     "checked_at": "2026-10-19",
     "verification_status": "VERIFIED",
+    "evidence_class": "MANUALLY_CURATED",
     "contacts": [
       {
         "service_code": "general",
@@ -18,6 +21,7 @@
         "source_url": "https://layanan112.komdigi.go.id/tentang",
         "checked_at": "2026-10-19",
         "verification_status": "VERIFIED",
+        "evidence_class": "MANUALLY_CURATED",
         "jurisdiction": "ID local implementation"
       },
       {
@@ -27,6 +31,7 @@
         "source_url": "https://kemkes.go.id/id/layanan/psc-119",
         "checked_at": "2026-10-19",
         "verification_status": "VERIFIED",
+        "evidence_class": "MANUALLY_CURATED",
         "jurisdiction": "ID national"
       },
       {
@@ -36,6 +41,7 @@
         "source_url": "https://layanan112.komdigi.go.id/tentang",
         "checked_at": "2026-10-19",
         "verification_status": "VERIFIED",
+        "evidence_class": "MANUALLY_CURATED",
         "jurisdiction": "ID national"
       },
       {
@@ -45,6 +51,7 @@
         "source_url": "https://layanan112.komdigi.go.id/tentang",
         "checked_at": "2026-10-19",
         "verification_status": "VERIFIED",
+        "evidence_class": "MANUALLY_CURATED",
         "jurisdiction": "ID national"
       }
     ]

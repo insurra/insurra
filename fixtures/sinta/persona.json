@@ -1,0 +1,12 @@
+{
+  "persona_id": "sinta",
+  "country_code": "ID",
+  "city": "Jakarta",
+  "role_label": "Employee in Indonesia",
+  "insurance_categories": [
+    "PUBLIC_SOCIAL_HEALTH",
+    "EMPLOYER_GROUP"
+  ],
+  "description": "Understand public and employer insurance in one place.",
+  "is_synthetic": true
+}

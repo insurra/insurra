@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "id-prod-bpjs-jkn",
     "insurer_id": "id-public-bpjs-kesehatan",
     "original_product_name": "Program Jaminan Kesehatan Nasional (JKN)",
@@ -150,9 +153,12 @@
         "source_page": 12
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "id-prod-allianz-smarthealth",
     "insurer_id": "id-insurer-allianz",
     "original_product_name": "SmartHealth Maxi Violet",
@@ -253,9 +259,12 @@
         "source_page": 8
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "id-prod-prudential-pruwell",
     "insurer_id": "id-insurer-prudential",
     "original_product_name": "PRUWell Medical",
@@ -329,9 +338,12 @@
         "source_page": 14
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "id-prod-allianz-travelpro",
     "insurer_id": "id-insurer-allianz",
     "original_product_name": "Allianz TravelPro International",
@@ -431,9 +443,12 @@
         "source_page": 12
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "id-prod-prudential-prucritical88",
     "insurer_id": "id-insurer-prudential",
     "original_product_name": "Asuransi PRUCritical Benefit 88",
@@ -533,9 +548,12 @@
         "source_page": 11
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "id-prod-allianz-flexici",
     "insurer_id": "id-insurer-allianz",
     "original_product_name": "Allianz Flexi CI (Critical Illness)",
@@ -608,9 +626,12 @@
         "source_page": 9
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "id-prod-manulife-mea",
     "insurer_id": "id-insurer-manulife",
     "original_product_name": "Manulife Essential Assurance (MEA)",
@@ -684,9 +705,12 @@
         "source_page": 6
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "id-prod-allianz-pa",
     "insurer_id": "id-insurer-allianz",
     "original_product_name": "Asuransi Kecelakaan Diri Allianz (Personal Accident)",
@@ -787,9 +811,12 @@
         "source_page": 5
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
     "product_id": "id-prod-aia-corporate",
     "insurer_id": "id-insurer-aia",
     "original_product_name": "AIA Premier Hospital & Surgical Care Kumpulan",
@@ -862,6 +889,6 @@
         "source_page": 8
       }
     ],
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

@@ -1,4 +1,5 @@
 {
+  "evidence_class": "SYNTHETIC_FIXTURE",
   "fixture_id": "synth-sand-rejected-consent-revoked",
   "category": "sandbox_integration_test",
   "country_code": "ID",

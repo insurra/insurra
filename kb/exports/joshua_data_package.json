@@ -2,8 +2,12 @@
   "recipient": "Joshua (Actions, Workflows, Claims, Regulatory Engine)",
   "description": "Regulations, public health schemes, university requirements, claims procedures, claim evidence checklists, dispute procedures",
   "generated_at": "2026-10-18",
+  "evidence_notice": "No record in this package was fetched from an official source. Every record carries evidence_class and stays UNVERIFIED unless it has a real retrieved artifact hash.",
   "regulations_cn": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "regulation_id": "CN-REG-MOHRSS-ORDER16",
       "country_code": "CN",
       "jurisdiction": "CN-National",
@@ -25,9 +29,12 @@
         "Enterprises registered in China"
       ],
       "source_url": "https://www.mohrss.gov.cn/xxgk2020/gwyxxgk/201109/t20110906_113038.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "regulation_id": "CN-REG-MOE-ORDER42",
       "country_code": "CN",
       "jurisdiction": "CN-National",
@@ -48,9 +55,12 @@
         "Higher education institutions in China"
       ],
       "source_url": "https://www.gov.cn/zhengce/2017-06/02/content_5199187.htm",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "regulation_id": "CN-REG-SZ-MED-2023",
       "country_code": "CN",
       "jurisdiction": "CN-Guangdong-Shenzhen",
@@ -72,9 +82,12 @@
         "Foreign employees participating in Shenzhen social insurance"
       ],
       "source_url": "https://www.sz.gov.cn/zfgb/2023/gb1299/content/post_10842270.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "regulation_id": "CN-REG-PIPL-2021",
       "country_code": "CN",
       "jurisdiction": "CN-National",
@@ -96,11 +109,14 @@
         "Insurance platforms handling health and claim data"
       ],
       "source_url": "https://www.gov.cn/xinwen/2021-08/20/content_5632486.htm",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "regulations_id": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "regulation_id": "ID-REG-UU-40-2004",
       "country_code": "ID",
       "jurisdiction": "ID-National",
@@ -121,9 +137,12 @@
         "Foreigners residing and working for at least 6 months"
       ],
       "source_url": "https://peraturan.bpk.go.id/Details/40764/uu-no-40-tahun-2004",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "regulation_id": "ID-REG-PERPRES-59-2024",
       "country_code": "ID",
       "jurisdiction": "ID-National",
@@ -144,9 +163,12 @@
         "Healthcare provider facilities (FKTP and FKRTL) in Indonesia"
       ],
       "source_url": "https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "regulation_id": "ID-REG-POJK-22-2023",
       "country_code": "ID",
       "jurisdiction": "ID-National",
@@ -167,9 +189,12 @@
         "Insurance consumers and policyholders"
       ],
       "source_url": "https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "regulation_id": "ID-REG-UU-27-2022",
       "country_code": "ID",
       "jurisdiction": "ID-National",
@@ -189,11 +214,14 @@
         "Data controllers and data processors handling personal data of Indonesian residents"
       ],
       "source_url": "https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "schemes_cn": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "scheme_id": "cn-scheme-uebmi",
       "country_code": "CN",
       "jurisdiction": "CN-National",
@@ -222,11 +250,14 @@
         "Employee receives Social Security Card (社保卡) or activates Digital Health Insurance Code (医保电子凭证)."
       ],
       "source_url": "https://www.nhsa.gov.cn/art/2021/6/30/art_37_5391.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "schemes_id": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "scheme_id": "id-scheme-jkn",
       "country_code": "ID",
       "jurisdiction": "ID-National",
@@ -265,11 +296,14 @@
         "Display digital KIS card in Mobile JKN application or present NIK KTP during medical check-in."
       ],
       "source_url": "https://www.bpjs-kesehatan.go.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "university_requirements_cn": [
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative requirement authored by a developer. Not retrieved from the institution and not a source for any obligation or limit.",
       "requirement_id": "cn-req-szu-student",
       "institution_id": "cn-szu",
       "institution_name": "Shenzhen University",
@@ -301,9 +335,12 @@
         "https://lxs.szu.edu.cn/info/1020/2198.htm"
       ],
       "administrative_guidance": "Purchase online via www.lxbx.net, select Shenzhen University, enter passport number, complete UnionPay/WeChat Pay, download PDF certificate.",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative requirement authored by a developer. Not retrieved from the institution and not a source for any obligation or limit.",
       "requirement_id": "cn-req-cuhksz-student",
       "institution_id": "cn-cuhk-sz",
       "institution_name": "The Chinese University of Hong Kong, Shenzhen",
@@ -333,9 +370,12 @@
         "https://www.cuhk.edu.cn/en/page/international-student-services"
       ],
       "administrative_guidance": "Submit policy certificate via CUHK-Shenzhen student information portal prior to class commencement.",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative requirement authored by a developer. Not retrieved from the institution and not a source for any obligation or limit.",
       "requirement_id": "cn-req-tsinghua-student",
       "institution_id": "cn-thu",
       "institution_name": "Tsinghua University",
@@ -366,9 +406,12 @@
         "https://is.tsinghua.edu.cn/en/info/1020/1234.htm"
       ],
       "administrative_guidance": "Complete online purchase on lxbx.net selecting Tsinghua University as designated institution.",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative requirement authored by a developer. Not retrieved from the institution and not a source for any obligation or limit.",
       "requirement_id": "cn-req-pku-student",
       "institution_id": "cn-pku",
       "institution_name": "Peking University",
@@ -399,11 +442,14 @@
         "https://isd.pku.edu.cn/notice/insurance.htm"
       ],
       "administrative_guidance": "Purchase via lxbx.net and present electronic insurance certificate barcode at registration counter.",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "claims_procedures_cn": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered procedure. Deadlines and channels were not machine-verified.",
       "procedure_id": "cn-claim-proc-lxbx",
       "country_code": "CN",
       "claims_administrator": "Ping An Pension Insurance Co., Ltd. (Foreign Student Claims Department)",
@@ -437,11 +483,14 @@
       "customer_support_contact": "400-810-5119 (Bilingual English and Chinese, 24/7 hotline)",
       "dispute_escalation_guidance": "Contact Ping An National Customer Service 95511 or escalate to NFRA Financial Consumer Protection Hotline 12378.",
       "source_url": "https://www.lxbx.net/claims_guide.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "claims_procedures_id": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered procedure. Deadlines and channels were not machine-verified.",
       "procedure_id": "id-claim-proc-bpjs-rujukan",
       "country_code": "ID",
       "claims_administrator": "BPJS Kesehatan & Rumah Sakit Rekanan",
@@ -475,9 +524,12 @@
       "customer_support_contact": "BPJS Care Center 165 (24 Jam)",
       "dispute_escalation_guidance": "Contact BPJS SATU (Siap Membantu) petugas di rumah sakit, atau hotline 165",
       "source_url": "https://www.bpjs-kesehatan.go.id/bpjs/pages/detail/2014/12",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered procedure. Deadlines and channels were not machine-verified.",
       "procedure_id": "id-claim-proc-allianz-reimbursement",
       "country_code": "ID",
       "claims_administrator": "PT Asuransi Allianz Life Indonesia (Claims Department)",
@@ -510,11 +562,14 @@
       "customer_support_contact": "1500-136",
       "dispute_escalation_guidance": "Internal Dispute Resolution Unit Allianz, or escalate to OJK Kontak 157 and LAPS SJK.",
       "source_url": "https://www.allianz.co.id/layanan/klaim/klaim-asuransi-kesehatan.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "claim_evidence_cn": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
       "evidence_id": "cn-ev-fapiao",
       "country_code": "CN",
       "insurer_id": "cn-platform-lxbx",
@@ -530,9 +585,12 @@
       ],
       "special_conditions": "Patient name on fapiao must match passport name exactly. Invoices from private clinics without prior insurer approval are rejected.",
       "source_url": "https://www.lxbx.net/evidence_requirements.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
       "evidence_id": "cn-ev-medical-record",
       "country_code": "CN",
       "insurer_id": "cn-platform-lxbx",
@@ -548,9 +606,12 @@
       ],
       "special_conditions": "Must explicitly indicate the onset date of symptoms to verify policy active period and rule out pre-existing exclusions.",
       "source_url": "https://www.lxbx.net/evidence_requirements.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
       "evidence_id": "cn-ev-expense-breakdown",
       "country_code": "CN",
       "insurer_id": "cn-platform-lxbx",
@@ -566,11 +627,14 @@
       ],
       "special_conditions": "Required for all hospitalization claims exceeding RMB 1,000.",
       "source_url": "https://www.lxbx.net/evidence_requirements.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "claim_evidence_id": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
       "evidence_id": "id-ev-kuitansi-asli",
       "country_code": "ID",
       "insurer_id": "id-insurer-allianz",
@@ -586,9 +650,12 @@
       ],
       "special_conditions": "Duplicate or provisional receipts not accepted without official hospital confirmation seal.",
       "source_url": "https://www.allianz.co.id/layanan/klaim.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered checklist item. Not machine-verified against insurer terms.",
       "evidence_id": "id-ev-resume-medis",
       "country_code": "ID",
       "insurer_id": null,
@@ -604,11 +671,14 @@
       ],
       "special_conditions": "Must explicitly state the cause of condition to verify policy exclusion criteria.",
       "source_url": "https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "consumer_disputes_cn": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "dispute_id": "cn-disp-nfra-12378",
       "country_code": "CN",
       "authority_name": "National Financial Regulatory Administration Financial Consumer Protection Center",
@@ -624,11 +694,14 @@
         "State explicit resolution demands (e.g., policy claim payment, clarification of denial basis)"
       ],
       "source_url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1107775",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "consumer_disputes_id": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "dispute_id": "id-disp-ojk-157",
       "country_code": "ID",
       "authority_name": "Otoritas Jasa Keuangan (OJK)",
@@ -644,11 +717,14 @@
         "Attach identity card (KTP/KITAS) and statement confirming dispute is not currently in litigation"
       ],
       "source_url": "https://kontak157.ojk.go.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "deterministic_rules": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "rule_id": "CN-RULE-STUDENT-VISA-INSURANCE",
       "country_code": "CN",
       "jurisdiction": "CN-National",
@@ -678,9 +754,12 @@
         "CN-SRC-MOE-ORDER42",
         "CN-SRC-SZU"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "rule_id": "CN-RULE-FOREIGN-EMPLOYEE-SOCIAL-INSURANCE",
       "country_code": "CN",
       "jurisdiction": "CN-National",
@@ -710,9 +789,12 @@
       "source_ids": [
         "CN-SRC-MOHRSS"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "rule_id": "ID-RULE-JKN-MANDATORY-PARTICIPATION",
       "country_code": "ID",
       "jurisdiction": "ID-National",
@@ -742,9 +824,12 @@
         "ID-SRC-BPJS-KES",
         "ID-SRC-BPK-JDIH"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "rule_id": "ID-RULE-JKN-TIERED-REFERRAL",
       "country_code": "ID",
       "jurisdiction": "ID-National",
@@ -771,7 +856,7 @@
         "ID-SRC-BPJS-KES",
         "ID-SRC-KEMKES"
       ],
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ]
 }

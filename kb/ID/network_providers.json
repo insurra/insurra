@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "provider_id": "id-hosp-rscm",
     "country_code": "ID",
     "name_original": "RSUPN Dr. Cipto Mangunkusumo (RSCM)",
@@ -17,11 +20,14 @@
       "id-insurer-manulife",
       "id-insurer-aia"
     ],
-    "cashless_direct_billing_verified": true,
+    "cashless_direct_billing_verified": false,
     "source_url": "https://rscm.co.id",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "provider_id": "id-hosp-medistra",
     "country_code": "ID",
     "name_original": "Rumah Sakit Medistra Jakarta",
@@ -39,11 +45,14 @@
       "id-insurer-aia",
       "id-insurer-axa-mandiri"
     ],
-    "cashless_direct_billing_verified": true,
+    "cashless_direct_billing_verified": false,
     "source_url": "https://www.medistra.com",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "provider_id": "id-hosp-siloam-mrccc",
     "country_code": "ID",
     "name_original": "MRCCC Siloam Hospitals Semanggi",
@@ -62,8 +71,8 @@
       "id-insurer-aia",
       "id-insurer-axa-mandiri"
     ],
-    "cashless_direct_billing_verified": true,
+    "cashless_direct_billing_verified": false,
     "source_url": "https://www.siloamhospitals.com/hospitals-list/mrccc-siloam-hospitals-semanggi",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

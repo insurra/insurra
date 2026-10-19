@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "regulation_id": "ID-REG-UU-40-2004",
     "country_code": "ID",
     "jurisdiction": "ID-National",
@@ -20,9 +23,12 @@
       "Foreigners residing and working for at least 6 months"
     ],
     "source_url": "https://peraturan.bpk.go.id/Details/40764/uu-no-40-tahun-2004",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "regulation_id": "ID-REG-PERPRES-59-2024",
     "country_code": "ID",
     "jurisdiction": "ID-National",
@@ -43,9 +49,12 @@
       "Healthcare provider facilities (FKTP and FKRTL) in Indonesia"
     ],
     "source_url": "https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "regulation_id": "ID-REG-POJK-22-2023",
     "country_code": "ID",
     "jurisdiction": "ID-National",
@@ -66,9 +75,12 @@
       "Insurance consumers and policyholders"
     ],
     "source_url": "https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   },
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "regulation_id": "ID-REG-UU-27-2022",
     "country_code": "ID",
     "jurisdiction": "ID-National",
@@ -88,6 +100,6 @@
       "Data controllers and data processors handling personal data of Indonesian residents"
     ],
     "source_url": "https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

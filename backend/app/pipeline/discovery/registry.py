@@ -36,7 +36,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.METADATA_ONLY,
         blocking_reason="WAF and anti-bot challenge on direct international network requests",
-        verification_status=PipelineVerificationStatus.COLLECTED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-NFRA-LICENSE",
@@ -60,7 +60,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.MANUAL_REVIEW_REQUIRED,
         blocking_reason="Interactive CAPTCHA verification required for individual license queries",
-        verification_status=PipelineVerificationStatus.COLLECTED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-NHSA",
@@ -84,7 +84,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.COLLECTED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-MOHRSS",
@@ -108,7 +108,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-SZ-GOV",
@@ -132,7 +132,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.API_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-SZ-HSA",
@@ -156,7 +156,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-SZU",
@@ -180,7 +180,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.CRAWL_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-CUHK-SZ",
@@ -204,7 +204,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.CRAWL_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-LXBX",
@@ -228,7 +228,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-PINGAN",
@@ -252,7 +252,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-PICC",
@@ -276,7 +276,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-CHINALIFE",
@@ -300,7 +300,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-CPIC",
@@ -324,7 +324,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-SZ120",
@@ -348,7 +348,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="CN-SRC-SZ-HOSPITALS",
@@ -372,7 +372,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.API_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     # ==================== INDONESIA (ID) SOURCES ====================
     SourceRegistryEntry(
@@ -397,7 +397,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-BPJS-KES",
@@ -421,7 +421,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-KEMKES",
@@ -445,7 +445,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-SATUSEHAT",
@@ -469,7 +469,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.API_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-BPK-JDIH",
@@ -493,7 +493,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-ALLIANZ",
@@ -517,7 +517,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.METADATA_ONLY,
         blocking_reason="Cloudflare WAF HTTP 403 on automated scraper user-agents",
-        verification_status=PipelineVerificationStatus.COLLECTED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-PRUDENTIAL",
@@ -541,7 +541,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-AIA",
@@ -565,7 +565,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-MANULIFE",
@@ -589,7 +589,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-AXA-MANDIRI",
@@ -613,7 +613,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-BRI-LIFE",
@@ -637,7 +637,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-SPGDT119",
@@ -661,7 +661,7 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.DOWNLOAD_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
     SourceRegistryEntry(
         source_id="ID-SRC-JAKARTA-HOSPITALS",
@@ -685,6 +685,6 @@ OFFICIAL_SOURCES: list[SourceRegistryEntry] = [
         last_checked_date=date(2026, 10, 18),
         access_decision=AccessDecision.API_ALLOWED,
         blocking_reason=None,
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.DISCOVERED,
     ),
 ]

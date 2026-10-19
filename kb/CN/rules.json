@@ -4,5 +4,33 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
-  "data": []
+  "evidence_class": "MANUALLY_CURATED",
+  "data": [
+    {
+      "rule_id": "cn-international-student-coverage-continuity-v1",
+      "kind": "coverage_continuity",
+      "description": "Generic date-difference check between the declared study or permit end date and the policy coverage end date. Not an official requirement.",
+      "applicability": {
+        "residence_context": [
+          "ABROAD"
+        ],
+        "occupation": [
+          "STUDENT"
+        ]
+      },
+      "parameters": {
+        "policy_types": [
+          "INTERNATIONAL_STUDENT"
+        ],
+        "start_field": "study_start_date",
+        "end_field": "study_or_permit_end_date",
+        "inclusive_end": true
+      },
+      "source_url": null,
+      "checked_at": null,
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED",
+      "provenance_note": "Generic date-difference check. Not an official requirement."
+    }
+  ]
 }

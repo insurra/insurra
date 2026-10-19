@@ -1,9 +1,13 @@
 {
   "recipient": "Valen (RAG, Policy Verification, Coverage Assessment)",
-  "description": "Source-linked RAG policy clause chunks, benefits, exclusions, healthcare cost references, care pathways, glossary",
+  "description": "Illustrative RAG clause chunks (synthetic, not retrieved quotations), benefits, exclusions, healthcare cost references, care pathways, glossary",
   "generated_at": "2026-10-18",
+  "evidence_notice": "No record in this package was fetched from an official source. Every record carries evidence_class and stays UNVERIFIED unless it has a real retrieved artifact hash.",
   "rag_chunks_cn": [
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "cn-rag-lxbx-inpatient-01",
       "country": "CN",
       "jurisdiction": "CN-National",
@@ -19,9 +23,12 @@
       "topic": "Inpatient Medical Benefit and Limit",
       "effective_date": "2024-01-01",
       "source_url": "https://www.lxbx.net/product_details.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "cn-rag-lxbx-outpatient-02",
       "country": "CN",
       "jurisdiction": "CN-National",
@@ -37,9 +44,12 @@
       "topic": "Outpatient Emergency Benefit, Deductible, and Coinsurance",
       "effective_date": "2024-01-01",
       "source_url": "https://www.lxbx.net/product_details.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "cn-rag-lxbx-exclusion-03",
       "country": "CN",
       "jurisdiction": "CN-National",
@@ -55,9 +65,12 @@
       "topic": "Policy Exclusions: Pre-existing Conditions and Private Facilities",
       "effective_date": "2024-01-01",
       "source_url": "https://www.lxbx.net/product_details.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "cn-rag-szu-requirement-04",
       "country": "CN",
       "jurisdiction": "CN-Guangdong-Shenzhen",
@@ -73,9 +86,12 @@
       "topic": "University Mandatory Enrollment Rule",
       "effective_date": "2024-06-15",
       "source_url": "https://lxs.szu.edu.cn/info/1020/2198.htm",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "cn-rag-pinganfu-ci-05",
       "country": "CN",
       "jurisdiction": "CN-National",
@@ -91,9 +107,12 @@
       "topic": "Critical Illness 120 Conditions Lump Sum Benefit",
       "effective_date": "2023-01-01",
       "source_url": "https://life.pingan.com",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "cn-rag-chinalife-kangning-ci-06",
       "country": "CN",
       "jurisdiction": "CN-National",
@@ -109,9 +128,12 @@
       "topic": "100 Severe Diseases Waiting Period and Lump Sum",
       "effective_date": "2023-01-01",
       "source_url": "https://www.chinalife.com.cn",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "cn-rag-chinalife-furong-life-07",
       "country": "CN",
       "jurisdiction": "CN-National",
@@ -127,9 +149,12 @@
       "topic": "Term Life Death Benefit and Accidental Death",
       "effective_date": "2024-01-01",
       "source_url": "https://www.chinalife.com.cn",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "cn-rag-pingan-accident-08",
       "country": "CN",
       "jurisdiction": "CN-National",
@@ -145,11 +170,14 @@
       "topic": "Accidental Death and Dismemberment Schedule",
       "effective_date": "2024-01-01",
       "source_url": "https://insurance.pingan.com",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "rag_chunks_id": [
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "id-rag-jkn-perpres59-01",
       "country": "ID",
       "jurisdiction": "ID-National",
@@ -165,9 +193,12 @@
       "topic": "Standard Inpatient Class (KRIS) Implementation",
       "effective_date": "2024-05-08",
       "source_url": "https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "id-rag-jkn-perpres59-exclusions-02",
       "country": "ID",
       "jurisdiction": "ID-National",
@@ -183,9 +214,12 @@
       "topic": "Statutory JKN Non-Covered Exclusions",
       "effective_date": "2024-05-08",
       "source_url": "https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "id-rag-allianz-waiting-03",
       "country": "ID",
       "jurisdiction": "ID-National",
@@ -201,9 +235,12 @@
       "topic": "Waiting Periods for Illness and Specific Conditions",
       "effective_date": "2023-01-01",
       "source_url": "https://www.allianz.co.id/produk/asuransi-kesehatan/individu/smarthealth-maxi-violet.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "id-rag-bpjs-emergency-04",
       "country": "ID",
       "jurisdiction": "ID-National",
@@ -219,9 +256,12 @@
       "topic": "Direct Emergency Room Access Without Referral",
       "effective_date": "2024-01-01",
       "source_url": "https://www.bpjs-kesehatan.go.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "id-rag-prudential-prucritical88-05",
       "country": "ID",
       "jurisdiction": "ID-National",
@@ -237,9 +277,12 @@
       "topic": "Critical Illness 60 Conditions and 7-Day Survival Period",
       "effective_date": "2023-01-01",
       "source_url": "https://www.prudential.co.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "id-rag-allianz-flexici-06",
       "country": "ID",
       "jurisdiction": "ID-National",
@@ -255,9 +298,12 @@
       "topic": "Major Critical Illness Lump Sum Benefit",
       "effective_date": "2023-01-01",
       "source_url": "https://www.allianz.co.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "id-rag-manulife-mea-life-07",
       "country": "ID",
       "jurisdiction": "ID-National",
@@ -273,9 +319,12 @@
       "topic": "Whole Life Death Benefit and Suicide Contestability Clause",
       "effective_date": "2023-01-01",
       "source_url": "https://www.manulife.co.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "SYNTHETIC_FIXTURE",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Illustrative clause text with developer-authored clause and page labels. Not a retrieved policy quotation.",
       "chunk_id": "id-rag-allianz-pa-08",
       "country": "ID",
       "jurisdiction": "ID-National",
@@ -291,11 +340,14 @@
       "topic": "Accidental Death and Disablement Coverage Limits",
       "effective_date": "2023-01-01",
       "source_url": "https://www.allianz.co.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "medical_costs_cn": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
       "cost_id": "cn-cost-sz-general-consult",
       "country_code": "CN",
       "jurisdiction": "CN-Guangdong-Shenzhen",
@@ -309,9 +361,12 @@
       "effective_date": "2023-10-01",
       "limitations": "Applies to regular clinic hours at public Grade 2 and Grade 3 hospitals in Shenzhen",
       "source_url": "https://hsa.sz.gov.cn/zwgk/zcfg/content/post_10842270.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
       "cost_id": "cn-cost-sz-emergency-consult",
       "country_code": "CN",
       "jurisdiction": "CN-Guangdong-Shenzhen",
@@ -325,11 +380,14 @@
       "effective_date": "2023-10-01",
       "limitations": "Applies to 24-hour emergency room admissions at public tertiary hospitals",
       "source_url": "https://hsa.sz.gov.cn/zwgk/zcfg/content/post_10842270.html",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "medical_costs_id": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
       "cost_id": "id-cost-konsultasi-spesialis-swasta",
       "country_code": "ID",
       "jurisdiction": "ID-DKI-Jakarta",
@@ -343,9 +401,12 @@
       "effective_date": "2024-01-01",
       "limitations": "Does not include diagnostic procedures, medications, or specialized medical tests",
       "source_url": "https://dinkes.jakarta.go.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
       "cost_id": "id-cost-igd-emergency-admission",
       "country_code": "ID",
       "jurisdiction": "ID-DKI-Jakarta",
@@ -359,11 +420,14 @@
       "effective_date": "2024-01-01",
       "limitations": "Applies to emergency admissions meeting triage priority red or yellow criteria",
       "source_url": "https://dinkes.jakarta.go.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "multilingual_glossary": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "term_id": "term-deductible",
       "category": "Cost Sharing",
       "simplified_chinese": "免赔额",
@@ -384,6 +448,9 @@
       "authoritative_source": "NFRA Insurance Terms Standard & OJK Financial Consumer Dictionary"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "term_id": "term-copayment",
       "category": "Cost Sharing",
       "simplified_chinese": "自付比例 / 自负比例",
@@ -403,6 +470,9 @@
       "authoritative_source": "NFRA and OJK Consumer Protection Glossary"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "term_id": "term-preexisting",
       "category": "Underwriting and Exclusions",
       "simplified_chinese": "既往症",
@@ -422,6 +492,9 @@
       "authoritative_source": "Insurance Law of the PRC Article 16 & Indonesian Insurance Code"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "term_id": "term-waiting-period",
       "category": "Policy Limitations",
       "simplified_chinese": "等待期 / 观察期",
@@ -441,6 +514,9 @@
       "authoritative_source": "NFRA Product Disclosure Standards & POJK 23/POJK.05/2015"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "term_id": "term-cashless",
       "category": "Claims and Settlement",
       "simplified_chinese": "直付 / 无感支付",
@@ -460,6 +536,9 @@
       "authoritative_source": "NHSA Direct Settlement Protocol & AAJI Cashless Standards"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "term_id": "term-reimbursement",
       "category": "Claims and Settlement",
       "simplified_chinese": "报销 / 垫付后理赔",
@@ -479,6 +558,9 @@
       "authoritative_source": "NFRA and OJK Consumer Protection Rules"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "term_id": "term-fapiao",
       "category": "Document Taxonomy",
       "simplified_chinese": "医疗收费发票",
@@ -498,6 +580,9 @@
       "authoritative_source": "Ministry of Finance of the PRC Hospital Fiscal Invoice Standards"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "term_id": "term-referral",
       "category": "Care Pathways",
       "simplified_chinese": "转诊 / 双向转诊",
@@ -519,6 +604,9 @@
   ],
   "healthcare_providers_cn": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "provider_id": "cn-hosp-szu-general",
       "country_code": "CN",
       "name_original": "深圳大学总医院",
@@ -536,9 +624,12 @@
       ],
       "cashless_direct_billing_verified": false,
       "source_url": "https://sugh.szu.edu.cn",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "provider_id": "cn-hosp-hku-sz",
       "country_code": "CN",
       "name_original": "香港大学深圳医院",
@@ -555,11 +646,14 @@
         "cn-insurer-picc",
         "cn-insurer-cpic"
       ],
-      "cashless_direct_billing_verified": true,
+      "cashless_direct_billing_verified": false,
       "source_url": "https://www.hku-szh.org",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "provider_id": "cn-hosp-pku-sz",
       "country_code": "CN",
       "name_original": "北京大学深圳医院",
@@ -577,11 +671,14 @@
       ],
       "cashless_direct_billing_verified": false,
       "source_url": "https://www.pkuszh.com",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ],
   "healthcare_providers_id": [
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "provider_id": "id-hosp-rscm",
       "country_code": "ID",
       "name_original": "RSUPN Dr. Cipto Mangunkusumo (RSCM)",
@@ -599,11 +696,14 @@
         "id-insurer-manulife",
         "id-insurer-aia"
       ],
-      "cashless_direct_billing_verified": true,
+      "cashless_direct_billing_verified": false,
       "source_url": "https://rscm.co.id",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "provider_id": "id-hosp-medistra",
       "country_code": "ID",
       "name_original": "Rumah Sakit Medistra Jakarta",
@@ -621,11 +721,14 @@
         "id-insurer-aia",
         "id-insurer-axa-mandiri"
       ],
-      "cashless_direct_billing_verified": true,
+      "cashless_direct_billing_verified": false,
       "source_url": "https://www.medistra.com",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     },
     {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": null,
       "provider_id": "id-hosp-siloam-mrccc",
       "country_code": "ID",
       "name_original": "MRCCC Siloam Hospitals Semanggi",
@@ -644,9 +747,9 @@
         "id-insurer-aia",
         "id-insurer-axa-mandiri"
       ],
-      "cashless_direct_billing_verified": true,
+      "cashless_direct_billing_verified": false,
       "source_url": "https://www.siloamhospitals.com/hospitals-list/mrccc-siloam-hospitals-semanggi",
-      "verification_status": "VERIFIED"
+      "verification_status": "UNVERIFIED"
     }
   ]
 }

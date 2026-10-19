@@ -96,15 +96,15 @@ class SourceCrawler:
                             }
                         )
                 else:
-                    successful += 1
+                    # Dry run: nothing was fetched, so there is no hash, size or HTTP status.
                     audit_records.append(
                         {
                             "source_id": src.source_id,
                             "url": src.url,
-                            "status": "CACHED_OR_DRY_RUN",
-                            "http_code": 200,
-                            "sha256": "simulated_sha256_hash",
-                            "bytes": 1024,
+                            "status": "NOT_FETCHED",
+                            "http_code": None,
+                            "sha256": None,
+                            "bytes": None,
                             "error": None,
                         }
                     )

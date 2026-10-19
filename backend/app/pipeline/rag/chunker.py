@@ -24,7 +24,7 @@ CN_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Inpatient Medical Benefit and Limit",
         effective_date=date(2024, 1, 1),
         source_url="https://www.lxbx.net/product_details.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="cn-rag-lxbx-outpatient-02",
@@ -42,7 +42,7 @@ CN_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Outpatient Emergency Benefit, Deductible, and Coinsurance",
         effective_date=date(2024, 1, 1),
         source_url="https://www.lxbx.net/product_details.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="cn-rag-lxbx-exclusion-03",
@@ -60,7 +60,7 @@ CN_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Policy Exclusions: Pre-existing Conditions and Private Facilities",
         effective_date=date(2024, 1, 1),
         source_url="https://www.lxbx.net/product_details.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="cn-rag-szu-requirement-04",
@@ -78,7 +78,7 @@ CN_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="University Mandatory Enrollment Rule",
         effective_date=date(2024, 6, 15),
         source_url="https://lxs.szu.edu.cn/info/1020/2198.htm",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="cn-rag-pinganfu-ci-05",
@@ -96,7 +96,7 @@ CN_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Critical Illness 120 Conditions Lump Sum Benefit",
         effective_date=date(2023, 1, 1),
         source_url="https://life.pingan.com",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="cn-rag-chinalife-kangning-ci-06",
@@ -114,7 +114,7 @@ CN_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="100 Severe Diseases Waiting Period and Lump Sum",
         effective_date=date(2023, 1, 1),
         source_url="https://www.chinalife.com.cn",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="cn-rag-chinalife-furong-life-07",
@@ -132,7 +132,7 @@ CN_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Term Life Death Benefit and Accidental Death",
         effective_date=date(2024, 1, 1),
         source_url="https://www.chinalife.com.cn",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="cn-rag-pingan-accident-08",
@@ -150,7 +150,7 @@ CN_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Accidental Death and Dismemberment Schedule",
         effective_date=date(2024, 1, 1),
         source_url="https://insurance.pingan.com",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]
 
@@ -171,7 +171,7 @@ ID_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Standard Inpatient Class (KRIS) Implementation",
         effective_date=date(2024, 5, 8),
         source_url="https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="id-rag-jkn-perpres59-exclusions-02",
@@ -189,7 +189,7 @@ ID_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Statutory JKN Non-Covered Exclusions",
         effective_date=date(2024, 5, 8),
         source_url="https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="id-rag-allianz-waiting-03",
@@ -207,7 +207,7 @@ ID_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Waiting Periods for Illness and Specific Conditions",
         effective_date=date(2023, 1, 1),
         source_url="https://www.allianz.co.id/produk/asuransi-kesehatan/individu/smarthealth-maxi-violet.html",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="id-rag-bpjs-emergency-04",
@@ -225,7 +225,7 @@ ID_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Direct Emergency Room Access Without Referral",
         effective_date=date(2024, 1, 1),
         source_url="https://www.bpjs-kesehatan.go.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="id-rag-prudential-prucritical88-05",
@@ -243,7 +243,7 @@ ID_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Critical Illness 60 Conditions and 7-Day Survival Period",
         effective_date=date(2023, 1, 1),
         source_url="https://www.prudential.co.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="id-rag-allianz-flexici-06",
@@ -261,7 +261,7 @@ ID_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Major Critical Illness Lump Sum Benefit",
         effective_date=date(2023, 1, 1),
         source_url="https://www.allianz.co.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="id-rag-manulife-mea-life-07",
@@ -279,7 +279,7 @@ ID_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Whole Life Death Benefit and Suicide Contestability Clause",
         effective_date=date(2023, 1, 1),
         source_url="https://www.manulife.co.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
     RAGClauseChunk(
         chunk_id="id-rag-allianz-pa-08",
@@ -297,6 +297,6 @@ ID_RAG_CHUNKS: list[RAGClauseChunk] = [
         topic="Accidental Death and Disablement Coverage Limits",
         effective_date=date(2023, 1, 1),
         source_url="https://www.allianz.co.id",
-        verification_status=PipelineVerificationStatus.VERIFIED,
+        verification_status=PipelineVerificationStatus.UNVERIFIED,
     ),
 ]

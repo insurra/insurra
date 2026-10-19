@@ -1,5 +1,8 @@
 [
   {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
     "scheme_id": "id-scheme-jkn",
     "country_code": "ID",
     "jurisdiction": "ID-National",
@@ -38,6 +41,6 @@
       "Display digital KIS card in Mobile JKN application or present NIK KTP during medical check-in."
     ],
     "source_url": "https://www.bpjs-kesehatan.go.id",
-    "verification_status": "VERIFIED"
+    "verification_status": "UNVERIFIED"
   }
 ]

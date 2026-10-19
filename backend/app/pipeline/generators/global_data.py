@@ -288,7 +288,7 @@ DATA_QUALITY_RULES_SPEC: dict = {
         {
             "rule_id": "DQR-002-PROVENANCE-REQUIRED",
             "name": "Mandatory Provenance Reference",
-            "description": "Factual records must contain a valid HTTP(S) source URL, publisher, and checked date.",
+            "description": "Factual records must contain a valid HTTP(S) source URL, publisher, and an explicit evidence_class.",
             "severity": "HIGH",
         },
         {
@@ -300,7 +300,7 @@ DATA_QUALITY_RULES_SPEC: dict = {
         {
             "rule_id": "DQR-004-AUTHENTIC-VERIFICATION",
             "name": "Honest Verification State Gate",
-            "description": "A record may only be marked VERIFIED if officially corroborated and effective dates checked.",
+            "description": "A record may only be marked VERIFIED if evidence_class is RETRIEVED_OFFICIAL and it carries the sha256 of a really retrieved artifact. Hand-written and synthetic records stay UNVERIFIED.",
             "severity": "CRITICAL",
         },
         {
@@ -317,7 +317,9 @@ INJECTION_PATTERNS_SPEC: dict = {
     "version": "1.0.0",
     "source_url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
     "checked_at": "2026-10-18",
-    "verification_status": "VERIFIED",
+    "verification_status": "UNVERIFIED",
+    "evidence_class": "MANUALLY_CURATED",
+    "provenance_note": "Developer-authored test phrases that reference a public guideline. Not retrieved or machine-verified.",
     "data": [
         {
             "pattern_id": "INJ-001-SYSTEM-OVERRIDE",

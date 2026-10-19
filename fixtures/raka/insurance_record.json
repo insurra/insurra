@@ -1,15 +1,15 @@
 {
   "id": "03d5e06f-8210-53f7-9615-f7f096904ccf",
   "profile_id": "2a7259c6-7fe9-571f-b39f-af0a05b46f82",
-  "country_code": "AU",
+  "country_code": "CN",
   "policies": [
     {
       "id": "a9af164f-a7ef-51da-92d8-90a922e5ffe4",
-      "provider_name": "Synthetic provider (demo)",
-      "policy_name": "OSHC (synthetic data)",
-      "policy_type": "OSHC",
+      "provider_name": "Synthetic Student Health Plan (demo, not a real insurer product)",
+      "policy_name": "Synthetic Student Health Plan (demo, not a real insurer product)",
+      "policy_type": "INTERNATIONAL_STUDENT",
       "policy_number_masked": "DEMO-****",
-      "coverage_start_date": "2026-07-01",
+      "coverage_start_date": "2026-09-01",
       "coverage_end_date": "2027-04-15",
       "coverage_items": [
         {
@@ -18,7 +18,7 @@
           "coverage_status": "UNKNOWN",
           "limit_amount": null,
           "remaining_amount": null,
-          "currency": "AUD",
+          "currency": "CNY",
           "evidence": null
         }
       ],
@@ -32,7 +32,14 @@
     {
       "id": "67a837e5-b344-5a45-8d0f-511a23b17cd9",
       "document_type": "INSURANCE_POLICY",
-      "original_filename": "oshc-synthetic.txt",
+      "original_filename": "student-insurance-certificate-synthetic.txt",
+      "processing_status": "QUEUED",
+      "synthetic": true
+    },
+    {
+      "id": "5b2f0d4e-6c1a-5e7b-9a38-2c7d41f08e65",
+      "document_type": "medical_fapiao",
+      "original_filename": "medical-fapiao-synthetic.txt",
       "processing_status": "QUEUED",
       "synthetic": true
     }

@@ -4,6 +4,8 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer. Not retrieved or machine-verified.",
   "data": [
     {
       "need_code": "STUDENT_COMPREHENSIVE",
@@ -12,7 +14,16 @@
       "policy_types": [
         "STUDENT_COMPREHENSIVE"
       ],
-      "verification_status": "UNVERIFIED"
+      "verification_status": "UNVERIFIED",
+      "task_code": "coverage_continuity",
+      "applicability": {
+        "occupation": [
+          "STUDENT"
+        ],
+        "residence_context": [
+          "ABROAD"
+        ]
+      }
     },
     {
       "need_code": "COMMERCIAL_HEALTH",

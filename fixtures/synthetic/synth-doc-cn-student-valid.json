@@ -1,4 +1,5 @@
 {
+  "evidence_class": "SYNTHETIC_FIXTURE",
   "fixture_id": "synth-doc-cn-student-valid",
   "category": "synthetic_insurance_document",
   "country_code": "CN",
