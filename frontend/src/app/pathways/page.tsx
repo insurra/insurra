@@ -265,6 +265,22 @@ export default function PathwaysPage() {
           <p className="text-sm text-gray-500 mt-1">
             Compare KB-supported care pathways based on your active coverage and jurisdiction ({country ?? "Unknown"}).
           </p>
+          <div className="flex flex-wrap items-center gap-2 mt-3 text-[11px] font-semibold text-slate-600">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs">
+              <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] grid place-items-center font-bold">1</span>
+              Describe Care Need
+            </span>
+            <span className="text-slate-300">→</span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs">
+              <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] grid place-items-center font-bold">2</span>
+              Compare Coverage &amp; Cost Estimates
+            </span>
+            <span className="text-slate-300">→</span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs">
+              <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[10px] grid place-items-center font-bold">3</span>
+              Select Pathway to Start Claim Draft
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 bg-white/80 backdrop-blur-xs p-2 rounded-2xl border border-sky-100 shadow-xs max-w-md">
@@ -577,29 +593,33 @@ export default function PathwaysPage() {
                         </span>
                       </div>
 
-                      {path.steps.length > 0 && (
-                        <div className="pt-2">
-                          <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">
-                            Steps
-                          </p>
-                          <ol className="list-decimal list-inside text-xs text-gray-700 space-y-1 mt-1">
-                            {path.steps.map((step, i) => (
-                              <li key={i}>{step}</li>
-                            ))}
-                          </ol>
-                        </div>
-                      )}
+                      {(path.steps.length > 0 || path.docs.length > 0) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                          {path.steps.length > 0 && (
+                            <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl p-3">
+                              <p className="text-[11px] font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                                Steps to Follow
+                              </p>
+                              <ol className="list-decimal list-inside text-xs text-gray-700 space-y-1">
+                                {path.steps.map((step, i) => (
+                                  <li key={i}>{step}</li>
+                                ))}
+                              </ol>
+                            </div>
+                          )}
 
-                      {path.docs.length > 0 && (
-                        <div className="pt-1">
-                          <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">
-                            Required documents
-                          </p>
-                          <ul className="list-disc list-inside text-xs text-gray-600 space-y-0.5 mt-1">
-                            {path.docs.map((doc, i) => (
-                              <li key={i}>{doc}</li>
-                            ))}
-                          </ul>
+                          {path.docs.length > 0 && (
+                            <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl p-3">
+                              <p className="text-[11px] font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                                Required Documents
+                              </p>
+                              <ul className="list-disc list-inside text-xs text-gray-600 space-y-1">
+                                {path.docs.map((doc, i) => (
+                                  <li key={i}>{doc}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       )}
 

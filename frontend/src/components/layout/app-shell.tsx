@@ -92,11 +92,13 @@ function PrivateShell({
 
   useEffect(() => {
     const saved = localStorage.getItem("insurra_sidebar_collapsed");
-    if (saved !== null) {
-      setSidebarCollapsed(saved === "true");
-    } else if (typeof window !== "undefined" && window.innerWidth <= 1024) {
-      setSidebarCollapsed(true);
-    }
+    queueMicrotask(() => {
+      if (saved !== null) {
+        setSidebarCollapsed(saved === "true");
+      } else if (typeof window !== "undefined" && window.innerWidth <= 1024) {
+        setSidebarCollapsed(true);
+      }
+    });
   }, []);
 
   const toggleSidebar = () => {
@@ -124,7 +126,7 @@ function PrivateShell({
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth <= 760) {
-      setSidebarCollapsed(true);
+      queueMicrotask(() => setSidebarCollapsed(true));
     }
   }, [pathname]);
 
@@ -259,25 +261,28 @@ function PrivateShell({
 
       <aside className={cn("sidebar", sidebarCollapsed && "collapsed")}>
         <div className="sidebar-brand-row">
-          <Link href="/" className="brand">
-            <Image
-              src="/Inssura%20Kangaroo%20Shield%20Logo.png"
-              width={124}
-              height={55}
-              alt="Insurra"
-              className="brand-image"
-              priority
-            />
+          <Link href="/" className="brand" title="Insurra">
+            <span className="brand-full">
+              <Image
+                src="/Inssura%20Kangaroo%20Shield%20Logo.png"
+                width={124}
+                height={55}
+                alt="Insurra"
+                className="brand-image"
+                priority
+              />
+            </span>
+            <span className="brand-mini">
+              <Image
+                src="/mascot-shield.png"
+                width={36}
+                height={36}
+                alt="Insurra"
+                className="brand-icon"
+                priority
+              />
+            </span>
           </Link>
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            className="sidebar-hide-btn"
-            title="Sembunyikan sidebar (Ctrl+B)"
-            aria-label="Sembunyikan sidebar"
-          >
-            <PanelLeftClose size={17} />
-          </button>
         </div>
         <div className="workspace-label">YOUR INSURANCE COMPANION</div>
         <nav aria-label="Main Navigation" className="main-nav">
@@ -287,9 +292,11 @@ function PrivateShell({
               href={href}
               aria-current={isNavActive(href) ? "page" : undefined}
               className={cn("nav-item", isNavActive(href) && "active")}
+              title={label}
+              aria-label={label}
             >
-              <Icon size={19} />
-              <span>{label}</span>
+              <Icon size={19} className="nav-icon" />
+              <span className="nav-label">{label}</span>
               {"soon" in rest && Boolean(rest.soon) && (
                 <span className="nav-dot" aria-label="Upcoming phase" />
               )}
@@ -297,30 +304,37 @@ function PrivateShell({
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-bottom-nav" style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+          <div className="sidebar-bottom-nav">
             <Link
               href="/notifications"
               aria-current={pathname === "/notifications" ? "page" : undefined}
               className={cn("nav-item", pathname === "/notifications" && "active")}
-              style={{ display: "flex", alignItems: "center", gap: 10 }}
+              title="Notifications"
+              aria-label="Notifications"
             >
-              <Bell size={19} />
-              <span>Notifications</span>
+              <Bell size={19} className="nav-icon" />
+              <span className="nav-label">Notifications</span>
             </Link>
             <Link
               href="/profile"
               aria-current={pathname === "/profile" ? "page" : undefined}
               className={cn("nav-item", pathname === "/profile" && "active")}
-              style={{ display: "flex", alignItems: "center", gap: 10 }}
+              title="Profile"
+              aria-label="Profile"
             >
-              <User size={19} />
-              <span>Profile</span>
+              <User size={19} className="nav-icon" />
+              <span className="nav-label">Profile</span>
             </Link>
           </div>
-          <div className="sidebar-foot">
+          <div
+            className="sidebar-foot"
+            title={accountMode ? "AUTHENTICATED ACCOUNT v0.2" : "SYNTHETIC DEMO v0.2"}
+          >
             <span className="status-dot" />{" "}
-            {accountMode ? "AUTHENTICATED ACCOUNT" : "SYNTHETIC DEMO"}{" "}
-            <span>v0.2</span>
+            <span className="sidebar-foot-text">
+              {accountMode ? "AUTHENTICATED ACCOUNT" : "SYNTHETIC DEMO"}{" "}
+              <span>v0.2</span>
+            </span>
           </div>
         </div>
       </aside>

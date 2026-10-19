@@ -404,6 +404,83 @@ export default function ClaimDetailPage() {
         </div>
       )}
 
+      {/* Interactive 4-Step Claim Progress Stepper */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-6 shadow-2xs grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <button
+          type="button"
+          onClick={() => setActiveTab("Required Information")}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-teal-50/60 border border-slate-200/80 text-left transition-colors cursor-pointer"
+        >
+          <span className="w-7 h-7 rounded-full bg-teal-700 text-white text-xs font-extrabold grid place-items-center shrink-0">
+            1
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 truncate">Evidence &amp; Checklist</div>
+            <div className="text-[11px] text-slate-500">
+              {completeCount}/{totalReq} required confirmed
+            </div>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("Consistency Check")}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-teal-50/60 border border-slate-200/80 text-left transition-colors cursor-pointer"
+        >
+          <span className="w-7 h-7 rounded-full bg-teal-700 text-white text-xs font-extrabold grid place-items-center shrink-0">
+            2
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 truncate">Consistency Checks</div>
+            <div className="text-[11px] text-emerald-700 font-semibold">
+              {consistency_checks.filter((c) => c.status === "PASS").length}/{consistency_checks.length} passed
+            </div>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("Claim Draft")}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-teal-50/60 border border-slate-200/80 text-left transition-colors cursor-pointer"
+        >
+          <span
+            className={`w-7 h-7 rounded-full text-xs font-extrabold grid place-items-center shrink-0 ${
+              draft?.form ? "bg-teal-700 text-white" : "bg-slate-200 text-slate-700"
+            }`}
+          >
+            3
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 truncate">Prepared Claim Form</div>
+            <div className="text-[11px] text-slate-500">
+              {draft?.form ? `Version ${draft.version} ready` : "Prepare draft form"}
+            </div>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/actions")}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-teal-50/60 border border-slate-200/80 text-left transition-colors cursor-pointer"
+        >
+          <span
+            className={`w-7 h-7 rounded-full text-xs font-extrabold grid place-items-center shrink-0 ${
+              caseData.status.includes("SANDBOX") || caseData.status === "AWAITING_APPROVAL"
+                ? "bg-teal-700 text-white"
+                : "bg-slate-200 text-slate-700"
+            }`}
+          >
+            4
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 truncate">Approval &amp; Sandbox</div>
+            <div className="text-[11px] text-slate-500">
+              {caseData.status.replace(/_/g, " ")}
+            </div>
+          </div>
+        </button>
+      </div>
+
       {/* 6 Tabs Navigation (Screenshot 2) */}
       <div className="border-b border-slate-200 mb-6 overflow-x-auto">
         <div className="flex gap-8">
@@ -633,7 +710,14 @@ export default function ClaimDetailPage() {
                   >
                     {item.status === "COMPLETE" ? "Confirmed" : item.status === "MISSING" ? "Missing" : "Needs Review"}
                   </span>
-                  <Button variant="outline" size="sm" className="text-xs">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() =>
+                      setActiveTab(item.status === "COMPLETE" ? "Claim Draft" : "Documents")
+                    }
+                  >
                     {item.resolution_action || "View"}
                   </Button>
                 </div>

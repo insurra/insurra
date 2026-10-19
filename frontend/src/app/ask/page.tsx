@@ -333,7 +333,23 @@ export default function AskPage() {
           ))}
         </select>
       </label>
-      <section className="ask-suggestions"><h2>💡 Coba tanyakan…</h2><div className="vn-chips" aria-label="Contoh pertanyaan">
+      <section className="ask-suggestions">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+          <h2 className="m-0">💡 Coba tanyakan…</h2>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span className="text-slate-500 font-medium mr-1">Label bukti:</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+              ✓ Dari dokumen
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200 font-semibold">
+              ≈ Perkiraan
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
+              ? Perlu konfirmasi
+            </span>
+          </div>
+        </div>
+        <div className="vn-chips" aria-label="Contoh pertanyaan">
         {s.question_examples?.map((q) => (
           <button
             key={q}
@@ -356,22 +372,41 @@ export default function AskPage() {
             {t.answer && <div className="ask-answer-heading"><Image src="/mascot-logo.png" alt="" width={30} height={30} /><strong>Jawaban INSURRA</strong></div>}
             <div className="ask-answer-content">
             {t.answer?.intent && (
-              <small data-testid="ask-intent">Intent: {t.answer.intent}</small>
+              <small
+                data-testid="ask-intent"
+                className="inline-flex items-center self-start px-2.5 py-0.5 rounded-md bg-slate-200/70 text-slate-700 text-[11px] font-semibold"
+              >
+                Intent: {t.answer.intent}
+              </small>
             )}
             {t.answer?.answer_points.map((point, n) => (
               <section key={n}>
-                <span className="vn-badge">{labels[point.label]}</span>
+                <span
+                  className={`vn-badge ${
+                    point.label === "FROM_DOCUMENT"
+                      ? "badge-doc"
+                      : point.label === "ESTIMATE"
+                      ? "badge-estimate"
+                      : "badge-confirm"
+                  }`}
+                >
+                  {labels[point.label]}
+                </span>
                 <p className="vn-message">{point.text}</p>
                 {point.citations.map((c, i) => (
                   <div key={i} className="vn-card" data-testid="answer-citation">
                     {c.explanation_label && (
-                      <small data-testid="citation-explanation-note">
+                      <small data-testid="citation-explanation-note" className="text-xs font-semibold text-teal-800">
                         {c.explanation_label}
                       </small>
                     )}
                     <blockquote lang={c.language ?? ""}>{c.quote}</blockquote>
                     <div className="vn-actions">
-                      <button onClick={() => setSource(c)}>
+                      <button
+                        onClick={() => setSource(c)}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <FileText size={13} />
                         {c.document_name ?? "Document"} · p. {c.page}
                         {c.language ? ` (${c.language})` : ""}
                       </button>

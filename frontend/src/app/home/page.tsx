@@ -204,8 +204,31 @@ export default function HomePage() {
     <div className="home-dashboard">
       {/* Top Header */}
       <header className="home-header">
-        <h1>Home</h1>
-        <p>Your command center for protection, care, and claims.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1>Home</h1>
+            <p>Your command center for protection, care, and claims.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-700 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-teal-600" />
+              Jurisdiction: <strong>{countryName}</strong>
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-teal-50 border border-teal-200 text-teal-800">
+              <strong>{s.active}</strong> Active {s.active === 1 ? "Policy" : "Policies"}
+            </span>
+            {s.needs_verification > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-800">
+                <strong>{s.needs_verification}</strong> Needs Verification
+              </span>
+            )}
+            {s.expiring_30d > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700">
+                <strong>{s.expiring_30d}</strong> Expiring ≤ 30d
+              </span>
+            )}
+          </div>
+        </div>
       </header>
 
       {/* Hero Section */}
@@ -257,7 +280,18 @@ export default function HomePage() {
             </div>
             <div className="home-mini-content">
               <div className="home-mini-title-row">
-                <h3>Upcoming Expiry</h3>
+                <div className="flex items-center gap-2">
+                  <h3>Upcoming Expiry</h3>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      s.expiring_30d > 0
+                        ? "bg-amber-50 text-amber-800 border border-amber-200"
+                        : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    }`}
+                  >
+                    {s.expiring_30d > 0 ? "Expiring Soon" : "Active"}
+                  </span>
+                </div>
                 <ChevronRight size={15} className="chevron" />
               </div>
               <p data-testid="home-expiry-text">{expiryText}</p>
@@ -276,7 +310,18 @@ export default function HomePage() {
             </div>
             <div className="home-mini-content">
               <div className="home-mini-title-row">
-                <h3>Claim Status</h3>
+                <div className="flex items-center gap-2">
+                  <h3>Claim Status</h3>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      openClaimsCount && openClaimsCount > 0
+                        ? "bg-sky-50 text-sky-700 border border-sky-200"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    {openClaimsCount && openClaimsCount > 0 ? `${openClaimsCount} Active` : "Clear"}
+                  </span>
+                </div>
                 <ChevronRight size={15} className="chevron" />
               </div>
               <p data-testid="home-claim-text">{claimText}</p>
@@ -295,7 +340,18 @@ export default function HomePage() {
             </div>
             <div className="home-mini-content">
               <div className="home-mini-title-row">
-                <h3>Pending Action</h3>
+                <div className="flex items-center gap-2">
+                  <h3>Pending Action</h3>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      pendingCount && pendingCount > 0
+                        ? "bg-amber-50 text-amber-800 border border-amber-200"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    {pendingCount && pendingCount > 0 ? "Needs Approval" : "Queue Empty"}
+                  </span>
+                </div>
                 <ChevronRight size={15} className="chevron" />
               </div>
               <p data-testid="home-pending-action-text">{pendingActionTitle}</p>

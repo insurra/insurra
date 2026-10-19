@@ -315,14 +315,33 @@
 
 .ask-answer-content .vn-badge {
   align-self: flex-start;
-  padding: 3px 9px;
+  padding: 3px 10px;
   border-radius: 9999px;
   background: #eaf8f4;
   color: #08876f;
+  border: 1px solid #a7f3d0;
   font-size: 11px;
   font-weight: 750;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+}
+
+.ask-answer-content .vn-badge.badge-doc {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.ask-answer-content .vn-badge.badge-estimate {
+  background: #f0f9ff;
+  color: #075985;
+  border-color: #bae6fd;
+}
+
+.ask-answer-content .vn-badge.badge-confirm {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
 }
 
 .ask-answer-content .vn-message {
