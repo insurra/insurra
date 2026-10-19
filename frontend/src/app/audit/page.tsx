@@ -42,14 +42,14 @@ type Citation = {
 
 const PAGE_SIZE = 20;
 
-export const GUARDRAIL_SUBTYPES = [
+const GUARDRAIL_SUBTYPES = [
   "Instruksi di dokumen diabaikan",
   "Tanda bahaya → arahan darurat",
   "Jawaban tanpa sumber ditolak",
   "Tindakan tanpa persetujuan diblokir",
 ] as const;
 
-export type GuardrailSubtypeLabel = (typeof GUARDRAIL_SUBTYPES)[number];
+type GuardrailSubtypeLabel = (typeof GUARDRAIL_SUBTYPES)[number];
 
 const CHIP_FILTERS: {
   id: string;
