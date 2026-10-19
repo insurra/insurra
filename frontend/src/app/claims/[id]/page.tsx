@@ -134,6 +134,7 @@ type TabType =
   | "Documents"
   | "Consistency Check"
   | "Claim Draft"
+  | "Dispute & Appeal"
   | "History";
 
 export default function ClaimDetailPage() {
@@ -151,8 +152,97 @@ export default function ClaimDetailPage() {
   const [generatingDraft, setGeneratingDraft] = useState(false);
   const [sendingApproval, setSendingApproval] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [syncingStatus, setSyncingStatus] = useState(false);
+  const [confirmingEvidenceId, setConfirmingEvidenceId] = useState<string | null>(null);
+  const [preparingAppeal, setPreparingAppeal] = useState(false);
+  const [customRejectionReason, setCustomRejectionReason] = useState("");
+  const [customCitedClause, setCustomCitedClause] = useState("");
   const [requiredConsents, setRequiredConsents] = useState<string[] | null>(null);
   const [pendingActionAfterConsent, setPendingActionAfterConsent] = useState<(() => Promise<void>) | null>(null);
+
+  const handleSyncSandboxStatus = async () => {
+    setSyncingStatus(true);
+    try {
+      const headers = getWorkflowHeaders(accountToken);
+      const res = await fetch(getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}/sync-status`), {
+        method: "POST",
+        headers,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to sync sandbox status");
+      }
+      await loadCaseDetail();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error syncing sandbox status");
+    } finally {
+      setSyncingStatus(false);
+    }
+  };
+
+  const handleConfirmEvidence = async (evidenceId: string, currentFields: EvidenceFile["fields"]) => {
+    setConfirmingEvidenceId(evidenceId);
+    try {
+      const headers = getWorkflowHeaders(accountToken);
+      const values: Record<string, string> = {};
+      for (const f of currentFields || []) {
+        if (f.value) values[f.key] = f.value;
+      }
+      const res = await fetch(
+        getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}/evidence/${evidenceId}/confirm`),
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ values }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to confirm evidence fields");
+      }
+      await loadCaseDetail();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error confirming evidence fields");
+    } finally {
+      setConfirmingEvidenceId(null);
+    }
+  };
+
+  const handlePrepareAppeal = async (rejectionReason?: string, citedClause?: string) => {
+    setPreparingAppeal(true);
+    try {
+      const headers = getWorkflowHeaders(accountToken);
+      const res = await fetch(
+        getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}/prepare-appeal`),
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            rejection_reason: rejectionReason || customRejectionReason || undefined,
+            cited_clause: citedClause || customCitedClause || undefined,
+          }),
+        }
+      );
+      if (res.status === 403) {
+        const err = await res.json().catch(() => ({}));
+        const purposes = err?.details?.required_purposes || ["process_documents"];
+        setRequiredConsents(purposes);
+        setPendingActionAfterConsent(() => () => handlePrepareAppeal(rejectionReason, citedClause));
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to prepare appeal draft");
+      }
+      const data = await res.json();
+      await loadCaseDetail();
+      router.push(`/actions?action=${data.action.id}`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error preparing appeal draft");
+    } finally {
+      setPreparingAppeal(false);
+    }
+  };
 
   const loadCaseDetail = useCallback(async () => {
     setLoading(true);
@@ -351,6 +441,18 @@ export default function ClaimDetailPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          {caseData.sandbox_reference && (
+            <Button
+              onClick={handleSyncSandboxStatus}
+              disabled={syncingStatus}
+              variant="outline"
+              size="sm"
+              className="text-teal-700 border-teal-200 hover:bg-teal-50 flex items-center gap-1.5"
+            >
+              <RefreshCw size={13} className={syncingStatus ? "animate-spin" : ""} />
+              Sync Sandbox Status
+            </Button>
+          )}
           <Button asChild variant="outline" size="sm" className="text-slate-600">
             <Link href="/claims">
               <ArrowLeft size={14} className="mr-1.5" /> Back to List
@@ -491,6 +593,7 @@ export default function ClaimDetailPage() {
               "Documents",
               "Consistency Check",
               "Claim Draft",
+              "Dispute & Appeal",
               "History",
             ] as TabType[]
           ).map((tab) => (
@@ -508,6 +611,11 @@ export default function ClaimDetailPage() {
               {tab === "Consistency Check" && (
                 <span className="ml-1.5 text-xs bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5">
                   6/6
+                </span>
+              )}
+              {tab === "Dispute & Appeal" && (caseData.status === "REJECTED_IN_SANDBOX" || evidence.some(e => e.evidence_kind === "REJECTION_LETTER")) && (
+                <span className="ml-1.5 text-xs bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 font-bold">
+                  Action
                 </span>
               )}
             </button>
@@ -770,9 +878,26 @@ export default function ClaimDetailPage() {
                         </div>
                       </div>
                     </div>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      Confirmed Valid
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                        file.status === "CONFIRMED"
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                          : "bg-amber-100 text-amber-800 border border-amber-200"
+                      }`}>
+                        {file.status === "CONFIRMED" ? "Confirmed Valid" : "Needs Confirmation"}
+                      </span>
+                      {file.status !== "CONFIRMED" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={confirmingEvidenceId === file.id}
+                          onClick={() => handleConfirmEvidence(file.id, file.fields)}
+                          className="text-xs h-7 px-2.5 text-teal-700 border-teal-300 hover:bg-teal-50"
+                        >
+                          {confirmingEvidenceId === file.id ? "Confirming..." : "Confirm Fields"}
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {file.fields && file.fields.length > 0 && (

@@ -352,6 +352,37 @@ def sync_policy_reminders(
     return {"scheduled": created, "cancelled": cancelled, "state": "OK"}
 
 
+def prepare_proactive_renewal_actions(
+    db: Session,
+    owner: Owner,
+    *,
+    today: date | None = None,
+    window_days: int = 30,
+) -> list:
+    """Flow A: Detect policies expiring within window_days (or recently lapsed) and idempotently prepare renewal actions."""
+    today = today or date.today()
+    if not purpose_granted(db, owner, "process_documents"):
+        return []
+    prepared = []
+    for policy in owner_policies(db, owner):
+        end = _parse(policy.end)
+        if end is None:
+            continue
+        days_remaining = (end - today).days
+        if -7 <= days_remaining <= window_days:
+            dedupe = f"proactive_renewal:{policy.ref}:{end.isoformat()}"
+            action = actions.prepare_user_action(
+                db,
+                owner,
+                "renewal_inquiry",
+                entity_type="coverage",
+                entity_id=policy.ref,
+                dedupe_key=dedupe,
+            )
+            prepared.append(action)
+    return prepared
+
+
 def cancel_policy_reminders(db: Session, owner: Owner, policy_ref: str, reason: str) -> int:
     rows = list(
         db.scalars(

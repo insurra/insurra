@@ -353,11 +353,25 @@ def register(body: RegisterRequest, db: DB, request: Request):
 
     if settings.is_supabase_auth_active:
         supabase_user = supabase_signup(email_clean, raw_pw, email_clean.split("@")[0], settings)
-        supa_id = supabase_user.get("id") or secrets.token_hex(16)
+        user_obj = (
+            supabase_user.get("user")
+            if isinstance(supabase_user.get("user"), dict)
+            else supabase_user
+        )
+        supa_id = (
+            user_obj.get("id")
+            or supabase_user.get("id")
+            or secrets.token_hex(16)
+        )
+        is_confirmed = bool(
+            user_obj.get("confirmed_at")
+            or user_obj.get("email_confirmed_at")
+            or supabase_user.get("session")
+        )
         account = AccountRow(
             email=email_clean,
             display_name=email_clean.split("@")[0],
-            email_verified=False,
+            email_verified=is_confirmed,
             password_hash=_hash_password(raw_pw),
             verification_token=_hash_token(token),
             verification_sent_at=now,
@@ -380,9 +394,12 @@ def register(body: RegisterRequest, db: DB, request: Request):
             )
         )
         db.commit()
-        return AuthMessage(
-            message="Registration successful. Please check your email to verify your account."
+        msg = (
+            "Registration successful. Your account is ready to use."
+            if is_confirmed
+            else "Registration successful. Please check your email to verify your account."
         )
+        return AuthMessage(message=msg)
 
     account = AccountRow(
         email=email_clean,
@@ -416,9 +433,52 @@ def login(body: LoginRequest, db: DB, request: Request):
     settings = request.app.state.settings
 
     if settings.is_supabase_auth_active:
-        session_data = supabase_login_password(
-            email_clean, body.password.get_secret_value(), settings
-        )
+        try:
+            session_data = supabase_login_password(
+                email_clean, body.password.get_secret_value(), settings
+            )
+        except AppError as exc:
+            if exc.code == "INVALID_CREDENTIALS":
+                local_acc = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
+                if (
+                    local_acc
+                    and local_acc.password_hash
+                    and _verify_password(body.password.get_secret_value(), local_acc.password_hash)
+                ):
+                    try:
+                        supa_signup = supabase_signup(
+                            email_clean,
+                            body.password.get_secret_value(),
+                            local_acc.display_name,
+                            settings,
+                        )
+                        supa_user_obj = (
+                            supa_signup.get("user")
+                            if isinstance(supa_signup.get("user"), dict)
+                            else supa_signup
+                        )
+                        s_id = supa_user_obj.get("id") or supa_signup.get("id")
+                        if s_id:
+                            db.add(
+                                OAuthIdentityRow(
+                                    account_id=local_acc.id,
+                                    provider="supabase",
+                                    provider_user_id=s_id,
+                                    created_at=now,
+                                    updated_at=now,
+                                )
+                            )
+                            db.commit()
+                        session_data = supabase_login_password(
+                            email_clean, body.password.get_secret_value(), settings
+                        )
+                    except Exception:
+                        raise exc
+                else:
+                    raise exc
+            else:
+                raise exc
+
         supa_user = session_data.get("user") or {}
         supa_id = supa_user.get("id")
 
@@ -876,7 +936,7 @@ def supabase_login(body: SupabaseAuthRequest, db: DB, request: Request):
 def capabilities(request: Request):
     settings = request.app.state.settings
     return AuthCapabilities(
-        email_delivery=settings.is_email_delivery_active,
+        email_delivery=bool(settings.is_email_delivery_active or settings.is_supabase_auth_active),
         google_oauth=bool(
             settings.is_supabase_auth_active
             or (settings.google_client_id and settings.google_client_secret.get_secret_value())
