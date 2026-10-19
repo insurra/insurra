@@ -9,6 +9,29 @@ from app.models.account_data import (
     FamilyMemberRow,
 )
 from app.models.auth import AccountRow, AccountSessionRow, OAuthIdentityRow
+from app.models.catalog import (
+    DataCollectionRunRow,
+    DataQualityIssueRow,
+    HealthcareCostReferenceRow,
+    HealthcareNetworkLinkRow,
+    HealthcareProviderRow,
+    InsuranceBenefitRow,
+    InsuranceBrandAssetRow,
+    InsuranceBrandRow,
+    InsuranceClaimProcedureRow,
+    InsuranceEligibilityRuleRow,
+    InsuranceEntityRow,
+    InsuranceEvidenceRequirementRow,
+    InsuranceExclusionRow,
+    InsuranceGlossaryRow,
+    InsurancePolicyDocumentRow,
+    InsuranceProductRow,
+    InsuranceProductVersionRow,
+    InsurancePublicSchemeRow,
+    InsuranceRegulationRow,
+    SourceRegistryRow,
+    UniversityInsuranceRequirementRow,
+)
 from app.models.entities import (
     AuditRow,
     ConsentRow,
@@ -17,12 +40,22 @@ from app.models.entities import (
     PersonaRow,
     ProfileRow,
 )
+from app.models.foundation import (
+    ActionRow,
+    ClaimCaseRow,
+    DocumentRow,
+    ExtractedFieldRow,
+    PurposeConsentRow,
+)
 from app.models.workspace_state import (
     AskLimitRow,
     ChatSessionRow,
     ClauseChunkRow,
+    NotificationRow,
     PathwayDecisionRow,
+    ProtectionInsightRow,
     RecommendationStateRow,
+    UserPreferenceRow,
 )
 
 __all__ = [
@@ -43,23 +76,41 @@ __all__ = [
     "PersonaRow",
     "ProfileRow",
     "OAuthIdentityRow",
-]
-
-from app.models.foundation import (
-    ActionRow,
-    ClaimCaseRow,
-    DocumentRow,
-    ExtractedFieldRow,
-    PurposeConsentRow,
-)
-
-__all__ += ["ActionRow", "ClaimCaseRow", "DocumentRow", "ExtractedFieldRow", "PurposeConsentRow"]
-
-
-__all__ += [
+    "ActionRow",
+    "ClaimCaseRow",
+    "DocumentRow",
+    "ExtractedFieldRow",
+    "PurposeConsentRow",
     "AskLimitRow",
     "ChatSessionRow",
     "ClauseChunkRow",
     "PathwayDecisionRow",
+    "ProtectionInsightRow",
     "RecommendationStateRow",
+    "NotificationRow",
+    "UserPreferenceRow",
+]
+
+__all__ += [
+    "DataCollectionRunRow",
+    "DataQualityIssueRow",
+    "HealthcareCostReferenceRow",
+    "HealthcareNetworkLinkRow",
+    "HealthcareProviderRow",
+    "InsuranceBenefitRow",
+    "InsuranceBrandAssetRow",
+    "InsuranceBrandRow",
+    "InsuranceClaimProcedureRow",
+    "InsuranceEligibilityRuleRow",
+    "InsuranceEntityRow",
+    "InsuranceEvidenceRequirementRow",
+    "InsuranceExclusionRow",
+    "InsuranceGlossaryRow",
+    "InsurancePolicyDocumentRow",
+    "InsuranceProductRow",
+    "InsuranceProductVersionRow",
+    "InsurancePublicSchemeRow",
+    "InsuranceRegulationRow",
+    "SourceRegistryRow",
+    "UniversityInsuranceRequirementRow",
 ]

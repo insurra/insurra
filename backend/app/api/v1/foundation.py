@@ -1,31 +1,34 @@
-"""Canonical PRD routes: identity/consent/ownership checks only, then honest 501."""
+"""Canonical PRD routes with a limited persisted demo claim slice."""
 
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, File, Form, Query, UploadFile
+from sqlalchemy import func, select
 
 from app.api.v1.actions import (
     export_sandbox_logs_endpoint,
     get_or_advance_sandbox_claim_status,
     submit_sandbox_claim_endpoint,
 )
-from app.core.dependencies import DB, ActiveActor, ActiveSession, AISession, ConsentedSession
+from app.core.dependencies import DB, KB, ActiveActor, ActiveSession, AISession, ConsentedSession
 from app.core.errors import ERROR_RESPONSES, not_implemented
+from app.models import ClaimCaseRow
+from app.models.foundation import ClaimCaseEventRow
 from app.repositories.ownership import owned_resource
+from app.repositories.session_data import profile_row
 from app.schemas.audit import AuditEvent
-from app.schemas.claim import ChecklistStatus
+from app.schemas.common import CountryCode, VerificationStatus
 from app.schemas.foundation import (
     AuthMessage,
     AuthSession,
-    CaseChecklistItem,
     ClaimCase,
     ClaimCaseDetail,
+    ClaimCaseEvent,
     ClaimCasePage,
     ClaimCaseStatus,
     ClaimDraftAction,
     CompletenessReport,
-    ConsistencyCheck,
     DataInventory,
     DeleteConfirmation,
     DeletionResult,
@@ -35,6 +38,7 @@ from app.schemas.foundation import (
     EvidenceMatchResult,
     FieldReviewRequest,
     LoginRequest,
+    PageMeta,
     RegisterRequest,
     ReviewedField,
     SandboxClaimRequest,
@@ -44,6 +48,8 @@ from app.schemas.foundation import (
     TriageResult,
     VerificationRequest,
 )
+from app.schemas.kb import EmergencyDirectory
+from app.services.audit_logger import enrich_audit_event
 
 router = APIRouter(tags=["Phase 1.5 contracts (501)"])
 sandbox_alias_router = APIRouter(prefix="/api", responses=ERROR_RESPONSES, include_in_schema=False)
@@ -116,75 +122,93 @@ def check_completeness(
     not_implemented()
 
 
+@router.get("/emergency", response_model=EmergencyDirectory)
+def emergency_directory(country_code: CountryCode, kb: KB):
+    resource = kb.load(country_code).resources.emergency
+    config = resource.data
+    return EmergencyDirectory(
+        country_code=country_code,
+        label=config.label,
+        contacts=[
+            contact
+            for contact in config.contacts
+            if resource.verification_status == VerificationStatus.VERIFIED
+            and contact.verification_status == VerificationStatus.VERIFIED
+        ],
+    )
+
+
 @router.post("/triage", response_model=TriageResult)
-def triage(body: TriageRequest, session: ActiveSession, db: DB):
-    from app.services.audit_logger import log_event
+def triage(body: TriageRequest, session: ActiveSession, db: DB, kb: KB):
+    from app.services.safety_screen import screen, to_triage_result
 
-    lowered = body.text.lower()
-    if any(k in lowered for k in ("nyeri dada", "sesak napas", "pendarahan hebat")):
-        log_event(
-            db,
-            session.id,
-            "GUARDRAIL_EMERGENCY_REDIRECT",
-            category="guardrail",
-            subtype="Tanda bahaya → arahan darurat",
+    country_code = body.country_code or profile_row(db, session.id).payload["country_code"]
+    country = kb.load(country_code)
+    # Positive phrase detection only. An unmatched text is never a medical clearance.
+    return to_triage_result(screen(country, body.text, strict=False))
+
+
+def claim_case_detail(row: ClaimCaseRow, db: DB) -> ClaimCaseDetail:
+    # No checklist is inferred from an unverified country KB or seeded document metadata.
+    events = db.scalars(
+        select(ClaimCaseEventRow)
+        .where(
+            ClaimCaseEventRow.session_id == row.session_id,
+            ClaimCaseEventRow.claim_case_id == row.id,
         )
-        db.commit()
-    not_implemented()
-
-
-@router.get("/claims", response_model=ClaimCasePage)
-def list_claims(
-    session: ActiveSession,
-    status: ClaimCaseStatus | None = None,
-    limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    offset: Annotated[int, Query(ge=0)] = 0,
-):
-    not_implemented()
-
-
-@router.get("/claims/{claim_case_id}", response_model=ClaimCaseDetail)
-def claim_detail(claim_case_id: UUID, actor: ActiveActor, db: DB):
-    row = owned_resource(db, actor, "claim", claim_case_id)
-    if row.path == "synthetic":
-        not_implemented()
+        .order_by(ClaimCaseEventRow.created_at, ClaimCaseEventRow.id)
+    )
     return ClaimCaseDetail(
         case=ClaimCase(
             id=row.id,
             path=row.path,
             coverage_id=row.coverage_id,
-            comparison_id=row.comparison_id,
             country_code=row.country_code,
             status=ClaimCaseStatus(row.status),
+            claim_ref=row.claim_ref,
+            sandbox_status=row.sandbox_status,
+            last_checked_at=row.last_checked_at,
+            monitoring_state=row.monitoring_state,
             created_at=row.created_at,
         ),
-        checklist=[
-            CaseChecklistItem(
-                item_key="medical_receipt",
-                required=True,
-                rule_source=None,
-                status=ChecklistStatus.COMPLETE,
-            ),
-            CaseChecklistItem(
-                item_key="medical_summary",
-                required=True,
-                rule_source=None,
-                status=ChecklistStatus.COMPLETE,
-            ),
-        ],
-        consistency_checks=[
-            ConsistencyCheck(
-                check_code="POLICY_HOLDER_MATCH",
-                status="MATCH",
-                sources=[],
-            ),
-            ConsistencyCheck(
-                check_code="SERVICE_DATE_WITHIN_COVERAGE",
-                status="MATCH",
-                sources=[],
-            ),
+        checklist=[],
+        consistency_checks=[],
+        timeline=[
+            ClaimCaseEvent(
+                id=event.id,
+                event_type=event.event_type,
+                status_snapshot=ClaimCaseStatus(event.status_snapshot),
+                created_at=event.created_at,
+            )
+            for event in events
         ],
     )
+
+
+@router.get("/claims", response_model=ClaimCasePage)
+def list_claims(
+    session: ActiveSession,
+    db: DB,
+    status: ClaimCaseStatus | None = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+):
+    query = select(ClaimCaseRow).where(ClaimCaseRow.session_id == session.id)
+    if status is not None:
+        query = query.where(ClaimCaseRow.status == status.value)
+    total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
+    rows = db.scalars(
+        query.order_by(ClaimCaseRow.created_at.desc(), ClaimCaseRow.id).limit(limit).offset(offset)
+    )
+    return ClaimCasePage(
+        items=[claim_case_detail(row, db) for row in rows],
+        pagination=PageMeta(limit=limit, offset=offset, total=total),
+    )
+
+
+@router.get("/claims/{claim_case_id}", response_model=ClaimCaseDetail)
+def claim_detail(claim_case_id: UUID, actor: ActiveActor, db: DB):
+    return claim_case_detail(owned_resource(db, actor, "claim", claim_case_id), db)
 
 
 @router.post("/claims/{claim_case_id}/evidence", response_model=EvidenceMatchResult)
@@ -218,8 +242,6 @@ def delete_data(body: DeleteConfirmation, session: ActiveSession):
 @router.get("/audit/{event_id}", response_model=AuditEvent)
 def audit_detail(event_id: UUID, actor: ActiveActor, db: DB):
     row = owned_resource(db, actor, "audit", event_id)
-    from app.services.audit_logger import enrich_audit_event
-
     return enrich_audit_event(
         id=row.id,
         session_id=row.session_id,

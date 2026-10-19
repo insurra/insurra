@@ -1,0 +1,23 @@
+{
+  "evidence_class": "SYNTHETIC_FIXTURE",
+  "fixture_id": "synth-doc-cn-employee-expat",
+  "category": "synthetic_insurance_document",
+  "country_code": "CN",
+  "label": "Fictional Expatriate Employee Group Policy Schedule",
+  "description": "Valid synthetic employer health policy schedule for fictional tech manager in Shenzhen.",
+  "payload": {
+    "document_type": "DOC_INS_POLICY_SCHEDULE",
+    "is_synthetic": true,
+    "policy_number": "SYNTH-PICC-GRP-554433",
+    "insured_name": "SARAH SMITH",
+    "work_permit_number": "W1234567890",
+    "employer_name": "Fictional Shenzhen Tech Co., Ltd.",
+    "coverage_start_date": "2024-01-01",
+    "coverage_end_date": "2024-12-31",
+    "annual_limit": "1000000.00",
+    "currency": "CNY",
+    "status": "ACTIVE"
+  },
+  "is_adversarial": false,
+  "expected_outcome": "COMPLETED_VALID_EMPLOYER_PLAN"
+}

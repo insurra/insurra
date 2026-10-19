@@ -1,0 +1,58 @@
+{
+  "template_id": "tmpl-id-medical-kwitansi",
+  "document_category": "DOC_MEDICAL_INVOICE",
+  "country_code": "ID",
+  "original_language": "id",
+  "applicable_schemes": [
+    "Indonesian commercial health insurance and private hospital claims"
+  ],
+  "required_fields": [
+    {
+      "field_key": "receipt_number",
+      "label_en": "Official Receipt Number",
+      "label_original": "Nomor Kuitansi / No. Bukti Pembayaran",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Alphanumeric sequence code",
+      "source_evidence_hint": "Top header of receipt"
+    },
+    {
+      "field_key": "patient_name",
+      "label_en": "Patient Name",
+      "label_original": "Sudah Terima Dari / Nama Pasien",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Must match policy insured member name",
+      "source_evidence_hint": "Patient name row"
+    },
+    {
+      "field_key": "total_amount_idr",
+      "label_en": "Total Payment Amount in Rupiah",
+      "label_original": "Jumlah Pembayaran (Rp)",
+      "value_type": "money",
+      "required": true,
+      "normalization_rule": "Decimal string in IDR",
+      "source_evidence_hint": "Total box with currency symbol Rp"
+    },
+    {
+      "field_key": "hospital_name",
+      "label_en": "Hospital / Clinic Name",
+      "label_original": "Nama Rumah Sakit / Klinik",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Official clinic header or stamped seal",
+      "source_evidence_hint": "Letterhead at top of receipt"
+    },
+    {
+      "field_key": "payment_date",
+      "label_en": "Date of Settlement",
+      "label_original": "Tanggal Pembayaran",
+      "value_type": "date",
+      "required": true,
+      "normalization_rule": "ISO 8601 date YYYY-MM-DD",
+      "source_evidence_hint": "Signature block date stamp"
+    }
+  ],
+  "optional_fields": [],
+  "review_requirements": "Confirm presence of original hospital cashier red or blue ink stamp and cashier signature."
+}

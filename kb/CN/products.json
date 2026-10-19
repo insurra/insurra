@@ -1,0 +1,794 @@
+[
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+    "product_id": "cn-prod-lxbx-student",
+    "insurer_id": "cn-platform-lxbx",
+    "original_product_name": "来华留学生综合医疗保险计划",
+    "english_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China",
+    "product_category": "international_student",
+    "target_users": [
+      "International students",
+      "Visiting foreign scholars",
+      "Language exchange students"
+    ],
+    "eligibility_conditions": [
+      "Valid foreign passport and study visa (X1 or X2) or residence permit",
+      "Officially enrolled in a licensed Chinese university or educational institution",
+      "Age between 6 and 69 years at policy inception date"
+    ],
+    "coverage_country": "CN",
+    "coverage_territory": "Mainland China (excluding Hong Kong SAR, Macao SAR, and Taiwan)",
+    "product_status": "ACTIVE",
+    "currency": "CNY",
+    "published_pricing": "800.00",
+    "published_pricing_conditions": "RMB 800 per student per year, or RMB 400 per half-year semester",
+    "product_url": "https://www.lxbx.net/product_details.html",
+    "policy_document_references": [
+      "DOC-CN-LXBX-2024-TERMS",
+      "DOC-CN-LXBX-2024-GUIDE"
+    ],
+    "effective_from": "2024-01-01",
+    "effective_to": "2025-12-31",
+    "product_version": "2024.1",
+    "benefits": [
+      {
+        "benefit_id": "cn-ben-lxbx-accidental-death",
+        "benefit_category": "Accidental Death and Disability",
+        "benefit_name": "Accidental Death and Disability Benefit",
+        "original_name": "意外身故与伤残保障",
+        "covered_event": "Death or permanent disability directly caused by external, sudden, unintentional, and non-illness violent accidents",
+        "covered_service": "Lump-sum compensation based on assessed disability rating scale (10% to 100%)",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "100000.00",
+        "sublimits": {},
+        "currency": "CNY",
+        "period": "Policy Year",
+        "eligibility_conditions": [
+          "Enrolled student with active coverage period"
+        ],
+        "network_requirements": "Any authorized emergency or tertiary hospital",
+        "reimbursement_rate": "100%",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Accident police report",
+          "Hospital death certificate or official forensic disability appraisal report"
+        ]
+      },
+      {
+        "benefit_id": "cn-ben-lxbx-inpatient",
+        "benefit_category": "Inpatient Medical",
+        "benefit_name": "Accidental Injury and Illness Inpatient Medical Treatment",
+        "original_name": "意外伤害及疾病住院医疗",
+        "covered_event": "Hospitalization required for acute illness or unexpected injury",
+        "covered_service": "Bed fees, nursing care, doctor visits, examinations, laboratory tests, surgery, anesthesia, medicine within national basic medical insurance reimbursement scope",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": "400000.00",
+        "sublimits": {
+          "Daily Bed Limit": "RMB 300 per day"
+        },
+        "currency": "CNY",
+        "period": "Policy Year",
+        "eligibility_conditions": [
+          "Deductible RMB 650 per hospitalization instance"
+        ],
+        "network_requirements": "Public hospitals Class 2 or Class 3 in mainland China (公立二级及以上医院普通部)",
+        "reimbursement_rate": "100% of reasonable medical expenses exceeding deductible",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Hospital admission notice",
+          "Hospital discharge summary",
+          "Original hospital medical invoice (fapiao)",
+          "Itemized bill of expenses"
+        ]
+      },
+      {
+        "benefit_id": "cn-ben-lxbx-outpatient",
+        "benefit_category": "Outpatient Medical",
+        "benefit_name": "Accidental and Illness Outpatient Medical Treatment",
+        "original_name": "门诊急诊医疗费用",
+        "covered_event": "Medically necessary outpatient or emergency department consultations and treatments",
+        "covered_service": "Doctor consultation, diagnostic tests, prescribed medications within local social medical scope",
+        "inpatient_applicable": false,
+        "outpatient_applicable": true,
+        "benefit_limit": "20000.00",
+        "sublimits": {
+          "Daily Outpatient Limit": "RMB 600 per day"
+        },
+        "currency": "CNY",
+        "period": "Policy Year",
+        "eligibility_conditions": [
+          "Deductible RMB 650 per policy year; daily maximum reimbursement RMB 600"
+        ],
+        "network_requirements": "Public hospitals Class 2 or Class 3 in mainland China, or designated university campus health clinic",
+        "reimbursement_rate": "85% of eligible expenses exceeding deductible",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Outpatient medical record book",
+          "Original medical fapiao",
+          "Prescription record",
+          "Diagnostic test reports"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "cn-excl-lxbx-preexisting",
+        "excluded_event_or_service": "Pre-existing medical conditions and chronic illnesses diagnosed prior to policy effective date",
+        "original_text": "被保险人在保险责任生效前已罹患的疾病、先天性畸形、遗传性疾病或此前已有的残疾",
+        "conditions_and_exceptions": "Acute exacerbation of chronic condition requiring emergency resuscitation covered up to stabilization only",
+        "waiting_period_days": 30,
+        "deductible": "650.00 CNY",
+        "copayment_percentage": "15%",
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [
+          "Hong Kong SAR",
+          "Macao SAR",
+          "Taiwan",
+          "Overseas countries outside mainland China"
+        ],
+        "pre_existing_condition_provisions": "Explicitly excluded unless specifically endorsed in writing",
+        "supporting_policy_clause": "Clause 7.1",
+        "source_page": 4
+      },
+      {
+        "exclusion_id": "cn-excl-lxbx-high-risk",
+        "excluded_event_or_service": "Participation in professional extreme sports, martial arts competitions, motor vehicle racing, skydiving, mountaineering above 3500m",
+        "original_text": "被保险人参与潜水、跳伞、攀岩、蹦极、特技表演、赛车等高风险运动期间发生的意外伤害",
+        "conditions_and_exceptions": null,
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": null,
+        "supporting_policy_clause": "Clause 7.5",
+        "source_page": 5
+      },
+      {
+        "exclusion_id": "cn-excl-lxbx-vip-private",
+        "excluded_event_or_service": "Treatment in private hospitals, VIP medical wings, special guest wards, or international departments without insurer approval",
+        "original_text": "在公立医院特需部、国际医疗部、VIP病房，以及私立医疗机构、诊所接受的治疗",
+        "conditions_and_exceptions": "Life-threatening emergency permitted at nearest medical facility until transfer becomes feasible",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": null,
+        "supporting_policy_clause": "Clause 7.8",
+        "source_page": 5
+      }
+    ],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+    "product_id": "cn-prod-picc-expatriate",
+    "insurer_id": "cn-insurer-picc",
+    "original_product_name": "人保健康外籍在华雇员综合医疗保障",
+    "english_name": "PICC Health Foreign Employee Comprehensive Medical Protection",
+    "product_category": "employer_group",
+    "target_users": [
+      "Foreign employees working in China",
+      "Expatriate managers",
+      "Foreign university faculty"
+    ],
+    "eligibility_conditions": [
+      "Valid Alien Employment Permit or Foreigner Work Permit (Category A, B, or C)",
+      "Valid Work-type Residence Permit in mainland China",
+      "Actively employed by an enterprise registered in China"
+    ],
+    "coverage_country": "CN",
+    "coverage_territory": "Mainland China and optional worldwide emergency extension",
+    "product_status": "ACTIVE",
+    "currency": "CNY",
+    "published_pricing": null,
+    "published_pricing_conditions": "Custom group underwriting rate based on employer census and plan tier",
+    "product_url": "https://www.picchealth.com/group/expatriate.html",
+    "policy_document_references": [
+      "DOC-CN-PICC-EXPAT-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2025-12-31",
+    "product_version": "2023.2",
+    "benefits": [
+      {
+        "benefit_id": "cn-ben-picc-expat-inpatient",
+        "benefit_category": "Inpatient Medical",
+        "benefit_name": "Inpatient Hospitalization and Surgical Expenses",
+        "original_name": "住院医疗及手术费用保障",
+        "covered_event": "Inpatient medical admission for illness or accident",
+        "covered_service": "Private room accommodation, ICU, surgical procedures, specialist fees, diagnostic imaging (MRI, CT, PET)",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": "1000000.00",
+        "sublimits": {},
+        "currency": "CNY",
+        "period": "Policy Year",
+        "eligibility_conditions": [
+          "Full-time foreign employee on active contract"
+        ],
+        "network_requirements": "Class 2A and Class 3 public hospitals, designated direct billing private clinic network",
+        "reimbursement_rate": "100%",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Hospital admission guarantee",
+          "Itemized hospital bill",
+          "Official medical invoice"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "cn-excl-picc-cosmetic",
+        "excluded_event_or_service": "Elective cosmetic surgery, refractive eye surgery, non-medical dental care",
+        "original_text": "整形美容手术、视力矫正、非因意外伤害导致的牙科治疗",
+        "conditions_and_exceptions": "Reconstructive surgery following accidental trauma is covered",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": null,
+        "supporting_policy_clause": "Clause 6.3",
+        "source_page": 6
+      }
+    ],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+    "product_id": "cn-prod-pingan-travel",
+    "insurer_id": "cn-insurer-pingan",
+    "original_product_name": "平安行境外与境内旅游保障计划",
+    "english_name": "Ping An Journey Travel and Expatriate Protection Plan",
+    "product_category": "travel",
+    "target_users": [
+      "International travelers",
+      "Expatriates traveling in China",
+      "Business travelers"
+    ],
+    "eligibility_conditions": [
+      "Individuals aged 30 days to 85 years traveling for tourism or business",
+      "Valid identity document or passport"
+    ],
+    "coverage_country": "CN",
+    "coverage_territory": "Mainland China and designated international travel routes",
+    "product_status": "ACTIVE",
+    "currency": "CNY",
+    "published_pricing": "From 120.00 CNY per week depending on selected limit tier",
+    "published_pricing_conditions": "Single trip or annual multi-trip subscription",
+    "product_url": "https://www.pingan.com/travel/journey.html",
+    "policy_document_references": [
+      "DOC-CN-PINGAN-TRAVEL-2024"
+    ],
+    "effective_from": "2024-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2024.1",
+    "benefits": [
+      {
+        "benefit_id": "cn-ben-pingan-travel-med",
+        "benefit_category": "Emergency Travel Medical",
+        "benefit_name": "Emergency Medical Treatment and Hospitalization",
+        "original_name": "旅行紧急医疗及住院补偿",
+        "covered_event": "Sudden illness or accidental injury occurring during covered journey",
+        "covered_service": "Hospital room, surgical operation, physician consultations, emergency prescription drugs",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "500000.00",
+        "sublimits": {},
+        "currency": "CNY",
+        "period": "Per Journey",
+        "eligibility_conditions": [
+          "Policy must be in force before journey commencement"
+        ],
+        "network_requirements": "Public hospitals Class 2 and above, or authorized travel assistance network",
+        "reimbursement_rate": "100% after zero deductible",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Travel booking confirmation",
+          "Hospital invoice",
+          "Emergency medical certificate"
+        ]
+      },
+      {
+        "benefit_id": "cn-ben-pingan-travel-evac",
+        "benefit_category": "Medical Evacuation and Repatriation",
+        "benefit_name": "Emergency Medical Evacuation and Repatriation",
+        "original_name": "紧急医疗转运及送返保障",
+        "covered_event": "Critical illness or accident requiring specialized air ambulance or ground evacuation",
+        "covered_service": "Professional medical evacuation, air ambulance, physician transport escort",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": "1000000.00",
+        "sublimits": {},
+        "currency": "CNY",
+        "period": "Per Incident",
+        "eligibility_conditions": [
+          "Arranged through Ping An 24/7 Global Assistance Hotline"
+        ],
+        "network_requirements": "Authorized international medical assistance coordination network",
+        "reimbursement_rate": "100% direct settlement by assistance service",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Attending physician emergency evacuation order"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "cn-excl-pingan-travel-extreme-sports",
+        "excluded_event_or_service": "Extreme sports, professional racing, mountaineering above 5000m",
+        "original_text": "特技表演、赛车、攀岩、探险等高风险运动",
+        "conditions_and_exceptions": "Standard recreational skiing on designated marked resort slopes is covered",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Pre-existing chronic conditions not covered unless acute unexpected aggravation occurs",
+        "supporting_policy_clause": "Clause 4.2",
+        "source_page": 4
+      }
+    ],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+    "product_id": "cn-prod-pingan-fu",
+    "insurer_id": "cn-insurer-pingan",
+    "original_product_name": "平安福终身重大疾病保险",
+    "english_name": "Ping An Fu Ultimate Critical Illness Insurance",
+    "product_category": "critical_illness",
+    "target_users": [
+      "Adult individuals aged 18 to 55",
+      "Families seeking long term critical illness safety net"
+    ],
+    "eligibility_conditions": [
+      "Aged 18 to 55 years at application",
+      "Pass medical underwriting and health declaration questionnaire",
+      "Resident in mainland China with valid identity document"
+    ],
+    "coverage_country": "CN",
+    "coverage_territory": "Mainland China (diagnosis confirmed by Class 2 or above public hospital)",
+    "product_status": "ACTIVE",
+    "currency": "CNY",
+    "published_pricing": "Approx. 9,500 CNY/yr (standard rate for 30yo male, 20-pay lifetime)",
+    "published_pricing_conditions": "Level premium payment over 10, 15, 20, or 30 years with lifetime coverage",
+    "product_url": "https://life.pingan.com/product/pinganfu.html",
+    "policy_document_references": [
+      "DOC-CN-PINGAN-FU-2023-WORDING"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "cn-ben-pingan-fu-ci",
+        "benefit_category": "Major Critical Illness Lump Sum",
+        "benefit_name": "Critical Illness Lump Sum Benefit (120 Diseases)",
+        "original_name": "重大疾病保险金（120种重症）",
+        "covered_event": "First-time clinical diagnosis of any of 120 specified severe illnesses after waiting period",
+        "covered_service": "Direct cash payout for advanced malignant neoplasm, acute myocardial infarction, severe stroke sequelae, coronary artery bypass surgery",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "500000.00",
+        "sublimits": {
+          "Critical Illness Payout": "100% basic sum insured lump sum"
+        },
+        "currency": "CNY",
+        "period": "Lifetime",
+        "eligibility_conditions": [
+          "First diagnosis confirmed after 90-day waiting period by specialist in Class 2 or above public hospital"
+        ],
+        "network_requirements": "Public hospitals Class 2 and above across China",
+        "reimbursement_rate": "100% lump-sum cash compensation",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Pathology report",
+          "Specialist clinical diagnosis certificate",
+          "Hospital medical records"
+        ]
+      },
+      {
+        "benefit_id": "cn-ben-pingan-fu-mild",
+        "benefit_category": "Early Stage Disease Benefit",
+        "benefit_name": "Mild Illness Additional Benefit (40 Diseases)",
+        "original_name": "轻度疾病额外给付保险金（40种轻症）",
+        "covered_event": "First-time diagnosis of early stage non-severe condition (e.g. early coronary stenting, mild stroke)",
+        "covered_service": "Cash payout equal to 20% of basic sum insured per occurrence up to 3 times without reducing major CI limit",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "100000.00",
+        "sublimits": {
+          "Single Occurrence": "20% of basic sum insured (up to 3 times)"
+        },
+        "currency": "CNY",
+        "period": "Lifetime",
+        "eligibility_conditions": [
+          "Diagnosis after 90-day waiting period"
+        ],
+        "network_requirements": "Class 2 and above public hospital",
+        "reimbursement_rate": "100% lump-sum",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Clinical examination and interventional procedure report"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "cn-excl-pingan-fu-congenital",
+        "excluded_event_or_service": "Congenital deformities, genetic hereditary anomalies, intentional self-inflicted harm",
+        "original_text": "遗传性疾病，先天性畸形、变形或染色体异常，被保险人故意自伤或自杀",
+        "conditions_and_exceptions": "Suicide after 2 full years from policy contract inception is covered under statutory rules",
+        "waiting_period_days": 90,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Diseases occurring or symptomatic prior to policy effective date or within 90-day waiting period are excluded",
+        "supporting_policy_clause": "Clause 3.1 & 3.2",
+        "source_page": 4
+      }
+    ],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+    "product_id": "cn-prod-chinalife-kangning",
+    "insurer_id": "cn-insurer-chinalife",
+    "original_product_name": "中国人寿康宁终身重大疾病保险（2023版）",
+    "english_name": "China Life Kangning Ultimate Critical Illness Insurance (2023 Edition)",
+    "product_category": "critical_illness",
+    "target_users": [
+      "Individuals aged 28 days to 60 years",
+      "Families seeking state backed long term protection"
+    ],
+    "eligibility_conditions": [
+      "Aged 28 days to 60 years at issuance",
+      "Standard underwriting acceptance",
+      "Mainland China residency"
+    ],
+    "coverage_country": "CN",
+    "coverage_territory": "Mainland China",
+    "product_status": "ACTIVE",
+    "currency": "CNY",
+    "published_pricing": "Based on entry age and gender table approved by NFRA",
+    "published_pricing_conditions": "Annual premium payment options of 10, 19, or 29 years",
+    "product_url": "https://www.chinalife.com.cn/chinalife/product/kangning/",
+    "policy_document_references": [
+      "DOC-CN-CHINALIFE-KANGNING-2023-WORDING"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "cn-ben-chinalife-kangning-ci",
+        "benefit_category": "Severe Critical Illness Lump Sum",
+        "benefit_name": "Severe Critical Illness Benefit (100 Specified Conditions)",
+        "original_name": "重大疾病保险金（100种重大疾病）",
+        "covered_event": "Confirmed clinical diagnosis of any of 100 defined severe illnesses after 180-day waiting period",
+        "covered_service": "Lump-sum monetary benefit for severe malignant tumor, coronary bypass, organ transplantation, end-stage renal disease",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "500000.00",
+        "sublimits": {
+          "Severe Critical Illness": "100% basic sum insured"
+        },
+        "currency": "CNY",
+        "period": "Lifetime",
+        "eligibility_conditions": [
+          "Diagnosis after 180-day waiting period confirmed by qualified specialist"
+        ],
+        "network_requirements": "Class 2 or above public hospitals recognized by China Life",
+        "reimbursement_rate": "100% lump sum payout",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Official hospital discharge summary",
+          "Histopathology laboratory confirmation"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "cn-excl-chinalife-kangning-preexisting",
+        "excluded_event_or_service": "Symptoms or conditions diagnosed within 180 days waiting period, intentional crime, toxic drug abuse",
+        "original_text": "投保后180天等待期内出现病症，故意犯罪，吸食毒品，感染艾滋病病毒（因输血感染除外）",
+        "conditions_and_exceptions": "Accidental injury resulting in critical illness exempt from 180-day waiting period",
+        "waiting_period_days": 180,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Pre-existing medical conditions not disclosed are strictly excluded",
+        "supporting_policy_clause": "Clause 2.3 & Clause 6",
+        "source_page": 5
+      }
+    ],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+    "product_id": "cn-prod-chinalife-furong",
+    "insurer_id": "cn-insurer-chinalife",
+    "original_product_name": "中国人寿国寿福荣定期寿险",
+    "english_name": "China Life Guoshou Furong Term Life Insurance",
+    "product_category": "life",
+    "target_users": [
+      "Breadwinners aged 18 to 60",
+      "Working parents and mortgage holders"
+    ],
+    "eligibility_conditions": [
+      "Aged 18 to 60 years",
+      "Employed with verifiable source of income",
+      "Health declaration without severe cardiovascular or oncological history"
+    ],
+    "coverage_country": "CN",
+    "coverage_territory": "Worldwide 24-hour life coverage for death",
+    "product_status": "ACTIVE",
+    "currency": "CNY",
+    "published_pricing": "Level term premium based on policy term (10, 20, 30 years or to age 60/70)",
+    "published_pricing_conditions": "Guaranteed level premium throughout chosen term",
+    "product_url": "https://www.chinalife.com.cn/chinalife/product/term-life/",
+    "policy_document_references": [
+      "DOC-CN-CHINALIFE-FURONG-2023"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2023.1",
+    "benefits": [
+      {
+        "benefit_id": "cn-ben-chinalife-furong-death",
+        "benefit_category": "Term Life Death and Disability",
+        "benefit_name": "Death and High Disability Benefit",
+        "original_name": "身故及身体高度残疾保险金",
+        "covered_event": "Death or total irreversible disability of insured person during policy term",
+        "covered_service": "Full basic sum insured paid directly to designated legal beneficiaries",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "1000000.00",
+        "sublimits": {
+          "Death or Total Permanent Disability": "100% basic sum insured"
+        },
+        "currency": "CNY",
+        "period": "Policy Term",
+        "eligibility_conditions": [
+          "Policy must be in force with premiums paid to date"
+        ],
+        "network_requirements": "Certified public hospital death certificate or public security death certificate",
+        "reimbursement_rate": "100% lump sum to beneficiaries",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Official death certificate (医学死亡证明)",
+          "Household cancellation certificate",
+          "Beneficiary legal ID"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "cn-excl-chinalife-furong-suicide",
+        "excluded_event_or_service": "Suicide within 2 years from contract inception, active participation in military rebellion or war",
+        "original_text": "投保人对被保险人的故意杀害，被保险人故意自伤、自杀（但被保险人自杀时为无民事行为能力人的除外）",
+        "conditions_and_exceptions": "Suicide after 2 full years from contract inception is covered pursuant to Insurance Law of the PRC",
+        "waiting_period_days": 90,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Non-accidental illness death within 90-day waiting period returns total paid premiums only",
+        "supporting_policy_clause": "Clause 2.1 & 3.1",
+        "source_page": 3
+      }
+    ],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+    "product_id": "cn-prod-pingan-accident",
+    "insurer_id": "cn-insurer-pingan",
+    "original_product_name": "平安一年期综合意外伤害保险",
+    "english_name": "Ping An Comprehensive Personal Accident Insurance",
+    "product_category": "personal_accident",
+    "target_users": [
+      "Individuals aged 1 to 65",
+      "Students and active office workers"
+    ],
+    "eligibility_conditions": [
+      "Aged 1 to 65 years",
+      "Occupational class 1 to 3 (non-hazardous occupations)",
+      "Resident of mainland China"
+    ],
+    "coverage_country": "CN",
+    "coverage_territory": "Mainland China and worldwide emergency accident protection",
+    "product_status": "ACTIVE",
+    "currency": "CNY",
+    "published_pricing": "280.00 CNY per year for Plan B (500,000 CNY AD&D tier)",
+    "published_pricing_conditions": "Annual single premium with instantaneous activation next day",
+    "product_url": "https://property.pingan.com/product/accident.html",
+    "policy_document_references": [
+      "DOC-CN-PINGAN-ACCIDENT-2024-WORDING"
+    ],
+    "effective_from": "2024-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2024.1",
+    "benefits": [
+      {
+        "benefit_id": "cn-ben-pingan-accident-death",
+        "benefit_category": "Accidental Death and Dismemberment",
+        "benefit_name": "Accidental Death and Permanent Disability Benefit",
+        "original_name": "意外身故及伤残保险金",
+        "covered_event": "Death or permanent anatomical disability directly resulting from unexpected, violent, external accident",
+        "covered_service": "Lump-sum compensation based on national disability grading scale (Class 1 to 10)",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "500000.00",
+        "sublimits": {
+          "Accidental Death": "100% sum insured",
+          "Disability": "10% to 100% per national scale"
+        },
+        "currency": "CNY",
+        "period": "Per Accident",
+        "eligibility_conditions": [
+          "Incident must occur within policy period; death or disability within 180 days of incident"
+        ],
+        "network_requirements": "Public hospital or licensed judicial assessment center",
+        "reimbursement_rate": "100% per disability schedule",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Traffic police accident responsibility report",
+          "Hospital emergency rescue record"
+        ]
+      },
+      {
+        "benefit_id": "cn-ben-pingan-accident-med",
+        "benefit_category": "Accidental Medical Reimbursement",
+        "benefit_name": "Accidental Medical Expenses Reimbursement",
+        "original_name": "意外医疗费用补偿金",
+        "covered_event": "Medical consultation, diagnostics, casting, medication, and minor surgery for accidental physical trauma",
+        "covered_service": "Outpatient and inpatient expenses at Class 2 or above public hospitals with 0 deductible and 100% reimbursement rate",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": "50000.00",
+        "sublimits": {
+          "Zero Deductible": "Reimburses 100% of social medical insurance covered expenses"
+        },
+        "currency": "CNY",
+        "period": "Per Policy Year",
+        "eligibility_conditions": [
+          "Expenses incurred within 180 days of accidental injury"
+        ],
+        "network_requirements": "Class 2 and above public hospitals",
+        "reimbursement_rate": "100% reimbursement after social insurance",
+        "preauthorization_required": false,
+        "evidence_references": [
+          "Emergency clinic records",
+          "Fiscal medical invoices (Fapiao)"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "cn-excl-pingan-accident-risky-sports",
+        "excluded_event_or_service": "Driving without a license, operating motor vehicle under intoxication, participating in extreme high risk sports",
+        "original_text": "无有效驾驶证驾驶机动车，醉酒驾驶，从事潜水、跳伞、攀岩等高风险运动",
+        "conditions_and_exceptions": "Standard public transit and commercial passenger flights are fully covered with triple indemnity",
+        "waiting_period_days": 0,
+        "deductible": null,
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Bodily harm resulting from internal disease, stroke, or syncope is excluded from accidental trauma",
+        "supporting_policy_clause": "Clause 4.1-4.8",
+        "source_page": 3
+      }
+    ],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+    "product_id": "cn-prod-pingan-eshengbao",
+    "insurer_id": "cn-insurer-pingan",
+    "original_product_name": "平安e生保长期医疗保险（费率可调）",
+    "english_name": "Ping An e-Sheng-Bao Long-Term Medical Insurance",
+    "product_category": "private_medical",
+    "target_users": [
+      "Individuals and families aged 0 to 55",
+      "Domestic residents and foreign expats with work permits"
+    ],
+    "eligibility_conditions": [
+      "Aged 28 days to 55 years at initial application",
+      "Participant in basic medical insurance (social health insurance)",
+      "Resident of mainland China"
+    ],
+    "coverage_country": "CN",
+    "coverage_territory": "Mainland China (Class 2 and Class 3 public hospitals ordinary department)",
+    "product_status": "ACTIVE",
+    "currency": "CNY",
+    "published_pricing": "From 296.00 CNY/year for 25-year-old with social insurance",
+    "published_pricing_conditions": "Guaranteed renewable for 20 years with rate adjustment mechanism approved by regulator",
+    "product_url": "https://health.pingan.com/product/eshengbao.html",
+    "policy_document_references": [
+      "DOC-CN-PINGAN-ESHENGBAO-2023-WORDING"
+    ],
+    "effective_from": "2023-01-01",
+    "effective_to": "2026-12-31",
+    "product_version": "2023.2",
+    "benefits": [
+      {
+        "benefit_id": "cn-ben-pingan-eshengbao-inpatient",
+        "benefit_category": "High Limit Inpatient Medical",
+        "benefit_name": "General Inpatient Medical Expenses",
+        "original_name": "一般住院医疗费用保险金",
+        "covered_event": "Inpatient medical stay for illness or accident after 90-day waiting period",
+        "covered_service": "Bed fee, operating room, prescription drugs (including Western and TCM), diagnostic imaging, nursing care",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": "2000000.00",
+        "sublimits": {
+          "Annual Limit": "2,000,000 CNY (4,000,000 CNY for 120 critical illnesses)"
+        },
+        "currency": "CNY",
+        "period": "Policy Year",
+        "eligibility_conditions": [
+          "Eligible expenses exceeding annual 10,000 CNY deductible"
+        ],
+        "network_requirements": "Class 2 and Class 3 public hospitals ordinary wards",
+        "reimbursement_rate": "100% after social medical insurance",
+        "preauthorization_required": true,
+        "evidence_references": [
+          "Hospital admission and discharge records",
+          "Hospital cost itemized sheet",
+          "Fapiao"
+        ]
+      }
+    ],
+    "exclusions": [
+      {
+        "exclusion_id": "cn-excl-pingan-eshengbao-deductible",
+        "excluded_event_or_service": "Expenses within the annual 10,000 CNY shared deductible, treatment in VIP private wings",
+        "original_text": "年免赔额1万元以内的个人自付费用，公立医院特需医疗部、国际部及私立医疗机构",
+        "conditions_and_exceptions": "Deductible waived for 120 specified critical illnesses",
+        "waiting_period_days": 90,
+        "deductible": "10000.00",
+        "copayment_percentage": null,
+        "coinsurance": null,
+        "excess": null,
+        "territorial_exclusions": [],
+        "pre_existing_condition_provisions": "Pre-existing conditions before policy inception are strictly excluded",
+        "supporting_policy_clause": "Clause 2.1 & 3.1",
+        "source_page": 4
+      }
+    ],
+    "verification_status": "UNVERIFIED"
+  }
+]

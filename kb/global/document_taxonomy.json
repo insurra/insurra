@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.5",
+  "version": "1.0.0",
+  "taxonomy_name": "INSURRA Insurance Document Taxonomy",
+  "document_types": [
+    {
+      "code": "DOC_INS_POLICY_SCHEDULE",
+      "label_en": "Insurance Policy Schedule",
+      "label_zh": "保险单 / 保险凭证",
+      "label_id": "Ringkasan Polis Asuransi",
+      "category": "Policy Contract"
+    },
+    {
+      "code": "DOC_INS_CERTIFICATE",
+      "label_en": "Insurance Certificate of Coverage",
+      "label_zh": "留学生参保电子凭证",
+      "label_id": "Sertifikat Kepesertaan Asuransi",
+      "category": "Proof of Insurance"
+    },
+    {
+      "code": "DOC_JKN_CARD",
+      "label_en": "National Health Insurance Card (KIS)",
+      "label_zh": "印度尼西亚国民健康医保卡 (KIS)",
+      "label_id": "Kartu Indonesia Sehat (KIS / Mobile JKN)",
+      "category": "Public Scheme Membership"
+    },
+    {
+      "code": "DOC_MEDICAL_INVOICE",
+      "label_en": "Hospital Medical Invoice / Fapiao / Kwitansi",
+      "label_zh": "医疗费用发票 / 电子发票",
+      "label_id": "Kuitansi Pembayaran Rumah Sakit Asli",
+      "category": "Claim Evidence"
+    },
+    {
+      "code": "DOC_DOCTOR_DIAGNOSIS",
+      "label_en": "Physician Diagnosis Certificate / Medical Resume",
+      "label_zh": "医生诊断证明书 / 病历",
+      "label_id": "Surat Keterangan Dokter / Resume Medis",
+      "category": "Claim Evidence"
+    },
+    {
+      "code": "DOC_DISCHARGE_SUMMARY",
+      "label_en": "Hospital Inpatient Discharge Summary",
+      "label_zh": "出院小结 / 出院记录",
+      "label_id": "Surat Pulang / Resume Rawat Inap Rumah Sakit",
+      "category": "Claim Evidence"
+    },
+    {
+      "code": "DOC_EXPENSE_BREAKDOWN",
+      "label_en": "Hospital Itemized Expense Bill",
+      "label_zh": "医疗费用明细清单",
+      "label_id": "Rincian Biaya Medis dan Obat",
+      "category": "Claim Evidence"
+    },
+    {
+      "code": "DOC_REFERRAL_LETTER",
+      "label_en": "Tiered Medical Referral Letter",
+      "label_zh": "转诊证明单",
+      "label_id": "Surat Rujukan FKTP ke Rumah Sakit",
+      "category": "Care Pathway"
+    },
+    {
+      "code": "DOC_CLAIM_FORM",
+      "label_en": "Official Claim Application Form",
+      "label_zh": "理赔申请表",
+      "label_id": "Formulir Pengajuan Klaim Asuransi",
+      "category": "Claim Administration"
+    }
+  ]
+}

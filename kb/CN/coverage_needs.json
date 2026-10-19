@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer. Not retrieved or machine-verified.",
+  "data": [
+    {
+      "need_code": "STUDENT_COMPREHENSIVE",
+      "label": "Comprehensive Medical Insurance for Foreigners",
+      "requirement_level": "RECOMMENDED",
+      "policy_types": [
+        "STUDENT_COMPREHENSIVE"
+      ],
+      "verification_status": "UNVERIFIED",
+      "task_code": "coverage_continuity",
+      "applicability": {
+        "occupation": [
+          "STUDENT"
+        ],
+        "residence_context": [
+          "ABROAD"
+        ]
+      }
+    },
+    {
+      "need_code": "COMMERCIAL_HEALTH",
+      "label": "Commercial Health & Inpatient Coverage",
+      "requirement_level": "RECOMMENDED",
+      "policy_types": [
+        "COMMERCIAL_HEALTH"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "need_code": "EMPLOYER_GROUP",
+      "label": "Employer Group Medical Scheme",
+      "requirement_level": "RECOMMENDED",
+      "policy_types": [
+        "EMPLOYER_GROUP"
+      ],
+      "verification_status": "UNVERIFIED"
+    }
+  ]
+}

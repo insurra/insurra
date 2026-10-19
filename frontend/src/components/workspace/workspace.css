@@ -81,6 +81,12 @@
   display: grid;
   gap: 12px;
   overflow-wrap: anywhere;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.vn-card:hover {
+  border-color: rgba(14, 165, 138, 0.35);
+  box-shadow: 0 4px 14px rgba(14, 165, 138, 0.08);
 }
 .vn-card summary {
   cursor: pointer;
@@ -109,6 +115,13 @@
   border-radius: var(--radius-button);
   padding: 10px 14px;
   background: white;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+}
+.vn-actions a:hover {
+  border-color: var(--brand-teal);
+  background: #f0fdf9;
+  transform: translateY(-1px);
 }
 .vn-badge {
   display: inline-flex;

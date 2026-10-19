@@ -25,6 +25,15 @@ class VerificationStatus(StrEnum):
     UNVERIFIED = "UNVERIFIED"
 
 
+class EvidenceClass(StrEnum):
+    """Real origin of a knowledge record. Only RETRIEVED_OFFICIAL is backed by a fetched artifact."""
+
+    RETRIEVED_OFFICIAL = "RETRIEVED_OFFICIAL"
+    MANUALLY_CURATED = "MANUALLY_CURATED"
+    SYNTHETIC_FIXTURE = "SYNTHETIC_FIXTURE"
+    PLACEHOLDER = "PLACEHOLDER"
+
+
 class ApiError(Contract):
     code: str
     message: str

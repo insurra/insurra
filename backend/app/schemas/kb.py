@@ -3,7 +3,14 @@ from typing import Generic, Literal, TypeVar
 
 from pydantic import Field, JsonValue, model_validator
 
-from app.schemas.common import Contract, CountryCode, CurrencyCode, Money, VerificationStatus
+from app.schemas.common import (
+    Contract,
+    CountryCode,
+    CurrencyCode,
+    EvidenceClass,
+    Money,
+    VerificationStatus,
+)
 from app.schemas.profile import Occupation, ResidenceContext
 
 
@@ -17,6 +24,7 @@ class CountryManifest(Contract):
     supported_features: list[str]
     verification_status: VerificationStatus
     default_timezone: str = "UTC"
+    default_currency: CurrencyCode | None = None
     city_timezones: dict[str, str] = Field(default_factory=dict)
     official_source_hosts: list[str] = Field(default_factory=list)
 
@@ -38,20 +46,24 @@ class Applicability(Contract):
 
 class RuleParameters(Contract):
     policy_types: list[str]
-    start_field: Literal["arrival_date"] = "arrival_date"
-    end_field: Literal["visa_expiry_date"] = "visa_expiry_date"
+    # `study_start_date` falls back to arrival_date; `study_or_permit_end_date` uses the later of
+    # study_end_date, permit_end_date and visa_expiry_date that are present.
+    start_field: Literal["arrival_date", "study_start_date"] = "arrival_date"
+    end_field: Literal["visa_expiry_date", "study_or_permit_end_date"] = "visa_expiry_date"
     inclusive_end: Literal[True] = True
 
 
 class CountryRule(Contract):
     rule_id: str
-    kind: Literal["visa_coverage"]
+    kind: Literal["visa_coverage", "coverage_continuity"]
     description: str
     applicability: Applicability
     parameters: RuleParameters
     source_url: str | None
     checked_at: date | None
     verification_status: VerificationStatus
+    evidence_class: EvidenceClass | None = None
+    provenance_note: str | None = None
 
 
 class CoverageVocabulary(Contract):
@@ -109,6 +121,7 @@ class PathwayConfig(Contract):
     verification_codes: list[str] = Field(default_factory=list)
     emergency: bool = False
     tariff: ReferenceTariff | None = None
+    evidence_class: EvidenceClass | None = None
 
 
 class PathwayService(Contract):
@@ -122,12 +135,37 @@ class PathwayPriority(Contract):
     explanation: str
 
 
+class EmergencyContact(Contract):
+    service_code: Literal["medical", "police", "fire", "general"]
+    label: str
+    jurisdiction: str = Field(min_length=2, max_length=50)
+    phone_number: str = Field(pattern=r"^[0-9]{2,6}$")
+    source_url: str
+    checked_at: date
+    verification_status: VerificationStatus
+    evidence_class: EvidenceClass | None = None
+
+    @model_validator(mode="after")
+    def checked_source_for_verified_contact(self):
+        if self.verification_status == VerificationStatus.VERIFIED and not self.source_url:
+            raise ValueError("Verified emergency contact requires an official source")
+        return self
+
+
 class EmergencyConfig(Contract):
     label: str
     phone_number: str | None
     source_url: str | None
     checked_at: date | None
     verification_status: VerificationStatus
+    contacts: list[EmergencyContact] = Field(default_factory=list)
+    evidence_class: EvidenceClass | None = None
+
+
+class EmergencyDirectory(Contract):
+    country_code: CountryCode
+    label: str
+    contacts: list[EmergencyContact]
 
 
 class PathwaysResource(Contract):
@@ -177,9 +215,17 @@ class ResourceMetadata(Contract):
     source_url: str | None
     checked_at: date | None
     verification_status: VerificationStatus
+    # Additive provenance (optional for backward compatibility with older envelopes).
+    evidence_class: EvidenceClass | None = None
+    provenance_note: str | None = None
 
     @model_validator(mode="after")
     def verified_source(self):
+        if self.verification_status == VerificationStatus.VERIFIED and self.evidence_class in (
+            EvidenceClass.SYNTHETIC_FIXTURE,
+            EvidenceClass.PLACEHOLDER,
+        ):
+            raise ValueError("Synthetic or placeholder resources cannot be VERIFIED")
         if self.source_url and not self.source_url.startswith(("https://", "http://")):
             raise ValueError("Source URL must be an explicit HTTP(S) reference")
         if self.verification_status == VerificationStatus.VERIFIED:
@@ -263,10 +309,24 @@ class VerificationStepConfig(Contract):
 
 class RedFlagConfig(Contract):
     id: str
-    category: str
+    category: Literal["MEDICAL", "SELF_HARM"]
     phrases_id: list[str]
     phrases_en: list[str]
+    phrases_zh: list[str] = Field(default_factory=list)
     destination_code: str
+    jurisdiction: str | None = None
+    source_url: str | None = None
+    checked_at: date | None = None
+    verification_status: VerificationStatus = VerificationStatus.UNVERIFIED
+    evidence_class: EvidenceClass | None = None
+
+    @model_validator(mode="after")
+    def verified_red_flag_requires_source(self):
+        if self.verification_status == VerificationStatus.VERIFIED and (
+            not self.source_url or not self.checked_at or not self.jurisdiction
+        ):
+            raise ValueError("Verified red flag requires a checked source")
+        return self
 
 
 class InjectionPattern(Contract):

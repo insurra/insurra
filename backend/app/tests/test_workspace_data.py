@@ -20,6 +20,13 @@ from app.services.workspace import coverages, grants, profile
 from app.tests.workspace_fixtures import workspace
 
 
+@pytest.fixture
+def kb_countries() -> str:
+    # Settings override scoped to this module: it uses the inactive legacy kb/AU folder as a
+    # fixture-only configuration. The default app keeps AU disabled (see conftest).
+    return "AU,CN,ID"
+
+
 def test_account_adapter_uses_existing_fields_without_copying_or_cross_actor_data(app, client):
     _, account, coverage, doc = workspace(app, client)
     _, other, _, _ = workspace(app, client)

@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/v1/auth/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Capabilities */
+        get: operations["capabilities_api_v1_auth_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/me": {
         parameters: {
             query?: never;
@@ -261,6 +278,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/account/consents/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consent History
+         * @description Consent decisions from the account audit trail. Only purpose, grant and time are exposed.
+         */
+        get: operations["consent_history_api_v1_account_consents_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/connected-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Connected Sources */
+        get: operations["connected_sources_api_v1_account_connected_sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Account Data */
+        get: operations["export_account_data_api_v1_account_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/account/inventory": {
         parameters: {
             query?: never;
@@ -485,6 +556,523 @@ export interface paths {
         patch: operations["review_field_api_v1_account_fields__field_id__patch"];
         trace?: never;
     };
+    "/api/v1/workflow/claims/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Claims Overview
+         * @description Provides high-level stats, banner, and recent activity matching screenshot 1.
+         */
+        get: operations["claims_overview_api_v1_workflow_claims_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/claims/cases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Claim Cases */
+        get: operations["list_claim_cases_api_v1_workflow_claims_cases_get"];
+        put?: never;
+        /** Create Claim Case */
+        post: operations["create_claim_case_api_v1_workflow_claims_cases_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/claims/cases/{claim_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Claim Case Detail */
+        get: operations["get_claim_case_detail_api_v1_workflow_claims_cases__claim_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit Claim Case */
+        patch: operations["edit_claim_case_api_v1_workflow_claims_cases__claim_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/workflow/claims/cases/{claim_id}/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload Claim Evidence */
+        post: operations["upload_claim_evidence_api_v1_workflow_claims_cases__claim_id__evidence_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/claims/cases/{claim_id}/evidence/{evidence_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Confirm Evidence Fields */
+        patch: operations["confirm_evidence_fields_api_v1_workflow_claims_cases__claim_id__evidence__evidence_id__confirm_patch"];
+        trace?: never;
+    };
+    "/api/v1/workflow/claims/cases/{claim_id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate Claim Draft */
+        post: operations["generate_claim_draft_api_v1_workflow_claims_cases__claim_id__draft_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit Claim Draft */
+        patch: operations["edit_claim_draft_api_v1_workflow_claims_cases__claim_id__draft_patch"];
+        trace?: never;
+    };
+    "/api/v1/workflow/claims/cases/{claim_id}/draft/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm Claim Draft */
+        post: operations["confirm_claim_draft_api_v1_workflow_claims_cases__claim_id__draft_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/claims/cases/{claim_id}/send-to-approval": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send Claim To Approval */
+        post: operations["send_claim_to_approval_api_v1_workflow_claims_cases__claim_id__send_to_approval_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/claims/cases/{claim_id}/sync-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sync Claim Sandbox Status */
+        post: operations["sync_claim_sandbox_status_api_v1_workflow_claims_cases__claim_id__sync_status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/claims/cases/{claim_id}/acknowledge-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acknowledge Consistency Check */
+        post: operations["acknowledge_consistency_check_api_v1_workflow_claims_cases__claim_id__acknowledge_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Workflow Action */
+        post: operations["create_workflow_action_api_v1_workflow_actions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/actions/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Action Queue */
+        get: operations["list_action_queue_api_v1_workflow_actions_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/actions/{action_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Action Detail */
+        get: operations["get_action_detail_api_v1_workflow_actions__action_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit Action Payload */
+        patch: operations["edit_action_payload_api_v1_workflow_actions__action_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/workflow/actions/{action_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Action */
+        post: operations["approve_action_api_v1_workflow_actions__action_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/actions/{action_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Action */
+        post: operations["reject_action_api_v1_workflow_actions__action_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/actions/{action_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Action */
+        post: operations["cancel_action_api_v1_workflow_actions__action_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/actions/{action_id}/execute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Execute Action */
+        post: operations["execute_action_api_v1_workflow_actions__action_id__execute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/actions/{action_id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Action Receipt */
+        get: operations["get_action_receipt_api_v1_workflow_actions__action_id__receipt_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Workflow Reminders */
+        get: operations["list_workflow_reminders_api_v1_workflow_reminders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/reminders/{reminder_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Workflow Reminder */
+        post: operations["cancel_workflow_reminder_api_v1_workflow_reminders__reminder_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/audit/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Audit Timeline */
+        get: operations["get_audit_timeline_api_v1_workflow_audit_timeline_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/audit/events/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Audit Event Detail */
+        get: operations["get_audit_event_detail_api_v1_workflow_audit_events__event_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/emergency/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Emergency Contacts */
+        get: operations["get_emergency_contacts_api_v1_workflow_emergency_contacts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/emergency/triage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Evaluate Emergency Triage */
+        post: operations["evaluate_emergency_triage_api_v1_workflow_emergency_triage_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/employer-benefits/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Employer Benefits */
+        get: operations["get_employer_benefits_api_v1_workflow_employer_benefits_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/products/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Compare Catalog Products */
+        get: operations["compare_catalog_products_api_v1_workflow_products_compare_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/proof/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Document Integrity */
+        post: operations["verify_document_integrity_api_v1_workflow_proof_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/proof/anchor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Anchor Document Digest */
+        post: operations["anchor_document_digest_api_v1_workflow_proof_anchor_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/policy-servicing/types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Servicing Request Types */
+        get: operations["list_servicing_request_types_api_v1_workflow_policy_servicing_types_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow/policy-servicing/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare Policy Servicing Draft */
+        post: operations["prepare_policy_servicing_draft_api_v1_workflow_policy_servicing_draft_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/countries": {
         parameters: {
             query?: never;
@@ -547,6 +1135,24 @@ export interface paths {
         get: operations["me_api_v1_demo_sessions_me_get"];
         put?: never;
         post?: never;
+        /** End Session */
+        delete: operations["end_session_api_v1_demo_sessions_me_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/demo/sessions/me/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset Session */
+        post: operations["reset_session_api_v1_demo_sessions_me_reset_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1059,6 +1665,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/emergency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Emergency Directory */
+        get: operations["emergency_directory_api_v1_emergency_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/triage": {
         parameters: {
             query?: never;
@@ -1368,6 +1991,160 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ask/proposals/{proposal_id}/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepare Proposal */
+        post: operations["prepare_proposal_api_v1_ask_proposals__proposal_id__prepare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Context */
+        get: operations["get_context_api_v1_context_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Insights */
+        get: operations["get_insights_api_v1_insights_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insights/{insight_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Insight Decision */
+        post: operations["post_insight_decision_api_v1_insights__insight_id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Notifications */
+        get: operations["list_notifications_api_v1_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Unread Count */
+        get: operations["unread_count_api_v1_notifications_unread_count_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read All */
+        post: operations["read_all_api_v1_notifications_read_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{notification_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Read */
+        post: operations["mark_read_api_v1_notifications__notification_id__read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Preferences */
+        get: operations["get_preferences_api_v1_preferences_get"];
+        /** Put Preferences */
+        put: operations["put_preferences_api_v1_preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/google": {
         parameters: {
             query?: never;
@@ -1438,6 +2215,7 @@ export interface components {
             /** Items */
             items: components["schemas"]["AccountCompletenessItem"][];
             visa_gap?: components["schemas"]["AccountVisaGap"] | null;
+            coverage_continuity?: components["schemas"]["AccountVisaGap"] | null;
             /** Kb Version */
             kb_version: string;
             verification_status: components["schemas"]["VerificationStatus"];
@@ -1544,6 +2322,58 @@ export interface components {
              */
             created_at: string;
         };
+        /** AccountExport */
+        AccountExport: {
+            /** Schema Version */
+            schema_version: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Notice */
+            notice: string;
+            /** Profile */
+            profile: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Consents */
+            consents: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Preferences */
+            preferences: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Documents */
+            documents: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Reviewed Fields */
+            reviewed_fields: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Coverages */
+            coverages: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Family Members */
+            family_members: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Claim Cases */
+            claim_cases: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Actions */
+            actions: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Notifications */
+            notifications: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+        };
         /** AccountField */
         AccountField: {
             /**
@@ -1635,6 +2465,11 @@ export interface components {
              */
             status: "ACTIVE" | "EXPIRING_SOON" | "EXPIRED" | "UNKNOWN";
             /**
+             * Evidence Status
+             * @enum {string}
+             */
+            evidence_status: "SELF_REPORTED" | "NEEDS_REVIEW" | "VERIFIED";
+            /**
              * Created At
              * Format: date-time
              */
@@ -1680,6 +2515,11 @@ export interface components {
              */
             status: "ACTIVE" | "EXPIRING_SOON" | "EXPIRED" | "UNKNOWN";
             /**
+             * Evidence Status
+             * @enum {string}
+             */
+            evidence_status: "SELF_REPORTED" | "NEEDS_REVIEW" | "VERIFIED";
+            /**
              * Created At
              * Format: date-time
              */
@@ -1712,7 +2552,7 @@ export interface components {
             kb_version: string;
             verification_status: components["schemas"]["VerificationStatus"];
             /** Currency */
-            currency: string;
+            currency?: string | null;
             /** Coverage Types */
             coverage_types: {
                 [key: string]: string;
@@ -1773,7 +2613,13 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "PASS" | "GAP_FOUND" | "NEEDS_VERIFICATION" | "NOT_APPLICABLE";
+            status: "UNABLE_TO_DETERMINE" | "NO_DATE_DIFFERENCE" | "DATE_DIFFERENCE_DETECTED" | "POTENTIAL_COVERAGE_GAP" | "PASS" | "GAP_FOUND" | "NEEDS_VERIFICATION";
+            /**
+             * Requirement Status
+             * @default NEEDS_VERIFICATION
+             * @enum {string}
+             */
+            requirement_status: "VERIFIED" | "NEEDS_VERIFICATION";
             /** Gap Days */
             gap_days?: number | null;
             /** Explanation */
@@ -1783,6 +2629,13 @@ export interface components {
             /** Checked At */
             checked_at?: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+        };
+        /** AcknowledgeCheckRequest */
+        AcknowledgeCheckRequest: {
+            /** Check Code */
+            check_code: string;
+            /** Note */
+            note: string;
         };
         /** ActionDecisionRequest */
         ActionDecisionRequest: {
@@ -1797,6 +2650,8 @@ export interface components {
              * @default false
              */
             confirmed: boolean;
+            /** Expected Payload Sha256 */
+            expected_payload_sha256?: string | null;
         };
         /** ActionDecisionResult */
         ActionDecisionResult: {
@@ -1812,6 +2667,25 @@ export interface components {
          * @enum {string}
          */
         ActionPermissionLevel: "L0" | "L1" | "L2" | "L3";
+        /** ActionProposal */
+        ActionProposal: {
+            /** Proposal Id */
+            proposal_id: string;
+            /** Action Type */
+            action_type: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string;
+            /** Target Entity */
+            target_entity?: string | null;
+            /**
+             * Requires Approval
+             * @default true
+             * @constant
+             */
+            requires_approval: true;
+        };
         /** ActionProposeRequest */
         ActionProposeRequest: {
             /** Action Type */
@@ -1847,6 +2721,18 @@ export interface components {
          * @enum {string}
          */
         ActorType: "DEMO_SESSION" | "AUTHENTICATED_ACCOUNT";
+        /** AnchorProofRequest */
+        AnchorProofRequest: {
+            /** Document Sha256 */
+            document_sha256: string;
+            /** Document Title */
+            document_title: string;
+            /**
+             * Mime Type
+             * @default application/pdf
+             */
+            mime_type: string;
+        };
         /**
          * AnswerCertainty
          * @enum {string}
@@ -1865,6 +2751,10 @@ export interface components {
             page: number;
             /** Quote */
             quote: string;
+            /** Language */
+            language?: string | null;
+            /** Explanation Label */
+            explanation_label?: string | null;
         };
         /** AnswerFeedback */
         AnswerFeedback: {
@@ -1899,6 +2789,21 @@ export interface components {
             /** Request Id */
             request_id: string;
         };
+        /** ApproveActionRequest */
+        ApproveActionRequest: {
+            /** Payload Sha256 */
+            payload_sha256: string;
+            /**
+             * Payload Version
+             * @default 1
+             */
+            payload_version: number;
+            /**
+             * Confirm
+             * @default true
+             */
+            confirm: boolean;
+        };
         /** AskAnswer */
         AskAnswer: {
             /** Answer Points */
@@ -1921,6 +2826,16 @@ export interface components {
             chat_session_id?: string | null;
             /** Answer Id */
             answer_id?: string | null;
+            /**
+             * Intent
+             * @default POLICY_QUESTION
+             * @enum {string}
+             */
+            intent: "POLICY_QUESTION" | "COVERAGE_STATUS" | "CLAIM_HELP" | "REMINDER_REQUEST" | "SERVICING_REQUEST" | "CARE_NAVIGATION" | "OUT_OF_SCOPE" | "MEDICAL_ADVICE";
+            /** Tool Steps */
+            tool_steps?: components["schemas"]["ToolStep"][];
+            /** Proposals */
+            proposals?: components["schemas"]["ActionProposal"][];
         };
         /** AskRequest */
         AskRequest: {
@@ -1935,7 +2850,7 @@ export interface components {
          * AssessmentStatus
          * @enum {string}
          */
-        AssessmentStatus: "PASS" | "GAP_FOUND" | "NEEDS_VERIFICATION" | "NOT_APPLICABLE";
+        AssessmentStatus: "UNABLE_TO_DETERMINE" | "NO_DATE_DIFFERENCE" | "DATE_DIFFERENCE_DETECTED" | "POTENTIAL_COVERAGE_GAP" | "PASS" | "GAP_FOUND" | "NEEDS_VERIFICATION" | "NOT_APPLICABLE";
         /** AuditEvent */
         AuditEvent: {
             /**
@@ -1978,6 +2893,13 @@ export interface components {
             /** Approval Status */
             approval_status?: string | null;
         };
+        /** AuthCapabilities */
+        AuthCapabilities: {
+            /** Email Delivery */
+            email_delivery: boolean;
+            /** Google Oauth */
+            google_oauth: boolean;
+        };
         /** AuthMessage */
         AuthMessage: {
             /** Message */
@@ -2018,6 +2940,11 @@ export interface components {
              * @default INSURANCE_POLICY
              */
             document_type: string;
+        };
+        /** Body_upload_claim_evidence_api_v1_workflow_claims_cases__claim_id__evidence_post */
+        Body_upload_claim_evidence_api_v1_workflow_claims_cases__claim_id__evidence_post: {
+            /** File */
+            file: string;
         };
         /** Body_upload_document_api_v1_account_documents_post */
         Body_upload_document_api_v1_account_documents_post: {
@@ -2161,6 +3088,14 @@ export interface components {
             /** Country Code */
             country_code: string;
             status: components["schemas"]["ClaimCaseStatus"];
+            /** Claim Ref */
+            claim_ref?: string | null;
+            /** Sandbox Status */
+            sandbox_status?: string | null;
+            /** Last Checked At */
+            last_checked_at?: string | null;
+            /** Monitoring State */
+            monitoring_state?: ("NOT_CONFIGURED" | "ACTIVE" | "PAUSED" | "FAILED") | null;
             /**
              * Created At
              * Format: date-time
@@ -2194,6 +3129,24 @@ export interface components {
             checklist: components["schemas"]["CaseChecklistItem"][];
             /** Consistency Checks */
             consistency_checks: components["schemas"]["ConsistencyCheck"][];
+            /** Timeline */
+            timeline?: components["schemas"]["ClaimCaseEvent"][];
+        };
+        /** ClaimCaseEvent */
+        ClaimCaseEvent: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Event Type */
+            event_type: string;
+            status_snapshot: components["schemas"]["ClaimCaseStatus"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** ClaimCasePage */
         ClaimCasePage: {
@@ -2205,7 +3158,7 @@ export interface components {
          * ClaimCaseStatus
          * @enum {string}
          */
-        ClaimCaseStatus: "DRAFT" | "READY_FOR_SUBMISSION" | "SUBMITTED" | "PROCESSING" | "APPROVED" | "REJECTED" | "CANCELLED";
+        ClaimCaseStatus: "DRAFT" | "NEEDS_EVIDENCE" | "READY_FOR_REVIEW" | "AWAITING_APPROVAL" | "READY_FOR_SUBMISSION" | "SUBMITTED" | "SUBMITTED_SANDBOX" | "PROCESSING" | "ADDITIONAL_INFORMATION_REQUIRED" | "APPROVED" | "REJECTED" | "SANDBOX_APPROVED" | "SANDBOX_REJECTED" | "CANCELLED";
         /** ClaimChecklistItem */
         ClaimChecklistItem: {
             /** Requirement Code */
@@ -2271,6 +3224,59 @@ export interface components {
          * @enum {string}
          */
         CompletenessStatus: "FOUND" | "UNVERIFIED" | "MISSING" | "NOT_APPLICABLE";
+        /** ComputedFact */
+        ComputedFact: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Value */
+            value: string;
+            /** Unit */
+            unit?: string | null;
+            provenance: components["schemas"]["FactProvenance"];
+        };
+        /** ConfirmFieldsRequest */
+        ConfirmFieldsRequest: {
+            /** Values */
+            values: {
+                [key: string]: string;
+            };
+        };
+        /** ConnectedSource */
+        ConnectedSource: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+        };
+        /** ConnectedSources */
+        ConnectedSources: {
+            /** Items */
+            items: components["schemas"]["ConnectedSource"][];
+            /** Reason */
+            reason: string;
+        };
+        /** ConsentHistory */
+        ConsentHistory: {
+            /** Items */
+            items: components["schemas"]["ConsentHistoryItem"][];
+        };
+        /** ConsentHistoryItem */
+        ConsentHistoryItem: {
+            purpose: components["schemas"]["ConsentPurpose"];
+            /** Granted */
+            granted: boolean;
+            /** Policy Version */
+            policy_version?: string | null;
+            /**
+             * Timestamp
+             * Format: date-time
+             */
+            timestamp: string;
+        };
         /**
          * ConsentPurpose
          * @enum {string}
@@ -2305,6 +3311,29 @@ export interface components {
             /** User Note */
             user_note?: string | null;
         };
+        /**
+         * ContextMode
+         * @enum {string}
+         */
+        ContextMode: "ACCOUNT" | "DEMO";
+        /** ContinuitySummary */
+        ContinuitySummary: {
+            /** Uncovered Days */
+            uncovered_days?: number | null;
+            /** Interval Start */
+            interval_start?: string | null;
+            /** Interval End */
+            interval_end?: string | null;
+            /** Compared To */
+            compared_to?: string | null;
+            /** Rule Id */
+            rule_id?: string | null;
+            /**
+             * Rule Verification Status
+             * @default UNVERIFIED
+             */
+            rule_verification_status: string;
+        };
         /** CountryManifest */
         CountryManifest: {
             /** Country Code */
@@ -2331,6 +3360,8 @@ export interface components {
              * @default UTC
              */
             default_timezone: string;
+            /** Default Currency */
+            default_currency?: string | null;
             /** City Timezones */
             city_timezones?: {
                 [key: string]: string;
@@ -2387,6 +3418,18 @@ export interface components {
             label: string;
             requirement_level: components["schemas"]["RequirementLevel"];
             ownership_status: components["schemas"]["OwnershipStatus"];
+            /**
+             * Applicability
+             * @default RECOMMENDED
+             * @enum {string}
+             */
+            applicability: "REQUIRED_VERIFIED" | "RECOMMENDED" | "APPLICABILITY_UNVERIFIED" | "NOT_APPLICABLE";
+            /**
+             * Evidence State
+             * @default NEEDS_VERIFICATION
+             * @enum {string}
+             */
+            evidence_state: "HAVE_COVERAGE" | "MISSING_EVIDENCE" | "POTENTIAL_GAP" | "NEEDS_VERIFICATION" | "NOT_APPLICABLE";
             /** Explanation */
             explanation: string;
             source_reference?: components["schemas"]["RuleSource"] | null;
@@ -2405,6 +3448,7 @@ export interface components {
              */
             action_url: string;
             visa_assessment?: components["schemas"]["VisaCoverageAssessment"] | null;
+            continuity?: components["schemas"]["ContinuitySummary"] | null;
             exclusion?: components["schemas"]["SourceEvidence"] | null;
         };
         /**
@@ -2412,6 +3456,48 @@ export interface components {
          * @enum {string}
          */
         CoverageStatus: "COVERED" | "NOT_COVERED" | "UNKNOWN";
+        /** CreateActionRequest */
+        CreateActionRequest: {
+            /** Action Type */
+            action_type: string;
+            /** Entity Type */
+            entity_type?: string | null;
+            /** Entity Id */
+            entity_id?: string | null;
+            /** Draft Inputs */
+            draft_inputs?: {
+                [key: string]: string;
+            };
+            /** Title */
+            title?: string | null;
+            /** Purpose */
+            purpose?: string | null;
+        };
+        /** CreateClaimRequest */
+        CreateClaimRequest: {
+            /** Coverage Ref */
+            coverage_ref: string;
+            /** Claim Type */
+            claim_type: string;
+            /** Title */
+            title?: string | null;
+            /**
+             * Insured Person
+             * @default Self
+             */
+            insured_person: string;
+            /** Claimant Name */
+            claimant_name?: string | null;
+            /**
+             * Origin
+             * @default CLAIMS_CENTER
+             */
+            origin: string;
+            /** Origin Ref */
+            origin_ref?: string | null;
+            /** Idempotency Key */
+            idempotency_key?: string | null;
+        };
         /** DataInventory */
         DataInventory: {
             /** Document Count */
@@ -2450,9 +3536,9 @@ export interface components {
         DeleteRequest: {
             /**
              * Confirm
-             * @constant
+             * @enum {string}
              */
-            confirm: "HAPUS";
+            confirm: "DELETE" | "HAPUS";
         };
         /** Deleted */
         Deleted: {
@@ -2485,6 +3571,17 @@ export interface components {
              * @default true
              */
             synthetic: boolean;
+            /** City */
+            city?: string | null;
+            /** Role Label */
+            role_label?: string | null;
+            /** Insurance Categories */
+            insurance_categories?: string[];
+            /**
+             * Is Synthetic
+             * @default true
+             */
+            is_synthetic: boolean;
         };
         /** DemoSession */
         DemoSession: {
@@ -2512,6 +3609,11 @@ export interface components {
             expires_at: string;
             actor: components["schemas"]["Actor"];
         };
+        /**
+         * DisplayLanguage
+         * @enum {string}
+         */
+        DisplayLanguage: "en" | "zh" | "id";
         /** Document */
         Document: {
             /**
@@ -2596,10 +3698,75 @@ export interface components {
             document_id: string;
             status: components["schemas"]["ProcessingStatus"];
         };
+        /** EditActionRequest */
+        EditActionRequest: {
+            /** Changes */
+            changes: {
+                [key: string]: string;
+            };
+        };
+        /** EditClaimRequest */
+        EditClaimRequest: {
+            /** Title */
+            title?: string | null;
+            /** Claim Type */
+            claim_type?: string | null;
+            /** Service Date */
+            service_date?: string | null;
+            /** Provider Name */
+            provider_name?: string | null;
+            /** Amount */
+            amount?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /** Claimant Name */
+            claimant_name?: string | null;
+            /** Insured Person */
+            insured_person?: string | null;
+        };
+        /** EditDraftRequest */
+        EditDraftRequest: {
+            /** Values */
+            values: {
+                [key: string]: string;
+            };
+        };
         /** EmailRequest */
         EmailRequest: {
             /** Email */
             email: string;
+        };
+        /** EmergencyContact */
+        EmergencyContact: {
+            /**
+             * Service Code
+             * @enum {string}
+             */
+            service_code: "medical" | "police" | "fire" | "general";
+            /** Label */
+            label: string;
+            /** Jurisdiction */
+            jurisdiction: string;
+            /** Phone Number */
+            phone_number: string;
+            /** Source Url */
+            source_url: string;
+            /**
+             * Checked At
+             * Format: date
+             */
+            checked_at: string;
+            verification_status: components["schemas"]["VerificationStatus"];
+            evidence_class?: components["schemas"]["EvidenceClass"] | null;
+        };
+        /** EmergencyDirectory */
+        EmergencyDirectory: {
+            /** Country Code */
+            country_code: string;
+            /** Label */
+            label: string;
+            /** Contacts */
+            contacts: components["schemas"]["EmergencyContact"][];
         };
         /** EmergencyInfo */
         EmergencyInfo: {
@@ -2607,7 +3774,7 @@ export interface components {
             phone_number?: string | null;
             /**
              * Label
-             * @default Darurat? Periksa layanan darurat setempat.
+             * @default Emergency? Check local emergency services.
              */
             label: string;
             /** Source Url */
@@ -2619,6 +3786,10 @@ export interface components {
              * @default false
              */
             available: boolean;
+            /** Contacts */
+            contacts?: {
+                [key: string]: unknown;
+            }[];
         };
         /** EmergencyRedirect */
         EmergencyRedirect: {
@@ -2628,6 +3799,12 @@ export interface components {
              */
             redirect: "emergency";
         };
+        /**
+         * EvidenceClass
+         * @description Real origin of a knowledge record. Only RETRIEVED_OFFICIAL is backed by a fetched artifact.
+         * @enum {string}
+         */
+        EvidenceClass: "RETRIEVED_OFFICIAL" | "MANUALLY_CURATED" | "SYNTHETIC_FIXTURE" | "PLACEHOLDER";
         /** EvidenceMatchResult */
         EvidenceMatchResult: {
             /** Matched Items */
@@ -2642,6 +3819,30 @@ export interface components {
             confidence?: number | null;
             status: components["schemas"]["CompletenessStatus"];
             evidence?: components["schemas"]["SourceEvidence"] | null;
+        };
+        /** FactProvenance */
+        FactProvenance: {
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "DOCUMENT_EXTRACTED" | "USER_DECLARED" | "USER_CONFIRMED" | "KB_PUBLIC" | "SYNTHETIC_FIXTURE" | "COMPUTED";
+            /** Evidence Ref */
+            evidence_ref?: {
+                [key: string]: string | number | null;
+            } | null;
+            /**
+             * Verification Status
+             * @default UNVERIFIED
+             * @enum {string}
+             */
+            verification_status: "VERIFIED" | "USER_CONFIRMED" | "NEEDS_REVIEW" | "UNVERIFIED" | "SYNTHETIC" | "UNAVAILABLE";
+            /** Updated At */
+            updated_at?: string | null;
+            /** Jurisdiction */
+            jurisdiction?: string | null;
+            /** Policy Version */
+            policy_version?: string | null;
         };
         /** FamilyMember */
         FamilyMember: {
@@ -2666,11 +3867,8 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
-            /**
-             * Active Coverage Count
-             * @default 0
-             */
-            active_coverage_count: number;
+            /** Active Coverage Count */
+            active_coverage_count?: number | null;
         };
         /** FamilyMemberCreate */
         FamilyMemberCreate: {
@@ -2695,6 +3893,11 @@ export interface components {
              */
             confirm: true;
         };
+        /**
+         * Goal
+         * @enum {string}
+         */
+        Goal: "UNDERSTAND_COVERAGE" | "DISCOVER_GAPS" | "PREPARE_CLAIM" | "FIND_CARE" | "TRACK_RENEWALS" | "COMPARE_OPTIONS" | "MANAGE_FAMILY";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -2707,6 +3910,40 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** HomeActivityItem */
+        HomeActivityItem: {
+            /** Id */
+            id: string;
+            /** Event Type */
+            event_type: string;
+            /** Category */
+            category?: string | null;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Synthetic
+             * @default false
+             */
+            synthetic: boolean;
+        };
+        /** HomeAttention */
+        HomeAttention: {
+            /** Open Claims */
+            open_claims?: number | null;
+            /** Claims Needing Evidence */
+            claims_needing_evidence?: number | null;
+            /** Pending Approvals */
+            pending_approvals?: number | null;
+            /** Expiring Policies */
+            expiring_policies?: number | null;
+        };
         /** HomeSummary */
         HomeSummary: {
             /** Active */
@@ -2717,6 +3954,11 @@ export interface components {
             needs_verification: number;
             /** Recommendations */
             recommendations: components["schemas"]["Recommendation"][];
+            /** Insights */
+            insights?: components["schemas"]["ProtectionInsight"][];
+            attention?: components["schemas"]["HomeAttention"] | null;
+            /** Recent Activity */
+            recent_activity?: components["schemas"]["HomeActivityItem"][];
             context?: components["schemas"]["WorkspaceContext"] | null;
             /** Coverages */
             coverages?: components["schemas"]["CoverageCard"][];
@@ -2734,9 +3976,39 @@ export interface components {
             triage_available: boolean;
             /**
              * Pathway Help
-             * @default Jelaskan kebutuhan layanan non-darurat.
+             * @default Describe your non-emergency care needs.
              */
             pathway_help: string;
+        };
+        /** InsightDecisionRequest */
+        InsightDecisionRequest: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "DISMISS" | "CORRECT";
+            /** Field Id */
+            field_id?: string | null;
+        };
+        /** InsightList */
+        InsightList: {
+            /** Items */
+            items?: components["schemas"]["ProtectionInsight"][];
+            /**
+             * Kb Version
+             * @default 1.5
+             */
+            kb_version: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /**
+             * Synthetic
+             * @default false
+             */
+            synthetic: boolean;
         };
         /** InsurancePolicy */
         InsurancePolicy: {
@@ -2788,6 +4060,12 @@ export interface components {
             original_file_status: "RETAINED" | "DELETED" | "NOT_STORED";
         };
         JsonValue: unknown;
+        /** LanguageOption */
+        LanguageOption: {
+            code: components["schemas"]["DisplayLanguage"];
+            /** Available */
+            available: boolean;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Email */
@@ -2812,6 +4090,88 @@ export interface components {
              * @default false
              */
             synthetic: boolean;
+        };
+        /** NextAction */
+        NextAction: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "OPEN_REVIEW" | "PREPARE_ACTION" | "OPEN_CLAIM" | "OPEN_PATHWAYS" | "OPEN_EMERGENCY";
+            /** Label */
+            label: string;
+            /** Deep Link */
+            deep_link: string;
+            /** Action Type */
+            action_type?: string | null;
+        };
+        /** Notification */
+        Notification: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Type */
+            type: string;
+            category: components["schemas"]["NotificationCategory"];
+            priority: components["schemas"]["NotificationPriority"];
+            /** Title */
+            title: string;
+            /** Body */
+            body: string;
+            /** Entity Type */
+            entity_type?: string | null;
+            /** Entity Id */
+            entity_id?: string | null;
+            /** Deep Link */
+            deep_link?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Read At */
+            read_at?: string | null;
+            /** Is Read */
+            is_read: boolean;
+            /** Is Demo */
+            is_demo: boolean;
+        };
+        /**
+         * NotificationCategory
+         * @enum {string}
+         */
+        NotificationCategory: "ACTION_REQUIRED" | "CLAIMS" | "PROTECTION" | "SYSTEM";
+        /**
+         * NotificationFilter
+         * @enum {string}
+         */
+        NotificationFilter: "all" | "unread" | "action_required" | "claims" | "protection" | "system";
+        /** NotificationPage */
+        NotificationPage: {
+            /** Items */
+            items: components["schemas"]["Notification"][];
+            /** Total */
+            total: number;
+            /** Unread Count */
+            unread_count: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /**
+         * NotificationPriority
+         * @enum {string}
+         */
+        NotificationPriority: "LOW" | "NORMAL" | "HIGH";
+        /** NotificationsMarked */
+        NotificationsMarked: {
+            /** Updated */
+            updated: number;
+            /** Unread Count */
+            unread_count: number;
         };
         /** NumericFact */
         NumericFact: {
@@ -2870,7 +4230,7 @@ export interface components {
         /** PathwayComparison */
         PathwayComparison: {
             /** Paths */
-            paths: components["schemas"]["PathwayOption"][];
+            paths?: components["schemas"]["PathwayOption"][];
             /** Comparison Id */
             comparison_id?: string | null;
             /** Uncertainties */
@@ -2879,6 +4239,10 @@ export interface components {
             warnings?: string[];
             /** Context Country Code */
             context_country_code?: string | null;
+            /** Ai Guidance */
+            ai_guidance?: string | null;
+            /** Inferred Need */
+            inferred_need?: string | null;
         };
         /** PathwayComparisonRequest */
         PathwayComparisonRequest: {
@@ -2941,6 +4305,32 @@ export interface components {
             priority_reason?: string | null;
             /** Direct Billing */
             direct_billing?: boolean | null;
+            /** Native Name */
+            native_name?: string | null;
+            /** Distance Km */
+            distance_km?: number | null;
+            /** Travel Time Min */
+            travel_time_min?: number | null;
+            /** Language Support */
+            language_support?: string | null;
+            /** Wait Time Estimate */
+            wait_time_estimate?: string | null;
+            /** Tier */
+            tier?: string | null;
+            /** Image Url */
+            image_url?: string | null;
+            /** In Network */
+            in_network?: boolean | null;
+            /** Provider Id */
+            provider_id?: string | null;
+            /** Facility Address */
+            facility_address?: string | null;
+            /** Facility Phone */
+            facility_phone?: string | null;
+            /** Highlights */
+            highlights?: string[];
+            /** Cautions */
+            cautions?: string[];
         };
         /** PolicyAnswer */
         PolicyAnswer: {
@@ -2970,6 +4360,53 @@ export interface components {
         PolicyQuestionRequest: {
             /** Question */
             question: string;
+        };
+        /** Preferences */
+        Preferences: {
+            /** In App Alerts */
+            in_app_alerts: boolean;
+            /** Reminders */
+            reminders: boolean;
+            /** Claim Updates */
+            claim_updates: boolean;
+            /** Renewal Alerts */
+            renewal_alerts: boolean;
+            display_language: components["schemas"]["DisplayLanguage"];
+            /** External Ai Disclosure Acknowledged */
+            external_ai_disclosure_acknowledged: boolean;
+            /** Languages */
+            languages: components["schemas"]["LanguageOption"][];
+            /** Updated At */
+            updated_at?: string | null;
+        };
+        /** PreferencesUpdate */
+        PreferencesUpdate: {
+            /** In App Alerts */
+            in_app_alerts?: boolean | null;
+            /** Reminders */
+            reminders?: boolean | null;
+            /** Claim Updates */
+            claim_updates?: boolean | null;
+            /** Renewal Alerts */
+            renewal_alerts?: boolean | null;
+            display_language?: components["schemas"]["DisplayLanguage"] | null;
+            /** External Ai Disclosure Acknowledged */
+            external_ai_disclosure_acknowledged?: boolean | null;
+        };
+        /** PreparedProposalAction */
+        PreparedProposalAction: {
+            /**
+             * Action Id
+             * Format: uuid
+             */
+            action_id: string;
+            /**
+             * Status
+             * @default AWAITING_APPROVAL
+             */
+            status: string;
+            /** Action Type */
+            action_type: string;
         };
         /**
          * ProcessingStatus
@@ -3006,6 +4443,21 @@ export interface components {
             arrival_date?: string | null;
             /** Visa Expiry Date */
             visa_expiry_date?: string | null;
+            /** Nationality */
+            nationality?: string | null;
+            situation?: components["schemas"]["Situation"] | null;
+            /** Study Start Date */
+            study_start_date?: string | null;
+            /** Study End Date */
+            study_end_date?: string | null;
+            /** Permit End Date */
+            permit_end_date?: string | null;
+            /** Employer Name */
+            employer_name?: string | null;
+            /** Goals */
+            goals?: components["schemas"]["Goal"][];
+            /** Protection Scope */
+            protection_scope?: components["schemas"]["ProtectionScope"][];
         };
         /** ProfileResponse */
         ProfileResponse: {
@@ -3046,6 +4498,21 @@ export interface components {
             arrival_date?: string | null;
             /** Visa Expiry Date */
             visa_expiry_date?: string | null;
+            /** Nationality */
+            nationality?: string | null;
+            situation?: components["schemas"]["Situation"] | null;
+            /** Study Start Date */
+            study_start_date?: string | null;
+            /** Study End Date */
+            study_end_date?: string | null;
+            /** Permit End Date */
+            permit_end_date?: string | null;
+            /** Employer Name */
+            employer_name?: string | null;
+            /** Goals */
+            goals?: components["schemas"]["Goal"][];
+            /** Protection Scope */
+            protection_scope?: components["schemas"]["ProtectionScope"][];
         };
         /** ProposedAction */
         ProposedAction: {
@@ -3059,11 +4526,10 @@ export interface components {
             status: components["schemas"]["ActionStatus"];
             /** Preview */
             preview: string;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
+            /** Created At */
+            created_at?: string | null;
+            /** Payload Version */
+            payload_version?: number | null;
             /** Approved At */
             approved_at?: string | null;
             /** Executed At */
@@ -3079,6 +4545,8 @@ export interface components {
             source_screen?: string | null;
             /** Approved Payload Sha256 */
             approved_payload_sha256?: string | null;
+            /** Proposed Payload Sha256 */
+            proposed_payload_sha256?: string | null;
             /** Title */
             title?: string | null;
             /**
@@ -3095,6 +4563,65 @@ export interface components {
                 [key: string]: components["schemas"]["JsonValue"];
             } | null;
         };
+        /** ProtectionInsight */
+        ProtectionInsight: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Rule Id */
+            rule_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "COVERAGE_CONTINUITY_INTERVAL" | "POLICY_EXPIRY_SOON" | "MISSING_EVIDENCE" | "CLAIM_NEEDS_EVIDENCE" | "ACTION_AWAITING_APPROVAL" | "FIELD_NEEDS_CONFIRMATION";
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "HIGH" | "NORMAL" | "NEEDS_VERIFICATION";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "OPEN" | "RESOLVED" | "SUPERSEDED" | "USER_CORRECTED";
+            /** Title */
+            title: string;
+            /** Explanation */
+            explanation: string;
+            /** Facts */
+            facts?: components["schemas"]["ComputedFact"][];
+            /** Coverage Id */
+            coverage_id?: string | null;
+            /** Evidence Refs */
+            evidence_refs?: {
+                [key: string]: string | number | null;
+            }[];
+            /** Next Actions */
+            next_actions?: components["schemas"]["NextAction"][];
+            /**
+             * Kb Version
+             * @default 1.5
+             */
+            kb_version: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * ProtectionScope
+         * @enum {string}
+         */
+        ProtectionScope: "SELF" | "SPOUSE" | "CHILDREN" | "DEPENDENTS" | "HOUSEHOLD";
         /** PurposeConsent */
         PurposeConsent: {
             /**
@@ -3414,6 +4941,17 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** ServicingDraftRequest */
+        ServicingDraftRequest: {
+            /** Request Type */
+            request_type: string;
+            /** Policy Reference */
+            policy_reference?: string | null;
+            /** Form Data */
+            form_data: {
+                [key: string]: string;
+            };
+        };
         /** SessionCreate */
         SessionCreate: {
             /** Persona Id */
@@ -3447,6 +4985,11 @@ export interface components {
             /** Session Token */
             session_token: string;
         };
+        /**
+         * Situation
+         * @enum {string}
+         */
+        Situation: "STUDENT" | "EMPLOYEE" | "SELF_EMPLOYED" | "OTHER";
         /** SourceEvidence */
         SourceEvidence: {
             /**
@@ -3487,17 +5030,49 @@ export interface components {
             /** Source Url */
             source_url?: string | null;
         };
+        /** ToolStep */
+        ToolStep: {
+            /** Tool */
+            tool: string;
+            /**
+             * Status
+             * @default COMPLETED
+             * @enum {string}
+             */
+            status: "COMPLETED" | "SKIPPED" | "PROPOSED";
+            /** Summary */
+            summary: string;
+        };
+        /** TriageBody */
+        TriageBody: {
+            /** Text */
+            text: string;
+            /**
+             * Country Code
+             * @default CN
+             */
+            country_code: string;
+        };
         /** TriageMatch */
         TriageMatch: {
             /** Id */
             id: string;
             /** Kb Version */
             kb_version: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "MEDICAL" | "SELF_HARM";
+            /** Source Url */
+            source_url: string;
         };
         /** TriageRequest */
         TriageRequest: {
             /** Text */
             text: string;
+            /** Country Code */
+            country_code?: string | null;
         };
         /** TriageResult */
         TriageResult: {
@@ -3505,6 +5080,14 @@ export interface components {
             red_flag: boolean;
             /** Matched */
             matched: components["schemas"]["TriageMatch"][];
+            /** Safety Flows */
+            safety_flows?: ("EMERGENCY_MEDICAL" | "SELF_HARM_SUPPORT")[];
+            /**
+             * Screening Complete
+             * @default false
+             * @constant
+             */
+            screening_complete: false;
         };
         /** UnifiedInsuranceRecord */
         UnifiedInsuranceRecord: {
@@ -3529,6 +5112,56 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** UnreadCount */
+        UnreadCount: {
+            /** Unread Count */
+            unread_count: number;
+        };
+        /**
+         * UserContext
+         * @description Server-authoritative context for either an account or a demo session.
+         */
+        UserContext: {
+            mode: components["schemas"]["ContextMode"];
+            /** Is Synthetic */
+            is_synthetic: boolean;
+            /** Persona Id */
+            persona_id?: string | null;
+            /** Display Name */
+            display_name?: string | null;
+            /** Email */
+            email?: string | null;
+            /**
+             * Email Verified
+             * @default false
+             */
+            email_verified: boolean;
+            /** Residence Country */
+            residence_country?: string | null;
+            /** City */
+            city?: string | null;
+            /** Currency */
+            currency?: string | null;
+            situation?: components["schemas"]["Situation"] | null;
+            /** Onboarding Completed */
+            onboarding_completed: boolean;
+            /** Declared Insurance Categories */
+            declared_insurance_categories?: string[];
+            /** Goals */
+            goals?: components["schemas"]["Goal"][];
+            /** Profile Completed */
+            profile_completed: boolean;
+            /** Insurance Declared */
+            insurance_declared: boolean;
+            /** Documents Uploaded */
+            documents_uploaded: number;
+            /** Fields Extracted */
+            fields_extracted: number;
+            /** Fields Reviewed */
+            fields_reviewed: number;
+            /** Coverage Verified */
+            coverage_verified: boolean;
         };
         /** UserProfile */
         UserProfile: {
@@ -3560,6 +5193,21 @@ export interface components {
             arrival_date?: string | null;
             /** Visa Expiry Date */
             visa_expiry_date?: string | null;
+            /** Nationality */
+            nationality?: string | null;
+            situation?: components["schemas"]["Situation"] | null;
+            /** Study Start Date */
+            study_start_date?: string | null;
+            /** Study End Date */
+            study_end_date?: string | null;
+            /** Permit End Date */
+            permit_end_date?: string | null;
+            /** Employer Name */
+            employer_name?: string | null;
+            /** Goals */
+            goals?: components["schemas"]["Goal"][];
+            /** Protection Scope */
+            protection_scope?: components["schemas"]["ProtectionScope"][];
             /**
              * Id
              * Format: uuid
@@ -3613,11 +5261,26 @@ export interface components {
          * @enum {string}
          */
         VerificationStatus: "VERIFIED" | "UNVERIFIED";
+        /** VerifyProofRequest */
+        VerifyProofRequest: {
+            /** Original Sha256 */
+            original_sha256: string;
+            /** Candidate Content Base64 */
+            candidate_content_base64?: string | null;
+            /** Candidate Text */
+            candidate_text?: string | null;
+        };
         /** VisaCoverageAssessment */
         VisaCoverageAssessment: {
             /** Applicable */
             applicable: boolean;
             assessment_status: components["schemas"]["AssessmentStatus"];
+            /**
+             * Requirement Status
+             * @default NEEDS_VERIFICATION
+             * @enum {string}
+             */
+            requirement_status: "VERIFIED" | "NEEDS_VERIFICATION";
             /** Gap Days */
             gap_days?: number | null;
             /** Gap Periods */
@@ -3625,6 +5288,187 @@ export interface components {
             /** Explanation */
             explanation: string;
             rule_source?: components["schemas"]["RuleSource"] | null;
+        };
+        /** WorkflowActionQueueCounts */
+        WorkflowActionQueueCounts: {
+            /** Pending */
+            pending: number;
+            /** Completed */
+            completed: number;
+            /** Rejected */
+            rejected: number;
+            /** All */
+            all: number;
+        };
+        /** WorkflowActionQueueResponse */
+        WorkflowActionQueueResponse: {
+            counts: components["schemas"]["WorkflowActionQueueCounts"];
+            /** Actions */
+            actions: components["schemas"]["WorkflowActionView"][];
+        };
+        /** WorkflowActionView */
+        WorkflowActionView: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Reference */
+            reference: string;
+            /** Action Type */
+            action_type: string;
+            /** Title */
+            title: string;
+            /** Purpose */
+            purpose: string;
+            /** Status */
+            status: string;
+            /** Destination */
+            destination: string;
+            /** Environment */
+            environment: string;
+            /** Environment Label */
+            environment_label: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Payload Sha256 */
+            payload_sha256: string;
+            /** Payload Version */
+            payload_version: number;
+            /** Required Permissions */
+            required_permissions: string[];
+            /** Expires At */
+            expires_at?: unknown | null;
+            /** Is Expired */
+            is_expired: boolean;
+            /** Claim Id */
+            claim_id?: string | null;
+            /** Claim Reference */
+            claim_reference?: string | null;
+            /** Claim Title */
+            claim_title?: string | null;
+            /** Editable Fields */
+            editable_fields: string[];
+            /** Requires Approval */
+            requires_approval: boolean;
+            /** Approved */
+            approved: boolean;
+            /** Ai Prepared */
+            ai_prepared: boolean;
+            /** Consequence */
+            consequence: string;
+            /** Privacy Note */
+            privacy_note: string;
+            /** Receipt Reference */
+            receipt_reference?: string | null;
+            /** Created At */
+            created_at: unknown;
+            /** Updated At */
+            updated_at: unknown;
+        };
+        /** WorkflowAuditEvent */
+        WorkflowAuditEvent: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Event Type */
+            event_type: string;
+            /** Category */
+            category: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string;
+            /** Actor Type */
+            actor_type: string;
+            /** Tool */
+            tool?: string | null;
+            /** Result Status */
+            result_status?: string | null;
+            /** Reason */
+            reason?: string | null;
+            /** Claim Id */
+            claim_id?: string | null;
+            /** Action Id */
+            action_id?: string | null;
+            /** Receipt Ref */
+            receipt_ref?: string | null;
+            /** Evidence Refs */
+            evidence_refs?: unknown[];
+            /** Details */
+            details?: {
+                [key: string]: unknown;
+            };
+            /** Created At */
+            created_at: unknown;
+            /**
+             * Synthetic
+             * @default false
+             */
+            synthetic: boolean;
+            /**
+             * Source Table
+             * @default wf_audit_logs
+             */
+            source_table: string;
+        };
+        /** WorkflowAuditTimelineResponse */
+        WorkflowAuditTimelineResponse: {
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Synthetic */
+            synthetic: boolean;
+            /** Events */
+            events: components["schemas"]["WorkflowAuditEvent"][];
+        };
+        /** WorkflowExecuteResponse */
+        WorkflowExecuteResponse: {
+            receipt: components["schemas"]["WorkflowExecutionReceipt"];
+            /** Replayed */
+            replayed: boolean;
+            action: components["schemas"]["WorkflowActionView"];
+        };
+        /** WorkflowExecutionReceipt */
+        WorkflowExecutionReceipt: {
+            /** Receipt Reference */
+            receipt_reference: string;
+            /**
+             * Action Id
+             * Format: uuid
+             */
+            action_id: string;
+            /** Action Reference */
+            action_reference?: string | null;
+            /** Action Title */
+            action_title?: string | null;
+            /** Claim Reference */
+            claim_reference?: string | null;
+            /** Environment */
+            environment: string;
+            /** Status */
+            status: string;
+            /** Payload Digest */
+            payload_digest: string;
+            /** Submitted At */
+            submitted_at: unknown;
+            /** Audit Event Id */
+            audit_event_id?: string | null;
+            /** Next Action */
+            next_action?: string | null;
+            /** Signature */
+            signature: string;
+            /** Signature Valid */
+            signature_valid: boolean;
+            /** Notice */
+            notice: string;
         };
         /** WorkspaceContext */
         WorkspaceContext: {
@@ -3737,9 +5581,9 @@ export interface components {
             rule_id: string;
             /**
              * Kind
-             * @constant
+             * @enum {string}
              */
-            kind: "visa_coverage";
+            kind: "visa_coverage" | "coverage_continuity";
             /** Description */
             description: string;
             applicability: components["schemas"]["Applicability"];
@@ -3749,6 +5593,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
         };
         /** CoverageVocabulary */
         CoverageVocabulary: {
@@ -3801,6 +5652,10 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** Contacts */
+            contacts?: components["schemas"]["EmergencyContact"][];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
         };
         /** ExtractionTemplate */
         ExtractionTemplate: {
@@ -3861,6 +5716,8 @@ export interface components {
             emergency: boolean;
             /** @default null */
             tariff: components["schemas"]["ReferenceTariff"] | null;
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
         };
         /** PathwayPriority */
         PathwayPriority: {
@@ -3951,14 +5808,38 @@ export interface components {
         RedFlagConfig: {
             /** Id */
             id: string;
-            /** Category */
-            category: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "MEDICAL" | "SELF_HARM";
             /** Phrases Id */
             phrases_id: string[];
             /** Phrases En */
             phrases_en: string[];
+            /** Phrases Zh */
+            phrases_zh?: string[];
             /** Destination Code */
             destination_code: string;
+            /**
+             * Jurisdiction
+             * @default null
+             */
+            jurisdiction: string | null;
+            /**
+             * Source Url
+             * @default null
+             */
+            source_url: string | null;
+            /**
+             * Checked At
+             * @default null
+             */
+            checked_at: string | null;
+            /** @default UNVERIFIED */
+            verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
         };
         /** ReferenceTariff */
         ReferenceTariff: {
@@ -4008,15 +5889,15 @@ export interface components {
             /**
              * Start Field
              * @default arrival_date
-             * @constant
+             * @enum {string}
              */
-            start_field: "arrival_date";
+            start_field: "arrival_date" | "study_start_date";
             /**
              * End Field
              * @default visa_expiry_date
-             * @constant
+             * @enum {string}
              */
-            end_field: "visa_expiry_date";
+            end_field: "visa_expiry_date" | "study_or_permit_end_date";
             /**
              * Inclusive End
              * @default true
@@ -4083,6 +5964,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             data: components["schemas"]["EmergencyConfig"];
         };
         /** VersionedResource[PathwaysResource] */
@@ -4099,6 +5987,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             data: components["schemas"]["PathwaysResource"];
         };
         /** VersionedResource[dict[str, list[str]]] */
@@ -4115,6 +6010,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: {
                 [key: string]: string[];
@@ -4134,6 +6036,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: {
                 [key: string]: string;
@@ -4153,6 +6062,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["CountryRule"][];
         };
@@ -4170,6 +6086,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["CoverageVocabulary"][];
         };
@@ -4187,6 +6110,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["ExtractionTemplate"][];
         };
@@ -4204,6 +6134,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["RecommendationRuleConfig"][];
         };
@@ -4221,6 +6158,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["RedFlagConfig"][];
         };
@@ -4238,6 +6182,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["RequiredFieldConfig"][];
         };
@@ -4255,6 +6206,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["SuggestedDocument"][];
         };
@@ -4272,6 +6230,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["TaskConfig"][];
         };
@@ -4289,6 +6254,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["VerificationStepConfig"][];
         };
@@ -4306,6 +6278,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: components["schemas"]["VocabularyEntry"][];
         };
@@ -4323,6 +6302,13 @@ export interface components {
             /** Checked At */
             checked_at: string | null;
             verification_status: components["schemas"]["VerificationStatus"];
+            /** @default null */
+            evidence_class: components["schemas"]["EvidenceClass"] | null;
+            /**
+             * Provenance Note
+             * @default null
+             */
+            provenance_note: string | null;
             /** Data */
             data: string[];
         };
@@ -4363,11 +6349,104 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    capabilities_api_v1_auth_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthCapabilities"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     account_me_api_v1_auth_me_get: {
         parameters: {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -4462,6 +6541,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -5130,6 +7210,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -5224,6 +7305,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -5322,6 +7404,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -5420,6 +7503,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -5514,6 +7598,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -5612,6 +7697,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -5710,6 +7796,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path: {
                 country_code: string;
@@ -5806,6 +7893,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -5906,6 +7994,7 @@ export interface operations {
             };
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -5995,11 +8084,297 @@ export interface operations {
             };
         };
     };
+    consent_history_api_v1_account_consents_history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentHistory"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    connected_sources_api_v1_account_connected_sources_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectedSources"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    export_account_data_api_v1_account_export_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountExport"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     inventory_api_v1_account_inventory_get: {
         parameters: {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -6094,6 +8469,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -6192,6 +8568,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -6286,6 +8663,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path: {
                 policy_id: string;
@@ -6382,6 +8760,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -6476,6 +8855,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -6574,6 +8954,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path: {
                 member_id: string;
@@ -6675,6 +9056,7 @@ export interface operations {
             };
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -6771,6 +9153,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -6865,6 +9248,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path: {
                 event_id: string;
@@ -6961,6 +9345,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7055,6 +9440,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7153,6 +9539,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path: {
                 document_id: string;
@@ -7249,6 +9636,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path: {
                 document_id: string;
@@ -7349,6 +9737,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path: {
                 document_id: string;
@@ -7445,6 +9834,7 @@ export interface operations {
             query?: never;
             header?: {
                 authorization?: string | null;
+                "x-demo-session"?: string | null;
             };
             path: {
                 field_id: string;
@@ -7464,6 +9854,3344 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AccountField"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    claims_overview_api_v1_workflow_claims_overview_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    list_claim_cases_api_v1_workflow_claims_cases_get: {
+        parameters: {
+            query?: {
+                status_filter?: string | null;
+                q?: string | null;
+            };
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    create_claim_case_api_v1_workflow_claims_cases_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClaimRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_claim_case_detail_api_v1_workflow_claims_cases__claim_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    edit_claim_case_api_v1_workflow_claims_cases__claim_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditClaimRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    upload_claim_evidence_api_v1_workflow_claims_cases__claim_id__evidence_post: {
+        parameters: {
+            query?: {
+                evidence_kind?: string;
+            };
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_claim_evidence_api_v1_workflow_claims_cases__claim_id__evidence_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    confirm_evidence_fields_api_v1_workflow_claims_cases__claim_id__evidence__evidence_id__confirm_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                evidence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmFieldsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    generate_claim_draft_api_v1_workflow_claims_cases__claim_id__draft_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    edit_claim_draft_api_v1_workflow_claims_cases__claim_id__draft_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    confirm_claim_draft_api_v1_workflow_claims_cases__claim_id__draft_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    send_claim_to_approval_api_v1_workflow_claims_cases__claim_id__send_to_approval_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    sync_claim_sandbox_status_api_v1_workflow_claims_cases__claim_id__sync_status_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    acknowledge_consistency_check_api_v1_workflow_claims_cases__claim_id__acknowledge_check_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcknowledgeCheckRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    create_workflow_action_api_v1_workflow_actions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowActionView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    list_action_queue_api_v1_workflow_actions_queue_get: {
+        parameters: {
+            query?: {
+                status_tab?: string | null;
+                q?: string | null;
+            };
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowActionQueueResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_action_detail_api_v1_workflow_actions__action_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowActionView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    edit_action_payload_api_v1_workflow_actions__action_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowActionView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    approve_action_api_v1_workflow_actions__action_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowActionView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    reject_action_api_v1_workflow_actions__action_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowActionView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    cancel_action_api_v1_workflow_actions__action_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowActionView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    execute_action_api_v1_workflow_actions__action_id__execute_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowExecuteResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_action_receipt_api_v1_workflow_actions__action_id__receipt_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowExecutionReceipt"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    list_workflow_reminders_api_v1_workflow_reminders_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    cancel_workflow_reminder_api_v1_workflow_reminders__reminder_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                reminder_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_audit_timeline_api_v1_workflow_audit_timeline_get: {
+        parameters: {
+            query?: {
+                category?: string | null;
+                q?: string | null;
+                status?: string | null;
+                claim_id?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowAuditTimelineResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_audit_event_detail_api_v1_workflow_audit_events__event_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowAuditEvent"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_emergency_contacts_api_v1_workflow_emergency_contacts_get: {
+        parameters: {
+            query?: {
+                country_code?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    evaluate_emergency_triage_api_v1_workflow_emergency_triage_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TriageBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_employer_benefits_api_v1_workflow_employer_benefits_overview_get: {
+        parameters: {
+            query?: {
+                country_code?: string;
+            };
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    compare_catalog_products_api_v1_workflow_products_compare_get: {
+        parameters: {
+            query?: {
+                country_code?: string;
+                category?: string | null;
+                product_category?: string | null;
+                user_segment?: string | null;
+                insurer_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    verify_document_integrity_api_v1_workflow_proof_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyProofRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    anchor_document_digest_api_v1_workflow_proof_anchor_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnchorProofRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    list_servicing_request_types_api_v1_workflow_policy_servicing_types_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    prepare_policy_servicing_draft_api_v1_workflow_policy_servicing_draft_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServicingDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Unauthorized */
@@ -7825,6 +13553,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -7914,11 +13643,200 @@ export interface operations {
             };
         };
     };
+    end_session_api_v1_demo_sessions_me_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    reset_session_api_v1_demo_sessions_me_reset_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-demo-session"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionCreated"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     get_consent_api_v1_consent_get: {
         parameters: {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8013,6 +13931,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8111,6 +14030,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8205,6 +14125,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8303,6 +14224,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8397,6 +14319,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8495,6 +14418,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8589,6 +14513,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8687,6 +14612,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8785,6 +14711,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8879,6 +14806,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -8973,6 +14901,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -9067,6 +14996,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -9161,6 +15091,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -9259,6 +15190,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -9357,6 +15289,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -9458,6 +15391,7 @@ export interface operations {
             };
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -9551,7 +15485,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "X-Freeze-Legacy-Actions"?: string | null;
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -9650,6 +15586,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 action_id: string;
@@ -9745,7 +15682,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "X-Freeze-Legacy-Actions"?: string | null;
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 action_id: string;
@@ -9845,7 +15784,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "X-Freeze-Legacy-Actions"?: string | null;
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 action_id: string;
@@ -9947,7 +15888,9 @@ export interface operations {
                 simulate_failure?: boolean;
             };
             header?: {
+                "X-Freeze-Legacy-Actions"?: string | null;
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 action_id: string;
@@ -10048,6 +15991,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 action_id: string;
@@ -10144,6 +16088,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 action_id: string;
@@ -10245,6 +16190,7 @@ export interface operations {
             };
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -10341,6 +16287,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -10915,6 +16862,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 document_id: string;
@@ -11011,6 +16959,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 document_id: string;
@@ -11111,6 +17060,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 field_id: string;
@@ -11214,6 +17164,7 @@ export interface operations {
             };
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11303,11 +17254,106 @@ export interface operations {
             };
         };
     };
+    emergency_directory_api_v1_emergency_get: {
+        parameters: {
+            query: {
+                country_code: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmergencyDirectory"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     triage_api_v1_triage_post: {
         parameters: {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11410,6 +17456,7 @@ export interface operations {
             };
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11604,6 +17651,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 claim_case_id: string;
@@ -11700,6 +17748,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 claim_case_id: string;
@@ -11800,6 +17849,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 claim_case_id: string;
@@ -11896,6 +17946,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -11990,6 +18041,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -12088,6 +18140,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 event_id: string;
@@ -12184,6 +18237,7 @@ export interface operations {
             query?: never;
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -12284,6 +18338,7 @@ export interface operations {
             };
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path: {
                 claim_ref: string;
@@ -12382,6 +18437,7 @@ export interface operations {
             };
             header?: {
                 "x-demo-session"?: string | null;
+                authorization?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -13425,6 +19481,992 @@ export interface operations {
             };
             /** @description Bad Gateway */
             502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    prepare_proposal_api_v1_ask_proposals__proposal_id__prepare_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path: {
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreparedProposalAction"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Bad Gateway */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_context_api_v1_context_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserContext"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_insights_api_v1_insights_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    post_insight_decision_api_v1_insights__insight_id__decision_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path: {
+                insight_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InsightDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProtectionInsight"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    list_notifications_api_v1_notifications_get: {
+        parameters: {
+            query?: {
+                filter?: components["schemas"]["NotificationFilter"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    unread_count_api_v1_notifications_unread_count_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadCount"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    read_all_api_v1_notifications_read_all_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationsMarked"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    mark_read_api_v1_notifications__notification_id__read_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path: {
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Notification"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_preferences_api_v1_preferences_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    put_preferences_api_v1_preferences_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+                "x-demo-session"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Not Implemented */
+            501: {
                 headers: {
                     [name: string]: unknown;
                 };

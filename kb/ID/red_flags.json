@@ -1,8 +1,107 @@
 {
   "schema_version": "1.5",
   "version": "0.3.0",
-  "source_url": null,
-  "checked_at": null,
-  "verification_status": "UNVERIFIED",
-  "data": []
+  "source_url": "https://www.who.int/news-room/questions-and-answers/item/suicide",
+  "checked_at": "2026-10-19",
+  "verification_status": "VERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer from a cited public page. Not retrieved or machine-verified.",
+  "data": [
+    {
+      "id": "acute_chest_pain",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "nyeri dada",
+        "nyeri dada berat",
+        "nyeri dada disertai sesak",
+        "sakit dada",
+        "dada sesak",
+        "serangan jantung"
+      ],
+      "phrases_en": [
+        "chest pain",
+        "severe chest pain",
+        "chest pain with difficulty breathing",
+        "pressure in chest",
+        "heart attack"
+      ],
+      "phrases_zh": [
+        "胸痛",
+        "胸口剧痛",
+        "心脏绞痛",
+        "胸闷胸痛"
+      ],
+      "destination_code": "medical",
+      "source_url": "https://keslan.kemkes.go.id/view_artikel/4440/waspada-penyakit-jantung-koroner",
+      "checked_at": "2026-10-19",
+      "verification_status": "VERIFIED",
+      "evidence_class": "MANUALLY_CURATED",
+      "jurisdiction": "ID"
+    },
+    {
+      "id": "difficulty_breathing",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "sesak napas",
+        "sesak napas berat",
+        "sulit bernapas",
+        "tidak bisa bernapas",
+        "tersedak"
+      ],
+      "phrases_en": [
+        "difficulty breathing",
+        "shortness of breath",
+        "severe shortness of breath",
+        "cannot breathe",
+        "choking"
+      ],
+      "phrases_zh": [
+        "呼吸困难",
+        "喘不过气",
+        "呼吸衰竭",
+        "窒息"
+      ],
+      "destination_code": "medical",
+      "source_url": "https://keslan.kemkes.go.id/view_artikel/4440/waspada-penyakit-jantung-koroner",
+      "checked_at": "2026-10-19",
+      "verification_status": "VERIFIED",
+      "evidence_class": "MANUALLY_CURATED",
+      "jurisdiction": "ID"
+    },
+    {
+      "id": "self_harm_risk",
+      "category": "SELF_HARM",
+      "phrases_id": [
+        "ingin bunuh diri",
+        "ingin menyakiti diri sendiri",
+        "bunuh diri",
+        "menyakiti diri",
+        "mengakhiri hidup",
+        "ingin mati"
+      ],
+      "phrases_en": [
+        "want to kill myself",
+        "want to hurt myself",
+        "suicide",
+        "kill myself",
+        "self harm",
+        "want to die",
+        "end my life"
+      ],
+      "phrases_zh": [
+        "想自杀",
+        "想伤害自己",
+        "自杀",
+        "想死",
+        "自残",
+        "轻生"
+      ],
+      "destination_code": "safety_support",
+      "source_url": "https://www.who.int/news-room/questions-and-answers/item/suicide",
+      "checked_at": "2026-10-19",
+      "verification_status": "VERIFIED",
+      "evidence_class": "MANUALLY_CURATED",
+      "jurisdiction": "Global safety guidance"
+    }
+  ]
 }

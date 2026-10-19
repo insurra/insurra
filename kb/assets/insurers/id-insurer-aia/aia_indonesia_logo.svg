@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
+  <rect width="320" height="80" rx="8" fill="#FFFFFF" />
+  <circle cx="45" cy="40" r="26" fill="#D31145" />
+  <path d="M35 55 L45 25 L55 55 L48 55 L45 44 L40 55 Z" fill="#FFFFFF" />
+  <text x="85" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#D31145">AIA</text>
+  <text x="85" y="65" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">PT AIA FINANCIAL</text>
+</svg>

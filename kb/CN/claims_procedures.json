@@ -1,0 +1,41 @@
+[
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered procedure. Deadlines and channels were not machine-verified.",
+    "procedure_id": "cn-claim-proc-lxbx",
+    "country_code": "CN",
+    "claims_administrator": "Ping An Pension Insurance Co., Ltd. (Foreign Student Claims Department)",
+    "relevant_product_ids": [
+      "cn-prod-lxbx-student"
+    ],
+    "claim_types": [
+      "Inpatient Hospitalization Reimbursement",
+      "Outpatient Emergency Reimbursement",
+      "Accidental Injury Claim"
+    ],
+    "submission_instructions": "For hospitalization, notify 400-810-5119 within 48 hours of admission. For outpatient, collect original fapiao and medical records, submit claim online via lxbx.net or mail paper originals to Ping An Beijing Claims Center.",
+    "filing_deadlines": "Within 60 calendar days from the date of hospital discharge or outpatient consultation",
+    "required_forms": [
+      "International Student Insurance Claim Application Form (来华留学生保险理赔申请书)"
+    ],
+    "submission_channels": [
+      "Online claim portal (www.lxbx.net)",
+      "Postal mail to Ping An Pension Beijing Center",
+      "Emergency WeChat Service"
+    ],
+    "official_portal_url": "https://www.lxbx.net/claims.html",
+    "preauthorization_requirements": "Hospitalization requires advance call to 400-810-5119. Emergency admissions must be reported within 48 hours.",
+    "reimbursement_procedures": "Insurer audits invoices against national medical insurance catalog. Approved funds transferred to claimant mainland China bank card (UnionPay).",
+    "published_processing_timeline": "7 to 15 working days upon receipt of complete original evidence documents",
+    "status_inquiry_channels": [
+      "Online claim query (www.lxbx.net/query)",
+      "Hotline 400-810-5119",
+      "WeChat official service account"
+    ],
+    "customer_support_contact": "400-810-5119 (Bilingual English and Chinese, 24/7 hotline)",
+    "dispute_escalation_guidance": "Contact Ping An National Customer Service 95511 or escalate to NFRA Financial Consumer Protection Hotline 12378.",
+    "source_url": "https://www.lxbx.net/claims_guide.html",
+    "verification_status": "UNVERIFIED"
+  }
+]

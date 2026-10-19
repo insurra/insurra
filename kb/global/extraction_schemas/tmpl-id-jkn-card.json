@@ -1,0 +1,58 @@
+{
+  "template_id": "tmpl-id-jkn-card",
+  "document_category": "DOC_JKN_CARD",
+  "country_code": "ID",
+  "original_language": "id",
+  "applicable_schemes": [
+    "Program Jaminan Kesehatan Nasional (JKN)"
+  ],
+  "required_fields": [
+    {
+      "field_key": "participant_name",
+      "label_en": "Participant Legal Name",
+      "label_original": "Nama Peserta",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Uppercase text matching KTP / KITAS",
+      "source_evidence_hint": "Center field on front of KIS digital card"
+    },
+    {
+      "field_key": "bpjs_card_number",
+      "label_en": "BPJS Participant Number (No. Kartu KIS)",
+      "label_original": "Nomor Kartu",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "13-digit numeric string",
+      "source_evidence_hint": "Large digits below participant name or barcode"
+    },
+    {
+      "field_key": "nik",
+      "label_en": "National Identity Number (NIK)",
+      "label_original": "NIK",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "16-digit numeric string",
+      "source_evidence_hint": "Field labeled NIK"
+    },
+    {
+      "field_key": "fktp_registered",
+      "label_en": "Registered Primary Clinic (Faskes Tingkat 1)",
+      "label_original": "Fasilitas Kesehatan Tingkat 1 (FKTP)",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Registered clinic title (e.g., Puskesmas Cilandak)",
+      "source_evidence_hint": "Middle row labeled 'Faskes Tk. 1'"
+    },
+    {
+      "field_key": "membership_class",
+      "label_en": "Entitled Care Class Tier",
+      "label_original": "Kelas Rawat",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Kelas 1, Kelas 2, or Kelas 3",
+      "source_evidence_hint": "Lower section labeled 'Kelas'"
+    }
+  ],
+  "optional_fields": [],
+  "review_requirements": "Check active payment status in Mobile JKN to confirm card is not suspended for premium arrears."
+}

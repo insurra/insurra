@@ -1,0 +1,109 @@
+[
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "regulation_id": "CN-REG-MOHRSS-ORDER16",
+    "country_code": "CN",
+    "jurisdiction": "CN-National",
+    "issuing_authority": "Ministry of Human Resources and Social Security of the PRC",
+    "title_original": "在中国境内就业的外国人参加社会保险暂行办法",
+    "title_english": "Interim Measures for the Participation in Social Insurance by Foreigners Employed in China (MoHRSS Order No. 16)",
+    "legal_reference_number": "MoHRSS Order No. 16 (人力资源和社会保障部令第16号)",
+    "promulgation_date": "2011-09-06",
+    "effective_date": "2011-10-15",
+    "category": "Social Insurance Mandate",
+    "summary": "Mandates that foreigners legally employed within the territory of China must participate in the five statutory social insurances: Basic Pension, Basic Medical Insurance, Work-related Injury Insurance, Unemployment Insurance, and Maternity Insurance.",
+    "key_provisions": [
+      "Article 3: Employers recruiting foreigners shall complete social insurance registration within 30 days of obtaining employment certificates.",
+      "Article 4: Both employer and foreign employee shall make monthly social insurance contributions pursuant to statutory rates.",
+      "Article 9: Social insurance agreements between China and foreign countries shall govern exemption from specific contributions (bilateral treaty reciprocity)."
+    ],
+    "applicable_population": [
+      "Legally employed foreign nationals holding Work Permit in China",
+      "Enterprises registered in China"
+    ],
+    "source_url": "https://www.mohrss.gov.cn/xxgk2020/gwyxxgk/201109/t20110906_113038.html",
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "regulation_id": "CN-REG-MOE-ORDER42",
+    "country_code": "CN",
+    "jurisdiction": "CN-National",
+    "issuing_authority": "Ministry of Education, Ministry of Foreign Affairs, Ministry of Public Security",
+    "title_original": "学校招收和培养国际学生管理办法",
+    "title_english": "Provisions on the Administration of the Enrollment and Cultivation of International Students by Schools (Joint Order No. 42)",
+    "legal_reference_number": "MoE, MFA, MPS Joint Order No. 42 (教育部、外交部、公安部令第42号)",
+    "promulgation_date": "2017-03-20",
+    "effective_date": "2017-07-01",
+    "category": "International Student Insurance Mandate",
+    "summary": "Requires that all international students studying at schools in China must purchase comprehensive medical insurance covering accidental injury and inpatient hospitalization.",
+    "key_provisions": [
+      "Article 41: Schools shall implement an international student insurance system. International students must purchase comprehensive medical insurance in accordance with national regulations.",
+      "Article 41: Schools shall not register or enroll international students who fail to purchase the required comprehensive medical insurance."
+    ],
+    "applicable_population": [
+      "International students studying in China",
+      "Higher education institutions in China"
+    ],
+    "source_url": "https://www.gov.cn/zhengce/2017-06/02/content_5199187.htm",
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "regulation_id": "CN-REG-SZ-MED-2023",
+    "country_code": "CN",
+    "jurisdiction": "CN-Guangdong-Shenzhen",
+    "issuing_authority": "Shenzhen Municipal People's Government",
+    "title_original": "深圳市医疗保障办法",
+    "title_english": "Shenzhen Medical Security Measures (Shenzhen Municipal Gov Order No. 358)",
+    "legal_reference_number": "Shenzhen Municipal Order No. 358 (深圳市人民政府令第358号)",
+    "promulgation_date": "2023-09-15",
+    "effective_date": "2023-10-01",
+    "category": "Municipal Social Health Insurance",
+    "summary": "Establishes Shenzhen municipal basic medical insurance into First-tier (Tier 1, comprehensive individual account and pool fund) and Second-tier (Tier 2, municipal pool fund for inpatient and outpatient capitation).",
+    "key_provisions": [
+      "Employees with employment relations in Shenzhen participate in Tier 1 or Tier 2 based on employer registration.",
+      "Tier 1 participants may use personal medical accounts for outpatient pharmacy and family member health expenses.",
+      "Community Health Centers (社康中心) provide primary outpatient consultations with preferential 75% to 90% reimbursement."
+    ],
+    "applicable_population": [
+      "Residents and employees in Shenzhen",
+      "Foreign employees participating in Shenzhen social insurance"
+    ],
+    "source_url": "https://www.sz.gov.cn/zfgb/2023/gb1299/content/post_10842270.html",
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "regulation_id": "CN-REG-PIPL-2021",
+    "country_code": "CN",
+    "jurisdiction": "CN-National",
+    "issuing_authority": "Standing Committee of the National People's Congress",
+    "title_original": "中华人民共和国个人信息保护法",
+    "title_english": "Personal Information Protection Law of the PRC (PIPL)",
+    "legal_reference_number": "Presidential Order No. 91 (中华人民共和国主席令第九十一号)",
+    "promulgation_date": "2021-08-20",
+    "effective_date": "2021-11-01",
+    "category": "Data Protection & Privacy",
+    "summary": "China's foundational personal information protection statute, classifying medical and financial insurance data as Sensitive Personal Information requiring separate consent and security impact assessments.",
+    "key_provisions": [
+      "Article 28: Biometric, medical health, financial accounts, and personal tracking are Sensitive Personal Information.",
+      "Article 29: Processing sensitive personal information requires specific necessity and separate consent from the individual.",
+      "Article 39: Cross-border transfer of personal information requires statutory compliance mechanisms (CAC security assessment, certification, or standard contract)."
+    ],
+    "applicable_population": [
+      "Entities processing personal information in China",
+      "Insurance platforms handling health and claim data"
+    ],
+    "source_url": "https://www.gov.cn/xinwen/2021-08/20/content_5632486.htm",
+    "verification_status": "UNVERIFIED"
+  }
+]

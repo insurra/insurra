@@ -1,0 +1,23 @@
+[
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "dispute_id": "id-disp-ojk-157",
+    "country_code": "ID",
+    "authority_name": "Otoritas Jasa Keuangan (OJK)",
+    "channel_name": "Kontak OJK 157 / Portal Aplikasi Pelindungan Konsumen (APAK)",
+    "contact_phone": "157 (Telepon) / 081-157-157-157 (WhatsApp)",
+    "online_portal": "https://kontak157.ojk.go.id",
+    "jurisdiction_scope": "National Financial Services and Insurance Consumer Protection",
+    "procedure_summary": "Consumers who have submitted a complaint to an insurer without satisfactory resolution within 10 to 20 working days may lodge an official grievance with OJK Kontak 157 or request mediation through LAPS SJK.",
+    "published_deadlines": "Insurer response required within maximum 10 working days, extendable by 10 working days for complex cases pursuant to POJK 22/2023",
+    "filing_guidance": [
+      "Submit copy of active insurance policy and official claim denial letter from insurer",
+      "Provide chronology of dispute and chronological evidence of interaction with insurer customer service",
+      "Attach identity card (KTP/KITAS) and statement confirming dispute is not currently in litigation"
+    ],
+    "source_url": "https://kontak157.ojk.go.id",
+    "verification_status": "UNVERIFIED"
+  }
+]

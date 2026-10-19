@@ -1,7 +1,7 @@
 """Additive presentation contracts for the shared account/demo product services."""
 
-from datetime import date
-from typing import Literal
+from datetime import date, datetime
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import Field
@@ -40,10 +40,28 @@ class CoverageCard(Contract):
 
 class EmergencyInfo(Contract):
     phone_number: str | None = None
-    label: str = "Darurat? Periksa layanan darurat setempat."
+    label: str = "Emergency? Check local emergency services."
     source_url: str | None = None
     checked_at: date | None = None
     available: bool = False
+    contacts: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class HomeAttention(Contract):
+    open_claims: int | None = None
+    claims_needing_evidence: int | None = None
+    pending_approvals: int | None = None
+    expiring_policies: int | None = None
+
+
+class HomeActivityItem(Contract):
+    id: str
+    event_type: str
+    category: str | None = None
+    title: str
+    summary: str | None = None
+    created_at: datetime
+    synthetic: bool = False
 
 
 class WorkspaceContext(Contract):

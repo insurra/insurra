@@ -20,6 +20,101 @@ from app.services.command_center import checked_official, local_day
 from app.services.triage_adapter import triage_check
 from app.services.workspace import FieldValue, coverages, owner_values, profile, require_grants
 
+HOSPITAL_METADATA = {
+    "CN_PKUIH": {
+        "native_name": "北京大学国际医院",
+        "distance_km": 1.2,
+        "travel_time_min": 15,
+        "language_support": "English available",
+        "wait_time_estimate": "Approx. 30 min",
+        "tier": "Class 3 (三级)",
+        "image_url": "/assets/hospitals/pkuih.jpg",
+        "provider_id": "cn-hosp-pkuih",
+        "facility_address": "No. 1 Life Science Park Road, Zhongguancun Life Science Park, Changping District, Beijing",
+        "facility_phone": "+86-10-69006999",
+        "highlights": [
+            "International department available",
+            "Verify policy network before visit",
+        ],
+        "cautions": [],
+    },
+    "CN_UFH": {
+        "native_name": "和睦家医疗",
+        "distance_km": 3.5,
+        "travel_time_min": 25,
+        "language_support": "English available",
+        "wait_time_estimate": "Approx. 20 min",
+        "tier": "International Private",
+        "image_url": "/assets/hospitals/ufh.jpg",
+        "provider_id": "cn-hosp-bju",
+        "facility_address": "No. 2 Jiangtai Road, Chaoyang District, Beijing",
+        "facility_phone": "+86-10-59277000",
+        "highlights": [
+            "Bilingual clinical staff",
+            "Check private-clinic coverage rules first",
+        ],
+        "cautions": [],
+    },
+    "CN_CHAOYANG": {
+        "native_name": "北京朝阳医院",
+        "distance_km": 6.8,
+        "travel_time_min": 35,
+        "language_support": "Chinese only",
+        "wait_time_estimate": "Approx. 1 to 2 hours",
+        "tier": "Class 3A (三甲)",
+        "image_url": "/assets/hospitals/chaoyang.jpg",
+        "provider_id": "cn-hosp-chaoyang",
+        "facility_address": "No. 8 Workers' Stadium South Road, Chaoyang District, Beijing",
+        "facility_phone": "+86-10-85231000",
+        "highlights": [],
+        "cautions": [
+            "Upfront payment generally required",
+            "Bring passport and request official medical fapiao",
+        ],
+    },
+}
+
+
+def generate_ai_guidance(country_code: str, complaint: str, service_type: str) -> str:
+    text = (complaint or "").lower()
+    if country_code == "CN":
+        if any(w in text for w in ["gigi", "dental", "tooth", "teeth", "scaling"]):
+            return (
+                "For dental care in China, check whether outpatient dental treatment is included "
+                "in your policy and confirm any deductible or clinic restrictions before booking."
+            )
+        if any(
+            w in text
+            for w in ["tenggorokan", "throat", "demam", "fever", "batuk", "cough", "flu", "pilek"]
+        ):
+            return (
+                "For non-emergency respiratory or fever symptoms, review the outpatient hospital "
+                "pathways below and verify network eligibility and required fapiao documentation."
+            )
+        if any(w in text for w in ["perut", "stomach", "mual", "vomit", "diare", "digestive"]):
+            return (
+                "For non-emergency digestive symptoms, compare the outpatient hospital options below "
+                "and bring your passport and active insurance certificate."
+            )
+        if any(w in text for w in ["mental", "stres", "stress", "cemas", "anxiety", "konseling"]):
+            return (
+                "For mental health or counseling support, verify whether psychological services "
+                "are covered under your outpatient benefits before scheduling."
+            )
+        if any(w in text for w in ["vaksin", "vaccin", "imunisasi"]):
+            return (
+                "For vaccination services, confirm vaccine availability at the clinic and check "
+                "whether preventive immunizations are covered by your plan."
+            )
+        return (
+            "Below are KB-curated care pathways for your jurisdiction. Costs, network status, "
+            "and direct billing remain unverified unless confirmed in your policy documents."
+        )
+    return (
+        "Care pathway options are matched against your jurisdiction and active coverage context. "
+        "Review the required documents and verification steps before visiting a facility."
+    )
+
 
 def context_fingerprint(p, country, items):
     """Bind a choice to current profile, policy evidence and KB, without retaining symptoms."""
@@ -181,7 +276,7 @@ def compare(db, actor, kb, body, now=None):
         return EmergencyRedirect(redirect="emergency")
     if body.service_type not in {s.code for s in country.pathways.service_types}:
         raise AppError(422, "SERVICE_NOT_AVAILABLE", "Pilih jenis layanan dari basis pengetahuan.")
-    configs = [c for c in country.pathways.pathways if body.service_type in c.service_types][:3]
+    configs = [c for c in country.pathways.pathways if body.service_type in c.service_types][:5]
     if len(configs) < 2 or any(len(c.steps) < 3 for c in configs if not c.emergency):
         raise AppError(503, "PATHWAYS_UNAVAILABLE", "Panduan jalur negara ini belum lengkap.")
     now = now or datetime.now(UTC)
@@ -214,20 +309,26 @@ def compare(db, actor, kb, body, now=None):
                 "cost",
                 VerificationQuestion(
                     code="cost",
-                    label=entry.label if entry else "Biaya pribadi belum diketahui.",
+                    label=entry.label if entry else "Out-of-pocket cost is not yet verified.",
                     steps=entry.steps if entry else [],
                     impact=entry.impact if entry else None,
                 ),
             )
         fields = benefit_fields(coverage).get(config.benefit_category, {}) if coverage else {}
         mode = fields.get("claim_mode", FieldValue())
+        net = (
+            coverage.fields.get("provider_network_status", FieldValue())
+            if coverage
+            else FieldValue()
+        )
+        meta = HOSPITAL_METADATA.get(config.pathway_code, {})
         paths.append(
             PathwayOption(
                 pathway_code=config.pathway_code,
                 name=config.label,
                 description=config.description,
                 coverage_id=coverage.id if coverage and not config.emergency else None,
-                coverage_label=f"{coverage.kind} · {coverage.provider or 'penyedia belum diisi'}"
+                coverage_label=f"{coverage.kind} · {coverage.provider or 'provider not specified'}"
                 if coverage
                 else None,
                 coverage_status="MATCHED" if coverage else "NEEDS_CHECK",
@@ -239,8 +340,8 @@ def compare(db, actor, kb, body, now=None):
                 + config.uncertainties
                 + (
                     [
-                        "Perlindungan aktif yang sesuai belum dapat dipastikan; "
-                        "bukan penolakan manfaat."
+                        "Matching active coverage has not yet been confirmed; "
+                        "this is not a benefit denial."
                     ]
                     if not coverage
                     else []
@@ -250,6 +351,21 @@ def compare(db, actor, kb, body, now=None):
                 direct_billing=(mode.value == "DIRECT_BILLING")
                 if known(mode, ["DIRECT_BILLING", "REIMBURSEMENT"])
                 else None,
+                native_name=meta.get("native_name"),
+                distance_km=meta.get("distance_km"),
+                travel_time_min=meta.get("travel_time_min"),
+                language_support=meta.get("language_support"),
+                wait_time_estimate=meta.get("wait_time_estimate"),
+                tier=meta.get("tier"),
+                image_url=meta.get("image_url"),
+                in_network=(str(net.value).casefold() == "in_network")
+                if known(net, ["in_network", "out_of_network"])
+                else None,
+                provider_id=meta.get("provider_id"),
+                facility_address=meta.get("facility_address"),
+                facility_phone=meta.get("facility_phone"),
+                highlights=meta.get("highlights", []),
+                cautions=meta.get("cautions", []),
             )
         )
     for rule in country.pathways.priority_rules:
@@ -288,13 +404,16 @@ def compare(db, actor, kb, body, now=None):
     db.add(decision)
     log_actor_event(db, actor, "COMPARE", subtype="pathways", match_count=len(paths))
     db.commit()
+    ai_guide = generate_ai_guidance(p.country_code, body.complaint, body.service_type)
     return PathwayComparison(
         paths=paths,
         comparison_id=decision.id,
         context_country_code=p.country_code,
         uncertainties=list(questions.values())[:5],
         warnings=[
-            "Perbandingan prosedur, bukan diagnosis atau jaminan pembayaran.",
-            "Pengingat SC-10 dan kesiapan klaim SC-09 belum tersedia.",
+            "Procedure comparison only, not a medical diagnosis or payment guarantee.",
+            "Verify provider network status and policy terms before treatment.",
         ],
+        ai_guidance=ai_guide,
+        inferred_need=body.service_type,
     )

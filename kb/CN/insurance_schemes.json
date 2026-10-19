@@ -1,0 +1,36 @@
+[
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "scheme_id": "cn-scheme-uebmi",
+    "country_code": "CN",
+    "jurisdiction": "CN-National",
+    "scheme_name_original": "城镇职工基本医疗保险 (UEBMI)",
+    "scheme_name_english": "Urban Employee Basic Medical Insurance",
+    "administrator": "National Healthcare Security Administration (NHSA) and local municipal HSA bureaus",
+    "membership_categories": [
+      {
+        "code": "UEBMI_EMPLOYEE",
+        "label": "Employed worker (domestic and foreign holding work permit)"
+      },
+      {
+        "code": "UEBMI_RETIREE",
+        "label": "Retired employee meeting minimum contribution years"
+      }
+    ],
+    "contribution_rules": "Jointly contributed by employer (approx 6% to 8% of wage base) and employee (2% of wage base deducted via payroll).",
+    "benefit_summary": [
+      "Inpatient hospitalization coverage up to local annual ceiling (often RMB 500,000+ depending on municipality)",
+      "Personal medical account (个人账户) funded by employee contribution for outpatient consultations and pharmacy",
+      "Catastrophic illness supplemental insurance (大病保险) automatically linked to high medical costs"
+    ],
+    "referral_requirements": "Direct access to contracted public medical institutions (定点医疗机构). Referral required for inter-provincial direct billing (跨省异地就医直接结算备案).",
+    "administrative_procedures": [
+      "Employer submits registration to local Social Insurance Bureau within 30 days of hiring.",
+      "Employee receives Social Security Card (社保卡) or activates Digital Health Insurance Code (医保电子凭证)."
+    ],
+    "source_url": "https://www.nhsa.gov.cn/art/2021/6/30/art_37_5391.html",
+    "verification_status": "UNVERIFIED"
+  }
+]

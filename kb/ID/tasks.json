@@ -4,7 +4,10 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer. Not retrieved or machine-verified.",
   "data": [
+    {"task_code": "coverage_continuity", "label": "Protection continuity check", "policy_types": []},
     {"task_code": "outpatient_claim", "label": "Outpatient claim preparation", "policy_types": ["PERSONAL_HEALTH", "EMPLOYER"]},
     {"task_code": "inpatient_claim", "label": "Inpatient claim preparation", "policy_types": ["PERSONAL_HEALTH", "EMPLOYER"]},
     {"task_code": "bpjs_care", "label": "BPJS healthcare preparation", "policy_types": ["BPJS"]}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer. Not retrieved or machine-verified.",
+  "data": [
+    {
+      "code": "insurance_certificate",
+      "label": "Insurance Certificate (保险凭证)"
+    },
+    {
+      "code": "policy_wording",
+      "label": "Policy Terms and Booklet (保险条款)"
+    },
+    {
+      "code": "benefit_schedule",
+      "label": "Schedule of Benefits (保障待遇表)"
+    },
+    {
+      "code": "medical_fapiao",
+      "label": "Medical Receipt or Fapiao (医疗收费票据)"
+    },
+    {
+      "code": "diagnosis_certificate",
+      "label": "Diagnosis Certificate or Medical Record (诊断证明/病历)"
+    },
+    {
+      "code": "cost_breakdown",
+      "label": "Hospital Cost Breakdown Sheet (费用明细清单)"
+    },
+    {
+      "code": "admission_notice",
+      "label": "University Admission Notice or Student ID (录取通知书/学生证)"
+    },
+    {
+      "code": "residence_permit",
+      "label": "Residence Permit or Visa (居留许可/签证)"
+    },
+    {
+      "code": "social_insurance_voucher",
+      "label": "Social Medical Insurance Voucher (医保凭证)"
+    },
+    {
+      "code": "other",
+      "label": "Other Insurance Document"
+    }
+  ]
+}

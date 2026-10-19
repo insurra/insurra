@@ -7,6 +7,7 @@ from uuid import UUID
 
 from pydantic import Field, JsonValue, SecretStr, StrictBool, field_validator, model_validator
 
+from app.agent.insights import ProtectionInsight
 from app.schemas.actor import Actor, ActorType
 from app.schemas.chat import AnswerCertainty
 from app.schemas.claim import ChecklistStatus
@@ -23,6 +24,8 @@ from app.schemas.document import ProcessingStatus, SourceEvidence
 from app.schemas.workspace import (
     CoverageCard,
     EmergencyInfo,
+    HomeActivityItem,
+    HomeAttention,
     NumericFact,
     ServiceChoice,
     VerificationQuestion,
@@ -91,6 +94,11 @@ class ResetPasswordRequest(Contract):
 
 class AuthMessage(Contract):
     message: str
+
+
+class AuthCapabilities(Contract):
+    email_delivery: bool
+    google_oauth: bool
 
 
 class AccountSummary(Contract):
@@ -219,6 +227,9 @@ class HomeSummary(Contract):
     expiring_30d: int = Field(ge=0)
     needs_verification: int = Field(ge=0)
     recommendations: list[Recommendation] = Field(max_length=3)
+    insights: list[ProtectionInsight] = Field(default_factory=list, max_length=3)
+    attention: HomeAttention | None = None
+    recent_activity: list[HomeActivityItem] = Field(default_factory=list, max_length=5)
     context: WorkspaceContext | None = None
     coverages: list[CoverageCard] = Field(default_factory=list)
     emergency: EmergencyInfo = Field(default_factory=EmergencyInfo)
@@ -226,7 +237,7 @@ class HomeSummary(Contract):
     question_examples: list[str] = Field(default_factory=list, max_length=4)
     service_types: list[ServiceChoice] = Field(default_factory=list)
     triage_available: bool = False
-    pathway_help: str = "Jelaskan kebutuhan layanan non-darurat."
+    pathway_help: str = "Describe your non-emergency care needs."
 
 
 class AskRequest(Contract):
@@ -242,11 +253,46 @@ class AskRequest(Contract):
         return value.strip()
 
 
+AskIntent = Literal[
+    "POLICY_QUESTION",
+    "COVERAGE_STATUS",
+    "CLAIM_HELP",
+    "REMINDER_REQUEST",
+    "SERVICING_REQUEST",
+    "CARE_NAVIGATION",
+    "OUT_OF_SCOPE",
+    "MEDICAL_ADVICE",
+]
+
+
+class ToolStep(Contract):
+    tool: str
+    status: Literal["COMPLETED", "SKIPPED", "PROPOSED"] = "COMPLETED"
+    summary: str
+
+
+class ActionProposal(Contract):
+    proposal_id: str
+    action_type: str
+    title: str
+    summary: str
+    target_entity: str | None = None
+    requires_approval: Literal[True] = True
+
+
+class PreparedProposalAction(Contract):
+    action_id: UUID
+    status: str = "AWAITING_APPROVAL"
+    action_type: str
+
+
 class AnswerCitation(Contract):
     document_name: str | None = None
     doc: UUID
     page: int = Field(ge=1)
     quote: str = Field(min_length=1)
+    language: str | None = None
+    explanation_label: str | None = None
 
 
 class AnswerPoint(Contract):
@@ -270,6 +316,9 @@ class AskAnswer(Contract):
     disposition: Literal["answered", "no_match", "declined"] = "answered"
     chat_session_id: UUID | None = None
     answer_id: UUID | None = None
+    intent: AskIntent = "POLICY_QUESTION"
+    tool_steps: list[ToolStep] = Field(default_factory=list)
+    proposals: list[ActionProposal] = Field(default_factory=list)
 
 
 class ChatTurn(Contract):
@@ -373,37 +422,66 @@ class PathwayOption(Contract):
     best_for_priority: bool = False
     priority_reason: str | None = None
     direct_billing: bool | None = None
+    native_name: str | None = None
+    distance_km: float | None = None
+    travel_time_min: int | None = None
+    language_support: str | None = None
+    wait_time_estimate: str | None = None
+    tier: str | None = None
+    image_url: str | None = None
+    in_network: bool | None = None
+    provider_id: str | None = None
+    facility_address: str | None = None
+    facility_phone: str | None = None
+    highlights: list[str] = Field(default_factory=list)
+    cautions: list[str] = Field(default_factory=list)
 
 
 class PathwayComparison(Contract):
-    paths: list[PathwayOption] = Field(max_length=3)
+    paths: list[PathwayOption] = Field(default_factory=list, max_length=10)
     comparison_id: UUID | None = None
     uncertainties: list[VerificationQuestion] = Field(default_factory=list, max_length=5)
     warnings: list[str] = Field(default_factory=list)
     context_country_code: CountryCode | None = None
+    ai_guidance: str | None = None
+    inferred_need: str | None = None
 
 
 class TriageRequest(Contract):
     text: str = Field(min_length=1, max_length=500)
+    country_code: CountryCode | None = None
 
 
 class TriageMatch(Contract):
     id: str
     kb_version: str
+    category: Literal["MEDICAL", "SELF_HARM"]
+    source_url: str
 
 
 class TriageResult(Contract):
     red_flag: bool
     matched: list[TriageMatch]
+    safety_flows: list[Literal["EMERGENCY_MEDICAL", "SELF_HARM_SUPPORT"]] = Field(
+        default_factory=list
+    )
+    screening_complete: Literal[False] = False
 
 
 class ClaimCaseStatus(StrEnum):
     DRAFT = "DRAFT"
+    NEEDS_EVIDENCE = "NEEDS_EVIDENCE"
+    READY_FOR_REVIEW = "READY_FOR_REVIEW"
+    AWAITING_APPROVAL = "AWAITING_APPROVAL"
     READY_FOR_SUBMISSION = "READY_FOR_SUBMISSION"
     SUBMITTED = "SUBMITTED"
+    SUBMITTED_SANDBOX = "SUBMITTED_SANDBOX"
     PROCESSING = "PROCESSING"
+    ADDITIONAL_INFORMATION_REQUIRED = "ADDITIONAL_INFORMATION_REQUIRED"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
+    SANDBOX_APPROVED = "SANDBOX_APPROVED"
+    SANDBOX_REJECTED = "SANDBOX_REJECTED"
     CANCELLED = "CANCELLED"
 
 
@@ -421,6 +499,17 @@ class ClaimCase(ClaimCaseCreate):
     id: UUID
     country_code: CountryCode
     status: ClaimCaseStatus
+    claim_ref: str | None = None
+    sandbox_status: str | None = None
+    last_checked_at: datetime | None = None
+    monitoring_state: Literal["NOT_CONFIGURED", "ACTIVE", "PAUSED", "FAILED"] | None = None
+    created_at: datetime
+
+
+class ClaimCaseEvent(Contract):
+    id: UUID
+    event_type: str = Field(max_length=50)
+    status_snapshot: ClaimCaseStatus
     created_at: datetime
 
 
@@ -443,6 +532,7 @@ class ClaimCaseDetail(Contract):
     case: ClaimCase
     checklist: list[CaseChecklistItem]
     consistency_checks: list[ConsistencyCheck]
+    timeline: list[ClaimCaseEvent] = Field(default_factory=list)
 
 
 class ClaimCasePage(Contract):
@@ -463,6 +553,7 @@ class ActionDecisionRequest(Contract):
     edited_payload: dict[str, JsonValue] | None = None
     reason: str | None = Field(default=None, max_length=500)
     confirmed: StrictBool = False
+    expected_payload_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 class ActionExecutionRequest(Contract):
@@ -472,6 +563,11 @@ class ActionExecutionRequest(Contract):
 class SandboxAttachment(Contract):
     document_id: UUID
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class ClaimSubmissionPayload(Contract):
+    claim_case_id: UUID
+    attachments: list[SandboxAttachment]
 
 
 class SandboxClaimRequest(ActionExecutionRequest):

@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Curated for China student healthcare verification.",
+  "data": [
+    {
+      "code": "provider_network",
+      "label": "Apakah fasilitas kesehatan masuk jaringan asuransi?",
+      "field_key": "provider_network_status",
+      "known_values": [
+        "in_network",
+        "out_of_network"
+      ],
+      "impact": "Fasilitas di luar jaringan atau departemen VIP/internasional mungkin memerlukan persetujuan awal atau tidak ditanggung.",
+      "steps": [
+        "Periksa apakah rumah sakit adalah faskes publik kelas 2 ke atas (二级及以上公立医院).",
+        "Konfirmasikan apakah departemen yang dikunjungi (umum vs VIP) diakui oleh skema asuransi Anda."
+      ]
+    },
+    {
+      "code": "referral",
+      "label": "Apakah diperlukan surat rujukan (转诊单)?",
+      "field_key": "referral_status",
+      "known_values": [
+        "not_required",
+        "available"
+      ],
+      "impact": "Sebagian polis mahasiswa mewajibkan rujukan dari klinik kampus (校医院) sebelum ke RS rujukan.",
+      "steps": [
+        "Tanyakan kepada klinik kampus apakah diperlukan surat rujukan resmi.",
+        "Simpan bukti rujukan sebelum mendaftar di rumah sakit lanjutan."
+      ]
+    },
+    {
+      "code": "claim_mode",
+      "label": "Bagaimana prosedur pembayaran dan klaim?",
+      "field_key": "claim_mode",
+      "known_values": [
+        "DIRECT_BILLING",
+        "REIMBURSEMENT"
+      ],
+      "impact": "Jika bukan direct billing, Anda harus membayar di muka dan mengurus reimbursement.",
+      "steps": [
+        "Minta tanda terima resmi medis (Medical Fapiao / 医疗发票) dan rincian biaya (费用清单).",
+        "Dapatkan diagnosis resmi (诊断证明书) dari dokter yang merawat."
+      ]
+    },
+    {
+      "code": "benefit",
+      "label": "Konfirmasi batas manfaat dan deductible",
+      "field_key": "{category}_coverage_status",
+      "known_values": [
+        "COVERED"
+      ],
+      "impact": "Rawat jalan umumnya memiliki deductible (cth. RMB 650) dan rasio penjaminan 80-85%.",
+      "steps": [
+        "Periksa apakah akumulasi biaya tahunan telah melampaui batas deductible.",
+        "Pastikan batasan hari kunjungan atau kuota per insiden sesuai polis."
+      ]
+    },
+    {
+      "code": "cost",
+      "label": "Biaya pribadi belum diketahui",
+      "steps": [
+        "Tanyakan perkiraan biaya pendaftaran dokter (挂号费) dan tindakan kepada rumah sakit.",
+        "Pastikan obat-obatan masuk dalam katalog obat asuransi (医保目录/katalog skema)."
+      ],
+      "impact": "Biaya out-of-pocket bergantung pada tarif tindakan dan obat yang diresepkan."
+    }
+  ]
+}

@@ -45,8 +45,6 @@ export function HomeNav({ onSelectPersona }: HomeNavProps) {
         >
           For Professionals
         </a>
-        <a href="#how">How it works</a>
-        <a href="#pricing">Pricing</a>
         <a href="#privacy">Privacy</a>
       </nav>
 
@@ -54,7 +52,7 @@ export function HomeNav({ onSelectPersona }: HomeNavProps) {
         <span className="lang">🌐&nbsp; EN⌄</span>
         {signedIn ? (
           <>
-            <Link href="/account" className="login user-chip">
+            <Link href="/home" className="login user-chip">
               {firstName ? `${firstName}'s workspace` : "Workspace"}
             </Link>
             <button

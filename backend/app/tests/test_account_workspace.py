@@ -4,8 +4,17 @@ import hashlib
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+import pytest
+
 from app.models import AccountRow, AccountSessionRow
 from app.services.account_documents import CandidateField, ExtractionResult, PageText
+
+
+@pytest.fixture
+def kb_countries() -> str:
+    # Settings override scoped to this module: it uses the inactive legacy kb/AU folder as a
+    # fixture-only configuration. The default app keeps AU disabled (see conftest).
+    return "AU,CN,ID"
 
 
 def account_headers(app, suffix: str) -> dict[str, str]:
@@ -84,7 +93,7 @@ def test_document_scope_consent_review_and_retention_revocation(app, client, mon
     )
     monkeypatch.setattr(
         "app.api.v1.account_documents.extract_text_or_ocr",
-        lambda content, mime: [
+        lambda content, mime, country_code: [
             PageText(page_no=1, text="Coverage start: 2026-10-01", ocr_used=False)
         ],
     )
@@ -180,9 +189,11 @@ def test_completeness_validates_dates_and_privacy_delete(app, client):
         ).status_code
         == 200
     )
-    response = client.get("/api/v1/account/completeness?task=visa_cover", headers=mine)
+    response = client.get("/api/v1/account/completeness?task=coverage_continuity", headers=mine)
     assert response.status_code == 200, response.text
-    assert response.json()["visa_gap"]["gap_days"] == 4
+    assert response.json()["coverage_continuity"]["gap_days"] == 4
+    assert response.json()["coverage_continuity"]["status"] == "DATE_DIFFERENCE_DETECTED"
+    assert response.json()["coverage_continuity"]["requirement_status"] == "NEEDS_VERIFICATION"
     assert (
         client.request(
             "DELETE", "/api/v1/account/data", headers=mine, json={"confirm": "NO"}
@@ -199,6 +210,21 @@ def test_completeness_validates_dates_and_privacy_delete(app, client):
     assert (
         client.get("/api/v1/account/consents", headers=mine).json()["mandatory_complete"] is False
     )
+
+
+def test_continuity_without_period_or_policy_end_date_is_undetermined(app, client):
+    mine = account_headers(app, "continuity_without_dates")
+    payload = profile_payload()
+    payload["visa_expiry_date"] = None
+    assert client.put("/api/v1/account/profile", headers=mine, json=payload).status_code == 200
+
+    result = client.get(
+        "/api/v1/account/completeness?task=coverage_continuity", headers=mine
+    ).json()["coverage_continuity"]
+
+    assert result["status"] == "UNABLE_TO_DETERMINE"
+    assert result["gap_days"] is None
+    assert result["requirement_status"] == "NEEDS_VERIFICATION"
 
 
 def test_policy_wallet_and_family_management(app, client):
@@ -228,6 +254,7 @@ def test_policy_wallet_and_family_management(app, client):
     assert len(my_family) == 1
     assert my_family[0]["name"] == "Sinta"
     assert my_family[0]["relation"] == "Spouse"
+    assert my_family[0]["active_coverage_count"] is None
 
     # Isolation check: other account cannot see family member
     other_family = client.get("/api/v1/account/family", headers=other).json()
@@ -332,10 +359,10 @@ def test_audit_timeline_masking_tools_and_rls_isolation(app, client, demo):
 
 def test_guardrail_highlight_subtypes_and_demo_scenario(client, demo):
     _, headers = demo("raka")
-    # Trigger emergency ("nyeri dada") via triage before opening guardrail view
+    # /triage is now implemented (KB-driven, positive match only); it no longer returns 501.
     assert (
         client.post("/api/v1/triage", headers=headers, json={"text": "nyeri dada"}).status_code
-        == 501
+        == 200
     )
 
     # Opening /api/v1/audit?type=guardrail in demo returns >= 3 distinct guardrail subtypes
@@ -499,7 +526,10 @@ def test_actions_queue_pending_cards_stale_masking_and_forbidden_tool_guardrail(
 
     # Reminder created >14 days ago is marked stale with "Mungkin sudah tidak relevan"
     reminder_card = next(item for item in seeded if item["action_type"] == "create_reminder")
-    assert reminder_card["reason"] == "Dibuat karena ada jeda 76 hari antara asuransi dan visa"
+    assert (
+        reminder_card["reason"]
+        == "Dibuat karena ada selisih tanggal 76 hari antara akhir asuransi dan akhir studi"
+    )
     assert reminder_card["is_stale"] is True
     assert reminder_card["stale_label"] == "Mungkin sudah tidak relevan"
 
@@ -838,11 +868,14 @@ def test_us_10_04_submit_claim_to_sandbox_provider_and_export_logs(client, demo)
     )
     assert bad_action_res.status_code == 201
     bad_action = bad_action_res.json()
+    bad_hash = client.get(f"/api/v1/actions/{bad_action['id']}", headers=headers).json()[
+        "proposed_payload_sha256"
+    ]
     assert (
         client.post(
             f"/api/v1/actions/{bad_action['id']}/approve",
             headers=headers,
-            json={"confirmed": True},
+            json={"confirmed": True, "expected_payload_sha256": bad_hash},
         ).status_code
         == 200
     )
@@ -858,11 +891,14 @@ def test_us_10_04_submit_claim_to_sandbox_provider_and_export_logs(client, demo)
 
     # 5. AC: Approve valid claim_submit (L2) and execute -> returns claim_ref,
     # initial status Diterima, and case status becomes SUBMITTED ("Diajukan")
+    proposed_hash = client.get(f"/api/v1/actions/{sbx_action['id']}", headers=headers).json()[
+        "proposed_payload_sha256"
+    ]
     assert (
         client.post(
             f"/api/v1/actions/{sbx_action['id']}/approve",
             headers=headers,
-            json={"confirmed": True},
+            json={"confirmed": True, "expected_payload_sha256": proposed_hash},
         ).status_code
         == 200
     )

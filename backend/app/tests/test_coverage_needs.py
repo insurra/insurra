@@ -13,6 +13,13 @@ from app.tests.test_account_workspace import grant, profile_payload
 from app.tests.workspace_fixtures import POLICY_TEXT, workspace
 
 
+@pytest.fixture
+def kb_countries() -> str:
+    # Settings override scoped to this module: it uses the inactive legacy kb/AU folder as a
+    # fixture-only configuration. The default app keeps AU disabled (see conftest).
+    return "AU,CN,ID"
+
+
 def by_code(client, headers):
     response = client.get("/api/v1/coverage-needs", headers=headers)
     assert response.status_code == 200, response.text
@@ -76,9 +83,9 @@ def test_ownership_unknown_dates_absent_category_and_exact_shared_76_day_gap(
     assert "Fictional Test Provider" in values["OSHC"]["explanation"]
     assert cover_end in values["OSHC"]["explanation"]
     gap = values["OSHC"]["visa_assessment"]
-    sc04 = client.get("/api/v1/account/completeness?task=visa_cover", headers=headers).json()[
-        "visa_gap"
-    ]
+    sc04 = client.get(
+        "/api/v1/account/completeness?task=coverage_continuity", headers=headers
+    ).json()["visa_gap"]
     assert sc04["gap_days"] == gap["gap_days"] == 76
     assert sc04["status"] == gap["assessment_status"] == "NEEDS_VERIFICATION"
     assert values["DENTAL"]["ownership_status"] == "NOT_OWNED"
@@ -169,8 +176,12 @@ def test_needs_scopes_and_consent_are_rechecked_and_demo_placeholders_stay_unkno
         == 200
     )
     values = by_code(client, demo_headers)
-    assert values["OSHC"]["ownership_status"] == "NEEDS_CHECK"
-    assert values["DENTAL"]["ownership_status"] == "NEEDS_CHECK"
+    # Demo Raka is a CN student: placeholder policy values never prove ownership, and UNVERIFIED rules are APPLICABILITY_UNVERIFIED.
+    assert values["STUDENT_COMPREHENSIVE"]["ownership_status"] == "NEEDS_CHECK"
+    assert values["STUDENT_COMPREHENSIVE"]["applicability"] == "APPLICABILITY_UNVERIFIED"
+    assert values["STUDENT_COMPREHENSIVE"]["evidence_state"] == "NEEDS_VERIFICATION"
+    assert values["STUDENT_COMPREHENSIVE"]["continuity"]["uncovered_days"] == 76
+    assert values["COMMERCIAL_HEALTH"]["ownership_status"] == "NEEDS_CHECK"
     with app.state.session_factory() as db:
         result = match_needs(
             db,

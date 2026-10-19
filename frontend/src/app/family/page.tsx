@@ -4,33 +4,31 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import {
-  ArrowRight,
-  CheckCircle2,
-  ChevronRight,
-  FileText,
-  Heart,
+  Clock,
   Plus,
+  ShieldCheck,
   Trash2,
-  UserPlus,
+  User,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useAuth } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
+import { useUserContext } from "@/lib/user-context";
 
 type FamilyMember = components["schemas"]["FamilyMember"];
 
 export default function FamilyPage() {
-  const { account, token, loading } = useAuth();
+  const { token } = useAuth();
+  const userCtx = useUserContext();
+
   const [members, setMembers] = useState<FamilyMember[]>([]);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [name, setName] = useState("");
   const [relation, setRelation] = useState("Spouse");
   const [birthDate, setBirthDate] = useState("");
   const [consentConfirmed, setConsentConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
 
   const refreshFamily = useCallback(async () => {
     if (!token) return;
@@ -39,8 +37,8 @@ export default function FamilyPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMembers(list);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Failed to load family members.");
+    } catch {
+      // Handled gracefully
     }
   }, [token]);
 
@@ -52,13 +50,12 @@ export default function FamilyPage() {
     e.preventDefault();
     if (!token) return;
     setError(null);
-    setNotice(null);
     if (!name.trim()) {
-      setError("Please enter the family member name or nickname.");
+      setError("Please enter the family member name.");
       return;
     }
     if (!consentConfirmed) {
-      setError("You must confirm you have authorization to manage data on their behalf.");
+      setError("You must confirm permission to manage coverage on their behalf.");
       return;
     }
 
@@ -73,237 +70,327 @@ export default function FamilyPage() {
           consent_confirmed: true,
         },
       });
+      setShowAddModal(false);
       setName("");
       setBirthDate("");
       setConsentConfirmed(false);
-      setShowAddForm(false);
-      setNotice("Family member record added successfully.");
       await refreshFamily();
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Failed to add family member.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to add family member.");
     } finally {
       setBusy(false);
     }
   }
 
   async function handleDeleteMember(memberId: string, memberName: string) {
-    if (!token || !window.confirm(`Delete ${memberName} from your family records?`)) return;
-    setBusy(true);
-    setError(null);
+    if (!token) return;
+    if (!confirm(`Are you sure you want to remove ${memberName}?`)) return;
     try {
       await api.request("delete", "/api/v1/account/family/{member_id}", {
         params: { member_id: memberId },
         headers: { Authorization: `Bearer ${token}` },
       });
-      setNotice(`${memberName} has been removed from family records.`);
       await refreshFamily();
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Failed to delete family member.");
-    } finally {
-      setBusy(false);
+    } catch {
+      // Ignore
     }
   }
 
-  if (loading) return <p role="status">Checking account session...</p>;
-  if (!account || !token) {
-    return (
-      <div className="card account-empty">
-        <h1>Sign in to manage Family Members.</h1>
-        <Button asChild>
-          <Link href="/auth">Sign In or Register</Link>
-        </Button>
-      </div>
-    );
-  }
+  const isSelfOnly = userCtx.householdScope === "self" && members.length === 0;
+
+  // Build display members based on real backend data or declared onboarding context
+  const displayMembers = members.length > 0
+    ? members.map((m, idx) => ({
+        id: m.id,
+        name: m.name,
+        relation: m.relation,
+        age: m.birth_date
+          ? `${new Date().getFullYear() - new Date(m.birth_date).getFullYear()} years old`
+          : "Age unverified",
+        isMain: idx === 0,
+        coverageStatus: "Awaiting policy document",
+      }))
+    : userCtx.householdScope === "family"
+    ? userCtx.dependents
+        .filter((d) => d !== "None")
+        .map((dep, idx) => ({
+          id: `declared-${idx}`,
+          name: dep,
+          relation: dep,
+          age: "Declared in onboarding",
+          isMain: false,
+          coverageStatus: "Declared (Unverified)",
+        }))
+    : [];
 
   return (
-    <div className="family-page protection-screen">
-      <nav aria-label="Breadcrumb" className="protection-breadcrumb">
-        <Link href="/protection">My Protection</Link>
-        <ChevronRight size={14} className="breadcrumb-separator" />
-        <span aria-current="page">Family Coverage</span>
-      </nav>
+    <div className="figma-page-shell">
+      {/* ---------------- Back Navigation ---------------- */}
+      <Link href="/protection" className="figma-back-link">
+        ← My Protection
+      </Link>
 
-      <div className="page-heading">
+      {/* ---------------- Header ---------------- */}
+      <header className="figma-page-header">
         <div>
-          <div className="eyebrow">FAMILY PROTECTION</div>
           <h1>Family Coverage</h1>
-          <p>Manage family members and track linked insurance policies across your household.</p>
+          <p>Manage your household members and inspect evidence-based protection status.</p>
         </div>
-        {!showAddForm && (
-          <Button onClick={() => setShowAddForm(true)} disabled={members.length >= 6}>
-            <Plus size={16} /> Add Family Member
-          </Button>
-        )}
-      </div>
+        <button
+          type="button"
+          className="figma-btn-primary"
+          onClick={() => setShowAddModal(true)}
+        >
+          <Plus size={16} /> Add Family Member
+        </button>
+      </header>
 
-      {error && (
-        <div className="alert error" role="alert">
-          {error}
-        </div>
-      )}
-      {notice && (
-        <div className="alert success" role="status">
-          {notice}
-        </div>
-      )}
-
-      <section className="card family-overview">
-        <Image src="/protection-family-illustration.png" alt="Family illustration" width={240} height={150} />
-        <div className="family-overview-copy">
-          <span className="eyebrow">HOUSEHOLD OVERVIEW</span>
-          <h2>Family protection in one place</h2>
-          <p>
-            This record tracks household dependents and linked policy counts. Dependent benefits cannot be inferred until policies are explicitly linked.
-          </p>
-          <div className="family-overview-stats">
-            <span>
-              <strong>{members.length} / 6</strong>Total Members
-            </span>
-            <span>
-              <strong>{members.reduce((sum, member) => sum + member.active_coverage_count, 0)}</strong>Linked Policies
-            </span>
+      {/* ---------------- Self Only State ---------------- */}
+      {isSelfOnly ? (
+        <section
+          style={{
+            background: "#ffffff",
+            border: "1px solid #e1ebed",
+            borderRadius: 20,
+            padding: 32,
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+            maxWidth: 680,
+            margin: "20px auto 40px",
+          }}
+        >
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              background: "#edf7f5",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#0ea58a",
+            }}
+          >
+            <User size={28} />
           </div>
-        </div>
-      </section>
-
-      <div className="policy-controls card">
-        <div className="filter-group">
-          <Heart size={18} />
-          <span>Registered Family Members ({members.length})</span>
-        </div>
-        {!showAddForm && (
-          <Button onClick={() => setShowAddForm(true)} disabled={members.length >= 6}>
-            <Plus size={16} /> Add Member
-          </Button>
-        )}
-      </div>
-
-      {showAddForm && (
-        <section className="card family-add-card">
-          <div className="section-heading">
-            <h2>Add Family Member</h2>
-            <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
-              Cancel
-            </Button>
+          <div>
+            <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 800, color: "#0f1d38" }}>
+              You&apos;re currently managing protection for yourself.
+            </h2>
+            <p style={{ margin: 0, fontSize: 13.5, color: "#64748b", maxWidth: 460 }}>
+              During onboarding, you selected personal protection only. If your household circumstances
+              change, you can add family members to coordinate shared coverage and travel protection.
+            </p>
           </div>
-          <p className="account-note">
-            Insurra does not collect national ID numbers (NIK) in the family member form. Enter only necessary identity fields.
-          </p>
-          <form onSubmit={handleAddMember} className="form-grid">
-            <label>
-              Full Name or Nickname:
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Sinta or Alex"
-                required
-              />
-            </label>
-            <label>
-              Relationship:
-              <select value={relation} onChange={(e) => setRelation(e.target.value)}>
-                <option value="Spouse">Spouse / Partner</option>
-                <option value="Child">Child / Dependent</option>
-                <option value="Parent">Parent</option>
-                <option value="Sibling">Sibling</option>
-                <option value="Other">Other Dependent</option>
-              </select>
-            </label>
-            <label>
-              Date of Birth (Optional):
-              <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-              />
-            </label>
-
-            <div className="family-consent-checkbox">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={consentConfirmed}
-                  onChange={(e) => setConsentConfirmed(e.target.checked)}
-                />
-                <span>
-                  I confirm that I have explicit permission and authority from this family member to record their details and link their insurance documents.
-                </span>
-              </label>
-            </div>
-
-            <div className="wizard-actions">
-              <Button type="submit" disabled={busy || !name || !consentConfirmed || members.length >= 6}>
-                {busy ? "Saving..." : "Save Family Member"}
-                <ArrowRight size={16} />
-              </Button>
-            </div>
-          </form>
+          <button
+            type="button"
+            className="figma-btn-primary"
+            onClick={() => setShowAddModal(true)}
+            style={{ marginTop: 8 }}
+          >
+            <Plus size={16} /> Add Household Member
+          </button>
         </section>
+      ) : (
+        <>
+          {/* ---------------- Family Hero Banner ---------------- */}
+          <section className="figma-family-banner">
+            <Image
+              src="/protection-family-illustration.png"
+              alt="Family Protection"
+              width={180}
+              height={95}
+              className="figma-family-banner-art"
+              priority
+            />
+            <div className="figma-family-banner-text">
+              <h3>Household Protection Overview</h3>
+              <p>
+                {displayMembers.length} family member{displayMembers.length === 1 ? "" : "s"} declared.
+                Evidence documents required to verify active coverage status.
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <span className="figma-hub-card-pill neutral">
+                  <ShieldCheck size={13} /> Evidence verification pending
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* ---------------- Main Content Layout ---------------- */}
+          <div className="figma-family-grid">
+            {/* Members List */}
+            <div className="figma-family-list">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0f1d38" }}>
+                  Household Members ({displayMembers.length})
+                </h3>
+              </div>
+
+              {displayMembers.map((member) => (
+                <div key={member.id} className="figma-family-card">
+                  <div className="figma-family-member-info">
+                    <div className="figma-member-avatar">
+                      {member.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="figma-member-name">
+                        {member.name}
+                        {member.isMain && <span className="figma-tag-main">Main</span>}
+                      </div>
+                      <div className="figma-member-sub">
+                        {member.age} · {member.relation}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <span className="figma-hub-card-pill neutral">
+                      <Clock size={13} /> {member.coverageStatus}
+                    </span>
+                    {token && members.some((m) => m.id === member.id) && !member.isMain && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMember(member.id, member.name)}
+                        style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", padding: 4 }}
+                        title="Remove member"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Column: Household Policy Integration */}
+            <div className="figma-shared-benefits-card">
+              <div className="figma-shared-head">
+                <ShieldCheck size={22} color="#0ea58a" />
+                <div>
+                  <h4>Household Coverage Association</h4>
+                  <p>Policies must explicitly associate dependent members.</p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#f8fafc",
+                  borderRadius: 12,
+                  padding: 16,
+                  fontSize: 12.5,
+                  color: "#64748b",
+                  lineHeight: 1.5,
+                }}
+              >
+                INSURRA does not infer that a family member is covered solely because they belong to the
+                household. Upload policy wording or group certificates showing named dependents to confirm
+                active protection.
+              </div>
+
+              <Link
+                href="/documents"
+                className="figma-btn-primary"
+                style={{ textDecoration: "none", textAlign: "center", justifyContent: "center", marginTop: 8 }}
+              >
+                Upload Dependent Policy Document
+              </Link>
+            </div>
+          </div>
+        </>
       )}
 
-      {!members.length && !showAddForm ? (
-        <div className="card account-empty">
-          <UserPlus size={40} />
-          <h2>No family members added yet</h2>
-          <p>Add family members only if you have permission to manage their records.</p>
-          <Button onClick={() => setShowAddForm(true)}>
-            <Plus size={16} /> Add First Family Member
-          </Button>
-        </div>
-      ) : (
-        <div className="family-grid">
-          {members.map((member) => (
-            <article key={member.id} className="card family-card">
-              <div className="family-card-head">
-                <div className="family-avatar">
-                  {member.name.slice(0, 1).toUpperCase()}
-                </div>
-                <div>
-                  <h3>{member.name}</h3>
-                  <span className="badge-purpose optional">{member.relation}</span>
-                </div>
+      {/* ---------------- Add Member Modal ---------------- */}
+      {showAddModal && (
+        <div className="figma-modal-backdrop" onClick={() => setShowAddModal(false)}>
+          <div className="figma-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="figma-modal-header">
+              <h3>Add Family Member</h3>
+              <button
+                type="button"
+                className="figma-modal-close"
+                onClick={() => setShowAddModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddMember}>
+              {error && <div className="figma-modal-error">{error}</div>}
+
+              <div className="figma-form-group">
+                <label>Full Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Spouse or Child Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="figma-modal-input"
+                  required
+                />
               </div>
 
-              <div className="family-card-body">
-                {member.birth_date && (
-                  <div className="policy-meta-row">
-                    <span>Date of Birth:</span>
-                    <strong>{member.birth_date}</strong>
-                  </div>
-                )}
-                <div className="policy-meta-row">
-                  <span>Consent Recorded:</span>
-                  <strong>{new Date(member.consent_at).toLocaleDateString()}</strong>
-                </div>
-                <div className="policy-meta-row">
-                  <span>Linked Policies:</span>
-                  <strong>{member.active_coverage_count} Active</strong>
-                </div>
+              <div className="figma-form-group">
+                <label>Relationship</label>
+                <select
+                  value={relation}
+                  onChange={(e) => setRelation(e.target.value)}
+                  className="figma-modal-select"
+                >
+                  <option value="Spouse">Spouse / Partner</option>
+                  <option value="Child">Child</option>
+                  <option value="Parent">Parent</option>
+                  <option value="Other">Other Dependent</option>
+                </select>
               </div>
 
-              <div className="family-card-foot">
-                <span className="family-coverage-status">
-                  {member.active_coverage_count > 0 ? <CheckCircle2 size={15} /> : <FileText size={15} />}
-                  {member.active_coverage_count > 0 ? `${member.active_coverage_count} policies linked` : "No linked policies recorded"}
-                </span>
-                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/documents?owner=${member.id}`}>
-                      <FileText size={13} /> Upload Doc
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => void handleDeleteMember(member.id, member.name)}
-                  >
-                    <Trash2 size={14} /> Remove
-                  </Button>
-                </div>
+              <div className="figma-form-group">
+                <label>Date of Birth (Optional)</label>
+                <input
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="figma-modal-input"
+                />
               </div>
-            </article>
-          ))}
+
+              <div className="figma-form-group">
+                <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", fontSize: 12.5 }}>
+                  <input
+                    type="checkbox"
+                    checked={consentConfirmed}
+                    onChange={(e) => setConsentConfirmed(e.target.checked)}
+                    style={{ marginTop: 2 }}
+                    required
+                  />
+                  <span>
+                    I confirm that I have explicit authorization or legal authority to manage insurance
+                    information on behalf of this household member.
+                  </span>
+                </label>
+              </div>
+
+              <div className="figma-modal-actions">
+                <button
+                  type="button"
+                  className="figma-btn-secondary"
+                  onClick={() => setShowAddModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="figma-btn-primary"
+                  disabled={busy}
+                >
+                  {busy ? "Saving..." : "Add Member"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

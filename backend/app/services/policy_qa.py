@@ -9,8 +9,10 @@ from pydantic import Field, ValidationError
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 
+from app.agent.intents import classify_intent
+from app.agent.planner import build_plan
 from app.core.errors import AppError
-from app.models import AccountDocumentRow, AskLimitRow, ChatSessionRow
+from app.models import AskLimitRow, ChatSessionRow
 from app.schemas.chat import AnswerCertainty
 from app.schemas.common import Contract
 from app.schemas.foundation import AnswerCitation, AnswerPoint, AskAnswer, EmergencyRedirect
@@ -18,8 +20,14 @@ from app.services.ai_gateway import ResponsesGateway
 from app.services.audit_logger import log_actor_event
 from app.services.benefits import financial_facts
 from app.services.command_center import local_day
-from app.services.evidence import supports_exclusion, validated_quote
-from app.services.retrieval import IDENTIFIERS, INSTRUCTIONS, retrieve_clauses, terms
+from app.services.evidence import document_filename, supports_exclusion, validated_quote
+from app.services.retrieval import (
+    IDENTIFIERS,
+    INSTRUCTIONS,
+    detect_language,
+    retrieve_clauses,
+    terms,
+)
 from app.services.triage_adapter import triage_check
 from app.services.workspace import (
     coverages,
@@ -137,6 +145,7 @@ def verification_steps(country):
 def filtered_points(db, actor, country, items, clauses, proposed, facts, question):
     output = []
     allowed = {(c.doc, c.page, c.quote): c for c in clauses}
+    question_lang = detect_language(question)
     for point in proposed.answer_points:
         citations = []
         for citation in point.citations:
@@ -160,13 +169,25 @@ def filtered_points(db, actor, country, items, clauses, proposed, facts, questio
                     and not INSTRUCTIONS.search(citation.quote)
                     and not IDENTIFIERS.search(citation.quote)
                 ):
-                    name = db.get(AccountDocumentRow, citation.doc).original_filename
+                    name = document_filename(db, actor, citation.doc)
+                    clause_lang = getattr(clause, "language", None) or detect_language(
+                        citation.quote
+                    )
+                    explanation_label = (
+                        "Explanation, not a translation of the clause"
+                        if clause_lang != "unknown"
+                        and question_lang != "unknown"
+                        and clause_lang != question_lang
+                        else None
+                    )
                     citations.append(
                         AnswerCitation(
                             doc=citation.doc,
                             page=citation.page,
                             quote=citation.quote,
                             document_name=name,
+                            language=clause_lang,
+                            explanation_label=explanation_label,
                         )
                     )
                     break
@@ -207,7 +228,7 @@ def filtered_points(db, actor, country, items, clauses, proposed, facts, questio
             continue
         label = "FROM_DOCUMENT"
         if re.search(
-            r"confirm|verif|bergantung|subject to|jaringan",
+            r"confirm|verif|bergantung|subject to|jaringan|核实|确认",
             " ".join(c.quote for c in citations),
             re.I,
         ):
@@ -258,41 +279,61 @@ def answer(db, actor, kb, body, settings, gateway_factory=None, cancelled=None):
         raise AppError(
             409, "COVERAGE_REQUIRED", "Unggah polis terlebih dulu agar dokumen dapat diperiksa."
         )
-    if re.search(
-        r"obat apa|obat (?:yang )?cocok|cara mengobati|diagnos[ia]|"
-        r"what medicine|what treatment|should i take",
-        body.question,
-        re.I,
-    ):
+    intent = classify_intent(body.question, country, has_chat_history=chat is not None)
+    if intent == "MEDICAL_ADVICE":
         return AskAnswer(
             answer_points=[],
             disposition="declined",
+            intent=intent,
             warnings=[
                 "Saya tidak memberikan diagnosis atau pilihan obat. "
                 "Bandingkan jalur berobat untuk informasi prosedur asuransi."
             ],
             **common,
         )
-    if (
-        not chat
-        and not re.search(
-            r"polis|asuransi|manfaat|ditanggung|klaim|sisa|limit|excess|insurance|policy|benefit|cover|claim",
-            body.question,
-            re.I,
-        )
-        and not terms(body.question, country) & set(country.resources.retrieval_terms.data)
-    ):
+    if intent == "OUT_OF_SCOPE":
         return AskAnswer(
             answer_points=[],
             disposition="declined",
+            intent=intent,
             warnings=[
                 "Saya membantu pertanyaan asuransi berdasarkan dokumen. "
                 "Untuk prosedur berobat, buka Bandingkan Jalur."
             ],
             **common,
         )
+    if intent in (
+        "REMINDER_REQUEST",
+        "SERVICING_REQUEST",
+        "COVERAGE_STATUS",
+        "CLAIM_HELP",
+        "CARE_NAVIGATION",
+    ):
+        tool_steps, proposals = build_plan(intent, items)
+        summary_text = (
+            proposals[0].summary
+            if proposals
+            else "Open Care Pathways to compare non-emergency care options for your jurisdiction."
+        )
+        return AskAnswer(
+            answer_points=[
+                AnswerPoint(
+                    text=summary_text,
+                    label="NEEDS_CONFIRMATION",
+                    citations=[],
+                )
+            ],
+            disposition="answered",
+            intent=intent,
+            tool_steps=tool_steps,
+            proposals=proposals,
+            warnings=["Draft actions require your explicit review and approval before execution."],
+            **common,
+        )
+
     clauses = retrieve_clauses(db, actor, country, items, body.question)
     if not clauses:
+        tool_steps, proposals = build_plan(intent, items, clauses=[])
         warnings = [
             "Tidak ditemukan di dokumen. Konfirmasi manfaat kepada penyedia; "
             "ini bukan penolakan manfaat."
@@ -304,7 +345,15 @@ def answer(db, actor, kb, body, settings, gateway_factory=None, cancelled=None):
             )
         if not steps:
             warnings.append("Langkah verifikasi negara belum tersedia dalam KB.")
-        return AskAnswer(answer_points=[], disposition="no_match", warnings=warnings, **common)
+        return AskAnswer(
+            answer_points=[],
+            disposition="no_match",
+            intent=intent,
+            tool_steps=tool_steps,
+            proposals=proposals,
+            warnings=warnings,
+            **common,
+        )
     today, _, _ = local_day(p, country, datetime.now(UTC))
     question_terms = terms(body.question, country)
     facts = [
@@ -417,11 +466,20 @@ def answer(db, actor, kb, body, settings, gateway_factory=None, cancelled=None):
             c.id == f.coverage_id and cited_docs.intersection(c.document_ids) for c in current_items
         )
     ][:5]
+    tool_steps, proposals = build_plan(
+        intent,
+        current_items,
+        clauses=clauses,
+        has_uncertain_points=any(pt.label != "FROM_DOCUMENT" for pt in points),
+    )
     db.commit()  # Persist masked guardrail events, even if the answer is rejected.
     return AskAnswer(
         answer_points=points,
         numeric_facts=facts if points else [],
         disposition="answered" if points else "no_match",
+        intent=intent,
+        tool_steps=tool_steps,
+        proposals=proposals,
         warnings=["Keputusan pembayaran ada pada penyedia."]
         if points
         else ["Tidak ditemukan di dokumen dengan bukti yang valid."],
@@ -448,6 +506,10 @@ def save_answer(db, actor, kb, body, result):
         turn.update(question=body.question, answer=result.model_dump(mode="json"))
     chat.turns = [*chat.turns, turn][-10:]
     chat.coverage_id = selected
+    chat.workflow_state = {
+        "intent": result.intent,
+        "proposed_action_ids": [prop.proposal_id for prop in result.proposals],
+    }
     log_actor_event(
         db,
         actor,

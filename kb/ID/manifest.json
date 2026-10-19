@@ -21,6 +21,11 @@
     "bpjs-kesehatan.go.id",
     "www.bpjs-kesehatan.go.id",
     "kemkes.go.id",
-    "www.kemkes.go.id"
-  ]
+    "www.kemkes.go.id",
+    "keslan.kemkes.go.id",
+    "layanan112.komdigi.go.id",
+    "www.who.int",
+    "who.int"
+  ],
+  "default_currency": "IDR"
 }

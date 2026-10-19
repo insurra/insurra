@@ -1,0 +1,40 @@
+[
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
+    "cost_id": "cn-cost-sz-general-consult",
+    "country_code": "CN",
+    "jurisdiction": "CN-Guangdong-Shenzhen",
+    "service_type": "Public Hospital Outpatient Consultation Fee (General Physician)",
+    "service_code": "110200001",
+    "fee_reference_official": "Shenzhen Public Healthcare Fee Schedule Item 110200001",
+    "public_pricing": "25.00 CNY",
+    "private_pricing_range": "100.00 - 300.00 CNY",
+    "insurer_reimbursement_basis": "Reimbursed under outpatient benefit subject to RMB 650 annual deductible and 85% coinsurance rate",
+    "currency": "CNY",
+    "effective_date": "2023-10-01",
+    "limitations": "Applies to regular clinic hours at public Grade 2 and Grade 3 hospitals in Shenzhen",
+    "source_url": "https://hsa.sz.gov.cn/zwgk/zcfg/content/post_10842270.html",
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
+    "cost_id": "cn-cost-sz-emergency-consult",
+    "country_code": "CN",
+    "jurisdiction": "CN-Guangdong-Shenzhen",
+    "service_type": "Public Hospital Emergency Consultation Fee",
+    "service_code": "110200002",
+    "fee_reference_official": "Shenzhen Public Healthcare Fee Schedule Item 110200002",
+    "public_pricing": "35.00 CNY",
+    "private_pricing_range": "200.00 - 500.00 CNY",
+    "insurer_reimbursement_basis": "Eligible for emergency outpatient coverage under Ping An Comprehensive Scheme",
+    "currency": "CNY",
+    "effective_date": "2023-10-01",
+    "limitations": "Applies to 24-hour emergency room admissions at public tertiary hospitals",
+    "source_url": "https://hsa.sz.gov.cn/zwgk/zcfg/content/post_10842270.html",
+    "verification_status": "UNVERIFIED"
+  }
+]

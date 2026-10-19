@@ -1,0 +1,23 @@
+[
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "dispute_id": "cn-disp-nfra-12378",
+    "country_code": "CN",
+    "authority_name": "National Financial Regulatory Administration Financial Consumer Protection Center",
+    "channel_name": "12378 Banking and Insurance Consumer Complaint Hotline (12378银行保险消费者投诉维权热线)",
+    "contact_phone": "12378",
+    "online_portal": "https://www.nfra.gov.cn/cn/view/pages/index/index.html",
+    "jurisdiction_scope": "Mainland China national banking and insurance disputes",
+    "procedure_summary": "Policyholders who fail to resolve insurance claim or coverage disputes through direct insurer customer service may lodge an official regulatory complaint via hotline 12378.",
+    "published_deadlines": "Insurer required to handle and respond within 15 calendar days of receiving supervisory referral",
+    "filing_guidance": [
+      "Provide insurance policy number, insurer legal entity name, and claimant identification",
+      "Detail the claim denial or service grievance with factual supporting documents",
+      "State explicit resolution demands (e.g., policy claim payment, clarification of denial basis)"
+    ],
+    "source_url": "https://www.nfra.gov.cn/cn/view/pages/ItemDetail.html?docId=1107775",
+    "verification_status": "UNVERIFIED"
+  }
+]

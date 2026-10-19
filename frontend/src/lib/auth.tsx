@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { api, ApiClientError } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { config } from "@/lib/config";
+import { clearProfileCaches } from "@/lib/profile-cache";
 
 type Account = components["schemas"]["AccountSummary"];
 
@@ -63,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clear = useCallback(() => {
     sessionStorage.removeItem(storageKey);
+    clearProfileCaches();
     setAccount(null);
     setToken(null);
   }, []);

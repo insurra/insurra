@@ -1,0 +1,18 @@
+{
+  "evidence_class": "SYNTHETIC_FIXTURE",
+  "fixture_id": "synth-claim-expired-policy",
+  "category": "synthetic_claim_evidence",
+  "country_code": "CN",
+  "label": "Claim Incident Occurred After Policy Expiration Date",
+  "description": "Fictional claim with incident date occurring 15 days following policy termination.",
+  "payload": {
+    "policy_number": "SYNTH-PA-2023-EXPIRED",
+    "is_synthetic": true,
+    "coverage_end_date": "2024-06-30",
+    "incident_date": "2024-07-15",
+    "amount_claimed": "12000.00",
+    "currency": "CNY"
+  },
+  "is_adversarial": false,
+  "expected_outcome": "REJECTED_INCIDENT_OUTSIDE_POLICY_PERIOD"
+}

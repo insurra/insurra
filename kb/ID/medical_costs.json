@@ -1,0 +1,40 @@
+[
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
+    "cost_id": "id-cost-konsultasi-spesialis-swasta",
+    "country_code": "ID",
+    "jurisdiction": "ID-DKI-Jakarta",
+    "service_type": "Private Hospital Specialist Doctor Consultation Fee",
+    "service_code": "ID-SPEC-CONS-01",
+    "fee_reference_official": "Jakarta Private Hospital Reference Price Range",
+    "public_pricing": "100000.00 - 150000.00 IDR (RSCM Paviliun Khusus)",
+    "private_pricing_range": "350000.00 - 650000.00 IDR",
+    "insurer_reimbursement_basis": "Reimbursed as charged or up to outpatient plan inner limit by private commercial insurance",
+    "currency": "IDR",
+    "effective_date": "2024-01-01",
+    "limitations": "Does not include diagnostic procedures, medications, or specialized medical tests",
+    "source_url": "https://dinkes.jakarta.go.id",
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Hand-entered reference prices. Not retrieved from the fee schedule.",
+    "cost_id": "id-cost-igd-emergency-admission",
+    "country_code": "ID",
+    "jurisdiction": "ID-DKI-Jakarta",
+    "service_type": "Emergency Room (IGD) Initial Triage and Medical Evaluation",
+    "service_code": "ID-EMERG-IGD-01",
+    "fee_reference_official": "Emergency Department Initial Facility Fee",
+    "public_pricing": "0.00 IDR (100% covered by JKN BPJS Kesehatan for emergencies)",
+    "private_pricing_range": "250000.00 - 600000.00 IDR",
+    "insurer_reimbursement_basis": "Fully covered under JKN for emergency criteria; reimbursed under accident/emergency outpatient for commercial policies",
+    "currency": "IDR",
+    "effective_date": "2024-01-01",
+    "limitations": "Applies to emergency admissions meeting triage priority red or yellow criteria",
+    "source_url": "https://dinkes.jakarta.go.id",
+    "verification_status": "UNVERIFIED"
+  }
+]
