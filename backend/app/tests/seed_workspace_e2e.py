@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from app.api.auth import _hash_password
 from app.core.config import ROOT, Settings
 from app.main import create_app
-from app.models import AccountRow
+from app.models import AccountProfileRow, AccountRow
 from app.tests.workspace_fixtures import workspace
 
 
@@ -26,7 +26,13 @@ def main():
         with app.state.session_factory() as db:
             row = db.get(AccountRow, account)
             row.password_hash = _hash_password("SyntheticPassword123")
-            row.consent_decided = True
+            if os.environ.get("TEST_ACCOUNT_STAGE") == "NEW":
+                row.consent_decided = False
+                profile = db.get(AccountProfileRow, account)
+                if profile is not None:
+                    profile.completed = False
+            else:
+                row.consent_decided = True
             db.commit()
             print(
                 json.dumps(
