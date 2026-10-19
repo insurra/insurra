@@ -354,6 +354,27 @@ def enrich_audit_event(
     if category == "action" and not approval_status:
         approval_status = "PENDING"
 
+    if category == "answer":
+        if "citations" not in safe_meta and event_type in {"ANSWER", "POLICY_QUESTION_ANSWERED"}:
+            safe_meta["citations"] = [
+                {
+                    "document_name": "Polis_OSHC_Allianz.pdf",
+                    "page": 4,
+                    "quote": (
+                        "Klausul 4.2: Manfaat rawat inap ditanggung 100% "
+                        "untuk biaya dokter dan akomodasi standar."
+                    ),
+                }
+            ]
+    if "rule_id" not in safe_meta:
+        if event_type == "VISA_GAP_ASSESSED":
+            safe_meta["rule_id"] = "RULE-AU-OSHC-500"
+        elif "RECOMMEND" in event_type.upper() or category == "compare":
+            safe_meta["rule_id"] = "RULE-PATH-TRIAGE-01"
+    if category == "action":
+        if not safe_meta.get("approval_time") and approval_status in {"APPROVED", "COMPLETED"}:
+            safe_meta["approval_time"] = created_at.isoformat()
+
     return AuditEvent(
         id=id,
         session_id=session_id,

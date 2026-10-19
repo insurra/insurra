@@ -102,6 +102,9 @@ class PolicyGuard:
             "member_id",
             "relation",
             "kind",
+            "rule_id",
+            "document_name",
+            "approval_time",
         }
         int_keys = {"gap_days", "page_count", "extracted_count", "document_count", "field_count"}
         bool_keys = {
@@ -125,6 +128,30 @@ class PolicyGuard:
             elif key == "tools_called" and isinstance(value, list):
                 clean_tools = [t for t in value if isinstance(t, str) and t in allowed_tools]
                 output[key] = clean_tools[:10]
+            elif key == "citations" and isinstance(value, list):
+                clean_citations = []
+                for item in value[:10]:
+                    if isinstance(item, dict):
+                        doc_title = str(item.get("document_name") or item.get("doc") or "")[:120]
+                        page_val = item.get("page")
+                        quote_val = self.mask_sensitive_numbers(str(item.get("quote") or "")[:300])
+                        parsed_page = (
+                            page_val
+                            if isinstance(page_val, int)
+                            else (
+                                int(page_val)
+                                if isinstance(page_val, str) and page_val.isdigit()
+                                else 1
+                            )
+                        )
+                        clean_citations.append(
+                            {
+                                "document_name": doc_title,
+                                "page": parsed_page,
+                                "quote": quote_val,
+                            }
+                        )
+                output[key] = clean_citations
             elif key in masked_text_keys and isinstance(value, str):
                 output[key] = self.mask_sensitive_numbers(value.strip()[:300])
             elif key in plain_str_keys and isinstance(value, str):
