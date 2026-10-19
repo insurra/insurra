@@ -32,6 +32,7 @@ from app.schemas.foundation import (
 )
 from app.services.account_access import active_account
 from app.services.demo_access import reject_ambiguous_actor
+from app.services.email_delivery import send_password_reset_email, send_verification_email
 
 public_router = APIRouter(prefix="/auth", tags=["Authentication"])
 api_router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -315,7 +316,7 @@ def google_callback(
 
 
 @account_auth_router.post("/register", response_model=AuthMessage, status_code=201)
-def register(body: RegisterRequest, db: DB):
+def register(body: RegisterRequest, db: DB, request: Request):
     email_clean = str(body.email).strip().lower()
     existing = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
     if existing is not None:
@@ -323,8 +324,6 @@ def register(body: RegisterRequest, db: DB):
 
     now = datetime.now(UTC)
     raw_pw = body.password.get_secret_value()
-    # No email transport exists yet (see /auth/capabilities); the raw token is never stored,
-    # returned or logged, so a new account stays unverified until delivery is configured.
     token = secrets.token_urlsafe(32)
     account = AccountRow(
         email=email_clean,
@@ -342,6 +341,11 @@ def register(body: RegisterRequest, db: DB):
     )
     db.add(account)
     db.commit()
+
+    settings = request.app.state.settings
+    if settings.is_email_delivery_active:
+        send_verification_email(email_clean, token, settings)
+
     return AuthMessage(
         message="Registration successful. Please check your email to verify your account."
     )
@@ -444,7 +448,7 @@ def verify_email(body: VerificationRequest, db: DB):
 
 
 @account_auth_router.post("/resend-verification", response_model=AuthMessage)
-def resend_verification(body: EmailRequest, db: DB):
+def resend_verification(body: EmailRequest, db: DB, request: Request):
     email_clean = str(body.email).strip().lower()
     account = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
     if account is None or account.email_verified:
@@ -464,16 +468,22 @@ def resend_verification(body: EmailRequest, db: DB):
                 {"retry_after": retry_after},
             )
 
-    account.verification_token = _hash_token(secrets.token_urlsafe(32))
+    raw_token = secrets.token_urlsafe(32)
+    account.verification_token = _hash_token(raw_token)
     account.verification_sent_at = now
     account.verification_token_expires_at = now + VERIFICATION_TTL
     account.updated_at = now
     db.commit()
+
+    settings = request.app.state.settings
+    if settings.is_email_delivery_active:
+        send_verification_email(email_clean, raw_token, settings)
+
     return AuthMessage(message="Verification email resent successfully.")
 
 
 @account_auth_router.post("/forgot-password", response_model=AuthMessage)
-def forgot_password(body: EmailRequest, db: DB):
+def forgot_password(body: EmailRequest, db: DB, request: Request):
     email_clean = str(body.email).strip().lower()
     account = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
     if account is not None and account.password_hash:
@@ -485,10 +495,15 @@ def forgot_password(body: EmailRequest, db: DB):
         )
         # Throttled requests get the same response as unknown emails (no enumeration).
         if issued_at is None or (now - issued_at).total_seconds() >= RESET_COOLDOWN_SECONDS:
-            account.reset_token = _hash_token(secrets.token_urlsafe(32))
+            raw_token = secrets.token_urlsafe(32)
+            account.reset_token = _hash_token(raw_token)
             account.reset_token_expires_at = now + RESET_TTL
             account.updated_at = now
             db.commit()
+
+            settings = request.app.state.settings
+            if settings.is_email_delivery_active:
+                send_password_reset_email(email_clean, raw_token, settings)
     return AuthMessage(
         message="If this email is registered, password reset instructions have been sent."
     )
@@ -523,7 +538,7 @@ def reset_password(body: ResetPasswordRequest, db: DB):
 def capabilities(request: Request):
     settings = request.app.state.settings
     return AuthCapabilities(
-        email_delivery=settings.email_delivery_enabled,
+        email_delivery=settings.is_email_delivery_active,
         google_oauth=bool(
             settings.google_client_id and settings.google_client_secret.get_secret_value()
         ),

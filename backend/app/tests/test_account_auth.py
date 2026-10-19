@@ -446,3 +446,47 @@ def test_auth_capabilities_is_public_and_honest(client):
     response = client.get("/api/v1/auth/capabilities")
     assert response.status_code == 200
     assert response.json() == {"email_delivery": False, "google_oauth": True}
+
+
+def test_auth_capabilities_reflects_email_delivery_enabled(client, app, monkeypatch):
+    app.state.settings.email_delivery_enabled = True
+    response = client.get("/api/v1/auth/capabilities")
+    assert response.status_code == 200
+    assert response.json()["email_delivery"] is True
+
+
+def test_registration_and_password_reset_trigger_email_delivery(client, app, monkeypatch):
+    sent_emails = []
+
+    def fake_send_email(*args, **kwargs):
+        sent_emails.append((args, kwargs))
+        return True
+
+    monkeypatch.setattr("app.services.email_delivery.send_email", fake_send_email)
+    app.state.settings.email_delivery_enabled = True
+
+    email = "email-delivery-user@example.com"
+    reg = client.post(
+        "/api/v1/account/auth/register",
+        json={
+            "email": email,
+            "password": "Password123",
+            "password_confirmation": "Password123",
+            "accepted_terms": True,
+        },
+    )
+    assert reg.status_code == 201
+    assert len(sent_emails) == 1
+    # send_email(to_email, subject, text_content, html_content, settings)
+    assert sent_emails[0][0][0] == email
+    assert "verify" in sent_emails[0][0][3]
+
+    # Password reset
+    forgot = client.post(
+        "/api/v1/account/auth/forgot-password",
+        json={"email": email},
+    )
+    assert forgot.status_code == 200
+    assert len(sent_emails) == 2
+    assert sent_emails[1][0][0] == email
+    assert "reset" in sent_emails[1][0][3]

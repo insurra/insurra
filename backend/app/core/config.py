@@ -25,8 +25,15 @@ class Settings(BaseSettings):
     google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
     frontend_url: str = "http://127.0.0.1:3000"
     backend_url: str = "http://localhost:8000"
-    # Flag only: no email transport is implemented, so leave false until one exists.
     email_delivery_enabled: bool = False
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: SecretStr = SecretStr("")
+    smtp_from_email: str = "no-reply@insurra.com"
+    smtp_from_name: str = "Insurra"
+    smtp_use_tls: bool = True
+    smtp_use_ssl: bool = False
     session_secret: SecretStr = SecretStr("")
     account_session_ttl_days: int = 7
     sandbox_step_seconds: int = 10
@@ -35,6 +42,10 @@ class Settings(BaseSettings):
     agent_worker_enabled: bool = False
     agent_worker_interval_seconds: int = 15
     freeze_legacy_actions: bool = False
+
+    @property
+    def is_email_delivery_active(self) -> bool:
+        return bool(self.email_delivery_enabled or (self.smtp_host and self.smtp_host.strip()))
 
     @property
     def active_kb_country_codes(self) -> frozenset[str]:
