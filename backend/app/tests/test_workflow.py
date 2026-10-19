@@ -79,12 +79,69 @@ def test_workflow_draft_generation_and_approval_execution_lifecycle(client, demo
 
 
 def test_workflow_audit_logs(client, demo):
-    _, headers = demo("raka")
-    res = client.get("/api/v1/workflow/audit/timeline", headers=headers)
+    _, raka_headers = demo("raka")
+    _, sinta_headers = demo("sinta")
+
+    res = client.get("/api/v1/workflow/audit/timeline", headers=raka_headers)
     assert res.status_code == 200
     data = res.json()
+    assert data["synthetic"] is True
     assert "events" in data
     assert len(data["events"]) >= 1
+    assert all(e["synthetic"] is True for e in data["events"])
+    assert all("source_table" in e for e in data["events"])
+
+    # Foreign session cannot read Raka's audit event detail
+    first_event_id = data["events"][0]["id"]
+    own_detail = client.get(f"/api/v1/workflow/audit/events/{first_event_id}", headers=raka_headers)
+    assert own_detail.status_code == 200
+    foreign_detail = client.get(
+        f"/api/v1/workflow/audit/events/{first_event_id}", headers=sinta_headers
+    )
+    assert foreign_detail.status_code == 404
+
+
+def test_workflow_claim_creation_idempotency_and_unverified_kb_evidence(client, demo):
+    _, headers = demo("raka")
+    overview = client.get("/api/v1/workflow/claims/overview", headers=headers).json()
+    coverage_ref = overview["available_policies"][0]["ref"]
+
+    # B3.1: Double submit with same Idempotency-Key yields one case
+    idem_headers = {**headers, "Idempotency-Key": "claim-idem-raka-001"}
+    body = {
+        "coverage_ref": coverage_ref,
+        "claim_type": "OUTPATIENT",
+        "title": "Outpatient clinic visit",
+        "origin": "PATHWAY",
+        "origin_ref": "pathway-ref-123",
+    }
+    res1 = client.post("/api/v1/workflow/claims/cases", headers=idem_headers, json=body)
+    res2 = client.post("/api/v1/workflow/claims/cases", headers=idem_headers, json=body)
+    assert res1.status_code in (200, 201)
+    assert res2.status_code in (200, 201)
+    case1 = res1.json()["case"]
+    case2 = res2.json()["case"]
+    assert case1["id"] == case2["id"]
+
+    # B3.2: KB evidence items with UNVERIFIED status are visible as "Insurer requirement unverified"
+    checklist = res1.json()["checklist"]
+    unverified_items = [
+        item
+        for item in checklist
+        if "Insurer requirement unverified" in (item.get("reason") or "")
+        and item["status"] != "NOT_APPLICABLE"
+    ]
+    assert len(unverified_items) >= 1
+    assert all(item["verification"] == "UNVERIFIED_REQUIREMENT" for item in unverified_items)
+    assert all(item["status"] == "MISSING" for item in unverified_items)
+
+    # B6.1: Seeded actions have canonical payload hashes matching payload_sha256(payload)
+    from app.services.approval import payload_sha256
+
+    queue = client.get("/api/v1/workflow/actions/queue", headers=headers).json()["actions"]
+    assert len(queue) >= 4
+    for act in queue:
+        assert act["payload_sha256"] == payload_sha256(act["payload"])
 
 
 def test_workflow_emergency_and_triage(client, demo):
@@ -115,6 +172,8 @@ def test_workflow_employer_benefits_and_comparison(client, demo):
     eb = eb_res.json()
     assert "statutory_schemes" in eb
     assert "coordination_principles" in eb
+    assert eb["coordination"] == "UNKNOWN"
+    assert eb["coordination_principles"]["coordination"] == "UNKNOWN"
 
     # SC-17 Product comparison
     comp_res = client.get("/api/v1/workflow/products/compare?country_code=CN", headers=headers)
@@ -122,6 +181,10 @@ def test_workflow_employer_benefits_and_comparison(client, demo):
     comp = comp_res.json()
     assert "products" in comp
     assert len(comp["products"]) >= 2
+    assert comp["commission_disclosure"] is None
+    assert all(p["verification_status"] == "UNVERIFIED" for p in comp["products"])
+    assert all(p["provenance_note"] for p in comp["products"])
+    assert all("attributes" in p and "provenance" in p for p in comp["products"])
 
 
 def test_workflow_proof_verification(client, demo):
@@ -141,6 +204,27 @@ def test_workflow_proof_verification(client, demo):
     proof = proof_res.json()
     assert proof["verified"] is True
     assert proof["computed_sha256"] == sha
+
+    anchor_res = client.post(
+        "/api/v1/workflow/proof/anchor",
+        headers=headers,
+        json={
+            "document_sha256": sha,
+            "document_title": "Synthetic Fapiao",
+            "mime_type": "text/plain",
+        },
+    )
+    assert anchor_res.status_code == 200
+    receipt = anchor_res.json()
+    assert receipt["anchoring_type"] == "LOCAL_INTEGRITY_RECEIPT"
+    assert receipt["network"] == "LOCAL_ONLY"
+    assert receipt["transaction_hash"] is None
+    assert receipt["block_number"] is None
+    assert receipt["contract_address"] is None
+    assert receipt["explorer_url"] is None
+    assert len(receipt["receipt_sha256"]) == 64
+    assert "on-chain" not in anchor_res.text.lower()
+    assert "etherscan" not in anchor_res.text.lower()
 
 
 def test_workflow_isolation_between_demo_and_foreign_session(client, demo):

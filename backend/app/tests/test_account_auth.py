@@ -1,5 +1,6 @@
 """Tests for SC-01 Account Authentication and Consent."""
 
+import hashlib
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
@@ -97,8 +98,11 @@ def test_email_verification_and_cooldown(client, db_session):
     account = db_session.scalar(select(AccountRow).where(AccountRow.email == email))
     assert account is not None
     assert not account.email_verified
-    token = account.verification_token
-    assert token is not None
+    # Tokens are stored as sha256 only and never returned; plant a known one to verify with.
+    assert account.verification_token is not None and len(account.verification_token) == 64
+    plain = "known-verification-token"
+    account.verification_token = hashlib.sha256(plain.encode()).hexdigest()
+    db_session.commit()
 
     # Login before verification fails with 403
     login_res = client.post(
@@ -135,9 +139,11 @@ def test_email_verification_and_cooldown(client, db_session):
 
     # Verify with real token
     db_session.refresh(account)
+    account.verification_token = hashlib.sha256(plain.encode()).hexdigest()
+    db_session.commit()
     valid_res = client.post(
         "/api/v1/account/auth/verify-email",
-        json={"token": account.verification_token},
+        json={"token": plain},
     )
     assert valid_res.status_code == 200
 
@@ -215,8 +221,10 @@ def test_forgot_and_reset_password(client, db_session):
     assert forgot_res.status_code == 200
 
     db_session.refresh(account)
-    reset_token = account.reset_token
-    assert reset_token is not None
+    assert account.reset_token is not None and len(account.reset_token) == 64
+    reset_token = "known-reset-token"
+    account.reset_token = hashlib.sha256(reset_token.encode()).hexdigest()
+    db_session.commit()
 
     # Reset with valid token
     reset_res = client.post(
@@ -288,3 +296,153 @@ def test_bulk_consent_and_skip(client, db_session):
     # Account shows consent_decided is True
     me_after = client.get("/api/v1/auth/me", headers=headers)
     assert me_after.json()["consent_decided"] is True
+
+
+def register(client, email, password="Password123"):
+    return client.post(
+        "/api/v1/account/auth/register",
+        json={
+            "email": email,
+            "password": password,
+            "password_confirmation": password,
+            "accepted_terms": True,
+        },
+    )
+
+
+def _account(db_session, email):
+    db_session.expire_all()
+    return db_session.scalar(select(AccountRow).where(AccountRow.email == email))
+
+
+def test_new_tokens_are_hashed_and_never_in_responses(client, db_session):
+    email = "hashed@insurra.test"
+    response = register(client, email)
+    assert response.status_code == 201
+    assert set(response.json()) == {"message"}
+    account = _account(db_session, email)
+    assert len(account.verification_token) == 64
+    delta = account.verification_token_expires_at.replace(tzinfo=UTC) - datetime.now(UTC)
+    assert timedelta(hours=47, minutes=59) < delta <= timedelta(hours=48)
+    account.verification_sent_at = datetime.now(UTC) - timedelta(minutes=5)
+    db_session.commit()
+    resent = client.post("/api/v1/account/auth/resend-verification", json={"email": email})
+    assert resent.status_code == 200 and set(resent.json()) == {"message"}
+    forgot = client.post("/api/v1/account/auth/forgot-password", json={"email": email})
+    assert forgot.status_code == 200 and set(forgot.json()) == {"message"}
+    account = _account(db_session, email)
+    assert len(account.reset_token) == 64
+    # The stored hash must not be replayable as a token.
+    replay = client.post(
+        "/api/v1/account/auth/verify-email", json={"token": account.verification_token}
+    )
+    assert replay.status_code == 400
+
+
+def test_legacy_plaintext_tokens_still_verify_and_reset(client, db_session):
+    email = "legacy@insurra.test"
+    register(client, email)
+    account = _account(db_session, email)
+    account.verification_token = "legacy-plain-verification"
+    account.verification_token_expires_at = None
+    account.verification_sent_at = None
+    account.reset_token = "legacy-plain-reset"
+    account.reset_token_expires_at = datetime.now(UTC) + timedelta(minutes=30)
+    db_session.commit()
+    verified = client.post(
+        "/api/v1/account/auth/verify-email", json={"token": "legacy-plain-verification"}
+    )
+    assert verified.status_code == 200
+    reset = client.post(
+        "/api/v1/account/auth/reset-password",
+        json={
+            "token": "legacy-plain-reset",
+            "password": "BrandNew789",
+            "password_confirmation": "BrandNew789",
+        },
+    )
+    assert reset.status_code == 200
+    again = client.post(
+        "/api/v1/account/auth/verify-email", json={"token": "legacy-plain-verification"}
+    )
+    assert again.status_code == 400
+
+
+def test_verification_expiry(client, db_session):
+    email = "expiry@insurra.test"
+    register(client, email)
+    plain = "expiring-token"
+    account = _account(db_session, email)
+    account.verification_token = hashlib.sha256(plain.encode()).hexdigest()
+    account.verification_token_expires_at = datetime.now(UTC) - timedelta(seconds=1)
+    db_session.commit()
+    expired = client.post("/api/v1/account/auth/verify-email", json={"token": plain})
+    assert expired.status_code == 400
+    assert expired.json()["code"] == "INVALID_VERIFICATION_TOKEN"
+    assert not _account(db_session, email).email_verified
+    # Legacy row without expiry: aged from the send time.
+    account = _account(db_session, email)
+    account.verification_token = "legacy-old"
+    account.verification_token_expires_at = None
+    account.verification_sent_at = datetime.now(UTC) - timedelta(hours=49)
+    db_session.commit()
+    assert (
+        client.post("/api/v1/account/auth/verify-email", json={"token": "legacy-old"}).status_code
+        == 400
+    )
+    account = _account(db_session, email)
+    account.verification_token = "legacy-fresh"
+    account.verification_sent_at = datetime.now(UTC) - timedelta(hours=47)
+    db_session.commit()
+    ok = client.post("/api/v1/account/auth/verify-email", json={"token": "legacy-fresh"})
+    assert ok.status_code == 200
+
+
+def test_forgot_password_throttle_and_identical_responses(client, db_session):
+    email = "throttle@insurra.test"
+    register(client, email)
+    first = client.post("/api/v1/account/auth/forgot-password", json={"email": email})
+    stored = _account(db_session, email).reset_token
+    second = client.post("/api/v1/account/auth/forgot-password", json={"email": email})
+    unknown = client.post("/api/v1/account/auth/forgot-password", json={"email": "no@insurra.test"})
+    assert first.status_code == second.status_code == unknown.status_code == 200
+    assert first.json() == second.json() == unknown.json()
+    assert _account(db_session, email).reset_token == stored  # throttled: not rotated
+    account = _account(db_session, email)
+    account.reset_token_expires_at = datetime.now(UTC) + timedelta(minutes=58)  # issued 2 min ago
+    db_session.commit()
+    client.post("/api/v1/account/auth/forgot-password", json={"email": email})
+    assert _account(db_session, email).reset_token != stored
+
+
+def test_login_does_not_reveal_unknown_emails_and_unknown_never_lock(client, db_session):
+    email = "known@insurra.test"
+    register(client, email)
+    known = client.post(
+        "/api/v1/account/auth/login", json={"email": email, "password": "WrongPassword1"}
+    )
+    unknown = client.post(
+        "/api/v1/account/auth/login",
+        json={"email": "ghost@insurra.test", "password": "WrongPassword1"},
+    )
+    assert known.status_code == unknown.status_code == 401
+    assert known.json()["code"] == unknown.json()["code"] == "INVALID_CREDENTIALS"
+    assert known.json()["message"] == unknown.json()["message"]
+    for _ in range(8):
+        again = client.post(
+            "/api/v1/account/auth/login",
+            json={"email": "ghost@insurra.test", "password": "WrongPassword1"},
+        )
+        assert again.status_code == 401
+    # A real account still locks after repeated failures.
+    for _ in range(5):
+        locked = client.post(
+            "/api/v1/account/auth/login", json={"email": email, "password": "WrongPassword1"}
+        )
+    assert locked.status_code == 423
+
+
+def test_auth_capabilities_is_public_and_honest(client):
+    response = client.get("/api/v1/auth/capabilities")
+    assert response.status_code == 200
+    assert response.json() == {"email_delivery": False, "google_oauth": True}

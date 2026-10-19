@@ -37,7 +37,7 @@ def test_health_and_docs(client):
 
 def test_country_discovery_and_personas(client):
     countries = client.get("/api/v1/countries").json()
-    assert {c["country_code"] for c in countries} == {"AU", "CN", "ID"}
+    assert {c["country_code"] for c in countries} == {"CN", "ID"}
     assert all(c["verification_status"] == "UNVERIFIED" for c in countries)
     assert {p["persona_id"] for p in client.get("/api/v1/demo/personas").json()} == {
         "raka",
@@ -279,7 +279,7 @@ def test_isolation_including_same_persona_and_document_identifiers(client, demo)
 @pytest.mark.parametrize(
     "persona,types,gap,status",
     [
-        ("raka", {"OSHC"}, 76, "DATE_DIFFERENCE_DETECTED"),
+        ("raka", {"INTERNATIONAL_STUDENT"}, 76, "NEEDS_VERIFICATION"),
         ("sinta", {"BPJS", "EMPLOYER"}, None, "UNABLE_TO_DETERMINE"),
     ],
 )
@@ -317,7 +317,14 @@ def test_profile_validation_and_country_guard(client, demo):
     )
     assert (
         client.put(
-            "/api/v1/profile", headers=h, json={**body, "visa_expiry_date": None}
+            "/api/v1/profile",
+            headers=h,
+            json={
+                **body,
+                "visa_expiry_date": None,
+                "permit_end_date": None,
+                "study_end_date": None,
+            },
         ).status_code
         == 200
     )

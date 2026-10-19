@@ -4,8 +4,11 @@ adversarial prompt injection fixtures, medical emergency safety, and downstream 
 Never use em dashes in strings or docstrings.
 """
 
-from app.core.config import ROOT
-from app.pipeline.brand_assets.collector import OFFICIAL_SVG_DEFINITIONS
+from alembic import command
+from alembic.config import Config
+
+from app.core.config import ROOT, get_settings
+from app.pipeline.brand_assets.collector import PLACEHOLDER_SVG_DEFINITIONS
 from app.pipeline.brand_assets.sanitizer import AssetSanitizer
 from app.pipeline.discovery.registry import OFFICIAL_SOURCES
 from app.pipeline.generators.cn_data import (
@@ -68,10 +71,10 @@ def test_brand_asset_sanitizer_security():
     assert "Official Insurer" in sanitized
 
 
-def test_official_brand_svg_definitions():
-    """All official brand logo SVGs must have viewBox, width, height, and valid XML."""
+def test_placeholder_brand_svg_definitions():
+    """All placeholder logo SVGs must have viewBox, width, height, and valid XML."""
     sanitizer = AssetSanitizer()
-    for insurer_id, definition in OFFICIAL_SVG_DEFINITIONS.items():
+    for insurer_id, definition in PLACEHOLDER_SVG_DEFINITIONS.items():
         svg = definition["svg"]
         assert "viewBox" in svg, f"Missing viewBox in {insurer_id}"
         assert definition["primary_color"].startswith("#")
@@ -161,7 +164,7 @@ def test_deterministic_rules_structure():
         assert len(r.applicable_personas) > 0
         assert len(r.required_evidence) > 0
         assert r.threshold_or_condition
-        assert r.verification_status == PipelineVerificationStatus.VERIFIED
+        assert r.verification_status == PipelineVerificationStatus.UNVERIFIED
 
 
 def test_rag_chunks_provenance():
@@ -179,10 +182,14 @@ def test_rag_chunks_provenance():
         assert chunk.verification_status in PipelineVerificationStatus
 
 
-def test_pipeline_runner_execution_and_exports(tmp_path):
+def test_pipeline_runner_execution_and_exports(tmp_path, monkeypatch):
     """PipelineRunner must execute successfully in dry-run mode and produce all team packages."""
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path / 'pipeline.db'}")
+    get_settings.cache_clear()
+    command.upgrade(Config(str(ROOT / "backend/alembic.ini")), "head")
     runner = PipelineRunner(root=ROOT)
     result = runner.run(live_network=False)
+    get_settings.cache_clear()
 
     assert result["status"] == "COMPLETED"
     assert result["total_sources"] >= 28

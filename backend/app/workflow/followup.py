@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
 from app.core.errors import AppError
+from app.services.events import dispatch
 from app.workflow import actions, audit, kbdata, sandbox, states
 from app.workflow.models import WfClaimCaseRow, WfReminderRow
 from app.workflow.owner import Owner, owner_policies, purpose_granted
@@ -122,8 +123,15 @@ def prepare_follow_up(db: Session, owner: Owner, case: WfClaimCaseRow, missing: 
     )
 
 
-def sync_claim(db: Session, owner: Owner, case: WfClaimCaseRow, *, manual: bool = False) -> dict:
-    now = _now()
+def sync_claim(
+    db: Session,
+    owner: Owner,
+    case: WfClaimCaseRow,
+    *,
+    manual: bool = False,
+    now: datetime | None = None,
+) -> dict:
+    now = now or _now()
     if not case.sandbox_ref:
         raise AppError(409, "NOT_SUBMITTED", "This claim has not been submitted to the sandbox.")
     result = {"changed": False, "status": case.status, "monitoring_state": case.monitoring_state}
@@ -165,9 +173,9 @@ def sync_claim(db: Session, owner: Owner, case: WfClaimCaseRow, *, manual: bool 
     target = STATUS_MAP[row.status]
     changed = False
     if case.sandbox_status != row.status:
-        path = [s for s in _ORDER if s != target][
-            : (_ORDER.index(target) if target in _ORDER else 2)
-        ]
+        start_idx = (_ORDER.index(case.status) + 1) if case.status in _ORDER else 0
+        end_idx = _ORDER.index(target) if target in _ORDER else len(_ORDER)
+        path = [s for s in _ORDER[start_idx:end_idx] if s != target]
         for step in [*path, target]:
             if case.status == step:
                 continue
@@ -183,6 +191,13 @@ def sync_claim(db: Session, owner: Owner, case: WfClaimCaseRow, *, manual: bool 
             changed = changed or moved
         case.sandbox_status = row.status
         if changed:
+            dispatch(
+                db,
+                owner,
+                "claim.status.changed",
+                case.id,
+                {"to_status": target, "dedupe_part": row.payload_digest[:8]},
+            )
             audit.record(
                 db,
                 owner,
@@ -228,7 +243,7 @@ def poll_due(factory: sessionmaker, now: datetime | None = None) -> int:
             if case is None:
                 continue
             owner = Owner(case.owner_kind, case.owner_id)
-            sync_claim(db, owner, case)
+            sync_claim(db, owner, case, now=now)
             db.commit()
             synced += 1
     return synced

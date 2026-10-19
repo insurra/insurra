@@ -35,7 +35,7 @@ class AccountSetup(Contract):
     country_label: str
     kb_version: str
     verification_status: VerificationStatus
-    currency: str
+    currency: str | None = None
     coverage_types: list[dict[str, str]]
     document_types: list[dict[str, str]]
     suggested_docs: list[dict[str, str | None]]
@@ -144,7 +144,7 @@ class AccountInventory(Contract):
 
 
 class DeleteRequest(Contract):
-    confirm: Literal["HAPUS"]
+    confirm: Literal["DELETE", "HAPUS"]
 
 
 class Deleted(Contract):

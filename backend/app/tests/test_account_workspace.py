@@ -4,8 +4,17 @@ import hashlib
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+import pytest
+
 from app.models import AccountRow, AccountSessionRow
 from app.services.account_documents import CandidateField, ExtractionResult, PageText
+
+
+@pytest.fixture
+def kb_countries() -> str:
+    # Settings override scoped to this module: it uses the inactive legacy kb/AU folder as a
+    # fixture-only configuration. The default app keeps AU disabled (see conftest).
+    return "AU,CN,ID"
 
 
 def account_headers(app, suffix: str) -> dict[str, str]:
@@ -350,10 +359,10 @@ def test_audit_timeline_masking_tools_and_rls_isolation(app, client, demo):
 
 def test_guardrail_highlight_subtypes_and_demo_scenario(client, demo):
     _, headers = demo("raka")
-    # Trigger emergency ("nyeri dada") via triage before opening guardrail view
+    # /triage is now implemented (KB-driven, positive match only); it no longer returns 501.
     assert (
         client.post("/api/v1/triage", headers=headers, json={"text": "nyeri dada"}).status_code
-        == 501
+        == 200
     )
 
     # Opening /api/v1/audit?type=guardrail in demo returns >= 3 distinct guardrail subtypes
@@ -517,7 +526,10 @@ def test_actions_queue_pending_cards_stale_masking_and_forbidden_tool_guardrail(
 
     # Reminder created >14 days ago is marked stale with "Mungkin sudah tidak relevan"
     reminder_card = next(item for item in seeded if item["action_type"] == "create_reminder")
-    assert reminder_card["reason"] == "Dibuat karena ada jeda 76 hari antara asuransi dan visa"
+    assert (
+        reminder_card["reason"]
+        == "Dibuat karena ada selisih tanggal 76 hari antara akhir asuransi dan akhir studi"
+    )
     assert reminder_card["is_stale"] is True
     assert reminder_card["stale_label"] == "Mungkin sudah tidak relevan"
 

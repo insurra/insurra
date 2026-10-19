@@ -1,11 +1,11 @@
-"""Workflow router for Joshua (SC-08, SC-09, SC-10, SC-11, SC-15, SC-17, SC-19).
+"""Workflow router for claims, actions, emergency, audit, and catalog workflows.
 
 Serves both demo sessions and authenticated account sessions with strict ownership isolation.
 """
 
 from uuid import UUID
 
-from fastapi import APIRouter, File, Query, UploadFile
+from fastapi import APIRouter, File, Header, Query, UploadFile
 from pydantic import BaseModel, Field
 
 from app.core.errors import AppError
@@ -25,9 +25,9 @@ from app.workflow import (
     evidence as ev,
 )
 from app.workflow.models import WfActionRow, WfClaimCaseRow, WfClaimEvidenceRow
-from app.workflow.owner import DB, CurrentOwner, OptionalOwner, owner_policies
+from app.workflow.owner import DB, CurrentOwner, OptionalOwner, owner_policies, require_purpose
 
-router = APIRouter(prefix="/workflow", tags=["Joshua Workflow"])
+router = APIRouter(prefix="/workflow", tags=["Workflow"])
 
 
 # =============================================================================
@@ -41,6 +41,9 @@ class CreateClaimRequest(BaseModel):
     title: str | None = None
     insured_person: str = "Self"
     claimant_name: str | None = None
+    origin: str = "CLAIMS_CENTER"
+    origin_ref: str | None = None
+    idempotency_key: str | None = None
 
 
 class EditClaimRequest(BaseModel):
@@ -234,13 +237,22 @@ def list_claim_cases(
 
 
 @router.post("/claims/cases", status_code=201)
-def create_claim_case(body: CreateClaimRequest, db: DB, owner: CurrentOwner):
+def create_claim_case(
+    body: CreateClaimRequest,
+    db: DB,
+    owner: CurrentOwner,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
+    effective_key = idempotency_key or body.idempotency_key
     case = claims.create_case(
         db,
         owner,
         policy_ref=body.coverage_ref,
         claim_type=body.claim_type,
         title=body.title,
+        origin=body.origin,
+        origin_ref=body.origin_ref,
+        idempotency_key=effective_key,
         insured_person=body.insured_person,
         claimant_name=body.claimant_name,
     )
@@ -272,6 +284,7 @@ async def upload_claim_evidence(
     evidence_kind: str = Query("FAPIAO"),
 ):
     case = claims.get_case(db, owner, claim_id)
+    require_purpose(db, owner, "process_documents")
     content = await file.read()
     if len(content) > 10 * 1024 * 1024:
         raise AppError(422, "FILE_TOO_LARGE", "File size exceeds 10 MB limit.")
@@ -391,16 +404,113 @@ def acknowledge_consistency_check(
 # =============================================================================
 
 
+class CreateActionRequest(BaseModel):
+    action_type: str
+    entity_type: str | None = None
+    entity_id: str | None = None
+    draft_inputs: dict[str, str] = Field(default_factory=dict)
+    title: str | None = None
+    purpose: str | None = None
+
+
 class ApproveActionRequest(BaseModel):
     payload_sha256: str
     payload_version: int = 1
+    confirm: bool = True
 
 
 class EditActionRequest(BaseModel):
     changes: dict[str, str]
 
 
-@router.get("/actions/queue")
+class WorkflowActionView(BaseModel):
+    id: UUID
+    reference: str
+    action_type: str
+    title: str
+    purpose: str
+    status: str
+    destination: str
+    environment: str
+    environment_label: str
+    payload: dict[str, object]
+    payload_sha256: str
+    payload_version: int
+    required_permissions: list[str]
+    expires_at: object | None = None
+    is_expired: bool
+    claim_id: UUID | None = None
+    claim_reference: str | None = None
+    claim_title: str | None = None
+    editable_fields: list[str]
+    requires_approval: bool
+    approved: bool
+    ai_prepared: bool
+    consequence: str
+    privacy_note: str
+    receipt_reference: str | None = None
+    created_at: object
+    updated_at: object
+
+
+class WorkflowActionQueueCounts(BaseModel):
+    pending: int
+    completed: int
+    rejected: int
+    all: int
+
+
+class WorkflowActionQueueResponse(BaseModel):
+    counts: WorkflowActionQueueCounts
+    actions: list[WorkflowActionView]
+
+
+class WorkflowExecutionReceipt(BaseModel):
+    receipt_reference: str
+    action_id: UUID
+    action_reference: str | None = None
+    action_title: str | None = None
+    claim_reference: str | None = None
+    environment: str
+    status: str
+    payload_digest: str
+    submitted_at: object
+    audit_event_id: UUID | None = None
+    next_action: str | None = None
+    signature: str
+    signature_valid: bool
+    notice: str
+
+
+class WorkflowExecuteResponse(BaseModel):
+    receipt: WorkflowExecutionReceipt
+    replayed: bool
+    action: WorkflowActionView
+
+
+@router.post("/actions", response_model=WorkflowActionView)
+def create_workflow_action(
+    body: CreateActionRequest,
+    db: DB,
+    owner: CurrentOwner,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
+    action = actions.prepare_user_action(
+        db,
+        owner,
+        body.action_type,
+        entity_type=body.entity_type,
+        entity_id=body.entity_id,
+        draft_inputs=body.draft_inputs,
+        title=body.title,
+        purpose=body.purpose,
+        dedupe_key=idempotency_key,
+    )
+    db.commit()
+    return actions.action_view(db, action)
+
+
+@router.get("/actions/queue", response_model=WorkflowActionQueueResponse)
 def list_action_queue(
     db: DB,
     owner: CurrentOwner,
@@ -443,13 +553,13 @@ def list_action_queue(
     }
 
 
-@router.get("/actions/{action_id}")
+@router.get("/actions/{action_id}", response_model=WorkflowActionView)
 def get_action_detail(action_id: UUID, db: DB, owner: CurrentOwner):
     action = actions.get_action(db, owner, action_id)
     return actions.action_view(db, action)
 
 
-@router.post("/actions/{action_id}/approve")
+@router.post("/actions/{action_id}/approve", response_model=WorkflowActionView)
 def approve_action(
     action_id: UUID,
     body: ApproveActionRequest,
@@ -462,7 +572,7 @@ def approve_action(
     return actions.action_view(db, action)
 
 
-@router.post("/actions/{action_id}/reject")
+@router.post("/actions/{action_id}/reject", response_model=WorkflowActionView)
 def reject_action(action_id: UUID, db: DB, owner: CurrentOwner):
     action = actions.get_action(db, owner, action_id)
     actions.reject(db, owner, action)
@@ -470,7 +580,7 @@ def reject_action(action_id: UUID, db: DB, owner: CurrentOwner):
     return actions.action_view(db, action)
 
 
-@router.post("/actions/{action_id}/cancel")
+@router.post("/actions/{action_id}/cancel", response_model=WorkflowActionView)
 def cancel_action(action_id: UUID, db: DB, owner: CurrentOwner):
     action = actions.get_action(db, owner, action_id)
     actions.cancel(db, owner, action)
@@ -478,7 +588,7 @@ def cancel_action(action_id: UUID, db: DB, owner: CurrentOwner):
     return actions.action_view(db, action)
 
 
-@router.patch("/actions/{action_id}")
+@router.patch("/actions/{action_id}", response_model=WorkflowActionView)
 def edit_action_payload(
     action_id: UUID,
     body: EditActionRequest,
@@ -491,7 +601,7 @@ def edit_action_payload(
     return actions.action_view(db, action)
 
 
-@router.post("/actions/{action_id}/execute")
+@router.post("/actions/{action_id}/execute", response_model=WorkflowExecuteResponse)
 def execute_action(action_id: UUID, db: DB, owner: CurrentOwner):
     action = actions.get_action(db, owner, action_id)
     receipt, replayed = actions.execute(db, owner, action)
@@ -503,7 +613,7 @@ def execute_action(action_id: UUID, db: DB, owner: CurrentOwner):
     }
 
 
-@router.get("/actions/{action_id}/receipt")
+@router.get("/actions/{action_id}/receipt", response_model=WorkflowExecutionReceipt)
 def get_action_receipt(action_id: UUID, db: DB, owner: CurrentOwner):
     action = actions.get_action(db, owner, action_id)
     receipt = db.query(actions.WfExecutionReceiptRow).filter_by(action_id=action.id).first()
@@ -512,12 +622,63 @@ def get_action_receipt(action_id: UUID, db: DB, owner: CurrentOwner):
     return actions.receipt_view(db, receipt)
 
 
+@router.get("/reminders")
+def list_workflow_reminders(db: DB, owner: CurrentOwner):
+    rows = (
+        db.query(actions.WfReminderRow)
+        .filter_by(owner_kind=owner.kind, owner_id=owner.id)
+        .order_by(actions.WfReminderRow.due_date.asc())
+        .all()
+    )
+    return {"reminders": [followup.reminder_view(r) for r in rows]}
+
+
+@router.post("/reminders/{reminder_id}/cancel")
+def cancel_workflow_reminder(reminder_id: UUID, db: DB, owner: CurrentOwner):
+    row = db.get(actions.WfReminderRow, reminder_id)
+    if row is None or row.owner_kind != owner.kind or row.owner_id != owner.id:
+        raise AppError(404, "NOT_FOUND", "Reminder not found.")
+    row.status = "CANCELLED"
+    row.cancelled_at = actions._now()
+    row.updated_at = actions._now()
+    db.commit()
+    return followup.reminder_view(row)
+
+
 # =============================================================================
 # SC-11: ACTIVITY & AUDIT
 # =============================================================================
 
 
-@router.get("/audit/timeline")
+class WorkflowAuditEvent(BaseModel):
+    id: UUID
+    event_type: str
+    category: str
+    title: str
+    summary: str
+    actor_type: str
+    tool: str | None = None
+    result_status: str | None = None
+    reason: str | None = None
+    claim_id: UUID | None = None
+    action_id: UUID | None = None
+    receipt_ref: str | None = None
+    evidence_refs: list[object] = Field(default_factory=list)
+    details: dict[str, object] = Field(default_factory=dict)
+    created_at: object
+    synthetic: bool = False
+    source_table: str = "wf_audit_logs"
+
+
+class WorkflowAuditTimelineResponse(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    synthetic: bool
+    events: list[WorkflowAuditEvent]
+
+
+@router.get("/audit/timeline", response_model=WorkflowAuditTimelineResponse)
 def get_audit_timeline(
     db: DB,
     owner: CurrentOwner,
@@ -546,6 +707,7 @@ def get_audit_timeline(
         "total": total,
         "limit": limit,
         "offset": offset,
+        "synthetic": owner.kind == "DEMO",
         "events": [
             {
                 "id": e.id,
@@ -563,16 +725,18 @@ def get_audit_timeline(
                 "evidence_refs": e.evidence_refs or [],
                 "details": e.details or {},
                 "created_at": e.created_at,
+                "synthetic": e.synthetic,
+                "source_table": e.source_table,
             }
             for e in events
         ],
     }
 
 
-@router.get("/audit/events/{event_id}")
+@router.get("/audit/events/{event_id}", response_model=WorkflowAuditEvent)
 def get_audit_event_detail(event_id: UUID, db: DB, owner: CurrentOwner):
-    e = db.get(actions.WfAuditLogRow, event_id)
-    if e is None or e.owner_kind != owner.kind or e.owner_id != owner.id:
+    e = audit.get_event_by_id(db, owner, event_id)
+    if e is None:
         raise AppError(404, "NOT_FOUND", "Audit event not found.")
     return {
         "id": e.id,
@@ -590,6 +754,8 @@ def get_audit_event_detail(event_id: UUID, db: DB, owner: CurrentOwner):
         "evidence_refs": e.evidence_refs or [],
         "details": e.details or {},
         "created_at": e.created_at,
+        "synthetic": e.synthetic,
+        "source_table": e.source_table,
     }
 
 
@@ -609,8 +775,8 @@ def get_emergency_contacts(country_code: str = "CN"):
 
 
 @router.post("/emergency/triage")
-def evaluate_emergency_triage(body: TriageBody):
-    return emergency.evaluate_triage(body.text, body.country_code)
+def evaluate_emergency_triage(body: TriageBody, db: DB, owner: OptionalOwner):
+    return emergency.evaluate_triage(body.text, body.country_code, db=db, owner=owner)
 
 
 # =============================================================================
@@ -640,12 +806,13 @@ def get_employer_benefits(
 def compare_catalog_products(
     country_code: str = "CN",
     category: str | None = None,
+    product_category: str | None = None,
     user_segment: str | None = None,
     insurer_id: str | None = None,
 ):
     return catalog_views.compare_products(
         country_code=country_code,
-        product_category=category,
+        product_category=product_category or category,
         user_segment=user_segment,
         insurer_id=insurer_id,
     )
@@ -683,13 +850,15 @@ def verify_document_integrity(body: VerifyProofRequest):
 
 @router.post("/proof/anchor")
 def anchor_document_digest(body: AnchorProofRequest, db: DB, owner: CurrentOwner):
-    return proof.anchor_document_proof(
+    result = proof.anchor_document_proof(
         db,
         owner,
         document_hash=body.document_sha256,
         document_title=body.document_title,
         mime_type=body.mime_type,
     )
+    db.commit()
+    return result
 
 
 # =============================================================================

@@ -12,11 +12,9 @@ from app.models import ClaimCaseRow
 from app.models.foundation import ClaimCaseEventRow
 from app.repositories.ownership import approved_action, owned_resource
 from app.repositories.session_data import profile_row
-from app.schemas.action import ProposedAction
 from app.schemas.audit import AuditEvent
 from app.schemas.common import CountryCode, VerificationStatus
 from app.schemas.foundation import (
-    ActionExecutionRequest,
     AuthMessage,
     AuthSession,
     ClaimCase,
@@ -40,13 +38,13 @@ from app.schemas.foundation import (
     ReviewedField,
     SandboxClaimRequest,
     SandboxClaimResponse,
-    TriageMatch,
     TriageRequest,
     TriageResult,
     VerificationRequest,
 )
 from app.schemas.kb import EmergencyDirectory
 from app.services.approval import payload_sha256
+from app.services.audit_logger import enrich_audit_event
 
 router = APIRouter(tags=["Phase 1.5 contracts (501)"])
 
@@ -136,32 +134,12 @@ def emergency_directory(country_code: CountryCode, kb: KB):
 
 @router.post("/triage", response_model=TriageResult)
 def triage(body: TriageRequest, session: ActiveSession, db: DB, kb: KB):
+    from app.services.safety_screen import screen, to_triage_result
+
     country_code = body.country_code or profile_row(db, session.id).payload["country_code"]
     country = kb.load(country_code)
-    normalized = body.text.casefold()
-    matched = [
-        TriageMatch(
-            id=flag.id,
-            kb_version=country.resources.red_flags.version,
-            category=flag.category,
-            source_url=flag.source_url,
-        )
-        for flag in country.resources.red_flags.data
-        if country.resources.red_flags.verification_status == VerificationStatus.VERIFIED
-        and flag.verification_status == VerificationStatus.VERIFIED
-        and flag.source_url
-        and any(
-            phrase.casefold() in normalized
-            for phrase in (*flag.phrases_id, *flag.phrases_en, *flag.phrases_zh)
-        )
-    ]
-    flows = []
-    if any(item.category == "MEDICAL" for item in matched):
-        flows.append("EMERGENCY_MEDICAL")
-    if any(item.category == "SELF_HARM" for item in matched):
-        flows.append("SELF_HARM_SUPPORT")
     # Positive phrase detection only. An unmatched text is never a medical clearance.
-    return TriageResult(red_flag=bool(matched), matched=matched, safety_flows=flows)
+    return to_triage_result(screen(country, body.text, strict=False))
 
 
 def claim_case_detail(row: ClaimCaseRow, db: DB) -> ClaimCaseDetail:
@@ -257,20 +235,15 @@ def delete_data(body: DeleteConfirmation, session: ActiveSession):
 
 @router.get("/audit/{event_id}", response_model=AuditEvent)
 def audit_detail(event_id: UUID, actor: ActiveActor, db: DB):
-    owned_resource(db, actor, "audit", event_id)
-    not_implemented()
-
-
-@router.post("/actions/{action_id}/execute", response_model=ProposedAction)
-def execute(
-    action_id: UUID,
-    body: ActionExecutionRequest,
-    session: ConsentedSession,
-    actor: ActiveActor,
-    db: DB,
-):
-    approved_action(db, actor, action_id, body.approved_payload_sha256)
-    not_implemented()
+    row = owned_resource(db, actor, "audit", event_id)
+    return enrich_audit_event(
+        id=row.id,
+        session_id=row.session_id,
+        event_type=row.event_type,
+        outcome=row.outcome,
+        metadata=row.event_metadata,
+        created_at=row.created_at,
+    )
 
 
 @router.post("/sandbox/insurer/claims", response_model=SandboxClaimResponse)

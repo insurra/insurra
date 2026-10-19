@@ -102,7 +102,7 @@ def _evaluate(payload: dict) -> tuple[str, str, list[str]]:
     attached = {a.get("evidence_kind") for a in payload.get("attachments", [])}
     missing = []
     for item in kbdata.evidence_items(payload.get("country_code", "")):
-        if item.get("verification_status") != "VERIFIED" or not item.get("mandatory", True):
+        if not item.get("mandatory", True):
             continue
         if item.get("product_id") != payload.get("product_id"):
             continue

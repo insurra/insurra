@@ -20,7 +20,7 @@ def applies(config, p):
 
 
 def match_needs(db, actor, kb, *, destination=None, context_profile=None, now=None):
-    from app.schemas.assessment import CoverageNeed
+    from app.schemas.assessment import ContinuitySummary, CoverageNeed
     from app.schemas.common import RuleSource
     from app.services.audit_logger import log_actor_event
     from app.services.benefits import benefit_fields
@@ -113,17 +113,59 @@ def match_needs(db, actor, kb, *, destination=None, context_profile=None, now=No
                 "periksa sebelum menyimpulkan kepemilikan."
             )
         level = need.requirement_level
-        if level == "REQUIRED" and not official:
+        if level == "REQUIRED" and official:
+            applicability = "REQUIRED_VERIFIED"
+        elif level == "REQUIRED" and not official:
             level = "RECOMMENDED"
+            applicability = "APPLICABILITY_UNVERIFIED"
             reason = "Kewajiban perlu konfirmasi sumber resmi. " + reason
+        else:
+            applicability = "RECOMMENDED" if official else "APPLICABILITY_UNVERIFIED"
+
         action_url = "/policies" if status == "OWNED" and actor.account_id else "/documents"
         if status == "NEEDS_CHECK":
             action_url = "/completeness" if actor.account_id else "/documents"
         gap = (
             visa
-            if need.task_code == "visa_cover" and country.manifest.country_code == p.country_code
+            if need.task_code in ("visa_cover", "coverage_continuity")
+            and country.manifest.country_code == p.country_code
             else None
         )
+        if status == "OWNED":
+            if gap and gap.gap_days and gap.gap_days > 0:
+                evidence_state = (
+                    "POTENTIAL_GAP"
+                    if gap.requirement_status == "VERIFIED"
+                    else "NEEDS_VERIFICATION"
+                )
+            else:
+                evidence_state = "HAVE_COVERAGE"
+        elif status == "NEEDS_CHECK":
+            evidence_state = "NEEDS_VERIFICATION"
+        else:
+            evidence_state = "POTENTIAL_GAP" if exclusion is not None else "MISSING_EVIDENCE"
+
+        continuity = None
+        if gap is not None:
+            first_period = gap.gap_periods[0] if gap.gap_periods else None
+            compared_end = (
+                getattr(p, "study_end_date", None)
+                or getattr(p, "permit_end_date", None)
+                or p.visa_expiry_date
+            )
+            continuity = ContinuitySummary(
+                uncovered_days=gap.gap_days,
+                interval_start=first_period.start_date.isoformat() if first_period else None,
+                interval_end=first_period.end_date.isoformat() if first_period else None,
+                compared_to=str(compared_end) if compared_end else None,
+                rule_id=gap.rule_source.rule_id if gap.rule_source else need.need_code,
+                rule_verification_status=(
+                    gap.rule_source.verification_status.value
+                    if gap.rule_source
+                    else need.verification_status.value
+                ),
+            )
+
         result.append(
             CoverageNeed(
                 need_code=need.need_code,
@@ -131,6 +173,8 @@ def match_needs(db, actor, kb, *, destination=None, context_profile=None, now=No
                 requirement_level=level,
                 requirement_confirmed=official,
                 ownership_status=status,
+                applicability=applicability,
+                evidence_state=evidence_state,
                 explanation=need.explanation + " " + reason,
                 source_reference=RuleSource(
                     country_code=country.manifest.country_code,
@@ -144,6 +188,7 @@ def match_needs(db, actor, kb, *, destination=None, context_profile=None, now=No
                 verification_steps=need.verification_steps,
                 action_url=action_url,
                 visa_assessment=gap,
+                continuity=continuity,
                 exclusion=exclusion,
             )
         )
@@ -181,4 +226,4 @@ def visa_assessment(db, actor, kb, p, items):
             documents=[],
             updated_at=datetime.now(UTC),
         )
-    return RulesEngine(kb).assess_visa_coverage(p, record)
+    return RulesEngine(kb).assess_visa_coverage(p, record, include_visa_rule=True)

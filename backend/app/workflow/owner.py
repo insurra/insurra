@@ -4,9 +4,7 @@ An owner is either a validated demo session or an authenticated account. The two
 no caller-supplied identifier is accepted as authentication.
 """
 
-import hashlib
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -21,12 +19,12 @@ from app.models import (
     AccountCoverageRow,
     AccountDocumentRow,
     AccountProfileRow,
-    DemoSessionRow,
     InsuranceRecordRow,
     ProfileRow,
     PurposeConsentRow,
 )
 from app.services.account_access import active_account
+from app.services.demo_access import find_demo_session, reject_ambiguous_actor
 
 DEMO = "DEMO"
 ACCOUNT = "ACCOUNT"
@@ -64,12 +62,8 @@ class PolicyView:
 
 
 def _demo_owner(db: Session, token: str) -> Owner:
-    row = db.scalar(
-        select(DemoSessionRow).where(
-            DemoSessionRow.token_hash == hashlib.sha256(token.encode()).hexdigest()
-        )
-    )
-    if row is None or row.expires_at.replace(tzinfo=UTC) <= datetime.now(UTC):
+    row = find_demo_session(db, token)
+    if row is None:
         raise AppError(401, "INVALID_SESSION", "Your demo session is invalid or has expired.")
     profile = db.scalar(select(ProfileRow).where(ProfileRow.session_id == row.id))
     payload = profile.payload if profile else {}
@@ -103,10 +97,7 @@ def current_owner(
     x_demo_session: Annotated[str | None, Header(max_length=128)] = None,
     authorization: Annotated[str | None, Header(max_length=300)] = None,
 ) -> Owner:
-    if x_demo_session and authorization:
-        raise AppError(
-            400, "AMBIGUOUS_ACTOR", "Send either a demo session or an account session, not both."
-        )
+    reject_ambiguous_actor(authorization, x_demo_session)
     if authorization:
         return _account_owner(db, authorization)
     if x_demo_session:

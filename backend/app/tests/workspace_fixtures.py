@@ -22,17 +22,39 @@ POLICY_TEXT = (
 
 
 def workspace(app, client, country="AU", suffix=None, retention=True):
-    policy_text = POLICY_TEXT if country == "AU" else POLICY_TEXT.replace("AUD", "IDR")
+    currency = "AUD" if country == "AU" else ("CNY" if country == "CN" else "IDR")
+    policy_text = POLICY_TEXT if country == "AU" else POLICY_TEXT.replace("AUD", currency)
     headers = account_headers(app, suffix or uuid4().hex[:8])
     body = profile_payload()
-    body.update(
-        display_name="Raka" if country == "AU" else "Sinta",
-        country_code=country,
-        city="Melbourne" if country == "AU" else "Jakarta",
-        timezone="Australia/Melbourne" if country == "AU" else "Asia/Jakarta",
-        residence_context="ABROAD" if country == "AU" else "DOMESTIC",
-        occupation="STUDENT" if country == "AU" else "EMPLOYEE",
-    )
+    if country == "AU":
+        body.update(
+            display_name="Raka",
+            country_code="AU",
+            city="Melbourne",
+            timezone="Australia/Melbourne",
+            residence_context="ABROAD",
+            occupation="STUDENT",
+        )
+    elif country == "CN":
+        body.update(
+            display_name="Raka",
+            country_code="CN",
+            city="Shenzhen",
+            timezone="Asia/Shanghai",
+            residence_context="ABROAD",
+            occupation="STUDENT",
+        )
+    else:
+        body.update(
+            display_name="Sinta",
+            country_code=country,
+            city="Jakarta",
+            timezone="Asia/Jakarta",
+            residence_context="DOMESTIC",
+            occupation="EMPLOYEE",
+            arrival_date=None,
+            visa_expiry_date=None,
+        )
     assert client.put("/api/v1/account/profile", headers=headers, json=body).status_code == 200
     for purpose in ("process_documents", "external_ai"):
         grant(client, headers, purpose)
@@ -47,7 +69,7 @@ def workspace(app, client, country="AU", suffix=None, retention=True):
             id=uuid4(),
             account_id=account_id,
             country_code=country,
-            kind="oshc_certificate" if country == "AU" else "bpjs_card",
+            kind="oshc_certificate" if country in ("AU", "CN") else "bpjs_card",
             original_filename="fictional-policy.pdf",
             mime_type="application/pdf",
             size_bytes=100,
@@ -63,7 +85,9 @@ def workspace(app, client, country="AU", suffix=None, retention=True):
             account_id=account_id,
             document_id=doc.id,
             country_code=country,
-            kind="OSHC" if country == "AU" else "BPJS",
+            kind="OSHC"
+            if country == "AU"
+            else ("INTERNATIONAL_STUDENT" if country == "CN" else "BPJS"),
             provider="Fictional Test Provider",
             start_date="2026-01-01",
             end_date="2027-04-15",
@@ -78,7 +102,7 @@ def workspace(app, client, country="AU", suffix=None, retention=True):
             "coverage_end_date": "2027-04-15",
             "benefit_outpatient_limit_amount": "500",
             "benefit_outpatient_used_amount": "120",
-            "benefit_outpatient_currency": "AUD" if country == "AU" else "IDR",
+            "benefit_outpatient_currency": currency,
             "benefit_outpatient_period_start": "2026-01-01",
             "benefit_outpatient_period_end": "2027-12-31",
         }
@@ -112,7 +136,9 @@ def reviewed_triage(app, monkeypatch):
 
     loader = app.state.kb_loader
     original = loader.load
-    countries = {code: copy.deepcopy(original(code)) for code in ("AU", "ID")}
+    countries = {
+        code: copy.deepcopy(original(code)) for code in ("AU", "CN", "ID") if loader.is_active(code)
+    }
     for country in countries.values():
         country.manifest.official_source_hosts.append("synthetic.example.test")
         resource = country.resources.red_flags

@@ -1,5 +1,6 @@
 import json
 import re
+from collections.abc import Iterable
 from pathlib import Path
 
 from app.core.errors import AppError
@@ -15,19 +16,29 @@ from app.schemas.kb import (
 class CountryKBLoader:
     """Validated versioned files; country codes never become arbitrary filesystem paths."""
 
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, active_countries: Iterable[str] | None = None):
+        """`active_countries=None` means every folder under root (test roots); the app passes
+        the `ACTIVE_KB_COUNTRIES` setting so inactive folders stay on disk but are not served."""
         self.root = root
+        self.active_countries = (
+            None if active_countries is None else frozenset(c.upper() for c in active_countries)
+        )
+
+    def is_active(self, country_code: str) -> bool:
+        return self.active_countries is None or country_code in self.active_countries
 
     def discover(self) -> list[CountryManifest]:
         return [
-            self.load(p.parent.name).manifest for p in sorted(self.root.glob("*/manifest.json"))
+            self.load(p.parent.name).manifest
+            for p in sorted(self.root.glob("*/manifest.json"))
+            if self.is_active(p.parent.name)
         ]
 
     def load(self, country_code: str) -> CountryKB:
         if not re.fullmatch(r"[A-Z]{2}", country_code):
             raise AppError(422, "UNSUPPORTED_COUNTRY", "Kode negara tidak didukung.")
         folder = self.root / country_code
-        if not (folder / "manifest.json").is_file():
+        if not self.is_active(country_code) or not (folder / "manifest.json").is_file():
             raise AppError(
                 422, "UNSUPPORTED_COUNTRY", "Negara belum tersedia dalam basis pengetahuan."
             )

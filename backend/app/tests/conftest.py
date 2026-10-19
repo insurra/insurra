@@ -11,7 +11,14 @@ from app.seeds.demo import seed_personas
 
 
 @pytest.fixture
-def app(tmp_path, monkeypatch):
+def kb_countries() -> str:
+    """Active KB countries for the app under test. Modules that exercise the inactive legacy
+    `kb/AU` configuration override this fixture locally instead of reactivating it globally."""
+    return "CN,ID"
+
+
+@pytest.fixture
+def app(tmp_path, monkeypatch, kb_countries):
     url = f"sqlite:///{tmp_path / 'test.db'}"
     monkeypatch.setenv("DATABASE_URL", url)
     get_settings.cache_clear()
@@ -26,6 +33,7 @@ def app(tmp_path, monkeypatch):
             google_client_id="synthetic-client",
             google_client_secret="synthetic-secret",
             session_secret="synthetic-session-secret",
+            active_kb_countries=kb_countries,
         )
     )
     with application.state.session_factory() as db:

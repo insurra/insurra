@@ -1,4 +1,5 @@
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
@@ -6,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from pydantic import TypeAdapter
 
+from app.agent.worker import run_periodic_worker
 from app.api.auth import public_router as public_auth_router
 from app.api.v1.router import router
 from app.core.config import Settings, get_settings
@@ -27,8 +29,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(application: FastAPI):
         application.state.kb_loader.discover()  # Fail startup on malformed configuration.
         application.state.kb_loader.load_injection_patterns()
-        yield
-        engine.dispose()
+        stop_event = asyncio.Event()
+        worker_task = None
+        if settings.agent_worker_enabled:
+            worker_task = asyncio.create_task(
+                run_periodic_worker(
+                    application.state.session_factory,
+                    settings.agent_worker_interval_seconds,
+                    stop_event,
+                )
+            )
+        try:
+            yield
+        finally:
+            if worker_task is not None:
+                stop_event.set()
+                worker_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await worker_task
+            engine.dispose()
 
     app = FastAPI(
         title="AI Insurance Companion",
@@ -40,7 +59,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
     app.state.session_factory = session_factory(engine)
-    app.state.kb_loader = CountryKBLoader(settings.kb_root)
+    app.state.kb_loader = CountryKBLoader(settings.kb_root, settings.active_kb_country_codes)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(dict.fromkeys([settings.frontend_origin, settings.frontend_url])),

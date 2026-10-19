@@ -5,7 +5,7 @@ production-grade interface showcased in the design references. Authenticated acc
 remains completely separate with isolated, private user data.
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from uuid import UUID, uuid4
 
 from sqlalchemy.orm import Session
@@ -20,7 +20,13 @@ from app.workflow.models import (
     WfClaimEvidenceRow,
     WfClaimItemRow,
     WfClaimStatusEventRow,
+    WfSandboxClaimRow,
 )
+
+SYNTHETIC_PLAN = "Synthetic Student Health Plan (demo, not a real insurer product)"
+SYNTHETIC_CLINIC = "Shenzhen Demo Community Clinic (fictional)"
+SYNTHETIC_CLINIC_ZH = "Shenzhen Demo Community Clinic (fictional, 深圳示范社区门诊)"
+CN_POLICY_END = "2027-04-15"
 
 
 def seed_demo_claims_for_session(
@@ -47,9 +53,7 @@ def seed_demo_claims_for_session(
         claim_type="Outpatient Visit",
         country_code=country_code,
         coverage_ref="cov-hero-001",
-        coverage_label="Ping An Comprehensive Student Medical (来华留学生综合医疗保险)"
-        if country_code == "CN"
-        else "HealthPlus Outpatient Care",
+        coverage_label=SYNTHETIC_PLAN if country_code == "CN" else "HealthPlus Outpatient Care",
         insured_person="Self",
         claimant_name=persona_name,
         product_id="cn-prod-lxbx-student"
@@ -59,13 +63,11 @@ def seed_demo_claims_for_session(
         if country_code == "CN"
         else "id-claim-proc-allianz-reimbursement",
         service_date="2026-10-12",
-        provider_name="Shenzhen University General Hospital (深圳大学总医院)"
-        if country_code == "CN"
-        else "HealthPlus Clinic",
+        provider_name=SYNTHETIC_CLINIC_ZH if country_code == "CN" else "HealthPlus Clinic",
         amount="450.00" if country_code == "CN" else "115.00",
         currency="CNY" if country_code == "CN" else "SGD",
         policy_start="2026-09-01",
-        policy_end="2027-08-31",
+        policy_end=CN_POLICY_END if country_code == "CN" else "2027-08-31",
         status=states.READY_FOR_APPROVAL,
         origin="CLAIMS_CENTER",
         is_synthetic=True,
@@ -138,7 +140,7 @@ def seed_demo_claims_for_session(
         is_synthetic=True,
         fields={
             "invoice_number": {
-                "value": "FP-SZ-2024-918230",
+                "value": "FP-SYN-2026-000001",
                 "confirmed": True,
                 "source_page": 1,
                 "origin": "EXTRACTED",
@@ -156,9 +158,7 @@ def seed_demo_claims_for_session(
                 "origin": "EXTRACTED",
             },
             "hospital_name": {
-                "value": "Shenzhen University General Hospital"
-                if country_code == "CN"
-                else "HealthPlus Clinic",
+                "value": SYNTHETIC_CLINIC if country_code == "CN" else "HealthPlus Clinic",
                 "confirmed": True,
                 "source_page": 1,
                 "origin": "EXTRACTED",
@@ -209,9 +209,7 @@ def seed_demo_claims_for_session(
                 "origin": "EXTRACTED",
             },
             "hospital_name": {
-                "value": "Shenzhen University General Hospital"
-                if country_code == "CN"
-                else "HealthPlus Clinic",
+                "value": SYNTHETIC_CLINIC if country_code == "CN" else "HealthPlus Clinic",
                 "confirmed": True,
                 "source_page": 1,
                 "origin": "EXTRACTED",
@@ -230,14 +228,14 @@ def seed_demo_claims_for_session(
     # Claim Draft for Case 1
     draft_form = {
         "policy_reference": {
-            "value": "HP-0021",
+            "value": "DEMO-****" if country_code == "CN" else "HP-0021",
             "section": "Member Information",
             "label": "Policy reference",
             "required": True,
             "source": {"type": "POLICY", "label": "From policy data"},
         },
         "insurer": {
-            "value": "HealthPlus / Ping An",
+            "value": SYNTHETIC_PLAN if country_code == "CN" else "HealthPlus",
             "section": "Member Information",
             "label": "Insurer",
             "required": True,
@@ -265,7 +263,7 @@ def seed_demo_claims_for_session(
             "source": {"type": "EVIDENCE", "label": "From Medical Receipt.pdf (p.1)"},
         },
         "provider_name": {
-            "value": "HealthPlus Clinic / Shenzhen University Hospital",
+            "value": SYNTHETIC_CLINIC if country_code == "CN" else "HealthPlus Clinic",
             "section": "Visit Details",
             "label": "Provider name",
             "required": True,
@@ -410,7 +408,17 @@ def seed_demo_claims_for_session(
             now - timedelta(days=21),
         ),
     ]
+    sess_tag = str(session_id).replace("-", "")[:6].upper()
     for ref, title, cov, st, _st_lbl, _, created_ts in other_cases:
+        svc_date = (date(2026, 10, 12) - timedelta(days=(now - created_ts).days + 3)).strftime(
+            "%Y-%m-%d"
+        )
+        sbx_ref = f"SBX-{ref[-4:]}-{sess_tag}" if st == states.SUBMITTED else None
+        pol_end = CN_POLICY_END if country_code == "CN" else "2027-08-31"
+        prod_id = "cn-prod-pingan-travel" if "Travel" in cov else "cn-prod-lxbx-student"
+        prov_name = SYNTHETIC_CLINIC if country_code == "CN" else "General Medical Provider"
+        amt_val = "650.00" if country_code == "CN" else "180.00"
+        curr_val = "CNY" if country_code == "CN" else "IDR"
         db.add(
             WfClaimCaseRow(
                 owner_kind="DEMO",
@@ -423,24 +431,80 @@ def seed_demo_claims_for_session(
                 coverage_label=cov,
                 insured_person="Self",
                 claimant_name=persona_name,
-                product_id="cn-prod-pingan-travel" if "Travel" in cov else "cn-prod-lxbx-student",
-                service_date=(created_ts - timedelta(days=3)).strftime("%Y-%m-%d"),
-                provider_name="Shenzhen Hospital"
-                if country_code == "CN"
-                else "General Medical Provider",
-                amount="650.00" if country_code == "CN" else "180.00",
-                currency="CNY" if country_code == "CN" else "IDR",
+                product_id=prod_id,
+                service_date=svc_date,
+                provider_name=prov_name,
+                amount=amt_val,
+                currency=curr_val,
+                policy_start="2026-09-01",
+                policy_end=pol_end,
                 status=st,
                 origin="CLAIMS_CENTER",
                 is_synthetic=True,
-                sandbox_ref=f"SBX-2024-{ref[-4:]}" if st == states.SUBMITTED else None,
+                sandbox_ref=sbx_ref,
                 sandbox_status="PROCESSING" if st == states.SUBMITTED else None,
                 monitoring_enabled=True,
                 monitoring_state="ACTIVE" if st == states.SUBMITTED else "NOT_STARTED",
+                next_poll_at=now + timedelta(minutes=5) if st == states.SUBMITTED else None,
                 created_at=created_ts,
                 updated_at=created_ts + timedelta(hours=3),
             )
         )
+        if sbx_ref:
+            sbx_payload = {
+                "schema": "sandbox_claim.v1",
+                "claim_reference": ref,
+                "claim_type": title,
+                "country_code": country_code,
+                "product_id": prod_id,
+                "pathway_mode": "REIMBURSEMENT",
+                "claimant": persona_name,
+                "policy": {
+                    "reference": "DEMO-****" if country_code == "CN" else "HP-0021",
+                    "insurer": SYNTHETIC_PLAN if country_code == "CN" else "HealthPlus",
+                    "start": "2026-09-01",
+                    "end": pol_end,
+                    "label": cov,
+                },
+                "service": {"date": svc_date, "provider": prov_name},
+                "amount": {"value": amt_val, "currency": curr_val},
+                "diagnosis": title,
+                "attachments": [
+                    {
+                        "evidence_id": str(ev1.id),
+                        "evidence_kind": "FAPIAO",
+                        "filename": "Medical Receipt.pdf",
+                        "sha256": ev1.sha256,
+                    }
+                ],
+            }
+            db.add(
+                WfSandboxClaimRow(
+                    claim_ref=sbx_ref,
+                    idempotency_key=f"seed:{session_id}:{ref}",
+                    owner_kind="DEMO",
+                    owner_id=session_id,
+                    payload=sbx_payload,
+                    payload_digest=payload_sha256(sbx_payload),
+                    status="PROCESSING",
+                    missing_items=[],
+                    history=[
+                        {
+                            "status": "SUBMITTED",
+                            "at": created_ts.isoformat(),
+                            "note": "Claim received by the sandbox",
+                        },
+                        {
+                            "status": "PROCESSING",
+                            "at": (created_ts + timedelta(minutes=5)).isoformat(),
+                            "note": "Sandbox review started",
+                        },
+                    ],
+                    submitted_at=created_ts,
+                    updated_at=created_ts + timedelta(minutes=5),
+                    advance_at=now + timedelta(minutes=10),
+                )
+            )
 
     # =========================================================================
     # Action Queue Items: Matching Action Approval Screen (Screenshot 4)
@@ -456,15 +520,15 @@ def seed_demo_claims_for_session(
         else "id-prod-allianz-smarthealth",
         "claimant": persona_name,
         "policy": {
-            "reference": "HP-0021",
-            "insurer": "HealthPlus / Ping An",
+            "reference": "DEMO-****" if country_code == "CN" else "HP-0021",
+            "insurer": SYNTHETIC_PLAN if country_code == "CN" else "HealthPlus",
             "start": "2026-09-01",
-            "end": "2027-08-31",
-            "label": "HealthPlus Comprehensive Plan",
+            "end": CN_POLICY_END if country_code == "CN" else "2027-08-31",
+            "label": SYNTHETIC_PLAN if country_code == "CN" else "HealthPlus Comprehensive Plan",
         },
         "service": {
             "date": "2026-10-12",
-            "provider": "HealthPlus Clinic / Shenzhen University Hospital",
+            "provider": SYNTHETIC_CLINIC if country_code == "CN" else "HealthPlus Clinic",
         },
         "amount": {
             "value": "450.00" if country_code == "CN" else "115.00",
@@ -511,6 +575,10 @@ def seed_demo_claims_for_session(
     db.add(act1)
 
     # Action 2: Send follow-up message to insurer (Draft)
+    act2_payload = {
+        "subject": "Follow-up on CLM-2026-001 documentation",
+        "body": "Inquiry regarding electronic invoice verification.",
+    }
     db.add(
         WfActionRow(
             id=uuid4(),
@@ -523,11 +591,8 @@ def seed_demo_claims_for_session(
             purpose="Send a follow-up message regarding document requirements.",
             destination="manual_handoff",
             environment="MANUAL_HANDOFF",
-            payload={
-                "subject": "Follow-up on CLM-2026-001 documentation",
-                "body": "Inquiry regarding electronic invoice verification.",
-            },
-            payload_sha256=payload_sha256({"test": "2"}),
+            payload=act2_payload,
+            payload_sha256=payload_sha256(act2_payload),
             payload_version=1,
             status="DRAFT",
             required_permissions=["process_documents"],
@@ -538,6 +603,10 @@ def seed_demo_claims_for_session(
     )
 
     # Action 3: Set reminder (Draft)
+    act3_payload = {
+        "title": "Upload medical report",
+        "due_date": (now + timedelta(days=3)).strftime("%Y-%m-%d"),
+    }
     db.add(
         WfActionRow(
             id=uuid4(),
@@ -550,11 +619,8 @@ def seed_demo_claims_for_session(
             purpose="Remind you to upload the missing medical report if needed.",
             destination="insurra_internal",
             environment="INTERNAL",
-            payload={
-                "title": "Upload medical report",
-                "due_date": (now + timedelta(days=3)).strftime("%Y-%m-%d"),
-            },
-            payload_sha256=payload_sha256({"test": "3"}),
+            payload=act3_payload,
+            payload_sha256=payload_sha256(act3_payload),
             payload_version=1,
             status="DRAFT",
             required_permissions=[],
@@ -565,6 +631,7 @@ def seed_demo_claims_for_session(
     )
 
     # Action 4: Prepare claim draft (Completed)
+    act4_payload = {"claim_reference": "CLM-2026-001"}
     db.add(
         WfActionRow(
             id=uuid4(),
@@ -577,8 +644,8 @@ def seed_demo_claims_for_session(
             purpose="Created a draft claim form based on your documents.",
             destination="insurra_internal",
             environment="INTERNAL",
-            payload={"claim_reference": "CLM-2026-001"},
-            payload_sha256=payload_sha256({"test": "4"}),
+            payload=act4_payload,
+            payload_sha256=payload_sha256(act4_payload),
             payload_version=1,
             status="COMPLETED",
             required_permissions=[],
@@ -589,6 +656,10 @@ def seed_demo_claims_for_session(
     )
 
     # Action 5: Draft email to provider (Completed)
+    act5_payload = {
+        "subject": "Request for Itemized Invoice",
+        "body": "Please provide itemized hospital breakdown.",
+    }
     db.add(
         WfActionRow(
             id=uuid4(),
@@ -600,11 +671,8 @@ def seed_demo_claims_for_session(
             purpose="Prepared an email to request a detailed invoice from the hospital.",
             destination="manual_handoff",
             environment="MANUAL_HANDOFF",
-            payload={
-                "subject": "Request for Itemized Invoice",
-                "body": "Please provide itemized hospital breakdown.",
-            },
-            payload_sha256=payload_sha256({"test": "5"}),
+            payload=act5_payload,
+            payload_sha256=payload_sha256(act5_payload),
             payload_version=1,
             status="COMPLETED",
             required_permissions=[],
@@ -615,6 +683,7 @@ def seed_demo_claims_for_session(
     )
 
     # Action 6: Search coverage information (Rejected / Cancelled)
+    act6_payload = {"cancelled": True}
     db.add(
         WfActionRow(
             id=uuid4(),
@@ -626,8 +695,8 @@ def seed_demo_claims_for_session(
             purpose="This action was cancelled by you.",
             destination="manual_handoff",
             environment="MANUAL_HANDOFF",
-            payload={"cancelled": True},
-            payload_sha256=payload_sha256({"test": "6"}),
+            payload=act6_payload,
+            payload_sha256=payload_sha256(act6_payload),
             payload_version=1,
             status="REJECTED",
             required_permissions=[],

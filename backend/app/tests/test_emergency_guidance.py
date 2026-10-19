@@ -18,7 +18,9 @@ def test_verified_emergency_directory_keeps_country_and_source(client):
         "police": "110",
         "fire": "113",
     }
-    assert client.get("/api/v1/emergency?country_code=AU").json()["contacts"] == []
+    # AU stays on disk but is inactive, so it is not served (no contacts, no placeholder).
+    inactive = client.get("/api/v1/emergency?country_code=AU")
+    assert inactive.status_code == 422 and inactive.json()["code"] == "UNSUPPORTED_COUNTRY"
     assert client.get("/api/v1/emergency?country_code=ZZ").status_code == 422
 
 

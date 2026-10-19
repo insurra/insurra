@@ -17,16 +17,30 @@ class Settings(BaseSettings):
     environment: str = "development"
     session_ttl_hours: int = 24
     kb_root: Path = ROOT / "kb"
+    # Comma-separated ISO codes. Folders under kb_root for other codes stay on disk, inactive.
+    # Also bounds the residence country allowed when an account profile is saved.
+    active_kb_countries: str = "CN,ID"
     google_client_id: str = ""
     google_client_secret: SecretStr = SecretStr("")
     google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
     frontend_url: str = "http://127.0.0.1:3000"
     backend_url: str = "http://localhost:8000"
+    # Flag only: no email transport is implemented, so leave false until one exists.
+    email_delivery_enabled: bool = False
     session_secret: SecretStr = SecretStr("")
     account_session_ttl_days: int = 7
     sandbox_step_seconds: int = 10
     claim_poll_interval_seconds: int = 0
     claim_poll_limit: int = 60
+    agent_worker_enabled: bool = False
+    agent_worker_interval_seconds: int = 15
+    freeze_legacy_actions: bool = False
+
+    @property
+    def active_kb_country_codes(self) -> frozenset[str]:
+        return frozenset(
+            c.strip().upper() for c in self.active_kb_countries.split(",") if c.strip()
+        )
 
     @model_validator(mode="after")
     def restrict_origin(self):

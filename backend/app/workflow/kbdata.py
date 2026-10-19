@@ -124,7 +124,7 @@ def match_product(
             if name in {_norm(item.get("english_name")), _norm(item.get("original_product_name"))}:
                 return item
     category = category_for_kind(kind)
-    if category == "public_social_health":
+    if category in ("public_social_health", "international_student"):
         found = [p for p in catalog if p.get("product_category") == category]
         return found[0] if len(found) == 1 else None
     provider_text = _norm(provider)

@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
+from app.services.events import dispatch
 from app.workflow import audit, kbdata, states
 from app.workflow import evidence as ev
 from app.workflow.checks import Facts, invoice_identity, run_checks
@@ -164,18 +165,16 @@ def build_items(db: Session, case: WfClaimCaseRow) -> None:
     )
     if case.product_id is not None:
         for item in kbdata.evidence_items(case.country_code):
-            if item.get("verification_status") != "VERIFIED":
-                continue
             specific = item.get("product_id") == case.product_id
             generic = item.get("product_id") is None and item.get("insurer_id") is None
             if not (specific or (generic and mode == "REIMBURSEMENT")):
                 continue
             applies = _applies(item.get("claim_type"), case.claim_type)
-            reason = (
-                item.get("description") or "Listed in the verified claim evidence requirements."
-            )
+            verified = item.get("verification_status") == "VERIFIED"
+            base_reason = item.get("description") or "Listed in the claim evidence requirements."
             if item.get("special_conditions"):
-                reason = f"{reason} {item['special_conditions']}"
+                base_reason = f"{base_reason} {item['special_conditions']}"
+            reason = base_reason if verified else f"Insurer requirement unverified. {base_reason}"
             add(
                 item["evidence_id"],
                 item.get("evidence_item_name", "Supporting document"),
@@ -194,7 +193,7 @@ def build_items(db: Session, case: WfClaimCaseRow) -> None:
                 f"FORM_{index}",
                 form,
                 "FORM",
-                "Official form named by the verified claim procedure. INSURRA prepares the "
+                "Official form named by the claim procedure. INSURRA prepares the "
                 "content for your review.",
                 source_url=(procedure or {}).get("source_url"),
                 kb_ref=(procedure or {}).get("procedure_id"),
@@ -210,6 +209,8 @@ def create_case(
     claim_type: str,
     title: str | None = None,
     origin: str = "CLAIMS_CENTER",
+    origin_ref: str | None = None,
+    idempotency_key: str | None = None,
     product_override: str | None = None,
     synthetic: bool = False,
     claimant_name: str | None = None,
@@ -218,6 +219,27 @@ def create_case(
     policy = owner_policy(db, owner, policy_ref)
     if policy is None:
         raise AppError(404, "NOT_FOUND", "Policy not found.")
+    if idempotency_key:
+        existing_by_key = db.scalar(
+            select(WfClaimCaseRow).where(
+                WfClaimCaseRow.owner_kind == owner.kind,
+                WfClaimCaseRow.owner_id == owner.id,
+                WfClaimCaseRow.idempotency_key == idempotency_key,
+            )
+        )
+        if existing_by_key is not None:
+            return existing_by_key
+    if origin_ref:
+        existing_by_origin = db.scalar(
+            select(WfClaimCaseRow).where(
+                WfClaimCaseRow.owner_kind == owner.kind,
+                WfClaimCaseRow.owner_id == owner.id,
+                WfClaimCaseRow.origin == origin,
+                WfClaimCaseRow.origin_ref == origin_ref,
+            )
+        )
+        if existing_by_origin is not None:
+            return existing_by_origin
     country = kbdata.require_country(policy.country_code or owner.country_code or "")
     if product_override:
         product = kbdata.product(country, product_override)
@@ -250,6 +272,8 @@ def create_case(
         policy_end=policy.end,
         status=states.DRAFT,
         origin=origin,
+        origin_ref=origin_ref,
+        idempotency_key=idempotency_key,
         is_synthetic=synthetic,
         conflict_notes={"acknowledged": {}, "origins": {}},
         created_at=_now(),
@@ -273,6 +297,7 @@ def create_case(
             "claim_reference": reference,
             "claim_type": claim_type,
             "country_code": country,
+            "origin": origin,
             "reason_code": "NO_VERIFIED_PROCEDURE" if procedure is None else "KB_PROCEDURE",
         },
     )
@@ -284,6 +309,7 @@ def create_case(
         case.id,
         {"reason_code": "MATCHED" if procedure else "NO_VERIFIED_PROCEDURE"},
     )
+    dispatch(db, owner, "claim.created", case.id)
     return case
 
 
@@ -444,7 +470,13 @@ def evaluate_items(
                 status, verification, action = COMPLETE, "USER_CONFIRMED", "VIEW"
                 detail = f"{len(matching)} file{'s' if len(matching) > 1 else ''} confirmed"
         else:
-            detail = "No evidence attached yet." if item.mandatory else "Optional. Not attached."
+            if "Insurer requirement unverified" in (item.reason or ""):
+                verification = "UNVERIFIED_REQUIREMENT"
+                detail = "Insurer requirement unverified. No evidence attached yet."
+            else:
+                detail = (
+                    "No evidence attached yet." if item.mandatory else "Optional. Not attached."
+                )
         output.append(
             {
                 "code": item.code,

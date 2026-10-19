@@ -35,6 +35,7 @@ from app.schemas.account_workspace import (
     Deleted,
     DeleteRequest,
 )
+from app.schemas.actor import Actor, ActorType
 from app.schemas.common import CompletenessStatus
 from app.schemas.consent import ConsentPurpose
 from app.schemas.profile import UserProfile
@@ -46,9 +47,14 @@ from app.services.account_documents import (
     remove_injection_lines,
     sniff_mime,
 )
+from app.services.events import dispatch
 from app.services.workspace_privacy import purge_content
 
 router = APIRouter(prefix="/account", tags=["Authenticated documents"])
+
+
+def _actor(account) -> Actor:
+    return Actor(actor_type=ActorType.AUTHENTICATED_ACCOUNT, account_id=account.id)
 
 
 def _owned_document(db: DB, account_id: UUID, document_id: UUID) -> AccountDocumentRow:
@@ -221,6 +227,20 @@ async def upload_document(
     )
     if flagged:
         audit(db, account.id, "INJECTION_FLAGGED", document_id=str(document.id))
+    dispatch(
+        db,
+        _actor(account),
+        "document.uploaded",
+        document.id,
+        {"document_kind": document_kind, "size_bytes": len(content)},
+    )
+    if error_code:
+        outcome_event = "document.extraction.failed"
+    elif extracted:
+        outcome_event = "document.review.required"
+    else:
+        outcome_event = "document.extraction.completed"
+    dispatch(db, _actor(account), outcome_event, document.id)
     db.commit()
     return AccountUploadResult(document_id=document.id, status=document.status)
 
@@ -305,6 +325,13 @@ def review_field(field_id: UUID, body: AccountFieldUpdate, db: DB, account: Acti
         "FIELD_REVIEWED",
         field_key=row.field_key,
         corrected=row.previous_value != row.value,
+    )
+    dispatch(
+        db,
+        _actor(account),
+        "document.field.confirmed",
+        row.id,
+        {"dedupe_part": str(row.updated_at)},
     )
     db.commit()
     db.refresh(row)

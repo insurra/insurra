@@ -35,8 +35,8 @@ def test_purposes_are_explicit_independent_and_revocable(client, app, demo):
     assert ask().status_code == 403
     processing = grant(client, h, "process_documents")
     assert processing["granted_at"] and processing["policy_version"] == "1.5"
-    assert ask().status_code == 503
-    assert ask().json()["code"] == "TRIAGE_UNAVAILABLE"
+    assert ask().status_code == 200
+    assert ask().json()["disposition"] == "declined"
     revoked = grant(client, h, "external_ai", False)
     assert revoked["revoked_at"] and revoked["granted_at"]
     assert ask().status_code == 403
@@ -368,10 +368,10 @@ def test_remaining_scoped_contract_routes(client, demo, method, path, body, need
     grant(client, h, "process_documents")
     result = client.request(method, url, headers=h, json=body)
     assert result.status_code == (
-        200 if implemented else 503 if path == "/pathways/compare" else 501
+        200 if implemented else 422 if path == "/pathways/compare" else 501
     )
     if path == "/pathways/compare":
-        assert result.json()["code"] == "TRIAGE_UNAVAILABLE"
+        assert result.json()["code"] == "SERVICE_NOT_AVAILABLE"
 
 
 def test_upload_and_evidence_stubs_need_both_purposes(client, resources):

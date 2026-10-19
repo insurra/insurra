@@ -16,7 +16,8 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.services.approval import payload_sha256
-from app.workflow import audit, claims, sandbox, states
+from app.services.events import dispatch
+from app.workflow import audit, claims, executors, sandbox, states
 from app.workflow.models import (
     WfActionApprovalRow,
     WfActionExecutionRow,
@@ -66,6 +67,20 @@ ACTION_TYPES: dict[str, dict] = {
         "approval": True,
         "editable": ["subject", "body"],
     },
+    "policy_clarification_inquiry": {
+        "label": "Policy clarification inquiry draft",
+        "destination": "manual_handoff",
+        "environment": "MANUAL_HANDOFF",
+        "approval": True,
+        "editable": ["subject", "body"],
+    },
+    "employer_benefit_inquiry": {
+        "label": "Employer benefit inquiry draft",
+        "destination": "manual_handoff",
+        "environment": "MANUAL_HANDOFF",
+        "approval": True,
+        "editable": ["subject", "body"],
+    },
     "claim_follow_up_message": {
         "label": "Claim follow-up message draft",
         "destination": "manual_handoff",
@@ -73,12 +88,19 @@ ACTION_TYPES: dict[str, dict] = {
         "approval": True,
         "editable": ["subject", "body"],
     },
+    "calendar_reminder_file": {
+        "label": "Calendar reminder file (.ics)",
+        "destination": "manual_handoff",
+        "environment": "MANUAL_HANDOFF",
+        "approval": True,
+        "editable": ["title", "detail", "due_date"],
+    },
     "internal_reminder": {
         "label": "Set reminder",
         "destination": "insurra_internal",
         "environment": "INTERNAL",
-        "approval": False,
-        "editable": [],
+        "approval": True,
+        "editable": ["title", "detail", "due_date"],
     },
 }
 ALLOWED_DESTINATIONS = {name: {meta["destination"]} for name, meta in ACTION_TYPES.items()}
@@ -148,6 +170,11 @@ def prepare_action(
             return existing
         if existing is not None:
             dedupe_key = f"{dedupe_key}:{uuid4().hex[:6]}"
+    default_perms = (
+        []
+        if action_type in ("internal_reminder", "calendar_reminder_file")
+        else ["process_documents"]
+    )
     action = WfActionRow(
         owner_kind=owner.kind,
         owner_id=owner.id,
@@ -162,7 +189,7 @@ def prepare_action(
         payload_sha256=digest,
         payload_version=1,
         status="AWAITING_APPROVAL" if meta["approval"] else "DRAFT",
-        required_permissions=permissions if permissions is not None else ["process_documents"],
+        required_permissions=permissions if permissions is not None else default_perms,
         expires_at=_now() + APPROVAL_TTL if meta["approval"] else None,
         dedupe_key=dedupe_key,
         ai_prepared=True,
@@ -193,7 +220,45 @@ def prepare_action(
     audit.agent_event(
         db, owner, "prepare_action", "OK", claim.id if claim else None, {"action_type": action_type}
     )
+    dispatch(db, owner, "action.prepared", action.id, {"status": action.status})
     return action
+
+
+def prepare_user_action(
+    db: Session,
+    owner: Owner,
+    action_type: str,
+    *,
+    entity_type: str | None = None,
+    entity_id: str | None = None,
+    draft_inputs: dict | None = None,
+    title: str | None = None,
+    purpose: str | None = None,
+    dedupe_key: str | None = None,
+) -> WfActionRow:
+    if action_type not in ACTION_TYPES:
+        raise AppError(422, "UNSUPPORTED_ACTION_TYPE", "This action type is not supported.")
+    built_title, built_purpose, payload, claim_case = executors.build_action_payload(
+        db,
+        owner,
+        action_type,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        draft_inputs=draft_inputs,
+        title_override=title,
+        purpose_override=purpose,
+    )
+    base_dedupe = dedupe_key or f"user_action:{action_type}:{entity_id or 'none'}"
+    return prepare_action(
+        db,
+        owner,
+        action_type,
+        title=built_title,
+        purpose=built_purpose,
+        payload=payload,
+        claim=claim_case,
+        dedupe_base=base_dedupe,
+    )
 
 
 def build_submission_payload(db: Session, owner: Owner, case: WfClaimCaseRow) -> dict:
@@ -389,7 +454,7 @@ def _security(
 def approve(
     db: Session, owner: Owner, action: WfActionRow, payload_sha: str, payload_version: int
 ) -> WfActionRow:
-    if action.status != "AWAITING_APPROVAL":
+    if action.status not in ("AWAITING_APPROVAL", "DRAFT"):
         raise AppError(
             409,
             "ACTION_NOT_PENDING",
@@ -401,9 +466,24 @@ def approve(
         action.status = "EXPIRED"
         db.commit()
         raise AppError(409, "ACTION_EXPIRED", "This approval request expired. Prepare it again.")
+    if payload_version != action.payload_version:
+        _security(
+            db,
+            owner,
+            "INVALID_APPROVAL_HASH",
+            "Approval rejected: payload version stale",
+            action,
+            "PAYLOAD_VERSION_STALE",
+        )
+        db.commit()
+        raise AppError(
+            409,
+            "PAYLOAD_VERSION_STALE",
+            "The action version is stale. Review the latest version.",
+            {"current_version": action.payload_version},
+        )
     if (
         payload_sha != action.payload_sha256
-        or payload_version != action.payload_version
         or payload_sha256(action.payload) != action.payload_sha256
     ):
         _security(
@@ -456,6 +536,7 @@ def approve(
             "payload_digest": action.payload_sha256[:16],
         },
     )
+    dispatch(db, owner, "action.approved", action.id, {"dedupe_part": action.payload_sha256[:16]})
     db.flush()
     return action
 
@@ -622,6 +703,11 @@ def _signature(receipt: WfExecutionReceiptRow) -> str:
 
 def receipt_view(db: Session, receipt: WfExecutionReceiptRow) -> dict:
     action = db.get(WfActionRow, receipt.action_id)
+    manual_notice = (
+        "Calendar file generated. Draft prepared. Not sent. Nothing was sent by INSURRA."
+        if action and action.action_type == "calendar_reminder_file"
+        else "Draft prepared. Not sent. Approved draft. Nothing was sent by INSURRA."
+    )
     return {
         "receipt_reference": receipt.receipt_ref,
         "action_id": receipt.action_id,
@@ -637,9 +723,12 @@ def receipt_view(db: Session, receipt: WfExecutionReceiptRow) -> dict:
         "signature": receipt.signature,
         "signature_valid": hmac.compare_digest(receipt.signature, _signature(receipt)),
         "notice": {
-            "SANDBOX": "Sandbox receipt. No real claim was sent to an insurer.",
-            "MANUAL_HANDOFF": "Approved draft. Nothing was sent by INSURRA.",
-            "INTERNAL": "Internal INSURRA action.",
+            "SANDBOX": (
+                "Accepted by the INSURRA test sandbox. No insurer received this. "
+                "Sandbox receipt. No real claim was sent to an insurer."
+            ),
+            "MANUAL_HANDOFF": manual_notice,
+            "INTERNAL": "Reminder scheduled in INSURRA. Internal INSURRA action.",
         }.get(receipt.environment, ""),
     }
 
@@ -795,16 +884,15 @@ def execute(db: Session, owner: Owner, action: WfActionRow) -> tuple[dict, bool]
     db.add(execution)
     db.flush()
     claim_ref, next_action, status = None, "No further action needed.", "EXECUTED"
+    handoff_meta: dict = {}
     try:
         if action.action_type == "sandbox_claim_submit":
             claim_ref, next_action = _execute_sandbox(db, owner, action)
         elif action.environment == "MANUAL_HANDOFF":
-            status = "NOT_SENT"
-            next_action = (
-                "Copy the draft or open it in your own email app. INSURRA did not send it."
-            )
+            status, next_action, handoff_meta = executors.execute_manual_handoff(action)
         elif action.action_type == "internal_reminder":
             _execute_reminder(db, owner, action)
+            next_action = "Reminder scheduled in INSURRA."
     except sandbox.SandboxError as exc:
         execution.status, execution.error_code = "FAILED", "SANDBOX_VALIDATION_FAILED"
         execution.finished_at = _now()
@@ -836,7 +924,7 @@ def execute(db: Session, owner: Owner, action: WfActionRow) -> tuple[dict, bool]
             {"errors": exc.errors},
         ) from exc
     execution.status, execution.finished_at = "SUCCEEDED", _now()
-    execution.result = {"claim_reference": claim_ref, "status": status}
+    execution.result = {"claim_reference": claim_ref, "status": status, **handoff_meta}
     action.status = "HANDOFF_READY" if action.environment == "MANUAL_HANDOFF" else "COMPLETED"
     action.updated_at = _now()
     event = audit.record(
@@ -870,6 +958,7 @@ def execute(db: Session, owner: Owner, action: WfActionRow) -> tuple[dict, bool]
     )
     receipt = _issue_receipt(db, owner, action, execution, status, claim_ref, event.id, next_action)
     event.receipt_ref = receipt.receipt_ref
+    dispatch(db, owner, "action.executed", action.id, {"dedupe_part": action.payload_sha256[:16]})
     db.flush()
     return receipt_view(db, receipt), False
 

@@ -28,11 +28,38 @@ class OwnershipStatus(StrEnum):
     NEEDS_CHECK = "NEEDS_CHECK"
 
 
+NeedApplicability = Literal[
+    "REQUIRED_VERIFIED",
+    "RECOMMENDED",
+    "APPLICABILITY_UNVERIFIED",
+    "NOT_APPLICABLE",
+]
+
+NeedEvidenceState = Literal[
+    "HAVE_COVERAGE",
+    "MISSING_EVIDENCE",
+    "POTENTIAL_GAP",
+    "NEEDS_VERIFICATION",
+    "NOT_APPLICABLE",
+]
+
+
+class ContinuitySummary(Contract):
+    uncovered_days: int | None = None
+    interval_start: str | None = None
+    interval_end: str | None = None
+    compared_to: str | None = None
+    rule_id: str | None = None
+    rule_verification_status: str = "UNVERIFIED"
+
+
 class CoverageNeed(Contract):
     need_code: str
     label: str
     requirement_level: RequirementLevel
     ownership_status: OwnershipStatus
+    applicability: NeedApplicability = "RECOMMENDED"
+    evidence_state: NeedEvidenceState = "NEEDS_VERIFICATION"
     explanation: str
     source_reference: RuleSource | None = None
     requirement_confirmed: bool = False
@@ -40,6 +67,7 @@ class CoverageNeed(Contract):
     verification_steps: list[str] = Field(default_factory=list)
     action_url: str = "/documents"
     visa_assessment: "VisaCoverageAssessment | None" = None
+    continuity: ContinuitySummary | None = None
     exclusion: SourceEvidence | None = None
 
 

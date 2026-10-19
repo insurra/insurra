@@ -51,8 +51,11 @@ from app.models.workspace_state import (
     AskLimitRow,
     ChatSessionRow,
     ClauseChunkRow,
+    NotificationRow,
     PathwayDecisionRow,
+    ProtectionInsightRow,
     RecommendationStateRow,
+    UserPreferenceRow,
 )
 
 __all__ = [
@@ -82,7 +85,10 @@ __all__ = [
     "ChatSessionRow",
     "ClauseChunkRow",
     "PathwayDecisionRow",
+    "ProtectionInsightRow",
     "RecommendationStateRow",
+    "NotificationRow",
+    "UserPreferenceRow",
 ]
 
 __all__ += [

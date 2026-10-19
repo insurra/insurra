@@ -9,10 +9,17 @@ from uuid import UUID
 from fastapi import APIRouter, Path, Request
 from fastapi.responses import StreamingResponse
 
+from app.agent.planner import prepare_proposal_action
 from app.core.dependencies import DB, KB
 from app.core.errors import AppError
 from app.schemas.common import ApiError
-from app.schemas.foundation import AskAnswer, AskRequest, ChatHistory, EmergencyRedirect
+from app.schemas.foundation import (
+    AskAnswer,
+    AskRequest,
+    ChatHistory,
+    EmergencyRedirect,
+    PreparedProposalAction,
+)
 from app.schemas.workspace import AnswerFeedback, SavedDecision, SourcePage
 from app.services.evidence import retained_page
 from app.services.policy_qa import answer, owned_chat, prepare, save_answer
@@ -222,3 +229,13 @@ def source(
             "Halaman sumber tidak tersedia. Periksa persetujuan atau unggah ulang dokumen.",
         )
     return SourcePage(document_id=document_id, page=page, text=row.text)
+
+
+@router.post("/ask/proposals/{proposal_id}/prepare", response_model=PreparedProposalAction)
+def prepare_proposal(
+    proposal_id: Annotated[str, Path(min_length=3, max_length=150)],
+    db: DB,
+    kb: KB,
+    actor: WorkspaceActor,
+):
+    return prepare_proposal_action(db, actor, kb, proposal_id)

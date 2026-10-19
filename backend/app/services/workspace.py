@@ -26,6 +26,7 @@ from app.schemas.insurance import UnifiedInsuranceRecord
 from app.schemas.profile import UserProfile
 from app.services.account_access import active_account
 from app.services.consents import require_purposes
+from app.services.demo_access import reject_ambiguous_actor
 from app.services.kb_loader import CountryKBLoader
 
 
@@ -34,8 +35,7 @@ def workspace_actor(
     authorization: Annotated[str | None, Header(max_length=300)] = None,
     x_demo_session: Annotated[str | None, Header(max_length=128)] = None,
 ) -> Actor:
-    if authorization and x_demo_session:
-        raise AppError(422, "AMBIGUOUS_ACTOR", "Gunakan satu jenis sesi saja.")
+    reject_ambiguous_actor(authorization, x_demo_session)
     if authorization:
         account = active_account(db, authorization)[1]
         return Actor(actor_type="AUTHENTICATED_ACCOUNT", account_id=account.id)
