@@ -388,10 +388,12 @@ export default function MyProtectionParentPage() {
               </span>
             </>
           );
-          return card.href ? (
-            <Link href={card.href} className="figma-hub-card my-protection-card" key={card.title}>{content}</Link>
+          const cardTitle = card.title;
+          const cardHref = card.href;
+          return cardHref ? (
+            <Link href={cardHref} className="figma-hub-card my-protection-card" key={cardTitle}>{content}</Link>
           ) : (
-            <div className="figma-hub-card my-protection-card my-protection-card-disabled" key={card.title} aria-disabled="true">{content}</div>
+            <div className="figma-hub-card my-protection-card my-protection-card-disabled" key={cardTitle} aria-disabled="true">{content}</div>
           );
         })}
       </section>
