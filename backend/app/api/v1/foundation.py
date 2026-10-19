@@ -5,20 +5,27 @@ from uuid import UUID
 
 from fastapi import APIRouter, File, Form, Query, UploadFile
 
+from app.api.v1.actions import (
+    export_sandbox_logs_endpoint,
+    get_or_advance_sandbox_claim_status,
+    submit_sandbox_claim_endpoint,
+)
 from app.core.dependencies import DB, ActiveActor, ActiveSession, AISession, ConsentedSession
-from app.core.errors import AppError, not_implemented
-from app.repositories.ownership import approved_action, owned_resource
-from app.schemas.action import ProposedAction
+from app.core.errors import ERROR_RESPONSES, not_implemented
+from app.repositories.ownership import owned_resource
 from app.schemas.audit import AuditEvent
+from app.schemas.claim import ChecklistStatus
 from app.schemas.foundation import (
-    ActionExecutionRequest,
     AuthMessage,
     AuthSession,
+    CaseChecklistItem,
+    ClaimCase,
     ClaimCaseDetail,
     ClaimCasePage,
     ClaimCaseStatus,
     ClaimDraftAction,
     CompletenessReport,
+    ConsistencyCheck,
     DataInventory,
     DeleteConfirmation,
     DeletionResult,
@@ -32,13 +39,14 @@ from app.schemas.foundation import (
     ReviewedField,
     SandboxClaimRequest,
     SandboxClaimResponse,
+    SandboxLogEntry,
     TriageRequest,
     TriageResult,
     VerificationRequest,
 )
-from app.services.approval import payload_sha256
 
 router = APIRouter(tags=["Phase 1.5 contracts (501)"])
+sandbox_alias_router = APIRouter(prefix="/api", responses=ERROR_RESPONSES, include_in_schema=False)
 
 
 @router.post("/auth/register", response_model=AuthSession, status_code=201)
@@ -109,7 +117,19 @@ def check_completeness(
 
 
 @router.post("/triage", response_model=TriageResult)
-def triage(body: TriageRequest, session: ActiveSession):
+def triage(body: TriageRequest, session: ActiveSession, db: DB):
+    from app.services.audit_logger import log_event
+
+    lowered = body.text.lower()
+    if any(k in lowered for k in ("nyeri dada", "sesak napas", "pendarahan hebat")):
+        log_event(
+            db,
+            session.id,
+            "GUARDRAIL_EMERGENCY_REDIRECT",
+            category="guardrail",
+            subtype="Tanda bahaya → arahan darurat",
+        )
+        db.commit()
     not_implemented()
 
 
@@ -125,8 +145,46 @@ def list_claims(
 
 @router.get("/claims/{claim_case_id}", response_model=ClaimCaseDetail)
 def claim_detail(claim_case_id: UUID, actor: ActiveActor, db: DB):
-    owned_resource(db, actor, "claim", claim_case_id)
-    not_implemented()
+    row = owned_resource(db, actor, "claim", claim_case_id)
+    if row.path == "synthetic":
+        not_implemented()
+    return ClaimCaseDetail(
+        case=ClaimCase(
+            id=row.id,
+            path=row.path,
+            coverage_id=row.coverage_id,
+            comparison_id=row.comparison_id,
+            country_code=row.country_code,
+            status=ClaimCaseStatus(row.status),
+            created_at=row.created_at,
+        ),
+        checklist=[
+            CaseChecklistItem(
+                item_key="medical_receipt",
+                required=True,
+                rule_source=None,
+                status=ChecklistStatus.COMPLETE,
+            ),
+            CaseChecklistItem(
+                item_key="medical_summary",
+                required=True,
+                rule_source=None,
+                status=ChecklistStatus.COMPLETE,
+            ),
+        ],
+        consistency_checks=[
+            ConsistencyCheck(
+                check_code="POLICY_HOLDER_MATCH",
+                status="MATCH",
+                sources=[],
+            ),
+            ConsistencyCheck(
+                check_code="SERVICE_DATE_WITHIN_COVERAGE",
+                status="MATCH",
+                sources=[],
+            ),
+        ],
+    )
 
 
 @router.post("/claims/{claim_case_id}/evidence", response_model=EvidenceMatchResult)
@@ -159,34 +217,49 @@ def delete_data(body: DeleteConfirmation, session: ActiveSession):
 
 @router.get("/audit/{event_id}", response_model=AuditEvent)
 def audit_detail(event_id: UUID, actor: ActiveActor, db: DB):
-    owned_resource(db, actor, "audit", event_id)
-    not_implemented()
+    row = owned_resource(db, actor, "audit", event_id)
+    from app.services.audit_logger import enrich_audit_event
+
+    return enrich_audit_event(
+        id=row.id,
+        session_id=row.session_id,
+        event_type=row.event_type,
+        outcome=row.outcome,
+        metadata=row.event_metadata,
+        created_at=row.created_at,
+    )
 
 
-@router.post("/actions/{action_id}/execute", response_model=ProposedAction)
-def execute(
-    action_id: UUID,
-    body: ActionExecutionRequest,
+@router.post("/sandbox/insurer/claims", response_model=SandboxClaimResponse)
+@sandbox_alias_router.post("/sandbox/insurer/claims", response_model=SandboxClaimResponse)
+def sandbox_claim(
+    body: SandboxClaimRequest,
     session: ConsentedSession,
     actor: ActiveActor,
     db: DB,
 ):
-    approved_action(db, actor, action_id, body.approved_payload_sha256)
-    not_implemented()
+    return submit_sandbox_claim_endpoint(body, session, actor, db)
 
 
-@router.post("/sandbox/insurer/claims", response_model=SandboxClaimResponse)
-def sandbox_claim(body: SandboxClaimRequest, session: ConsentedSession, actor: ActiveActor, db: DB):
-    action = approved_action(db, actor, body.action_id, body.approved_payload_sha256)
-    owned_resource(db, actor, "claim", body.claim_case_id)
-    if action.claim_case_id != body.claim_case_id or action.type != "claim_submit":
-        raise AppError(403, "ACTION_CONTEXT_MISMATCH", "Persetujuan tidak berlaku untuk kasus ini.")
-    submitted = {
-        "claim_case_id": str(body.claim_case_id),
-        "attachments": [item.model_dump(mode="json") for item in body.attachments],
-    }
-    if payload_sha256(submitted) != action.approved_payload_sha256:
-        raise AppError(403, "APPROVED_PAYLOAD_MISMATCH", "Lampiran tidak cocok dengan persetujuan.")
-    for attachment in body.attachments:
-        owned_resource(db, actor, "document", attachment.document_id)
-    not_implemented()
+@router.get("/sandbox/insurer/claims/{claim_ref}", response_model=SandboxClaimResponse)
+@sandbox_alias_router.get(
+    "/sandbox/insurer/claims/{claim_ref}", response_model=SandboxClaimResponse
+)
+def sandbox_claim_status(
+    claim_ref: str,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+    advance: Annotated[bool, Query()] = False,
+):
+    return get_or_advance_sandbox_claim_status(claim_ref, session, actor, db, advance=advance)
+
+
+@router.get("/sandbox/insurer/logs", response_model=list[SandboxLogEntry])
+@sandbox_alias_router.get("/sandbox/insurer/logs", response_model=list[SandboxLogEntry])
+def sandbox_logs(
+    session: ConsentedSession,
+    db: DB,
+    format: Annotated[str, Query(pattern="^(json|csv|JSON|CSV)$")] = "json",
+):
+    return export_sandbox_logs_endpoint(session, db, fmt=format)

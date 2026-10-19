@@ -40,18 +40,79 @@ def owned_resource(db: Session, actor: Actor, kind: str, resource_id: UUID):
 
 
 def approved_action(db: Session, actor: Actor, action_id: UUID, approved_payload_sha256: str):
+    from app.services.audit_logger import log_event
+
     action = owned_resource(db, actor, "action", action_id)
     if (
-        action.status != "APPROVED"
+        action.status not in {"APPROVED", "COMPLETED", "FAILED"}
         or action.approved_at is None
         or not action.approved_payload_sha256
     ):
+        if actor.session_id is not None:
+            log_event(
+                db,
+                actor.session_id,
+                "GUARDRAIL_UNAPPROVED_ACTION",
+                category="guardrail",
+                subtype="unapproved_action",
+                source_screen="SC-10 · Persetujuan Tindakan",
+                input_summary=(
+                    f"Percobaan eksekusi tindakan ({action.type}) berstatus "
+                    f"{action.status} tanpa persetujuan pengguna."
+                ),
+                tools_called=["policy_guard", "draft_claim_form"],
+                result_summary=(
+                    "Eksekusi tindakan keluar diblokir (403) karena tindakan belum disetujui."
+                ),
+                reason=(
+                    "Setiap tindakan keluar wajib berstatus Disetujui (APPROVED) di server "
+                    "sebelum dapat dijalankan."
+                ),
+                approval_status=action.status,
+            )
+            db.commit()
         raise AppError(403, "ACTION_APPROVAL_REQUIRED", "Tindakan belum disetujui di server.")
     if not hmac.compare_digest(action.approved_payload_sha256, payload_sha256(action.payload)):
+        if actor.session_id is not None:
+            log_event(
+                db,
+                actor.session_id,
+                "GUARDRAIL_UNAPPROVED_ACTION",
+                category="guardrail",
+                subtype="unapproved_action",
+                source_screen="SC-10 · Persetujuan Tindakan",
+                input_summary=(
+                    f"Percobaan eksekusi tindakan ({action.type}) dengan payload server "
+                    "yang berubah setelah persetujuan."
+                ),
+                tools_called=["policy_guard"],
+                result_summary="Eksekusi diblokir (403) karena hash payload server berubah.",
+                reason="Eksekusi wajib memakai versi payload yang telah disetujui persis.",
+                approval_status=action.status,
+            )
+            db.commit()
         raise AppError(
             403, "APPROVED_PAYLOAD_MISMATCH", "Payload server berubah setelah persetujuan."
         )
     if not hmac.compare_digest(action.approved_payload_sha256, approved_payload_sha256):
+        if actor.session_id is not None:
+            log_event(
+                db,
+                actor.session_id,
+                "GUARDRAIL_UNAPPROVED_ACTION",
+                category="guardrail",
+                subtype="unapproved_action",
+                source_screen="SC-10 · Persetujuan Tindakan",
+                input_summary=(
+                    f"Percobaan eksekusi tindakan ({action.type}) dengan hash payload "
+                    "yang tidak cocok dengan persetujuan."
+                ),
+                tools_called=["policy_guard"],
+                result_summary="Eksekusi diblokir (403) karena versi hash payload tidak cocok.",
+                reason="Eksekusi wajib memakai versi payload yang telah disetujui persis.",
+                approval_status=action.status,
+            )
+            db.commit()
         raise AppError(
             403, "APPROVED_PAYLOAD_MISMATCH", "Versi payload tidak cocok dengan persetujuan."
         )

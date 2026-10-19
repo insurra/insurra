@@ -1,10 +1,11 @@
 """Authenticated profile, consent, completeness and privacy endpoints."""
 
 from datetime import UTC, date, datetime, timedelta
+from typing import Annotated, Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Query
-from sqlalchemy import delete, func, select
+from fastapi import APIRouter, Query, Response
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import DB, KB, ActiveAccount
@@ -38,21 +39,28 @@ from app.schemas.account_workspace import (
     FamilyMember,
     FamilyMemberCreate,
 )
+from app.schemas.audit import AuditCategory, AuditEvent
 from app.schemas.common import CompletenessStatus
 from app.schemas.consent import POLICY_VERSION, ConsentPurpose, PurposeConsentUpdate
 from app.schemas.profile import ProfileData, ProfileUpdate, UserProfile
+from app.services.audit_logger import (
+    CATEGORY_EVENT_TYPES,
+    enrich_audit_event,
+    ensure_account_guardrail_events,
+)
+from app.services.policy_guard import PolicyGuard
 from app.services.rules_engine import uncovered_interval
 from app.services.workspace_privacy import purge_content, purge_workspace
 
 router = APIRouter(prefix="/account", tags=["Authenticated workspace"])
 
 
-def audit(db: Session, account_id: UUID, event_type: str, **metadata: str | int | bool) -> None:
+def audit(db: Session, account_id: UUID, event_type: str, **metadata: Any) -> None:
     db.add(
         AccountAuditRow(
             account_id=account_id,
             event_type=event_type,
-            metadata_json=metadata,
+            metadata_json=PolicyGuard().redact_audit_metadata(metadata),
             created_at=datetime.now(UTC),
         )
     )
@@ -746,3 +754,106 @@ def delete_family_member(member_id: UUID, db: DB, account: ActiveAccount):
     audit(db, account.id, "FAMILY_MEMBER_DELETED", member_id=str(member_id))
     db.commit()
     return Deleted(deleted=True)
+
+
+@router.get(
+    "/audit",
+    response_model=list[AuditEvent],
+    responses={
+        200: {
+            "headers": {
+                "X-Total-Count": {
+                    "schema": {"type": "integer"},
+                    "description": "Scoped filtered account audit event count",
+                },
+            }
+        }
+    },
+)
+def list_account_audit(
+    db: DB,
+    account: ActiveAccount,
+    response: Response,
+    event_type: Annotated[str | None, Query(max_length=100)] = None,
+    category: Annotated[
+        AuditCategory | None,
+        Query(alias="type"),
+    ] = None,
+    limit: Annotated[int | None, Query(ge=1, le=100)] = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+):
+    if category == "guardrail":
+        ensure_account_guardrail_events(db, account.id)
+    query = select(AccountAuditRow).where(AccountAuditRow.account_id == account.id)
+    if event_type:
+        query = query.where(AccountAuditRow.event_type == event_type)
+    if category:
+        prefixes = CATEGORY_EVENT_TYPES[category]
+        clauses = []
+        for p in prefixes:
+            clauses.append(AccountAuditRow.event_type == p)
+            clauses.append(AccountAuditRow.event_type.startswith(p + "_"))
+        query = query.where(or_(*clauses))
+    response.headers["X-Total-Count"] = str(
+        db.scalar(select(func.count()).select_from(query.subquery()))
+    )
+    query = query.order_by(AccountAuditRow.created_at.desc(), AccountAuditRow.id).offset(offset)
+    if limit is not None:
+        query = query.limit(limit)
+    return [
+        enrich_audit_event(
+            id=row.id,
+            session_id=row.account_id,
+            event_type=row.event_type,
+            outcome="SUCCESS",
+            metadata=row.metadata_json,
+            created_at=row.created_at,
+        )
+        for row in db.scalars(query)
+    ]
+
+
+@router.post("/audit/demo-guardrails", response_model=list[AuditEvent])
+def run_account_guardrail_scenario(db: DB, account: ActiveAccount):
+    ensure_account_guardrail_events(db, account.id)
+    prefixes = CATEGORY_EVENT_TYPES["guardrail"]
+    clauses = []
+    for p in prefixes:
+        clauses.append(AccountAuditRow.event_type == p)
+        clauses.append(AccountAuditRow.event_type.startswith(p + "_"))
+    query = (
+        select(AccountAuditRow)
+        .where(AccountAuditRow.account_id == account.id, or_(*clauses))
+        .order_by(AccountAuditRow.created_at.desc(), AccountAuditRow.id)
+    )
+    return [
+        enrich_audit_event(
+            id=row.id,
+            session_id=row.account_id,
+            event_type=row.event_type,
+            outcome="SUCCESS",
+            metadata=row.metadata_json,
+            created_at=row.created_at,
+        )
+        for row in db.scalars(query)
+    ]
+
+
+@router.get("/audit/{event_id}", response_model=AuditEvent)
+def get_account_audit_detail(event_id: UUID, db: DB, account: ActiveAccount):
+    row = db.scalar(
+        select(AccountAuditRow).where(
+            AccountAuditRow.id == event_id,
+            AccountAuditRow.account_id == account.id,
+        )
+    )
+    if row is None:
+        raise AppError(404, "RESOURCE_NOT_FOUND", "Entri audit tidak ditemukan.")
+    return enrich_audit_event(
+        id=row.id,
+        session_id=row.account_id,
+        event_type=row.event_type,
+        outcome="SUCCESS",
+        metadata=row.metadata_json,
+        created_at=row.created_at,
+    )

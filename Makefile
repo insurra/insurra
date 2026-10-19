@@ -1,6 +1,6 @@
 UV := $(shell command -v uv 2>/dev/null || echo $(CURDIR)/.tools/bin/uv)
 export UV_CACHE_DIR := $(CURDIR)/.cache/uv
-.PHONY: setup dev-backend dev-frontend migrate seed test generate-types check
+.PHONY: setup dev dev-backend dev-frontend migrate seed test generate-types check
 setup:
 	@test -x "$(UV)" || (python3 -m venv .tools && .tools/bin/pip install uv)
 	cd backend && $(UV) sync --locked
@@ -9,6 +9,12 @@ migrate:
 	cd backend && $(UV) run alembic upgrade head
 seed:
 	cd backend && $(UV) run python -m app.seeds.demo
+dev:
+	@echo "Menjalankan backend (port 8000) dan frontend (port 3000)... Tekan Ctrl+C untuk berhenti."
+	@trap 'kill 0' EXIT INT TERM; \
+	(cd backend && $(UV) run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000) & \
+	(cd frontend && npm run dev) & \
+	wait
 dev-backend:
 	cd backend && $(UV) run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 dev-frontend:

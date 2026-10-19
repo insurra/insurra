@@ -483,4 +483,28 @@ class SandboxClaimRequest(ActionExecutionRequest):
 class SandboxClaimResponse(Contract):
     claim_ref: str
     status: str
-    sandbox: Literal[True]
+    sandbox: Literal[True] = True
+    action_id: UUID | None = None
+    claim_case_id: UUID | None = None
+    claim_case_status: str = "SUBMITTED"
+    claim_case_status_label: str = "Diajukan"
+    submitted_at: datetime | None = None
+    provider_label: str = "Sandbox – bukan penyedia nyata"
+    status_timeline: list[dict[str, JsonValue]] = Field(default_factory=list)
+    rejection_reason: str | None = None
+
+
+class SandboxLogEntry(Contract):
+    timestamp: datetime
+    action_id: UUID
+    claim_case_id: UUID | None = None
+    claim_ref: str
+    sandbox: Literal[True] = True
+    environment_label: str = "SANDBOX – Bukan penyedia nyata"
+    tool_called: str = "submit_claim_sandbox"
+    outcome: Literal["SUCCESS", "VALIDATION_FAILED"] = "SUCCESS"
+    initial_status: str
+    case_status: str
+    case_status_label: str
+    request_summary: dict[str, JsonValue] = Field(default_factory=dict)
+    response_summary: dict[str, JsonValue] = Field(default_factory=dict)
