@@ -720,7 +720,8 @@ def execute(
     if set(clean_payload.keys()) == {"claim_case_id", "attachments"}:
         not_implemented()
 
-    # Idempotent execution: if already COMPLETED, return existing result without duplicate side effects/audit
+    # Idempotent execution: if already COMPLETED, return existing result
+    # without duplicate side effects or audit entries.
     if row.status == ActionStatus.COMPLETED.value and not simulate_failure:
         return serialize_action(row)
 

@@ -30,7 +30,7 @@ import {
 import { useSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
 import { api, ApiClientError } from "@/lib/api/client";
-import { publicConfig } from "@/lib/config";
+import { config } from "@/lib/config";
 import type { components } from "@/lib/api/types.gen";
 import { Button } from "@/components/ui/button";
 import { SessionRequired } from "@/components/session-required";
@@ -550,7 +550,7 @@ function ActionsPageContent() {
         ? window.sessionStorage.getItem("insurra.demo-session")
         : null;
     if (!storedToken) return;
-    const res = await fetch(`${publicConfig.apiBaseUrl}/api/v1/actions/${action.id}/ics`, {
+    const res = await fetch(`${config.apiBaseUrl}/api/v1/actions/${action.id}/ics`, {
       headers: { "X-Demo-Session": storedToken },
     });
     if (res.ok) {
@@ -569,7 +569,7 @@ function ActionsPageContent() {
         ? window.sessionStorage.getItem("insurra.demo-session")
         : null;
     if (!storedToken) return;
-    const res = await fetch(`${publicConfig.apiBaseUrl}/api/v1/actions/${action.id}/pdf`, {
+    const res = await fetch(`${config.apiBaseUrl}/api/v1/actions/${action.id}/pdf`, {
       headers: { "X-Demo-Session": storedToken },
     });
     if (res.ok) {

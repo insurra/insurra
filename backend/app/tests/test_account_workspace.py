@@ -563,7 +563,8 @@ def test_action_execution_ics_mailto_pdf_idempotency_and_hash_guardrail(client, 
     reminder = next(a for a in actions_list if a["action_type"] == "create_reminder")
     message_draft = next(a for a in actions_list if a["action_type"] == "draft_message")
 
-    # 1. Approve & execute create_reminder -> .ics downloaded with right date, COMPLETED, no full policy/NIK/passport/visa
+    # 1. Approve & execute create_reminder -> .ics downloaded with right date,
+    # COMPLETED, no full policy/NIK/passport/visa
     assert (
         client.post(
             f"/api/v1/actions/{reminder['id']}/approve",
@@ -613,7 +614,8 @@ def test_action_execution_ics_mailto_pdf_idempotency_and_hash_guardrail(client, 
     assert ics_dl.status_code == 200
     assert "DTSTART;VALUE=DATE:20270315" in ics_dl.text
 
-    # Triggering execute a second time is idempotent -> only ONE ACTION_EXECUTED audit entry for this reminder
+    # Triggering execute a second time is idempotent -> only ONE ACTION_EXECUTED
+    # audit entry for this reminder
     exec2 = client.post(
         f"/api/v1/actions/{reminder['id']}/execute",
         headers=headers,
@@ -629,7 +631,9 @@ def test_action_execution_ics_mailto_pdf_idempotency_and_hash_guardrail(client, 
     edited_msg_payload = {
         **(message_draft["payload"] or {}),
         "subject": "Konfirmasi Manfaat Klinik GP — Polis ****1234",
-        "message": "Halo tim layanan, mohon konfirmasi direct billing klinik GP untuk polis ****1234.",
+        "message": (
+            "Halo tim layanan, mohon konfirmasi direct billing klinik GP untuk polis ****1234."
+        ),
     }
     assert (
         client.post(
@@ -651,7 +655,8 @@ def test_action_execution_ics_mailto_pdf_idempotency_and_hash_guardrail(client, 
     assert "Konfirmasi%20Manfaat%20Klinik%20GP" in mailto_url
     assert "mohon%20konfirmasi%20direct%20billing" in mailto_url
 
-    # 3. Propose draft_claim_form with sensitive IDs (full policy, NIK, passport, visa), approve, simulate failure, retry -> PDF masks all sensitive IDs
+    # 3. Propose draft_claim_form with sensitive IDs (full policy, NIK, passport, visa),
+    # approve, simulate failure, retry -> PDF masks all sensitive IDs
     claim_form_res = client.post(
         "/api/v1/actions",
         headers=headers,
