@@ -57,7 +57,7 @@ async function loadSession(token: string): Promise<SessionData> {
 function message(error: unknown) {
   return error instanceof Error
     ? error.message
-    : "Terjadi kesalahan. Coba kembali.";
+    : "An error occurred. Please try again.";
 }
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
@@ -176,12 +176,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   );
 
   const getClaims = useCallback(async () => {
-    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    if (!token.current) throw new Error("Demo session is not active.");
     return api.get("/api/v1/claims", token.current);
   }, []);
 
   const getClaim = useCallback(async (id: string) => {
-    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    if (!token.current) throw new Error("Demo session is not active.");
     return api.request("get", "/api/v1/claims/{claim_case_id}", {
       token: token.current,
       params: { claim_case_id: id },
@@ -189,7 +189,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const createClaim = useCallback(async (coverageId: string) => {
-    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    if (!token.current) throw new Error("Demo session is not active.");
     return api.post("/api/v1/claims", token.current, {
       path: "manual",
       coverage_id: coverageId,
@@ -197,12 +197,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const getActions = useCallback(async () => {
-    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    if (!token.current) throw new Error("Demo session is not active.");
     return api.get("/api/v1/actions", token.current);
   }, []);
 
   const approveAction = useCallback(async (id: string, expectedHash: string) => {
-    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    if (!token.current) throw new Error("Demo session is not active.");
     return api.request("post", "/api/v1/actions/{action_id}/approve", {
       token: token.current,
       params: { action_id: id },
@@ -211,7 +211,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const rejectAction = useCallback(async (id: string) => {
-    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    if (!token.current) throw new Error("Demo session is not active.");
     return api.request("post", "/api/v1/actions/{action_id}/reject", {
       token: token.current,
       params: { action_id: id },
@@ -219,7 +219,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkTriage = useCallback(async (text: string, countryCode: string) => {
-    if (!token.current) throw new Error("Sesi demo belum aktif.");
+    if (!token.current) throw new Error("Demo session is not active.");
     return api.post("/api/v1/triage", token.current, { text, country_code: countryCode });
   }, []);
 

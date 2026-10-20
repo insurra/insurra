@@ -56,7 +56,7 @@ export function useWorkspace() {
             setError(
               cause instanceof Error
                 ? cause.message
-                : "Ringkasan belum tersedia.",
+                : "Summary is not available yet.",
             );
         })
         .finally(() => {
