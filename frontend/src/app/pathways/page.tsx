@@ -195,6 +195,7 @@ export default function PathwaysPage() {
   // Reset & re-load default recommendations when switching identity/country
   useEffect(() => {
     pending.current?.abort();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResult(null);
     setError(null);
     setEmergency(false);
