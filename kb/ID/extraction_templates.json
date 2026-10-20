@@ -1,9 +1,25 @@
 {
   "schema_version": "1.5",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
-  "evidence_class": "PLACEHOLDER",
-  "data": []
+  "data": [
+    {
+      "document_type": "policy_booklet",
+      "fields": [
+        {"field_key": "provider", "value_type": "text"},
+        {"field_key": "coverage_start_date", "value_type": "date"},
+        {"field_key": "coverage_end_date", "value_type": "date"}
+      ]
+    },
+    {
+      "document_type": "insurance_card",
+      "fields": [
+        {"field_key": "provider", "value_type": "text"},
+        {"field_key": "coverage_start_date", "value_type": "date"},
+        {"field_key": "coverage_end_date", "value_type": "date"}
+      ]
+    }
+  ]
 }

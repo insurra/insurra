@@ -17,7 +17,7 @@ Implemented:
 - Backend-backed, isolated demo sessions with opaque tokens, hashed at rest, expiring after 24 hours.
 - Independent `process_documents`, `external_ai`, and `retention` grants, false by default, with policy versions and grant/revocation timestamps. The existing demo control manages document-processing consent only; the canonical API manages all three purposes.
 - Session-scoped profile read/update, optional PRD profile metadata, seeded insurance records, and filtered audit history with optional pagination. Actor contracts distinguish demo sessions from future authenticated accounts.
-- Versioned, validated AU/ID country configuration and idempotent fixture seeding.
+- Versioned, validated CN/ID active country configuration and idempotent fixture seeding. Other country folders remain inactive until enabled explicitly.
 - Deterministic, inclusive interval calculation: Raka has a **potential 76-day gap**, 16 April–30 June 2027. Because rules/policies are unverified, status is `NEEDS_VERIFICATION`, not a legal finding. Sinta returns `NOT_APPLICABLE`.
 - Responsive Indonesian application shell, persona selection, onboarding, dashboard, document metadata and audit pages.
 - Joshua demo case creation/list/detail with factual case timelines and empty unverified checklists, scoped action queue and explicit hash-bound approval/rejection of valid persisted actions. The emergency page shows CN/ID contacts from checked official sources and limited positive-only Indonesian, English and Mandarin red-flag phrase escalation; a no-match result never clears an emergency.
@@ -26,12 +26,20 @@ Implemented:
 
 Contract-only (`501`): document upload/detail/delete and field review in the demo API, home summary, policy Q&A/SSE, pathway comparison, claim evidence/draft, action edits/execution, data inventory/deletion, coverage needs, audit detail and sandbox submission. These are shared interfaces, not implemented product features. Sandbox monitoring, polling, receipts, and outbound follow-up remain inactive without an official endpoint. P1/bonus features and the full nineteen-screen PRD remain deferred; current pages are preserved.
 
+## Current Integration Status
+
+This section records the current Gemini and country-safety integration and supersedes older foundation-only descriptions above. `AI_PROVIDER=gemini` selects the Gemini gateway for account document extraction and Policy Q&A. The live API and browser checks use synthetic documents and a test-only triage fixture; CI never calls Gemini.
+
+The active country allowlist remains `CN,ID`, matching current master. AU source-backed triage drafts remain on disk but inactive. ID retains master-reviewed red-flag and emergency entries, plus new JDIH symptom-rule drafts marked `UNVERIFIED`. Strict screening ignores those draft entries; it continues to use only the existing verified ID rules. Missing or resource-level unverified safety data still returns `TRIAGE_UNAVAILABLE`. Existing CN reviewed safety rules and ID's verified 112/119 emergency contacts are preserved. Do not enable AU or change country scope without maintainer approval.
+
+The hosted deployment checklist below is preparation only. No public backend or frontend has been deployed, and a hosted PostgreSQL migration has not been verified.
+
 ## Tech Stack
 
 - Frontend: Next.js 16 App Router, React 19, TypeScript 5 strict mode, Tailwind CSS 4, initialized shadcn/ui Radix Button, Lucide, native fetch, React Context.
 - Backend: Python 3.11+, uv, FastAPI, Pydantic v2/Settings, SQLAlchemy 2, Alembic, Uvicorn, pytest, httpx, Ruff.
 - Persistence: SQLite locally; PostgreSQL through psycopg and `DATABASE_URL`. Supabase PostgreSQL is a future deployment option; Storage is not integrated.
-- AI seam: OpenAI Python SDK, Responses API and Pydantic Structured Outputs. Models default to `gpt-6.1-sol` and `gpt-6-luna`, both configurable. No Phase 1.5 route calls AI; account/model availability is not tested.
+- AI seam: Google Gemini through the OpenAI Python SDK's Google Chat Completions endpoint and Pydantic structured parsing. The primary and fast models default to `gemini-3.5-flash-lite`; CI does not make provider calls.
 - Contracts: OpenAPI → openapi-typescript. Browser smoke tests: Playwright/Chromium.
 - Deployment targets only: Vercel frontend and Railway backend. No deployment configuration or deployment is performed.
 
@@ -48,7 +56,7 @@ flowchart LR
   Guard --> Services[Repositories and deterministic services]
   Services --> DB[(SQLite / PostgreSQL)]
   Services --> KB[Versioned country KB]
-  Services -. Phase 2 only .-> AI[ResponsesGateway / OpenAI]
+  Services -. consent + evidence + triage guards .-> AI[GeminiGateway / Google Gemini]
 ```
 
 The backend owns domain contracts, calculations, consent and ownership. The frontend owns presentation and explicitly displays uncertainty. Requests use a shared `ApiError` envelope, request IDs, and `Cache-Control: no-store`.
@@ -135,9 +143,11 @@ Copy the root `.env.example` to `.env`. Pydantic and Next's configuration read t
 | `DATABASE_URL` | `sqlite:///./dev.db`; resolves in `backend/` with Make commands |
 | `FRONTEND_ORIGIN` | `http://localhost:3000`; one explicit CORS origin, wildcard rejected |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000`; browser-visible backend URL |
-| `OPENAI_API_KEY` | Empty; optional server-only Phase 2 credential |
-| `OPENAI_MODEL` | `gpt-6.1-sol`; configurable primary model |
-| `OPENAI_FAST_MODEL` | `gpt-6-luna`; configurable lightweight model |
+| `AI_PROVIDER` | `gemini`; supported provider |
+| `GEMINI_API_KEY` | Empty locally; server-only and required for real model requests |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite`; primary Q&A model |
+| `GEMINI_FAST_MODEL` | `gemini-3.5-flash-lite`; document extraction model |
+| `ACTIVE_KB_COUNTRIES` | `CN,ID`; current master country allowlist |
 | `ENVIRONMENT` | `development` |
 | `SESSION_TTL_HOURS` | Optional, defaults to `24` |
 | `KB_ROOT` | Optional absolute override for the `kb/` folder |
@@ -148,6 +158,16 @@ Copy the root `.env.example` to `.env`. Pydantic and Next's configuration read t
 | `ACCOUNT_SESSION_TTL_DAYS` | Account session lifetime; defaults to `7` |
 
 Never prefix secrets with `NEXT_PUBLIC_`. In future hosted builds, supply the public base URL at frontend build time and backend credentials through server environment configuration.
+
+## Deployment Checklist: Vercel Frontend and Public API
+
+No deployment has been performed. The repository has no backend host manifest or deployment automation; provision and configure the services manually after review.
+
+1. Provision a public HTTPS FastAPI service and durable PostgreSQL database. Build from `backend/` with `uv sync --locked`; start with `uv run uvicorn app.main:app --host 0.0.0.0 --port "$PORT"`. Package `kb/` or set `KB_ROOT`. Install Poppler and Tesseract plus English, Indonesian, and Chinese OCR data used by the active country paths.
+2. Back up any existing database, then run `uv run alembic upgrade head` from `backend/` against the hosted `DATABASE_URL`. Revision 0002 requires an online migration for its historical consent backfill; revision 0008 is forward-only. Migrations do not run at startup. PostgreSQL deployment has not been verified.
+3. Set backend `DATABASE_URL`, `FRONTEND_ORIGIN`, `FRONTEND_URL`, `AI_PROVIDER=gemini`, `GEMINI_API_KEY`, and `ACTIVE_KB_COUNTRIES=CN,ID`. Keep `GEMINI_API_KEY`, database credentials, and OAuth secrets in the host's server-side secret store. Add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and the exact HTTPS `GOOGLE_REDIRECT_URI` only if the demo uses Google sign-in.
+4. Connect the repository to Vercel with Root Directory `frontend/`. Configure `NEXT_PUBLIC_API_BASE_URL=https://<api-host>` for each environment and rebuild after changes; this value is public and must not contain credentials. Configure the backend CORS origins to match the deployed frontend exactly.
+5. Apply migrations and seed only the intended synthetic demo data. Verify health, CORS preflight, account/demo session boundaries, consent revocation, file limits, and policy-Q&A fail-closed behavior. Do not expose provider or country rules that remain unreviewed.
 
 ## Demo Personas
 
@@ -208,11 +228,11 @@ Country edits select the new KB without rewriting original insurance/documents. 
 
 ## Country Knowledge Base
 
-AU and ID resources now use schema version `1.5` and country version `0.2.0`. Each resource file has `schema_version`, `version`, `source_url`, `checked_at`, `verification_status`, and typed `data`. Resource versions must match the manifest. The manifest retains its sources list. The loader exposes the existing `.rules`, `.coverage_needs`, `.pathways` and `.glossary` views, plus validated `.resources`. Direct JSON consumers must now unwrap `data` instead of treating files as bare arrays/objects.
+Country resources use schema version `1.5`; resource versions must match their manifest. The active country allowlist is CN/ID. AU files are inactive drafts, not supported runtime country rules. Each resource carries `schema_version`, `version`, `source_url`, `checked_at`, `verification_status`, and typed `data`. The loader exposes the existing `.rules`, `.coverage_needs`, `.pathways` and `.glossary` views, plus validated `.resources`. Direct JSON consumers must unwrap `data` instead of treating files as bare arrays/objects.
 
 Resources: rules, coverage_needs, pathways, glossary, coverage_types, document_types, extraction_templates, suggested_docs, tasks, required_fields, recommendation_rules, verification_steps, red_flags and emergency. The root injection_patterns resource is also versioned. Structural references/duplicates and verified-source metadata are validated. Add countries through folders, without country-specific service branches.
 
-Unknown resources are empty UNVERIFIED placeholders with null official sources/review dates. Existing vocabulary and synthetic interval configuration are retained; no legal requirements, medical trigger lists, emergency numbers, prices or policy facts are invented. There is no triage, injection detector, recommender or extraction pipeline activated by these files. Source verification and meaningful content remain future work.
+Unknown resources remain empty UNVERIFIED placeholders with null official sources/review dates. ID's new symptom drafts include source URLs and checked dates but remain UNVERIFIED. The strict safety screen rejects incomplete red-flag resources. Emergency contacts are returned only from current verified KB entries; there are no hardcoded fallback numbers.
 
 The deterministic engine still unions matching policy intervals and counts inclusive uncovered calendar days once. Raka remains 76 potential gap days, never an automatic visa-violation finding. Missing dates/context return NEEDS_VERIFICATION with null counts; invalid ranges fail validation. Money remains a decimal string; no float money arithmetic or currency conversion occurs.
 
@@ -260,11 +280,11 @@ Country-context integration verification on 17 October 2026: **134 backend tests
 
 Baseline stabilization commands and limitations are recorded in [FOUNDATION_VERIFICATION.md](docs/FOUNDATION_VERIFICATION.md). Current focused integration checks and decisions are in [COUNTRY_INTEGRATION.md](docs/prd/COUNTRY_INTEGRATION.md).
 
-Verification includes backend API/rules tests, fresh/populated migrations without data loss, idempotent fixtures, independent consent grant/revocation, owner-IDOR guards, composite foreign keys, persisted approval/hash validation, audit redaction/query pagination, OpenAPI references/snapshot and TypeScript artifact drift. No OpenAI key or live call is required.
+Verification includes backend API/rules tests, fresh/populated migrations without data loss, idempotent fixtures, independent consent grant/revocation, owner-IDOR guards, composite foreign keys, persisted approval/hash validation, audit redaction/query pagination, OpenAPI references/snapshot and TypeScript artifact drift. Standard CI does not require a Gemini key or make live calls.
 
 `make test-client` runs typed transport tests for query encoding, multipart boundaries, PATCH/DELETE path/body handling, 204, future streaming/error responses, cancellation and compile-time contract misuse. `make check` covers Ruff, ESLint, strict TypeScript and the production build. PostgreSQL DDL is compiled in tests; a live database migration remains untested.
 
-For browser tests, with ports 3000/8000 available:
+For browser tests, with ports 3177/8177 available:
 
 ```sh
 cd frontend
@@ -279,7 +299,7 @@ Playwright starts both local services, migrates/seeds a separate `.cache/e2e.db`
 - All future product/auth/privacy/streaming routes are deliberate 501s; no actual uploads/storage, parsing/OCR, retrieval, chat, care advice, benefit assessment, claim draft or execution is enabled.
 - Source validation and approval checks are conservative foundations, not completed citation/injection/triage/execution safeguards. File size/MIME enforcement, cleanup, upload deduplication/cache and rate limiting remain feature implementation work.
 - KB configuration is unchecked demo material, not regulatory guidance. No emergency-number or legal-compliance claims are made.
-- No live PostgreSQL, Supabase, OpenAI model availability, deployment or real provider integration was tested.
+- No live PostgreSQL, Supabase, hosted deployment or production-country Gemini Q&A has been verified. Opt-in Gemini checks use synthetic data and test-only triage.
 - The installed Starlette/FastAPI test client emits a deprecation notice for httpx; tests still pass with the requested httpx dependency.
 - `npm audit` reports five high findings in the development lint chain (`braces` → `micromatch` → `fast-glob` → Next ESLint tooling). No patched compatible `braces` version was available when installed. `npm audit --omit=dev` reports zero findings. Recheck upstream before publishing; do not blindly downgrade Next or use `audit fix --force`.
 

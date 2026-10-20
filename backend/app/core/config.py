@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -11,9 +12,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=ROOT / ".env", extra="ignore")
     database_url: str = "sqlite:///./dev.db"
     frontend_origin: str = "http://localhost:3000"
-    openai_api_key: SecretStr = SecretStr("")
-    openai_model: str = "gpt-6.1-sol"
-    openai_fast_model: str = "gpt-6-luna"
+    ai_provider: Literal["gemini"] = "gemini"
+    gemini_api_key: SecretStr = SecretStr("")
+    gemini_model: str = "gemini-3.5-flash-lite"
+    gemini_fast_model: str = "gemini-3.5-flash-lite"
     environment: str = "development"
     session_ttl_hours: int = 24
     kb_root: Path = ROOT / "kb"

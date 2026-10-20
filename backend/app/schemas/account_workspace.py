@@ -8,6 +8,7 @@ from pydantic import Field, JsonValue
 
 from app.schemas.common import CompletenessStatus, Contract, CountryCode, VerificationStatus
 from app.schemas.consent import PurposeConsent
+from app.schemas.kb import SuggestedDocument, TaskConfig, VocabularyEntry
 from app.schemas.profile import UserProfile
 
 
@@ -36,10 +37,10 @@ class AccountSetup(Contract):
     kb_version: str
     verification_status: VerificationStatus
     currency: str | None = None
-    coverage_types: list[dict[str, JsonValue]]
-    document_types: list[dict[str, JsonValue]]
-    suggested_docs: list[dict[str, JsonValue]]
-    tasks: list[dict[str, JsonValue]]
+    coverage_types: list[VocabularyEntry]
+    document_types: list[VocabularyEntry]
+    suggested_docs: list[SuggestedDocument]
+    tasks: list[TaskConfig]
 
 
 class AccountDocumentSummary(Contract):

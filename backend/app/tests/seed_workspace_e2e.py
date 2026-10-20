@@ -2,6 +2,7 @@
 
 import json
 import os
+from pathlib import Path
 
 from fastapi.testclient import TestClient
 from sqlalchemy import select
@@ -14,12 +15,24 @@ from app.tests.workspace_fixtures import workspace
 
 
 def main():
-    expected = f"sqlite:///{ROOT}/.cache/e2e.db"
-    if os.environ.get("INSURRA_TEST_SEED") != "1" or os.environ.get("DATABASE_URL") != expected:
+    database_url = os.environ.get("DATABASE_URL", "")
+    database_path = (
+        Path(database_url.removeprefix("sqlite:///"))
+        if database_url.startswith("sqlite:///")
+        else None
+    )
+    cache_dir = (ROOT / ".cache").resolve()
+    isolated_e2e_database = (
+        database_path is not None
+        and database_path.resolve().parent == cache_dir
+        and database_path.name.startswith("e2e")
+        and database_path.suffix == ".db"
+    )
+    if os.environ.get("INSURRA_TEST_SEED") != "1" or not isolated_e2e_database:
         raise RuntimeError(
             "Synthetic fixture requires the isolated E2E database and explicit opt-in"
         )
-    app = create_app(Settings(database_url=expected, openai_api_key=""))
+    app = create_app(Settings(database_url=database_url, gemini_api_key=""))
     with TestClient(app) as client:
         headers, account, coverage, doc = workspace(
             app, client, os.environ.get("TEST_COUNTRY", "AU")

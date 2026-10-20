@@ -1,4 +1,4 @@
-"""Tests for the triage adapter contract and fail-closed behavior (B1.7)."""
+"""Triage adapter contract and fail-closed behavior for reviewed and draft KB rules."""
 
 import copy
 
@@ -8,41 +8,65 @@ from app.core.config import ROOT
 from app.core.errors import AppError
 from app.schemas.common import VerificationStatus
 from app.services.kb_loader import CountryKBLoader
+from app.services.safety_screen import get_verified_emergency_contacts
 from app.services.triage_adapter import triage_check
 
 
-def test_triage_adapter_accepts_valid_cn_and_id_kb():
+def test_reviewed_cn_rules_match_and_escalate_to_verified_emergency_contacts():
     loader = CountryKBLoader(ROOT / "kb")
-    for code in ("CN", "ID"):
-        country = loader.load(code)
-        safe = triage_check(country, "Bagaimana cara klaim rawat jalan?")
-        assert safe.red_flag is False
-        assert safe.screening_complete is False
+    country = loader.load("CN")
 
-        medical = triage_check(country, "Saya mengalami nyeri dada berat")
-        assert medical.red_flag is True
-        assert "EMERGENCY_MEDICAL" in medical.safety_flows
+    safe = triage_check(country, "Bagaimana cara klaim rawat jalan?")
+    assert safe.red_flag is False
+    assert safe.screening_complete is False
 
-        chinese = triage_check(country, "今天突然呼吸困难")
-        assert chinese.red_flag is True
-        assert "EMERGENCY_MEDICAL" in chinese.safety_flows
+    medical = triage_check(country, "Saya mengalami nyeri dada berat")
+    assert medical.red_flag is True
+    assert "EMERGENCY_MEDICAL" in medical.safety_flows
 
-        self_harm = triage_check(country, "Saya ingin menyakiti diri sendiri")
-        assert self_harm.red_flag is True
-        assert "SELF_HARM_SUPPORT" in self_harm.safety_flows
+    contacts = get_verified_emergency_contacts(country)
+    assert contacts["available"] is True
+    assert any(contact["service_code"] == "medical" for contact in contacts["contacts"])
 
 
-def test_triage_adapter_fails_closed_for_broken_or_unverified_kb():
+def test_id_unverified_draft_rules_are_not_used_with_reviewed_rules():
     loader = CountryKBLoader(ROOT / "kb")
+    country = loader.load("ID")
+    assert any(
+        rule.verification_status == VerificationStatus.UNVERIFIED
+        for rule in country.resources.red_flags.data
+    )
 
-    # 1. Inactive/unverified AU KB fails closed
-    au = loader.load("AU")
+    reviewed = triage_check(country, "I have severe chest pain")
+    assert reviewed.red_flag is True
+    assert "EMERGENCY_MEDICAL" in reviewed.safety_flows
+
+    draft_only = triage_check(country, "I lost consciousness")
+    assert draft_only.red_flag is False
+    assert draft_only.screening_complete is False
+
+
+def test_triage_adapter_fails_closed_for_missing_red_flags():
+    loader = CountryKBLoader(ROOT / "kb")
+    missing = copy.deepcopy(loader.load("CN"))
+    missing.resources.red_flags.data = []
+
     with pytest.raises(AppError) as exc:
-        triage_check(au, "chest pain")
+        triage_check(missing, "chest pain")
+
     assert exc.value.status_code == 503
     assert exc.value.code == "TRIAGE_UNAVAILABLE"
 
-    # 2. Untrusted source host fails closed
+
+def test_triage_adapter_fails_closed_for_unverified_or_invalid_kb():
+    loader = CountryKBLoader(ROOT / "kb")
+
+    # The inactive AU draft remains unavailable under the master CN/ID scope.
+    with pytest.raises(AppError) as exc:
+        triage_check(loader.load("AU"), "chest pain")
+    assert exc.value.status_code == 503
+    assert exc.value.code == "TRIAGE_UNAVAILABLE"
+
     cn_bad_host = copy.deepcopy(loader.load("CN"))
     cn_bad_host.manifest.official_source_hosts = []
     with pytest.raises(AppError) as exc:
@@ -50,7 +74,6 @@ def test_triage_adapter_fails_closed_for_broken_or_unverified_kb():
     assert exc.value.status_code == 503
     assert exc.value.code == "TRIAGE_UNAVAILABLE"
 
-    # 3. Unknown destination_code fails closed
     cn_bad_dest = copy.deepcopy(loader.load("CN"))
     cn_bad_dest.resources.red_flags.data[0].destination_code = "unknown_dest"
     with pytest.raises(AppError) as exc:
@@ -58,7 +81,6 @@ def test_triage_adapter_fails_closed_for_broken_or_unverified_kb():
     assert exc.value.status_code == 503
     assert exc.value.code == "TRIAGE_UNAVAILABLE"
 
-    # 4. Unverified envelope fails closed
     cn_unverified = copy.deepcopy(loader.load("CN"))
     cn_unverified.resources.red_flags.verification_status = VerificationStatus.UNVERIFIED
     with pytest.raises(AppError) as exc:

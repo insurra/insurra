@@ -96,6 +96,8 @@ def screen(
         return SafetyResult(category="NONE_DETECTED", matched_flag_ids=[])
 
     for flag in resource.data:
+        if flag.verification_status != VerificationStatus.VERIFIED:
+            continue
         all_phrases = [
             p
             for p in (*flag.phrases_id, *flag.phrases_en, *flag.phrases_zh)

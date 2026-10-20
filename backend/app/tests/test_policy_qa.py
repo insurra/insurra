@@ -151,6 +151,16 @@ def test_red_flags_and_negation_run_before_any_ai_and_log_only_id_version(
         )
 
 
+def test_reviewed_red_flag_escalates_to_emergency_without_calling_ai(app, client, monkeypatch):
+    headers, _, _, _, _, gateway = setup(app, client, monkeypatch)
+
+    response = ask(client, headers, question="I have difficulty breathing")
+
+    assert response.status_code == 200
+    assert response.json() == {"redirect": "emergency"}
+    assert gateway.calls == []
+
+
 def test_unavailable_triage_is_fail_closed_not_assumed_safe(app, client):
     headers, _, _, doc = workspace(app, client)
     gateway = GatewayFixture(doc)

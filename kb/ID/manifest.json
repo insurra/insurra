@@ -1,7 +1,7 @@
 {
   "country_code": "ID",
   "label": "Indonesia",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "checked_at": null,
   "sources": [],
   "supported_features": [
@@ -23,6 +23,7 @@
     "kemkes.go.id",
     "www.kemkes.go.id",
     "keslan.kemkes.go.id",
+    "jdih.kemkes.go.id",
     "layanan112.komdigi.go.id",
     "www.who.int",
     "who.int"

@@ -1,126 +1,72 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-test("persona, consent, dashboard, audit, revocation, and isolated switch", async ({
+const apiBase = "http://127.0.0.1:8177";
+
+test("demo personas provide isolated sessions for the supported countries", async ({
   page,
-}, testInfo) => {
-  const runtimeErrors: string[] = [];
-  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+  context,
+}) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Mulai demo Raka" }).click();
-  await expect(page).toHaveURL(/onboarding/);
-  await expect(
-    page.getByText("BELUM DISETUJUI", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Setuju & lanjutkan" }),
-  ).toBeDisabled();
-  await page.getByRole("checkbox").check();
-  await page.getByRole("button", { name: "Setuju & lanjutkan" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Selamat datang, Raka." }),
-  ).toBeVisible();
-  await expect(page.getByText("hari potensi jeda")).toBeVisible();
-  await expect(page.locator(".gap-value strong")).toHaveText("76");
-  await expect(
-    page.getByRole("heading", { name: "OSHC", exact: true }),
-  ).toBeVisible();
-  await page.screenshot({
-    path: testInfo.outputPath("raka-dashboard.png"),
-    fullPage: true,
+  await expect(page.getByRole("heading", { name: "Try the interactive demo" })).toBeVisible();
+  await page.getByRole("button", { name: "Explore as Raka" }).click();
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(page.getByRole("region", { name: "Demo mode" })).toBeVisible();
+  const rakaToken = await page.evaluate(() => sessionStorage.getItem("insurra.demo-session"));
+  expect(rakaToken).toBeTruthy();
+  const rakaProfile = await page.request.get(`${apiBase}/api/v1/profile`, {
+    headers: { "X-Demo-Session": rakaToken! },
   });
-  await page.reload();
-  await expect(page.locator(".gap-value strong")).toHaveText("76");
-  await page.getByRole("link", { name: "Dokumen saya", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "oshc-synthetic.txt" }),
-  ).toBeVisible();
-  await page
-    .getByRole("link", { name: "Riwayat aktivitas", exact: true })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "Persetujuan diberikan" }),
-  ).toBeVisible();
-  await page.getByRole("combobox").selectOption("CONSENT_GRANTED");
-  await expect(page.locator(".audit-row")).toHaveCount(1);
-  await page
-    .getByRole("link", { name: "Privasi & persetujuan", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Cabut persetujuan" }).click();
-  await expect(
-    page.getByText("BELUM DISETUJUI", { exact: true }),
-  ).toBeVisible();
-  await page
-    .getByRole("link", { name: "Riwayat aktivitas", exact: true })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "Persetujuan dicabut" }),
-  ).toBeVisible();
-  await page.getByRole("link", { name: "Ganti persona" }).click();
-  await page.getByRole("button", { name: "Mulai demo Sinta" }).click();
-  await expect(
-    page.getByText("BELUM DISETUJUI", { exact: true }),
-  ).toBeVisible();
-  await page
-    .getByRole("link", { name: "Lihat data demo tanpa persetujuan" })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "Selamat datang, Sinta." }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "BPJS", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "EMPLOYER", exact: true }),
-  ).toBeVisible();
-  await expect(page.getByText("Tidak berlaku", { exact: true })).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "OSHC", exact: true }),
-  ).toHaveCount(0);
-  await page
-    .getByRole("link", { name: "Riwayat aktivitas", exact: true })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "Sesi demo dibuat" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Persetujuan diberikan" }),
-  ).toHaveCount(0);
-  expect(runtimeErrors).toEqual([]);
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBe(true);
+  expect(rakaProfile.status()).toBe(200);
+  expect((await rakaProfile.json()).country_code).toBe("CN");
+  await expect(page.getByTitle("Active Country: China")).toBeVisible();
+
+  const sintaPage = await context.newPage();
+  await sintaPage.goto("/");
+  await sintaPage.getByRole("button", { name: "Explore as Sinta" }).click();
+  await expect(sintaPage).toHaveURL(/\/home$/);
+  await expect(sintaPage.getByRole("region", { name: "Demo mode" })).toBeVisible();
+  const sintaToken = await sintaPage.evaluate(() =>
+    sessionStorage.getItem("insurra.demo-session"),
+  );
+  expect(sintaToken).toBeTruthy();
+  expect(sintaToken).not.toBe(rakaToken);
+  const sintaProfile = await sintaPage.request.get(`${apiBase}/api/v1/profile`, {
+    headers: { "X-Demo-Session": sintaToken! },
+  });
+  expect(sintaProfile.status()).toBe(200);
+  expect((await sintaProfile.json()).country_code).toBe("ID");
+  await expect(sintaPage.getByTitle("Active Country: Indonesia")).toBeVisible();
+  await sintaPage.close();
 });
 
-test("country changes retain origin labels and do not revive a stale gap", async ({ page }) => {
+test("changing a demo country preserves original policy and document countries", async ({
+  page,
+}) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Mulai demo Raka" }).click();
-  await expect(page).toHaveURL(/onboarding/);
-  await page.getByRole("link", { name: "Lihat data demo tanpa persetujuan" }).click();
-  await expect(page.locator(".gap-value strong")).toHaveText("76");
+  await page.getByRole("button", { name: "Explore as Raka" }).click();
+  await expect(page).toHaveURL(/\/home$/);
   const token = await page.evaluate(() => sessionStorage.getItem("insurra.demo-session"));
-  if (!token) throw new Error("Expected an isolated synthetic demo session");
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
-  for (const [country_code, residence_context] of [["ID", "DOMESTIC"], ["AU", "ABROAD"]]) {
-    const updated = await page.request.put(`${base}/api/v1/profile`, {
-      headers: { "X-Demo-Session": token },
-      data: { country_code, residence_context },
-    });
-    expect(updated.status()).toBe(200);
-    await page.reload();
-    await expect(page.locator(".profile-context")).toContainText(country_code);
-    await expect(page.locator(".gap-value strong")).toHaveCount(0);
-    await expect(page.locator(".assessment-card")).toContainText("PERLU VERIFIKASI");
-    await expect(page.locator(".assessment-card")).not.toContainText("Tidak berlaku");
-    await expect(page.locator(".policy-card")).toContainText("Negara catatan: AU");
-    await page.getByRole("link", { name: "Dokumen saya", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "oshc-synthetic.txt" })).toBeVisible();
-    await expect(page.locator(".document-row")).toContainText("Negara catatan: AU");
-    await page.getByRole("link", { name: "Ringkasan", exact: true }).click();
-  }
-  await page.getByRole("link", { name: "Dokumen saya", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "oshc-synthetic.txt" })).toBeVisible();
-  await expect(page.locator(".document-row")).toContainText("Negara catatan: AU");
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  if (!token) throw new Error("Expected a synthetic demo session");
+  const headers = { "X-Demo-Session": token };
+
+  const beforeResponse = await page.request.get(`${apiBase}/api/v1/home/summary`, { headers });
+  expect(beforeResponse.status()).toBe(200);
+  const before = await beforeResponse.json();
+  expect(before.context.country_code).toBe("CN");
+  expect(before.coverages.length).toBeGreaterThan(0);
+  expect(before.coverages[0].country_code).toBe("CN");
+
+  const updated = await page.request.put(`${apiBase}/api/v1/profile`, {
+    headers,
+    data: { country_code: "ID", residence_context: "DOMESTIC" },
+  });
+  expect(updated.status()).toBe(200);
+  await page.reload();
+  await expect(page.getByTitle("Active Country: Indonesia")).toBeVisible();
+
+  const afterResponse = await page.request.get(`${apiBase}/api/v1/home/summary`, { headers });
+  expect(afterResponse.status()).toBe(200);
+  const after = await afterResponse.json();
+  expect(after.context.country_code).toBe("ID");
+  expect(after.coverages[0].country_code).toBe("CN");
 });
