@@ -152,6 +152,10 @@ def reviewed_triage(app, monkeypatch):
                 phrases_id=["sesak napas", "sulit bernapas"],
                 phrases_en=["shortness of breath", "difficulty breathing"],
                 destination_code="emergency",
+                jurisdiction=country.manifest.country_code,
+                source_url=resource.source_url,
+                checked_at=date(2026, 10, 18),
+                verification_status=VerificationStatus.VERIFIED,
             ),
             RedFlagConfig(
                 id="test_chest",
@@ -159,6 +163,10 @@ def reviewed_triage(app, monkeypatch):
                 phrases_id=["nyeri dada"],
                 phrases_en=["chest pain"],
                 destination_code="emergency",
+                jurisdiction=country.manifest.country_code,
+                source_url=resource.source_url,
+                checked_at=date(2026, 10, 18),
+                verification_status=VerificationStatus.VERIFIED,
             ),
         ]
     monkeypatch.setattr(

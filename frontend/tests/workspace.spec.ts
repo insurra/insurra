@@ -1,96 +1,38 @@
-import { test, expect } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { accountWorkspace } from "./helpers/workspace";
 import type { components } from "../src/lib/api/types.gen";
 
 type Comparison = components["schemas"]["PathwayComparison"];
+const apiBase = "http://127.0.0.1:8177";
 
-test("SC-05 and SC-06 empty workspace links to documents and disables processing", async ({
-  page,
-}) => {
-  const fixture = await accountWorkspace(page);
-  expect(
-    (
-      await page.request.delete(
-        `http://localhost:8000/api/v1/account/documents/${fixture.document_id}`,
-        {
-          headers: fixture.headers,
-          data: { confirm: "HAPUS" },
-        },
-      )
-    ).status(),
-  ).toBe(200);
-  await page.reload();
-  await expect(
-    page.getByRole("heading", { name: "Belum ada perlindungan tersimpan" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "Unggah dokumen pertama" }),
-  ).toHaveAttribute("href", "/documents");
-  await expect(
-    page.getByRole("button", { name: "Siapkan klaim", exact: true }),
-  ).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: "Siapkan klaim", exact: true }),
-  ).toHaveAttribute("title", "Unggah polis terlebih dulu");
-  await page.goto("/ask");
-  await expect(
-    page.getByRole("textbox", { name: "Pertanyaan Anda" }),
-  ).toBeDisabled();
-  await expect(
-    page.getByRole("link", { name: "Unggah dokumen", exact: true }),
-  ).toHaveAttribute("href", "/documents");
-});
-
-test("SC-05 and SC-14 Indonesian account uses only its country context", async ({
-  page,
-}) => {
-  await accountWorkspace(page, "ID");
-  await expect(
-    page.getByRole("heading", { name: "Halo, Sinta." }),
-  ).toBeVisible();
-  await expect(
-    page.getByText("Indonesia · Jakarta · Pekerja", { exact: true }),
-  ).toBeVisible();
-  await page.goto("/coverage-needs");
-  await expect(
-    page.getByRole("heading", {
-      name: "Perlindungan yang kamu butuhkan di Indonesia",
-    }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "OSHC", exact: true }),
-  ).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: /BPJS/ })).toBeVisible();
-});
-
-async function pathwayFixture(page: import("@playwright/test").Page) {
-  const fixture = await accountWorkspace(page);
+async function setSummary(page: Page, patch: Record<string, unknown>) {
   await page.route("**/api/v1/home/summary", async (route) => {
     const response = await route.fetch();
-    await route.fulfill({
-      response,
-      json: { ...(await response.json()), triage_available: true },
-    });
+    await route.fulfill({ response, json: { ...(await response.json()), ...patch } });
+  });
+}
+
+async function pathwayFixture(page: Page) {
+  const fixture = await accountWorkspace(page);
+  await setSummary(page, {
+    triage_available: true,
+    service_types: [{ code: "GP", label: "General Practitioner" }],
   });
   const comparison: Comparison = {
     comparison_id: crypto.randomUUID(),
-    context_country_code: "AU",
-    paths: ["Dokter umum (GP)", "Klinik urgent care"].map((name, i) => ({
-      pathway_code: i ? "URGENT_CARE" : "GP",
+    context_country_code: "CN",
+    paths: ["General Practitioner", "Urgent Care Clinic"].map((name, index) => ({
+      pathway_code: index ? "URGENT_CARE" : "GP",
       name,
       coverage_id: fixture.coverage_id,
-      coverage_label: "OSHC · Fictional Test Provider",
+      coverage_label: "INTERNATIONAL_STUDENT · Fictional Test Provider",
       coverage_status: "MATCHED",
-      description: "Test UI fixture only; not actual eligibility guidance.",
+      description: "Synthetic browser fixture only; not eligibility guidance.",
       emergency: false,
       best_for_priority: false,
-      steps: [
-        "Periksa kepesertaan",
-        "Konfirmasi prosedur",
-        "Cek jadwal atau booking online",
-      ],
-      requirements: ["Konfirmasi provider dalam jaringan"],
-      docs: ["Ringkasan polis bila diminta"],
+      steps: ["Verify policy details", "Confirm provider network", "Check availability"],
+      requirements: ["Confirm network status with the provider"],
+      docs: ["Policy summary if requested"],
       uncertainties: [],
       sources: [],
       est_out_of_pocket: null,
@@ -98,11 +40,11 @@ async function pathwayFixture(page: import("@playwright/test").Page) {
     uncertainties: [
       {
         code: "provider_network",
-        label: "Apakah provider dalam jaringan?",
-        steps: ["Tanya fasilitas tentang jaringan dan pembayaran."],
+        label: "Is the provider in network?",
+        steps: ["Ask the facility about network status and payment."],
       },
     ],
-    warnings: ["Tarif belum tersedia; bukan jaminan pembayaran."],
+    warnings: ["Tariffs are unavailable; this is not a payment guarantee."],
   };
   await page.route("**/api/v1/pathways/compare", (route) =>
     route.fulfill({ json: comparison }),
@@ -110,28 +52,70 @@ async function pathwayFixture(page: import("@playwright/test").Page) {
   return { ...fixture, comparison };
 }
 
-test("SC-07 live screen fails closed while triage data is unreviewed", async ({
+test("SC-05 document deletion clears retained pages and Q&A requires source evidence", async ({
   page,
 }) => {
-  await accountWorkspace(page);
-  await page.goto("/pathways");
-  await expect(
-    page.getByRole("heading", { name: "Mau berobat ke mana?" }),
-  ).toBeVisible();
-  await expect(
-    page.getByText("Basis tanda bahaya negara ini belum terverifikasi.", {
-      exact: false,
-    }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("textbox", { name: "Ceritakan keluhanmu" }),
-  ).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: "Bandingkan jalur", exact: true }),
-  ).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: "Dokter umum (GP)", exact: true }),
-  ).toBeVisible();
+  const fixture = await accountWorkspace(page);
+  const deleted = await page.request.delete(
+    `${apiBase}/api/v1/account/documents/${fixture.document_id}`,
+    { headers: fixture.headers, data: { confirm: "HAPUS" } },
+  );
+  expect(deleted.status()).toBe(200);
+  const documents = await page.request.get(`${apiBase}/api/v1/account/documents`, {
+    headers: fixture.headers,
+  });
+  expect(documents.status()).toBe(200);
+  expect(await documents.json()).toEqual([]);
+
+  await page.goto("/documents");
+  await expect(page.getByRole("heading", { name: "Documents & AI Intelligence" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No insurance documents uploaded yet" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Upload Your First Document" })).toBeVisible();
+  await page.goto("/ask");
+  await expect(page.getByRole("textbox", { name: "Pertanyaan Anda" })).toBeDisabled();
+  await expect(page.getByRole("link", { name: "Unggah dokumen", exact: true })).toHaveAttribute(
+    "href",
+    "/documents",
+  );
+});
+
+test("SC-05 and SC-14 Indonesian account stays within ID context", async ({ page }) => {
+  const fixture = await accountWorkspace(page, "ID");
+  await expect(page.getByRole("heading", { name: "Home", exact: true })).toBeVisible();
+  const profile = await page.request.get(`${apiBase}/api/v1/account/profile`, {
+    headers: fixture.headers,
+  });
+  expect(profile.status()).toBe(200);
+  expect((await profile.json()).profile.country_code).toBe("ID");
+  await expect(page.getByTitle("Active Country: Indonesia")).toBeVisible();
+  await page.goto("/coverage-needs");
+  await expect(page.getByRole("heading", { name: "Coverage Needs & Gap Analysis" })).toBeVisible();
+  await expect(page.getByText(/Evaluated for Indonesia context/)).toBeVisible();
+  await expect(page.getByText(/BPJS/).first()).toBeVisible();
+  await expect(page.getByText(/Australia|OSHC/)).toHaveCount(0);
+});
+
+test("SC-07 account profile rejects AU outside the active CN/ID scope", async ({
+  page,
+}) => {
+  const fixture = await accountWorkspace(page);
+  const current = await page.request.get(`${apiBase}/api/v1/account/profile`, {
+    headers: fixture.headers,
+  });
+  expect(current.status()).toBe(200);
+  const { id, created_at, updated_at, ...profile } = (await current.json()).profile;
+  void id;
+  void created_at;
+  void updated_at;
+  const rejected = await page.request.put(`${apiBase}/api/v1/account/profile`, {
+    headers: fixture.headers,
+    data: { ...profile, country_code: "AU", residence_context: "ABROAD" },
+  });
+  expect(rejected.status()).toBe(422);
+  const unchanged = await page.request.get(`${apiBase}/api/v1/account/profile`, {
+    headers: fixture.headers,
+  });
+  expect((await unchanged.json()).profile.country_code).toBe("CN");
 });
 
 test("SC-07 confirmation cancels without a case and retries with the same idempotency key", async ({
@@ -151,49 +135,33 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
         status: 503,
         json: {
           code: "DATABASE_UNAVAILABLE",
-          message: "Coba kembali dengan konfirmasi ini.",
+          message: "Retry this confirmation.",
           request_id: "synthetic",
         },
       });
     else await route.fulfill({ status: 201, json: { claim_case_id: caseId } });
   });
+
   await page.goto("/pathways");
-  await page
-    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
-    .fill("Kebutuhan layanan non-darurat");
-  await page
-    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Bandingkan jalur", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Pilih jalur ini", exact: true })
-    .first()
-    .click();
-  const dialog = page.getByRole("dialog", { name: "Konfirmasi jalur" });
-  await expect(dialog).toContainText("Kamu mungkin tidak perlu klaim sendiri");
-  await dialog.getByRole("button", { name: "Batal", exact: true }).click();
+  await page.getByRole("textbox", { name: "Describe your care need" }).fill("Non-emergency outpatient care");
+  await page.getByRole("button", { name: "General Practitioner", exact: true }).click();
+  await page.getByRole("button", { name: "Compare pathways" }).click();
+  await page.getByRole("button", { name: "Select this pathway" }).first().click();
+  const dialog = page.getByRole("dialog", { name: "Confirm Care Pathway" });
+  await expect(dialog).toContainText("A Draft claim case records your selected pathway");
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(dialog).not.toBeVisible();
   expect(requests).toHaveLength(0);
-  await page
-    .getByRole("button", { name: "Pilih jalur ini", exact: true })
-    .first()
-    .click();
-  await dialog
-    .getByRole("button", { name: "Buat kasus klaim", exact: true })
-    .evaluate((button: HTMLButtonElement) => {
-      button.click();
-      button.click();
-    });
-  await expect(dialog.getByRole("alert")).toContainText("Coba kembali");
+
+  await page.getByRole("button", { name: "Select this pathway" }).first().click();
+  await dialog.getByRole("button", { name: "Create claim draft" }).evaluate((button: HTMLButtonElement) => {
+    button.click();
+    button.click();
+  });
+  await expect(dialog.getByRole("alert")).toContainText("Retry this confirmation");
   expect(requests).toHaveLength(1);
-  await dialog
-    .getByRole("button", { name: "Buat kasus klaim", exact: true })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "Kasus klaim dibuat", exact: true }),
-  ).toBeVisible();
+  await dialog.getByRole("button", { name: "Create claim draft" }).click();
+  await expect(page.getByRole("heading", { name: "Claim Case Created", exact: true })).toBeVisible();
   expect(requests).toHaveLength(2);
   expect(requests[0].key).toBeTruthy();
   expect(requests[1].key).toBe(requests[0].key);
@@ -203,153 +171,86 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
     comparison_id: fixture.comparison.comparison_id,
   });
   await expect(page.getByText(`Status Draft · ID ${caseId}`)).toBeVisible();
-  await expect(
-    page.getByText(
-      "Kasus tersimpan. Kesiapan klaim SC-09 belum tersedia; checklist belum dapat dibuka.",
-    ),
-  ).toBeVisible();
+  await expect(page.getByText("Draft claim case saved.")).toBeVisible();
 });
 
-test("SC-07 emergency card never sends case creation", async ({ page }) => {
+test("SC-07 emergency pathway opens guidance without creating a case", async ({ page }) => {
   const fixture = await pathwayFixture(page);
   fixture.comparison.paths![0].emergency = true;
-  fixture.comparison.paths![0].name = "IGD · synthetic UI fixture";
+  fixture.comparison.paths![0].name = "Emergency Department · synthetic fixture";
   let calls = 0;
   await page.route("**/api/v1/claims", (route) => {
     calls += 1;
     return route.abort();
   });
   await page.goto("/pathways");
-  await page
-    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
-    .fill("Kebutuhan layanan non-darurat");
-  await page
-    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Bandingkan jalur", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Bantuan darurat", exact: true })
-    .click();
+  await page.getByRole("textbox", { name: "Describe your care need" }).fill("Non-emergency outpatient care");
+  await page.getByRole("button", { name: "General Practitioner", exact: true }).click();
+  await page.getByRole("button", { name: "Compare pathways" }).click();
+  await page.getByRole("button", { name: "Emergency guidance" }).click();
   await expect(page.locator(".vn").getByRole("alert")).toContainText(
-    "Perbandingan dihentikan",
+    "Comparison stopped: Emergency symptoms detected",
   );
   expect(calls).toBe(0);
 });
 
-test("SC-07 comparison form, unknown costs and copy questions work with a synthetic dependency seam", async ({
+test("SC-07 comparisons preserve unknown costs and copy verification questions", async ({
   page,
   context,
 }) => {
   await pathwayFixture(page);
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/pathways");
-  const submit = page.getByRole("button", {
-    name: "Bandingkan jalur",
-    exact: true,
-  });
+  const submit = page.getByRole("button", { name: "Compare pathways" });
   await expect(submit).toBeDisabled();
-  await page
-    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
-    .fill("Kebutuhan layanan non-darurat");
+  await page.getByRole("textbox", { name: "Describe your care need" }).fill("Non-emergency outpatient care");
   await expect(submit).toBeDisabled();
-  await page
-    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
-    .click();
-  await expect(
-    page.getByRole("textbox", { name: "Kota", exact: true }),
-  ).toHaveValue("Melbourne");
-  const sent = page.waitForRequest((r) =>
-    r.url().endsWith("/pathways/compare"),
-  );
+  await page.getByRole("button", { name: "General Practitioner", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "City", exact: true })).toHaveValue("Shenzhen");
+  const sent = page.waitForRequest((request) => request.url().endsWith("/pathways/compare"));
   await submit.click();
   expect((await sent).postDataJSON().timeframe).toBe("unknown");
-  const cards = page
-    .getByRole("region", { name: "Perbandingan jalur" })
-    .getByRole("article");
+  const cards = page.getByRole("region", { name: "Pathway comparison" }).getByRole("article");
   await expect(cards).toHaveCount(2);
-  await expect(cards.first()).toContainText("Belum diketahui");
-  await expect(
-    page.getByRole("textbox", { name: "Ceritakan keluhanmu" }),
-  ).toHaveValue("");
-  await page
-    .getByRole("button", { name: "Salin pertanyaan untuk klinik" })
-    .click();
-  await expect(page.getByText("Pertanyaan tersalin.")).toBeVisible();
+  await expect(cards.first()).toContainText("Not available");
+  await expect(page.getByRole("textbox", { name: "Describe your care need" })).toHaveValue("");
+  await page.getByRole("button", { name: "Copy questions" }).click();
+  await expect(page.getByRole("button", { name: "Copied" })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-    "Apakah provider dalam jaringan?",
+    "Is the provider in network?",
   );
-  await expect(
-    page.getByRole("button", { name: "Buat pengingat cek" }),
-  ).toBeDisabled();
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-  ).toBe(true);
+  await expect(page.getByRole("button", { name: "Prepare insurer inquiry" })).toBeEnabled();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test("SC-05 account home shows deterministic counts, canonical links and visible emergency fallback", async ({
+test("SC-05 account home links to current workflows and shows verified emergency contact", async ({
   page,
 }, testInfo) => {
-  if (testInfo.project.name === "mobile")
-    await page.setViewportSize({ width: 375, height: 812 });
+  if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 375, height: 812 });
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await accountWorkspace(page);
-  await expect(
-    page.getByRole("heading", { name: "Halo, Raka." }),
-  ).toBeVisible();
-  const emergency = page.getByRole("complementary", {
-    name: "Bantuan darurat",
-  });
-  await expect(emergency).toContainText("Periksa layanan darurat setempat");
-  const box = await emergency.boundingBox();
-  expect(box).not.toBeNull();
-  expect(box!.y + box!.height).toBeLessThan(page.viewportSize()!.height);
+  await expect(page.getByRole("heading", { name: "Home", exact: true })).toBeVisible();
+  const emergency = page.getByTestId("home-emergency-contact");
+  await expect(emergency).toContainText("Local Emergency (China): 120");
   for (const [name, href] of [
-    ["Tanya polis", "/ask"],
-    ["Saya perlu berobat", "/pathways"],
-    ["Siapkan klaim", "/claims"],
-    ["Perlindungan apa yang aku butuhkan?", "/coverage-needs"],
+    ["Review Coverage Needs", "/coverage-needs"],
+    ["Ask INSURRA", "/ask"],
+    ["Continue Claim →", "/claims"],
+    ["Emergency Guidance →", "/emergency"],
   ]) {
-    await expect(
-      page
-        .getByRole("navigation", { name: "Pintasan situasi" })
-        .getByRole("link", { name, exact: true }),
-    ).toHaveAttribute("href", href);
+    await expect(page.getByRole("link", { name, exact: true }).first()).toHaveAttribute("href", href);
   }
-  await page
-    .locator("summary")
-    .filter({ hasText: "Perlindungan aktif" })
-    .click();
-  await expect(page.locator("details[open]")).toContainText(
-    "Fictional Test Provider",
-  );
-  await expect(page.locator("details[open]")).toContainText(
-    "Negara catatan: AU",
-  );
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(errors).toEqual([]);
-  await page.screenshot({
-    path: testInfo.outputPath("command-center.png"),
-    fullPage: true,
-  });
+  await page.screenshot({ path: testInfo.outputPath("command-center.png"), fullPage: true });
 });
 
-test("SC-14 account needs share the visa result and refresh after profile changes", async ({
-  page,
-}) => {
+test("SC-14 profile and coverage needs retain CN context after edits", async ({ page }) => {
   const fixture = await accountWorkspace(page);
-  const response = await page.request.get(
-    "http://localhost:8000/api/v1/account/profile",
-    { headers: fixture.headers },
-  );
+  const response = await page.request.get(`${apiBase}/api/v1/account/profile`, {
+    headers: fixture.headers,
+  });
   const state = await response.json();
   const { id, created_at, updated_at, ...profile } = state.profile;
   void id;
@@ -358,108 +259,67 @@ test("SC-14 account needs share the visa result and refresh after profile change
   profile.visa_expiry_date = "2027-06-30";
   expect(
     (
-      await page.request.put("http://localhost:8000/api/v1/account/profile", {
+      await page.request.put(`${apiBase}/api/v1/account/profile`, {
         headers: fixture.headers,
         data: profile,
       })
     ).status(),
   ).toBe(200);
   await page.goto("/coverage-needs");
-  await expect(
-    page.getByRole("heading", {
-      name: /Perlindungan yang kamu butuhkan di Australia/,
-    }),
-  ).toBeVisible();
-  const oshc = page
-    .locator("article")
-    .filter({ has: page.getByRole("heading", { name: /OSHC ·/ }) });
-  await expect(oshc).toContainText("Sudah punya");
-  await expect(oshc).toContainText("Ada jeda 76 hari");
-  await expect(
-    oshc.getByRole("link", { name: /Periksa jeda/ }),
-  ).toHaveAttribute("href", "/completeness?task=visa_cover");
-  const dental = page
-    .locator("article")
-    .filter({ has: page.getByRole("heading", { name: "Perlindungan gigi" }) });
-  await expect(dental).toContainText("Belum punya");
-  await expect(dental).toContainText("tidak ditemukan di dokumen");
+  await expect(page.getByRole("heading", { name: "Coverage Needs & Gap Analysis" })).toBeVisible();
+  await expect(page.getByText(/Evaluated for China context/)).toBeVisible();
+  await expect(page.getByText(/Australia|OSHC/)).toHaveCount(0);
+
   profile.occupation = "EMPLOYEE";
   expect(
     (
-      await page.request.put("http://localhost:8000/api/v1/account/profile", {
+      await page.request.put(`${apiBase}/api/v1/account/profile`, {
         headers: fixture.headers,
         data: profile,
       })
     ).status(),
   ).toBe(200);
   await page.reload();
-  await expect(
-    page.getByRole("heading", { name: "Perlindungan kesehatan pekerja" }),
-  ).toBeVisible();
-  await expect(page.getByRole("heading", { name: /OSHC ·/ })).toHaveCount(0);
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBe(true);
+  await expect(page.getByRole("heading", { name: "Coverage Needs & Gap Analysis" })).toBeVisible();
+  await expect(page.getByText(/Evaluated for China context/)).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test("SC-06 live dependency fallback locks chat and exposes privacy and document guidance", async ({
-  page,
-}) => {
+test("SC-06 unavailable triage blocks Q&A and revoked AI consent stays blocked", async ({ page }) => {
   const fixture = await accountWorkspace(page);
+  await setSummary(page, { triage_available: false });
   await page.goto("/ask");
-  await expect(
-    page.getByRole("heading", { name: "Tanya polis", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByText(
-      /Pemeriksaan tanda bahaya belum tersedia\. Tanya polis dihentikan/,
-    ),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("textbox", { name: "Pertanyaan Anda" }),
-  ).toBeDisabled();
+  await expect(page.getByRole("heading", { name: "Ask INSURRA", exact: true })).toBeVisible();
+  await expect(page.getByText(/Pemeriksaan tanda bahaya belum tersedia/)).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Pertanyaan Anda" })).toBeDisabled();
   expect(
     (
-      await page.request.post("http://localhost:8000/api/v1/account/consents", {
+      await page.request.post(`${apiBase}/api/v1/account/consents`, {
         headers: fixture.headers,
         data: { purpose: "external_ai", granted: false },
       })
     ).status(),
   ).toBe(200);
   await page.reload();
-  await expect(
-    page.getByRole("link", { name: "Privasi & Data Saya", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Kirim", exact: true }),
-  ).toBeDisabled();
+  await expect(page.getByRole("link", { name: "Settings & Privacy", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Kirim", exact: true })).toBeDisabled();
 });
 
-test("SC-06 mocked validated SSE opens a real owned source page and original document", async ({
+test("SC-06 mocked citation opens the owned source page and original document", async ({
   page,
-}) => {
-  // Only the provider/triage availability seam is mocked. Auth, ownership and source access use the real backend.
+}, testInfo) => {
   const fixture = await accountWorkspace(page);
   const source = await page.request.get(
-    `http://localhost:8000/api/v1/ask/sources/${fixture.document_id}/1`,
+    `${apiBase}/api/v1/ask/sources/${fixture.document_id}/1`,
     { headers: fixture.headers },
   );
   expect(source.status()).toBe(200);
   const original = await source.json();
   const quote: string = original.text.split("\n")[1];
-  await page.route("**/api/v1/home/summary", async (route) => {
-    const response = await route.fetch();
-    const body = await response.json();
-    await route.fulfill({
-      response,
-      json: { ...body, triage_available: true },
-    });
-  });
+  await setSummary(page, { triage_available: true });
   await page.route("**/api/v1/ask", async (route) => {
     const point = {
-      text: "Perawatan gigi umum dikecualikan dalam polis fiktif ini.",
+      text: "General dental treatment is excluded under this fictional policy.",
       label: "FROM_DOCUMENT",
       citations: [
         {
@@ -472,72 +332,51 @@ test("SC-06 mocked validated SSE opens a real owned source page and original doc
     };
     const answer = {
       answer_points: [point],
-      warnings: ["Keputusan pembayaran ada pada penyedia."],
+      warnings: ["This is a synthetic policy fixture."],
       disposition: "answered",
-      context_country_code: "AU",
+      context_country_code: "CN",
     };
     const event = (name: string, data: unknown) =>
       `event: ${name}\ndata: ${JSON.stringify({ event: name, data })}\n\n`;
     await route.fulfill({
       contentType: "text/event-stream",
-      body:
-        event("progress", { stage: "retrieving" }) +
-        event("answer_point", point) +
-        event("complete", answer),
+      body: event("progress", { stage: "retrieving" }) + event("answer_point", point) + event("complete", answer),
     });
   });
   await page.goto("/ask");
-  await page
-    .getByRole("combobox", { name: "Tanya tentang" })
-    .selectOption(fixture.coverage_id);
-  await page
-    .getByRole("textbox", { name: "Pertanyaan Anda" })
-    .fill("Periksa gigi ditanggung nggak?");
+  await page.getByRole("combobox", { name: "Filter policy scope" }).selectOption(fixture.coverage_id);
+  await page.getByRole("textbox", { name: "Pertanyaan Anda" }).fill("Is dental care covered?");
   const start = Date.now();
-  await page.getByRole("button", { name: "Kirim", exact: true }).click();
+  const send = page.getByRole("button", { name: "Kirim", exact: true });
+  if (testInfo.project.name === "mobile") await send.press("Enter");
+  else await send.click();
   await expect(
-    page.getByText("Perawatan gigi umum dikecualikan dalam polis fiktif ini.", {
+    page.getByRole("log").getByText("General dental treatment is excluded under this fictional policy.", {
       exact: true,
-    }),
+    }).first(),
   ).toBeVisible();
   expect(Date.now() - start).toBeLessThan(5000);
-  await page
-    .getByRole("button", { name: "fictional-policy.pdf · hal. 1", exact: true })
-    .click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole("button", { name: "fictional-policy.pdf · p. 1", exact: true }).click();
   const drawer = page.getByRole("dialog");
   await expect(drawer).toContainText(quote);
-  await expect(drawer).toContainText(
-    "Kutipan cocok dengan halaman sumber saat ini",
-  );
-  await drawer.getByRole("link", { name: "Buka dokumen · halaman 1" }).click();
-  await expect(page).toHaveURL(
-    new RegExp(`/documents/${fixture.document_id}#page-1`),
-  );
+  await expect(drawer).toContainText("Exact substring verified against retained source page");
+  await drawer.getByRole("link", { name: "Open document · page 1" }).click();
+  await expect(page).toHaveURL(new RegExp(`/documents/${fixture.document_id}#page-1`));
   await expect(page.locator("#page-1")).toHaveAttribute("open", "");
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBe(true);
 });
 
 test("SC-06 cancellation and retry keep incomplete answers out of history", async ({
   page,
-}) => {
+}, testInfo) => {
   await accountWorkspace(page);
-  await page.route("**/api/v1/home/summary", async (route) => {
-    const response = await route.fetch();
-    await route.fulfill({
-      response,
-      json: { ...(await response.json()), triage_available: true },
-    });
-  });
+  await setSummary(page, { triage_available: true });
   let slow = true;
   await page.route("**/api/v1/ask", async (route) => {
-    if (slow) await new Promise((resolve) => setTimeout(resolve, 500));
+    if (slow) await new Promise((resolve) => setTimeout(resolve, 5000));
     const data = {
       answer_points: [],
-      warnings: ["Tidak ditemukan di dokumen."],
+      warnings: ["No matching evidence was found."],
       disposition: "no_match",
     };
     await route
@@ -548,23 +387,19 @@ test("SC-06 cancellation and retry keep incomplete answers out of history", asyn
       .catch(() => undefined);
   });
   await page.goto("/ask");
-  await page
-    .getByRole("textbox", { name: "Pertanyaan Anda" })
-    .fill("Manfaat yang belum ditemukan?");
-  const request = page.waitForRequest((r) => r.url().endsWith("/api/v1/ask"));
-  await page.getByRole("button", { name: "Kirim", exact: true }).click();
-  await request;
-  await page.getByRole("button", { name: "Batalkan", exact: true }).click();
-  await expect(page.locator(".vn").getByRole("alert")).toContainText(
-    "Permintaan dibatalkan",
-  );
+  await page.getByRole("textbox", { name: "Pertanyaan Anda" }).fill("What is not in the document?");
+  const send = page.getByRole("button", { name: "Kirim", exact: true });
+  if (testInfo.project.name === "mobile") await send.press("Enter");
+  else await send.click();
+  const cancel = page.getByRole("button", { name: "Batalkan", exact: true });
+  await expect(cancel).toBeVisible();
+  if (testInfo.project.name === "mobile") await cancel.press("Enter");
+  else await cancel.click();
+  await expect(page.locator(".vn").getByRole("alert")).toContainText("Request cancelled");
   await expect(page.getByRole("log").locator("article")).toHaveCount(0);
   slow = false;
-  await page.getByRole("button", { name: "Coba lagi", exact: true }).click();
-  await expect(
-    page.getByRole("heading", {
-      name: "Tidak ditemukan di dokumen",
-      exact: true,
-    }),
-  ).toBeVisible();
+  const retry = page.getByRole("button", { name: "Coba lagi", exact: true });
+  if (testInfo.project.name === "mobile") await retry.press("Enter");
+  else await retry.click();
+  await expect(page.getByRole("heading", { name: "Not found in your documents", exact: true })).toBeVisible();
 });

@@ -4266,6 +4266,99 @@ html {
   color: #111827;
 }
 
+.document-tour-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(7 24 43 / 68%);
+  backdrop-filter: blur(7px);
+}
+
+.document-tour-card {
+  width: min(480px, 100%);
+  padding: 34px 36px 32px;
+  border: 1px solid #b9e8df;
+  border-radius: 28px;
+  background: linear-gradient(160deg, #ffffff 0%, #f1fcf9 100%);
+  box-shadow: 0 30px 90px rgb(3 33 49 / 28%);
+  text-align: center;
+}
+
+.document-tour-mascot {
+  width: 170px;
+  height: 170px;
+  margin: -82px auto 4px;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 16px rgb(8 127 105 / 18%));
+  animation: document-mascot-wiggle 1.7s ease-in-out infinite;
+  transform-origin: 50% 82%;
+}
+
+@keyframes document-mascot-wiggle {
+  0%, 100% { transform: rotate(-2deg) translateY(0); }
+  35% { transform: rotate(3deg) translateY(-7px); }
+  65% { transform: rotate(-1deg) translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .document-tour-mascot { animation: none; }
+}
+
+.document-tour-kicker {
+  display: block;
+  margin-bottom: 8px;
+  color: #087f69;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .14em;
+}
+
+.document-tour-kicker.success { color: #047857; }
+.document-tour-card h2 { margin: 0; color: #10223c; font-size: 27px; letter-spacing: -.03em; }
+.document-tour-card p { margin: 12px auto 22px; color: #526579; font-size: 14px; line-height: 1.65; }
+.document-tour-primary { min-height: 46px; justify-content: center; text-decoration: none; }
+.document-tour-actions { display: grid; gap: 10px; }
+.document-tour-secondary { min-height: 43px; justify-content: center; text-decoration: none; }
+
+.completeness-tour-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border: 1px solid #a7e3d6;
+  border-radius: 16px;
+  background: #edfbf7;
+}
+
+.completeness-tour-banner div { display: grid; gap: 3px; }
+.completeness-tour-banner strong { color: #0f513f; font-size: 14px; }
+.completeness-tour-banner span { color: #527064; font-size: 12px; }
+.completeness-tour-banner a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: white;
+  background: #079c87;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .document-tour-card { padding: 30px 22px 24px; }
+  .document-tour-mascot { width: 145px; height: 145px; margin-top: -70px; }
+  .completeness-tour-banner { align-items: stretch; flex-direction: column; }
+  .completeness-tour-banner a { justify-content: center; }
+}
+
 /* ==========================================================================
    REDESIGNED SCREENS (Parent My Protection, Family, Policy Wallet, Documents, Completeness)
    Based on exact UI specifications and visual mockups.

@@ -25,7 +25,6 @@ export default function AuthCallbackPage() {
       router.replace("/login?error=google");
       return;
     }
-
     // Check if token is a Supabase JWT (3 base64 parts) or if code is present
     const isSupabase = Boolean(code) || Boolean(token && token.startsWith("ey") && token.split(".").length === 3);
 
@@ -35,7 +34,7 @@ export default function AuthCallbackPage() {
         code: code || undefined,
       }).then((result) => {
         if (result.success) {
-          router.replace("/account/onboarding");
+          router.replace("/auth");
         } else {
           setMessage(result.error || "Sesi Supabase tidak dapat diverifikasi.");
         }
@@ -45,7 +44,7 @@ export default function AuthCallbackPage() {
 
     if (token) {
       void acceptToken(token).then((success) => {
-        if (success) router.replace("/account/onboarding");
+        if (success) router.replace("/auth");
         else setMessage("Sesi tidak dapat diverifikasi. Silakan masuk kembali.");
       });
     }

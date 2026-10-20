@@ -2622,21 +2622,13 @@ export interface components {
             /** Currency */
             currency?: string | null;
             /** Coverage Types */
-            coverage_types: {
-                [key: string]: components["schemas"]["JsonValue"];
-            }[];
+            coverage_types: components["schemas"]["VocabularyEntry"][];
             /** Document Types */
-            document_types: {
-                [key: string]: components["schemas"]["JsonValue"];
-            }[];
+            document_types: components["schemas"]["VocabularyEntry"][];
             /** Suggested Docs */
-            suggested_docs: {
-                [key: string]: components["schemas"]["JsonValue"];
-            }[];
+            suggested_docs: components["schemas"]["SuggestedDocument"][];
             /** Tasks */
-            tasks: {
-                [key: string]: components["schemas"]["JsonValue"];
-            }[];
+            tasks: components["schemas"]["TaskConfig"][];
         };
         /** AccountSummary */
         AccountSummary: {
@@ -2789,6 +2781,16 @@ export interface components {
          * @enum {string}
          */
         ActorType: "DEMO_SESSION" | "AUTHENTICATED_ACCOUNT";
+        /**
+         * AdditionalCoverageIntent
+         * @enum {string}
+         */
+        AdditionalCoverageIntent: "YES" | "NO" | "UNSURE";
+        /**
+         * AgeRange
+         * @enum {string}
+         */
+        AgeRange: "UNDER_18" | "18_24" | "25_34" | "35_44" | "45_54" | "55_64" | "65_PLUS";
         /** AnchorProofRequest */
         AnchorProofRequest: {
             /** Document Sha256 */
@@ -2844,6 +2846,11 @@ export interface components {
             /** Citations */
             citations: components["schemas"]["AnswerCitation"][];
         };
+        /**
+         * AnswerState
+         * @enum {string}
+         */
+        AnswerState: "YES" | "NO" | "UNKNOWN";
         /** ApiError */
         ApiError: {
             /** Code */
@@ -3592,6 +3599,11 @@ export interface components {
              */
             end_date: string;
         };
+        /**
+         * DecisionPreference
+         * @enum {string}
+         */
+        DecisionPreference: "LOWER_PREMIUM" | "WIDER_BENEFITS" | "FLEXIBILITY";
         /** DeleteConfirmation */
         DeleteConfirmation: {
             /**
@@ -3889,6 +3901,11 @@ export interface components {
             /** Matched Items */
             matched_items: components["schemas"]["CaseChecklistItem"][];
         };
+        /**
+         * ExistingInsuranceState
+         * @enum {string}
+         */
+        ExistingInsuranceState: "YES" | "NO" | "NOT_SURE";
         /** ExtractedField */
         ExtractedField: {
             /** Field Name */
@@ -4145,6 +4162,11 @@ export interface components {
             /** Available */
             available: boolean;
         };
+        /**
+         * LifeContext
+         * @enum {string}
+         */
+        LifeContext: "STUDY" | "WORK" | "LIVING" | "TRAVEL" | "OTHER";
         /** LoginRequest */
         LoginRequest: {
             /** Email */
@@ -4537,6 +4559,35 @@ export interface components {
             goals?: components["schemas"]["Goal"][];
             /** Protection Scope */
             protection_scope?: components["schemas"]["ProtectionScope"][];
+            life_context?: components["schemas"]["LifeContext"] | null;
+            age_range?: components["schemas"]["AgeRange"] | null;
+            /** Visa Status */
+            visa_status?: string | null;
+            /** Employment Type */
+            employment_type?: string | null;
+            employer_coverage_eligibility?: components["schemas"]["AnswerState"] | null;
+            /** Has Dependents */
+            has_dependents?: boolean | null;
+            /** Dependent Age Groups */
+            dependent_age_groups?: string[];
+            dependent_insurance_status?: components["schemas"]["AnswerState"] | null;
+            /** Financial Responsibilities */
+            financial_responsibilities?: string[];
+            has_existing_insurance?: components["schemas"]["ExistingInsuranceState"] | null;
+            /** Insurance Sources */
+            insurance_sources?: string[];
+            /** Insurer Name */
+            insurer_name?: string | null;
+            /** Policy Expiry Known */
+            policy_expiry_known?: boolean | null;
+            /** Policy Expiry Date */
+            policy_expiry_date?: string | null;
+            /** Policy Documents Available */
+            policy_documents_available?: boolean | null;
+            /** Primary Concern */
+            primary_concern?: string | null;
+            willing_additional_coverage?: components["schemas"]["AdditionalCoverageIntent"] | null;
+            decision_preference?: components["schemas"]["DecisionPreference"] | null;
         };
         /** ProfileResponse */
         ProfileResponse: {
@@ -4592,6 +4643,35 @@ export interface components {
             goals?: components["schemas"]["Goal"][];
             /** Protection Scope */
             protection_scope?: components["schemas"]["ProtectionScope"][];
+            life_context?: components["schemas"]["LifeContext"] | null;
+            age_range?: components["schemas"]["AgeRange"] | null;
+            /** Visa Status */
+            visa_status?: string | null;
+            /** Employment Type */
+            employment_type?: string | null;
+            employer_coverage_eligibility?: components["schemas"]["AnswerState"] | null;
+            /** Has Dependents */
+            has_dependents?: boolean | null;
+            /** Dependent Age Groups */
+            dependent_age_groups?: string[];
+            dependent_insurance_status?: components["schemas"]["AnswerState"] | null;
+            /** Financial Responsibilities */
+            financial_responsibilities?: string[];
+            has_existing_insurance?: components["schemas"]["ExistingInsuranceState"] | null;
+            /** Insurance Sources */
+            insurance_sources?: string[];
+            /** Insurer Name */
+            insurer_name?: string | null;
+            /** Policy Expiry Known */
+            policy_expiry_known?: boolean | null;
+            /** Policy Expiry Date */
+            policy_expiry_date?: string | null;
+            /** Policy Documents Available */
+            policy_documents_available?: boolean | null;
+            /** Primary Concern */
+            primary_concern?: string | null;
+            willing_additional_coverage?: components["schemas"]["AdditionalCoverageIntent"] | null;
+            decision_preference?: components["schemas"]["DecisionPreference"] | null;
         };
         /** ProposedAction */
         ProposedAction: {
@@ -5118,6 +5198,15 @@ export interface components {
             /** Code */
             code?: string | null;
         };
+        /** TaskConfig */
+        TaskConfig: {
+            /** Task Code */
+            task_code: string;
+            /** Label */
+            label: string;
+            /** Policy Types */
+            policy_types: string[];
+        };
         /** ToolStep */
         ToolStep: {
             /** Tool */
@@ -5238,6 +5327,27 @@ export interface components {
             declared_insurance_categories?: string[];
             /** Goals */
             goals?: components["schemas"]["Goal"][];
+            life_context?: components["schemas"]["LifeContext"] | null;
+            age_range?: components["schemas"]["AgeRange"] | null;
+            /**
+             * Has Dependents
+             * @default false
+             */
+            has_dependents: boolean;
+            /**
+             * Dependent Count
+             * @default 0
+             */
+            dependent_count: number;
+            /** Financial Responsibilities */
+            financial_responsibilities?: string[];
+            /** Insurance Sources */
+            insurance_sources?: string[];
+            employer_coverage_eligibility?: components["schemas"]["AnswerState"] | null;
+            willing_additional_coverage?: components["schemas"]["AdditionalCoverageIntent"] | null;
+            decision_preference?: components["schemas"]["DecisionPreference"] | null;
+            /** Budget Range */
+            budget_range?: string | null;
             /** Profile Completed */
             profile_completed: boolean;
             /** Insurance Declared */
@@ -5296,6 +5406,35 @@ export interface components {
             goals?: components["schemas"]["Goal"][];
             /** Protection Scope */
             protection_scope?: components["schemas"]["ProtectionScope"][];
+            life_context?: components["schemas"]["LifeContext"] | null;
+            age_range?: components["schemas"]["AgeRange"] | null;
+            /** Visa Status */
+            visa_status?: string | null;
+            /** Employment Type */
+            employment_type?: string | null;
+            employer_coverage_eligibility?: components["schemas"]["AnswerState"] | null;
+            /** Has Dependents */
+            has_dependents?: boolean | null;
+            /** Dependent Age Groups */
+            dependent_age_groups?: string[];
+            dependent_insurance_status?: components["schemas"]["AnswerState"] | null;
+            /** Financial Responsibilities */
+            financial_responsibilities?: string[];
+            has_existing_insurance?: components["schemas"]["ExistingInsuranceState"] | null;
+            /** Insurance Sources */
+            insurance_sources?: string[];
+            /** Insurer Name */
+            insurer_name?: string | null;
+            /** Policy Expiry Known */
+            policy_expiry_known?: boolean | null;
+            /** Policy Expiry Date */
+            policy_expiry_date?: string | null;
+            /** Policy Documents Available */
+            policy_documents_available?: boolean | null;
+            /** Primary Concern */
+            primary_concern?: string | null;
+            willing_additional_coverage?: components["schemas"]["AdditionalCoverageIntent"] | null;
+            decision_preference?: components["schemas"]["DecisionPreference"] | null;
             /**
              * Id
              * Format: uuid
@@ -5378,6 +5517,15 @@ export interface components {
             /** Explanation */
             explanation: string;
             rule_source?: components["schemas"]["RuleSource"] | null;
+        };
+        /** VocabularyEntry */
+        VocabularyEntry: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
+            /** Aliases */
+            aliases?: string[];
         };
         /** WorkflowActionQueueCounts */
         WorkflowActionQueueCounts: {
@@ -6004,15 +6152,6 @@ export interface components {
              */
             inclusive_end: true;
         };
-        /** TaskConfig */
-        TaskConfig: {
-            /** Task Code */
-            task_code: string;
-            /** Label */
-            label: string;
-            /** Policy Types */
-            policy_types: string[];
-        };
         /** TemplateField */
         TemplateField: {
             /** Field Key */
@@ -6410,15 +6549,6 @@ export interface components {
             provenance_note: string | null;
             /** Data */
             data: string[];
-        };
-        /** VocabularyEntry */
-        VocabularyEntry: {
-            /** Code */
-            code: string;
-            /** Label */
-            label: string;
-            /** Aliases */
-            aliases?: string[];
         };
         /** CountryResources */
         CountryResources: {

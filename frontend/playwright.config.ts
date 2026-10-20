@@ -2,13 +2,19 @@ import { defineConfig, devices } from "@playwright/test";
 import path from "node:path";
 
 const root = path.resolve(__dirname, "..");
+const e2eDatabaseUrl =
+  process.env.INSURRA_E2E_DATABASE_URL ?? `sqlite:///${root}/.cache/e2e.db`;
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["demo.spec.ts", "claims.spec.ts", "workspace.spec.ts"],
+  testMatch: ["demo.spec.ts", "claims.spec.ts", "workspace.spec.ts", "account-journey.spec.ts"],
   fullyParallel: false,
   retries: 0,
   reporter: "list",
-  use: { baseURL: "http://127.0.0.1:3177", trace: "retain-on-failure" },
+  use: {
+    baseURL: "http://127.0.0.1:3177",
+    trace: "retain-on-failure",
+    reducedMotion: "reduce",
+  },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     {
@@ -23,7 +29,7 @@ export default defineConfig({
       url: "http://127.0.0.1:8177/health",
       reuseExistingServer: false,
       env: {
-        DATABASE_URL: `sqlite:///${root}/.cache/e2e.db`,
+        DATABASE_URL: e2eDatabaseUrl,
         FRONTEND_ORIGIN: "http://127.0.0.1:3177",
         UV_CACHE_DIR: "/tmp/insurra-e2e-uv-cache",
       },

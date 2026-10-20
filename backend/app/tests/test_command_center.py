@@ -37,7 +37,8 @@ def test_home_is_live_for_accounts_and_preserves_original_countries(app, client,
     if country == "AU":
         assert body["emergency"]["phone_number"] is None and not body["triage_available"]
     else:
-        assert body["emergency"]["phone_number"] == "112" and body["triage_available"] is True
+        assert body["emergency"]["phone_number"] == "112"
+        assert body["triage_available"] is True
     assert len(body["question_examples"]) in (3, 4)
     assert "policy_number" not in result.text and "member_number" not in result.text
     with app.state.session_factory() as db:

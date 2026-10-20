@@ -1,8 +1,94 @@
 {
   "schema_version": "1.5",
-  "version": "0.3.0",
-  "source_url": null,
-  "checked_at": null,
+  "version": "0.3.1",
+  "source_url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero",
+  "checked_at": "2026-10-20",
   "verification_status": "UNVERIFIED",
-  "data": []
+  "data": [
+    {
+      "id": "loss_of_consciousness",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "kehilangan kesadaran",
+        "pingsan"
+      ],
+      "phrases_en": [
+        "loss of consciousness",
+        "fainting"
+      ],
+      "destination_code": "emergency",
+      "jurisdiction": "AU",
+      "source_url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero",
+      "checked_at": "2026-10-20",
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED"
+    },
+    {
+      "id": "chest_pain",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "nyeri dada"
+      ],
+      "phrases_en": [
+        "chest pain"
+      ],
+      "destination_code": "emergency",
+      "jurisdiction": "AU",
+      "source_url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero",
+      "checked_at": "2026-10-20",
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED"
+    },
+    {
+      "id": "breathing_problems",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "masalah pernapasan",
+        "kesulitan bernapas",
+        "sesak napas"
+      ],
+      "phrases_en": [
+        "breathing problems",
+        "difficulty breathing"
+      ],
+      "destination_code": "emergency",
+      "jurisdiction": "AU",
+      "source_url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero",
+      "checked_at": "2026-10-20",
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED"
+    },
+    {
+      "id": "seizure",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "kejang"
+      ],
+      "phrases_en": [
+        "seizure"
+      ],
+      "destination_code": "emergency",
+      "jurisdiction": "AU",
+      "source_url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero",
+      "checked_at": "2026-10-20",
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED"
+    },
+    {
+      "id": "uncontrolled_bleeding",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "perdarahan tidak terkendali"
+      ],
+      "phrases_en": [
+        "uncontrollable bleeding"
+      ],
+      "destination_code": "emergency",
+      "jurisdiction": "AU",
+      "source_url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero",
+      "checked_at": "2026-10-20",
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED"
+    }
+  ]
 }

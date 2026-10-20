@@ -22740,40 +22740,28 @@
           },
           "coverage_types": {
             "items": {
-              "additionalProperties": {
-                "$ref": "#/components/schemas/JsonValue"
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/VocabularyEntry"
             },
             "type": "array",
             "title": "Coverage Types"
           },
           "document_types": {
             "items": {
-              "additionalProperties": {
-                "$ref": "#/components/schemas/JsonValue"
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/VocabularyEntry"
             },
             "type": "array",
             "title": "Document Types"
           },
           "suggested_docs": {
             "items": {
-              "additionalProperties": {
-                "$ref": "#/components/schemas/JsonValue"
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/SuggestedDocument"
             },
             "type": "array",
             "title": "Suggested Docs"
           },
           "tasks": {
             "items": {
-              "additionalProperties": {
-                "$ref": "#/components/schemas/JsonValue"
-              },
-              "type": "object"
+              "$ref": "#/components/schemas/TaskConfig"
             },
             "type": "array",
             "title": "Tasks"
@@ -23238,6 +23226,28 @@
         ],
         "title": "ActorType"
       },
+      "AdditionalCoverageIntent": {
+        "type": "string",
+        "enum": [
+          "YES",
+          "NO",
+          "UNSURE"
+        ],
+        "title": "AdditionalCoverageIntent"
+      },
+      "AgeRange": {
+        "type": "string",
+        "enum": [
+          "UNDER_18",
+          "18_24",
+          "25_34",
+          "35_44",
+          "45_54",
+          "55_64",
+          "65_PLUS"
+        ],
+        "title": "AgeRange"
+      },
       "AnchorProofRequest": {
         "properties": {
           "document_sha256": {
@@ -23392,6 +23402,15 @@
           "citations"
         ],
         "title": "AnswerPoint"
+      },
+      "AnswerState": {
+        "type": "string",
+        "enum": [
+          "YES",
+          "NO",
+          "UNKNOWN"
+        ],
+        "title": "AnswerState"
       },
       "ApiError": {
         "properties": {
@@ -25583,6 +25602,15 @@
         ],
         "title": "DateRange"
       },
+      "DecisionPreference": {
+        "type": "string",
+        "enum": [
+          "LOWER_PREMIUM",
+          "WIDER_BENEFITS",
+          "FLEXIBILITY"
+        ],
+        "title": "DecisionPreference"
+      },
       "DeleteConfirmation": {
         "properties": {
           "confirm": {
@@ -26345,6 +26373,15 @@
         ],
         "title": "EvidenceMatchResult"
       },
+      "ExistingInsuranceState": {
+        "type": "string",
+        "enum": [
+          "YES",
+          "NO",
+          "NOT_SURE"
+        ],
+        "title": "ExistingInsuranceState"
+      },
       "ExtractedField": {
         "properties": {
           "field_name": {
@@ -27098,6 +27135,17 @@
           "available"
         ],
         "title": "LanguageOption"
+      },
+      "LifeContext": {
+        "type": "string",
+        "enum": [
+          "STUDY",
+          "WORK",
+          "LIVING",
+          "TRAVEL",
+          "OTHER"
+        ],
+        "title": "LifeContext"
       },
       "LoginRequest": {
         "properties": {
@@ -28432,6 +28480,193 @@
             "type": "array",
             "maxItems": 5,
             "title": "Protection Scope"
+          },
+          "life_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LifeContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "age_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgeRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "visa_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visa Status"
+          },
+          "employment_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employment Type"
+          },
+          "employer_coverage_eligibility": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "has_dependents": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Dependents"
+          },
+          "dependent_age_groups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Dependent Age Groups"
+          },
+          "dependent_insurance_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "financial_responsibilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Financial Responsibilities"
+          },
+          "has_existing_insurance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExistingInsuranceState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "insurance_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Insurance Sources"
+          },
+          "insurer_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insurer Name"
+          },
+          "policy_expiry_known": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Expiry Known"
+          },
+          "policy_expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Expiry Date"
+          },
+          "policy_documents_available": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Documents Available"
+          },
+          "primary_concern": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Concern"
+          },
+          "willing_additional_coverage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdditionalCoverageIntent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decision_preference": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DecisionPreference"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -28690,6 +28925,193 @@
             "type": "array",
             "maxItems": 5,
             "title": "Protection Scope"
+          },
+          "life_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LifeContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "age_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgeRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "visa_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visa Status"
+          },
+          "employment_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employment Type"
+          },
+          "employer_coverage_eligibility": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "has_dependents": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Dependents"
+          },
+          "dependent_age_groups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Dependent Age Groups"
+          },
+          "dependent_insurance_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "financial_responsibilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Financial Responsibilities"
+          },
+          "has_existing_insurance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExistingInsuranceState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "insurance_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Insurance Sources"
+          },
+          "insurer_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insurer Name"
+          },
+          "policy_expiry_known": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Expiry Known"
+          },
+          "policy_expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Expiry Date"
+          },
+          "policy_documents_available": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Documents Available"
+          },
+          "primary_concern": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Concern"
+          },
+          "willing_additional_coverage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdditionalCoverageIntent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decision_preference": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DecisionPreference"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -29978,6 +30400,33 @@
         "type": "object",
         "title": "SupabaseAuthRequest"
       },
+      "TaskConfig": {
+        "properties": {
+          "task_code": {
+            "type": "string",
+            "title": "Task Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "policy_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Policy Types"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_code",
+          "label",
+          "policy_types"
+        ],
+        "title": "TaskConfig"
+      },
       "ToolStep": {
         "properties": {
           "tool": {
@@ -30299,6 +30748,92 @@
             "type": "array",
             "title": "Goals"
           },
+          "life_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LifeContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "age_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgeRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "has_dependents": {
+            "type": "boolean",
+            "title": "Has Dependents",
+            "default": false
+          },
+          "dependent_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Dependent Count",
+            "default": 0
+          },
+          "financial_responsibilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Financial Responsibilities"
+          },
+          "insurance_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Insurance Sources"
+          },
+          "employer_coverage_eligibility": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "willing_additional_coverage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdditionalCoverageIntent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decision_preference": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DecisionPreference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "budget_range": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Range"
+          },
           "profile_completed": {
             "type": "boolean",
             "title": "Profile Completed"
@@ -30568,6 +31103,193 @@
             "maxItems": 5,
             "title": "Protection Scope"
           },
+          "life_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LifeContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "age_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgeRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "visa_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visa Status"
+          },
+          "employment_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employment Type"
+          },
+          "employer_coverage_eligibility": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "has_dependents": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Dependents"
+          },
+          "dependent_age_groups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Dependent Age Groups"
+          },
+          "dependent_insurance_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnswerState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "financial_responsibilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Financial Responsibilities"
+          },
+          "has_existing_insurance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExistingInsuranceState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "insurance_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Insurance Sources"
+          },
+          "insurer_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insurer Name"
+          },
+          "policy_expiry_known": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Expiry Known"
+          },
+          "policy_expiry_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Expiry Date"
+          },
+          "policy_documents_available": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Documents Available"
+          },
+          "primary_concern": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Concern"
+          },
+          "willing_additional_coverage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdditionalCoverageIntent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decision_preference": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DecisionPreference"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -30810,6 +31532,34 @@
           "explanation"
         ],
         "title": "VisaCoverageAssessment"
+      },
+      "VocabularyEntry": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Label"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "VocabularyEntry"
       },
       "WorkflowActionQueueCounts": {
         "properties": {
@@ -32491,33 +33241,6 @@
         "title": "RuleParameters",
         "type": "object"
       },
-      "TaskConfig": {
-        "additionalProperties": false,
-        "properties": {
-          "task_code": {
-            "title": "Task Code",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "policy_types": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Policy Types",
-            "type": "array"
-          }
-        },
-        "required": [
-          "task_code",
-          "label",
-          "policy_types"
-        ],
-        "title": "TaskConfig",
-        "type": "object"
-      },
       "TemplateField": {
         "additionalProperties": false,
         "properties": {
@@ -33816,34 +34539,6 @@
           "data"
         ],
         "title": "VersionedResource[list[str]]",
-        "type": "object"
-      },
-      "VocabularyEntry": {
-        "additionalProperties": false,
-        "properties": {
-          "code": {
-            "minLength": 1,
-            "title": "Code",
-            "type": "string"
-          },
-          "label": {
-            "minLength": 1,
-            "title": "Label",
-            "type": "string"
-          },
-          "aliases": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Aliases",
-            "type": "array"
-          }
-        },
-        "required": [
-          "code",
-          "label"
-        ],
-        "title": "VocabularyEntry",
         "type": "object"
       },
       "CountryResources": {

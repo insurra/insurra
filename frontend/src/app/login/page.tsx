@@ -31,7 +31,7 @@ function LoginContent() {
   useEffect(() => {
     if (loading) return;
     if (account) {
-      router.replace("/account");
+      router.replace("/auth");
       return;
     }
     // A prior OAuth failure can leave its query string behind after navigation.

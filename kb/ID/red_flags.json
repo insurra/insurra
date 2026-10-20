@@ -1,6 +1,6 @@
 {
   "schema_version": "1.5",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "source_url": "https://www.who.int/news-room/questions-and-answers/item/suicide",
   "checked_at": "2026-10-19",
   "verification_status": "VERIFIED",
@@ -102,6 +102,64 @@
       "verification_status": "VERIFIED",
       "evidence_class": "MANUALLY_CURATED",
       "jurisdiction": "Global safety guidance"
+    },
+    {
+      "id": "unconsciousness",
+      "category": "MEDICAL",
+      "phrases_id": ["tidak sadar", "penurunan kesadaran"],
+      "phrases_en": ["unconscious", "loss of consciousness"],
+      "destination_code": "emergency",
+      "jurisdiction": "ID",
+      "source_url": "https://jdih.kemkes.go.id/storage/documents/pdfs/2019kepmenkes796.pdf",
+      "checked_at": "2026-10-20",
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED"
+    },
+    {
+      "id": "abnormal_breathing",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "kesulitan bernafas",
+        "tidak bernapas secara normal",
+        "tidak bernafas normal"
+      ],
+      "phrases_en": ["difficulty breathing", "not breathing normally"],
+      "destination_code": "emergency",
+      "jurisdiction": "ID",
+      "source_url": "https://jdih.kemkes.go.id/storage/documents/pdfs/2019kepmenkes796.pdf",
+      "checked_at": "2026-10-20",
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED"
+    },
+    {
+      "id": "uncontrolled_bleeding",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "perdarahan yang tidak dapat dikendalikan dengan penekanan langsung",
+        "pendarahan yang tidak terkendali setelah dicoba untuk ditekan"
+      ],
+      "phrases_en": ["bleeding that cannot be controlled with direct pressure"],
+      "destination_code": "emergency",
+      "jurisdiction": "ID",
+      "source_url": "https://jdih.kemkes.go.id/storage/documents/pdfs/2019kepmenkes796.pdf",
+      "checked_at": "2026-10-20",
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED"
+    },
+    {
+      "id": "critical_seizure_context",
+      "category": "MEDICAL",
+      "phrases_id": [
+        "korban masih kejang",
+        "kejang pertama kali dan tidak diketahui riwayat kejang sebelumnya"
+      ],
+      "phrases_en": ["still having a seizure", "first seizure with no known previous history"],
+      "destination_code": "emergency",
+      "jurisdiction": "ID",
+      "source_url": "https://jdih.kemkes.go.id/storage/documents/pdfs/2019kepmenkes796.pdf",
+      "checked_at": "2026-10-20",
+      "verification_status": "UNVERIFIED",
+      "evidence_class": "MANUALLY_CURATED"
     }
   ]
 }

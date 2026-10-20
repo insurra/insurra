@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from app.core.config import ROOT
+from app.core.config import ROOT, Settings
 from app.models import ActionRow, ClaimCaseRow, DocumentRow, ExtractedFieldRow, PurposeConsentRow
 from app.schemas.actor import Actor
 from app.services.approval import payload_sha256
@@ -321,10 +321,36 @@ def test_country_resources_metadata_and_bad_config(tmp_path):
         for name in type(kb.resources).model_fields:
             resource = getattr(kb.resources, name)
             assert resource.schema_version == "1.5" and resource.version == kb.manifest.version
-        assert kb.resources.extraction_templates.data == []
         if code == "AU":
-            assert kb.resources.red_flags.data == []
+            assert kb.resources.red_flags.data
+            assert kb.resources.red_flags.verification_status == "UNVERIFIED"
+            assert all(
+                flag.verification_status == "UNVERIFIED" and flag.source_url and flag.checked_at
+                for flag in kb.resources.red_flags.data
+            )
+            assert kb.resources.emergency.data.verification_status == "UNVERIFIED"
+        elif code == "ID":
+            assert {item.document_type for item in kb.resources.extraction_templates.data} == {
+                "policy_booklet",
+                "insurance_card",
+            }
+            drafts = [
+                flag
+                for flag in kb.resources.red_flags.data
+                if flag.verification_status == "UNVERIFIED"
+            ]
+            assert len(drafts) == 4
+            assert all(
+                flag.source_url
+                == "https://jdih.kemkes.go.id/storage/documents/pdfs/2019kepmenkes796.pdf"
+                and flag.checked_at
+                and flag.jurisdiction == "ID"
+                for flag in drafts
+            )
+            assert kb.resources.emergency.verification_status == "VERIFIED"
+            assert all(contact.source_url for contact in kb.resources.emergency.data.contacts)
         else:
+            assert kb.resources.extraction_templates.data == []
             assert kb.resources.emergency.verification_status == "VERIFIED"
             assert all(contact.source_url for contact in kb.resources.emergency.data.contacts)
             assert all(flag.source_url for flag in kb.resources.red_flags.data)
@@ -341,6 +367,10 @@ def test_country_resources_metadata_and_bad_config(tmp_path):
     path.write_text(json.dumps(data))
     with pytest.raises(ValidationError):
         CountryKBLoader(tmp_path).load("AU")
+
+
+def test_default_country_scope_stays_cn_id():
+    assert Settings(_env_file=None).active_kb_country_codes == frozenset({"CN", "ID"})
 
 
 @pytest.mark.parametrize(

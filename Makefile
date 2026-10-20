@@ -1,5 +1,6 @@
 UV := $(shell command -v uv 2>/dev/null || echo $(CURDIR)/.tools/bin/uv)
 export UV_CACHE_DIR := $(CURDIR)/.cache/uv
+API_PORT ?= 8000
 .PHONY: setup dev dev-backend dev-frontend migrate seed test generate-types check
 setup:
 	@test -x "$(UV)" || (python3 -m venv .tools && .tools/bin/pip install uv)
@@ -16,7 +17,7 @@ dev:
 	(cd frontend && npm run dev) & \
 	wait
 dev-backend:
-	cd backend && $(UV) run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+	cd backend && $(UV) run uvicorn app.main:app --reload --host 127.0.0.1 --port $(API_PORT)
 dev-frontend:
 	cd frontend && npm run dev
 test:
