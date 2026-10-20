@@ -46,6 +46,15 @@ interface WorkflowOverview {
   }>;
 }
 
+interface InsightAction {
+  kind?: string;
+  action_type?: string | null;
+  entity_type?: string | null;
+  entity_id?: string | null;
+  label?: string;
+  deep_link?: string;
+}
+
 export default function HomePage() {
   const router = useRouter();
   const workspace = useWorkspace();
@@ -54,7 +63,7 @@ export default function HomePage() {
   const { token: accountToken } = useAuth();
   const [preparingActionId, setPreparingActionId] = useState<string | null>(null);
 
-  const handleInsightAction = async (action: any) => {
+  const handleInsightAction = async (action: InsightAction) => {
     if (action?.kind === "PREPARE_ACTION" && action?.action_type) {
       setPreparingActionId(action.action_type);
       try {

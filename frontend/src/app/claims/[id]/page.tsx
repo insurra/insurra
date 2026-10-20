@@ -205,8 +205,8 @@ export default function ClaimDetailPage() {
   const [syncingStatus, setSyncingStatus] = useState(false);
   const [confirmingEvidenceId, setConfirmingEvidenceId] = useState<string | null>(null);
   const [preparingAppeal, setPreparingAppeal] = useState(false);
-  const [customRejectionReason, setCustomRejectionReason] = useState("");
-  const [customCitedClause, setCustomCitedClause] = useState("");
+  const [customRejectionReason] = useState("");
+  const [customCitedClause] = useState("");
   const [requiredConsents, setRequiredConsents] = useState<string[] | null>(null);
   const [pendingActionAfterConsent, setPendingActionAfterConsent] = useState<(() => Promise<void>) | null>(null);
 
