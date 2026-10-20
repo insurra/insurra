@@ -4,6 +4,8 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer. Not retrieved or machine-verified.",
   "data": [
     {"task_code": "outpatient_claim", "field_key": "policyholder", "label": "Policyholder name", "suggested_doc": "policy_booklet"},
     {"task_code": "outpatient_claim", "field_key": "policy_number", "label": "Policy number", "suggested_doc": "insurance_card"},

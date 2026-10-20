@@ -138,6 +138,11 @@ class PolicyGuard:
                 output[key] = value
             elif key in allowed_values and isinstance(value, str) and value in allowed_values[key]:
                 output[key] = value
+            elif key in {"claim_case_id", "action_id"} and isinstance(value, str):
+                try:
+                    output[key] = str(UUID(value))
+                except ValueError:
+                    pass
             elif key == "subtype" and isinstance(value, str) and value in subtype_aliases:
                 output[key] = subtype_aliases[value]
             elif key == "tools_called" and isinstance(value, list):

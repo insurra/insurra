@@ -1,0 +1,11 @@
+{
+  "persona_id": "raka",
+  "country_code": "CN",
+  "city": "Shenzhen",
+  "role_label": "International Student in China",
+  "insurance_categories": [
+    "INTERNATIONAL_STUDENT"
+  ],
+  "description": "Discover your student insurance, review coverage dates, and prepare next steps.",
+  "is_synthetic": true
+}

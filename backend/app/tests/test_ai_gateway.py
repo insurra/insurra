@@ -7,16 +7,17 @@ import pytest
 from openai import OpenAI, OpenAIError
 from pydantic import ValidationError
 
-from app.core.config import Settings
+from app.core.config import ROOT, Settings
 from app.core.errors import AppError
 from app.schemas.chat import PolicyAnswer
 from app.services.account_documents import (
     ExtractionResult,
     PageText,
-    _ocr_language,
+    _ocr_languages,
     extract_to_schema,
 )
 from app.services.ai_gateway import GEMINI_BASE_URL, GeminiGateway
+from app.services.kb_loader import CountryKBLoader
 from app.services.policy_qa import ModelAnswer
 
 
@@ -46,17 +47,19 @@ def test_default_models_use_the_live_verified_gemini_model(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    ("output", "expected"),
+    ("country_code", "output", "expected"),
     [
-        (b"List of available languages (2):\neng\nosd\n", "eng"),
-        (b"List of available languages (3):\neng\nind\nosd\n", "eng+ind"),
+        ("ID", b"List of available languages (3):\neng\nind\nosd\n", "eng+ind"),
+        (
+            "CN",
+            b"List of available languages (4):\neng\nind\nchi_sim\nosd\n",
+            "eng+ind+chi_sim",
+        ),
     ],
 )
-def test_ocr_uses_installed_english_and_indonesian_languages(monkeypatch, output, expected):
+def test_ocr_uses_country_language_pack(monkeypatch, country_code, output, expected):
     monkeypatch.setattr("app.services.account_documents._run", lambda *_args, **_kwargs: output)
-    _ocr_language.cache_clear()
-    assert _ocr_language() == expected
-    _ocr_language.cache_clear()
+    assert _ocr_languages(country_code) == expected
 
 
 def test_gateway_uses_gemini_chat_completions_and_structured_output(monkeypatch):
@@ -212,9 +215,9 @@ def test_document_extraction_uses_fast_gemini_model_only_with_configured_key(mon
     ],
 )
 def test_versioned_policy_templates_allow_only_source_backed_summary_fields(
-    app, country_code, document_type
+    country_code, document_type
 ):
-    country = app.state.kb_loader.load(country_code)
+    country = CountryKBLoader(ROOT / "kb").load(country_code)
     template = next(
         item
         for item in country.resources.extraction_templates.data

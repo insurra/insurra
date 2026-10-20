@@ -1,0 +1,56 @@
+.coverage-dashboard.vn { max-width: 1500px; gap: 18px; color: #11195a; }
+.coverage-dashboard .vn-emergency { order: 4; }
+.coverage-hero { display: grid !important; grid-template-columns: minmax(0,1fr) minmax(250px,370px); gap: 24px !important; align-items: center; }
+.coverage-hero h1 { color: #0b1465; font-size: clamp(28px,3vw,39px); font-weight: 800; letter-spacing: -1.5px; }
+.coverage-hero p { color: #536aa0; font-size: 15px; }
+.coverage-eyebrow { color: #079787; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; }
+.coverage-hero-note { display: flex; align-items: center; gap: 9px; min-height: 112px; padding: 10px 16px; border-radius: 14px; background: #eaf8fd; }
+.coverage-hero-note img { object-fit: contain; flex: none; }
+.coverage-hero-note strong,.coverage-hero-note span { display: block; }
+.coverage-hero-note strong { color: #101b6c; line-height: 1.35; }
+.coverage-hero-note span { margin-top: 6px; color: #516892; font-size: 12px; line-height: 1.45; }
+.coverage-tabs { display: flex; gap: 7px; overflow: auto; border-bottom: 1px solid #dcebf1; }
+.coverage-dashboard .coverage-tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: #536992; white-space: nowrap; font-size: 12px; }
+.coverage-dashboard .coverage-tabs button[aria-pressed="true"] { color: #008b7a; border-bottom-color: #00a991; font-weight: 800; }
+.coverage-layout { display: grid; grid-template-columns: minmax(0,1fr) minmax(260px,320px); gap: 18px; align-items: start; }
+.coverage-main,.coverage-sidebar { display: grid; gap: 12px; min-width: 0; }
+.coverage-panel { min-width: 0; padding: 16px; border: 1px solid #e1edf3; border-radius: 12px; background: #fff; box-shadow: 0 2px 13px #1d547008; }
+.coverage-panel h2,.coverage-ask-card h2 { color: #0e176a; font-size: 16px; font-weight: 800; }
+.coverage-panel-heading { display: flex; justify-content: space-between; align-items: start; gap: 12px; margin-bottom: 13px; }
+.coverage-panel-heading p { color: #6075a0; font-size: 12px; }
+.coverage-panel-heading a,.coverage-status-card a,.coverage-finding a { display: inline-flex; align-items: center; gap: 5px; color: #008e7e; font-size: 12px; white-space: nowrap; }
+.coverage-context-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px; }
+.coverage-context-item { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 12px 9px; border-radius: 9px; background: #f4f9fd; color: #58709d; font-size: 11px; }
+.coverage-context-item svg { box-sizing: content-box; width: 21px; height: 21px; padding: 8px; border: 1px solid #d5eaff; border-radius: 8px; color: #1769ef; flex: none; }
+.coverage-context-item span { min-width: 0; }
+.coverage-context-item strong { display: block; color: #14236c; font-size: 12px; overflow-wrap: anywhere; }
+.coverage-count { color: #008e7e; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.coverage-status-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(155px,1fr)); gap: 8px; }
+.coverage-status-card { display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; padding: 13px 10px; border: 1px solid #e3edf5; border-radius: 10px; text-align: center; }
+.coverage-status-title { display: flex; align-items: center; align-self: stretch; gap: 6px; text-align: left; }
+.coverage-status-title h3 { color: #0d1b6a; font-size: 12px; line-height: 1.35; }
+.coverage-icon { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 34px; height: 34px; border-radius: 9px; background: #e7f6f0; color: #05a584; }
+.coverage-meter { position: relative; width: 88px; height: 44px; margin-top: 7px; border: 9px solid #ecedef; border-bottom: 0; border-radius: 90px 90px 0 0; }
+.coverage-meter span { position: absolute; inset: -9px; border: 9px solid #58c997; border-right-color: transparent; border-bottom: 0; border-radius: 90px 90px 0 0; }
+.status-needs_check .coverage-meter span { border-color: #ffbe49; border-right-color: transparent; }
+.status-not_owned .coverage-meter span { border-color: #f64457; border-right-color: transparent; }
+.coverage-status-label { color: #009579; font-size: 12px; }
+.status-needs_check .coverage-status-label { color: #bd7900; }.status-not_owned .coverage-status-label { color: #d62c3c; }
+.coverage-status-card p { font-size: 11px; line-height: 1.45; color: #6073a0; flex: 1; }
+.coverage-empty { padding: 18px; background: #f5f9fc; border-radius: 10px; }
+.coverage-findings { display: grid; gap: 7px; }
+.coverage-finding { display: flex; gap: 10px; align-items: start; padding: 12px; border: 1px solid #e4edf3; border-radius: 9px; background: #f9fcfd; scroll-margin-top: 20px; }
+.coverage-finding.status-not_owned { background: #fff5f5; border-color: #ffe0e0; }.coverage-finding.status-needs_check { background: #fffaf0; border-color: #fcebd0; }
+.coverage-finding-icon { display: inline-flex; padding: 6px; color: #02a385; background: #e6f6f0; border-radius: 50%; }
+.status-not_owned .coverage-finding-icon { color: #e52f43; background: #ffe9eb; }.status-needs_check .coverage-finding-icon { color: #ed9a00; background: #fff1d5; }
+.coverage-finding-body { flex: 1; min-width: 0; }.coverage-finding-body h3 { font-size: 13px; color: #111d6d; }.coverage-finding-body > strong { font-size: 11px; color: #49638d; }.coverage-finding-body p,.coverage-finding-body li,.coverage-finding-body small { display: block; color: #5c7098; font-size: 11px; line-height: 1.5; }
+.coverage-finding-body ul { padding-left: 18px; }.coverage-finding-body blockquote { margin: 8px 0; padding: 8px; border-left: 3px solid #00a98a; background: #fff; white-space: pre-wrap; overflow-wrap: anywhere; }
+.coverage-meta { display: inline-flex; margin: 4px 5px 4px 0; padding: 2px 7px; border-radius: 20px; background: #eaf1fa; color: #52678f; font-size: 10px; }
+.coverage-continuity { margin: 8px 0; padding: 8px; border-left: 3px solid #eda632; background: #fff; }.coverage-continuity a { display: flex; }
+.coverage-finding-action { padding: 6px 8px; border: 1px solid #0eb297; border-radius: 7px; }
+.coverage-policy-list { display: grid; gap: 8px; }.coverage-policy { display: flex; align-items: start; gap: 9px; padding: 10px 0; border-top: 1px solid #e5edf3; }.coverage-policy > div { min-width: 0; flex: 1; }.coverage-policy strong { display: block; color: #18266d; font-size: 11px; }.coverage-policy p,.coverage-policy small { color: #62759a; font-size: 10px; }
+.coverage-policy-state { padding: 4px 7px; border-radius: 20px; background: #daf7ec; color: #07846d; font-size: 10px; }.coverage-ask-card { display: grid; grid-template-columns: 72px 1fr; gap: 8px; align-items: center; padding: 12px; border-radius: 12px; background: #eaf8fc; }.coverage-ask-card p { font-size: 11px; color: #58709b; }.coverage-ask-card > a { grid-column: 1/-1; display: flex; justify-content: center; align-items: center; gap: 7px; padding: 8px; border-radius: 7px; background: #079b85; color: white; font-weight: 700; }
+.coverage-side-link { display: flex; align-items: center; gap: 8px; padding: 11px 0; border-top: 1px solid #e5edf3; color: #1a2b71 !important; font-size: 11px; }.coverage-side-link svg:last-child { margin-left: auto; }
+@media (max-width: 1120px) { .coverage-layout { grid-template-columns: 1fr; }.coverage-sidebar { grid-template-columns: repeat(2,minmax(0,1fr)); }.coverage-context-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 700px) { .coverage-hero { grid-template-columns: 1fr; }.coverage-hero-note { min-height: 0; }.coverage-sidebar { grid-template-columns: 1fr; }.coverage-panel-heading { flex-wrap: wrap; }.coverage-finding { flex-wrap: wrap; }.coverage-finding-action { margin-left: auto; } }
+@media (max-width: 460px) { .coverage-context-grid { grid-template-columns: 1fr; }.coverage-status-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }

@@ -1,0 +1,266 @@
+{
+  "schema_version": "1.5",
+  "version": "1.0.0",
+  "country_scope": [
+    "CN",
+    "ID"
+  ],
+  "notice": "All logos are generated placeholders, not official or retrieved brand assets. License status is NOT_VERIFIED. Do not present them as official logos.",
+  "placeholder": true,
+  "insurers_count": 12,
+  "generated_at": "2026-10-18",
+  "insurers": [
+    {
+      "insurer_id": "cn-insurer-pingan",
+      "display_name": "Ping An Insurance (中国平安)",
+      "primary_color": "#EA5414",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-cn-insurer-pingan-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/cn-insurer-pingan/pingan_logo_official.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "24d896e3d0f42c010b979b4efec4caba6de8debb45cd96b459512d0bf18979be"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for Ping An Insurance (中国平安). Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "cn-insurer-picc",
+      "display_name": "PICC (中国人保)",
+      "primary_color": "#D81E06",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-cn-insurer-picc-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/cn-insurer-picc/picc_logo_official.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "6df5bfda809203172902ea99c1f910bfb70437800fb20983c174d594f548957d"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for PICC (中国人保). Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "cn-insurer-chinalife",
+      "display_name": "China Life (中国人寿)",
+      "primary_color": "#008837",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-cn-insurer-chinalife-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/cn-insurer-chinalife/chinalife_logo_official.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "f6f23aa232bdbdb78f5173f05dc313257338a7688a265017e0fdd96d3c36cb29"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for China Life (中国人寿). Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "cn-insurer-cpic",
+      "display_name": "CPIC (中国太保)",
+      "primary_color": "#005BAC",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-cn-insurer-cpic-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/cn-insurer-cpic/cpic_logo_official.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "166ee864b6e62d87e9cee3253947ad7958bdf550c3968f45d91dc632f8d27f5c"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for CPIC (中国太保). Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "cn-platform-lxbx",
+      "display_name": "Comprehensive Student Insurance Scheme (来华留学生保险)",
+      "primary_color": "#1890FF",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-cn-platform-lxbx-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/cn-platform-lxbx/lxbx_scheme_logo.svg",
+        "width": 340,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "58f2b21c39bf932d6a735df658c787454e5d540374bd96985ed55dddd580adc8"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for Comprehensive Student Insurance Scheme (来华留学生保险). Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "id-public-bpjs-kesehatan",
+      "display_name": "BPJS Kesehatan (JKN)",
+      "primary_color": "#008C44",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-id-public-bpjs-kesehatan-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/id-public-bpjs-kesehatan/bpjs_kesehatan_logo.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "00366d342d3e0be3e2e0d3c2ebdf1009981e51a8b9b95d612183ddc58236c4d4"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for BPJS Kesehatan (JKN). Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "id-insurer-allianz",
+      "display_name": "Allianz Indonesia",
+      "primary_color": "#003781",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-id-insurer-allianz-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/id-insurer-allianz/allianz_indonesia_logo.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "d0e96cf759856237ff1fc1e281905ae205763c99ea3e599d708daf273a369f2d"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for Allianz Indonesia. Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "id-insurer-prudential",
+      "display_name": "Prudential Indonesia",
+      "primary_color": "#ED1B2D",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-id-insurer-prudential-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/id-insurer-prudential/prudential_indonesia_logo.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "f17f8bd185af0c9c15c740c22761d32517ae60bb5c9074a0f80a4815a80fb356"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for Prudential Indonesia. Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "id-insurer-aia",
+      "display_name": "AIA Indonesia",
+      "primary_color": "#D31145",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-id-insurer-aia-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/id-insurer-aia/aia_indonesia_logo.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "f48093eb44e4b157becaf834d8ca7915a81702c7aa99be5bfa27b207b22273db"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for AIA Indonesia. Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "id-insurer-manulife",
+      "display_name": "Manulife Indonesia",
+      "primary_color": "#00A758",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-id-insurer-manulife-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/id-insurer-manulife/manulife_indonesia_logo.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "b2ecc8295e91607c2459c0981f681fe997c1543bc37b9b72e60092f1d902cca8"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for Manulife Indonesia. Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "id-insurer-axa-mandiri",
+      "display_name": "AXA Mandiri",
+      "primary_color": "#00008F",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-id-insurer-axa-mandiri-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/id-insurer-axa-mandiri/axa_mandiri_logo.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "3754e68827a131235e561311b03fdf5f3a37ae8820637d162e987b7075608f88"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for AXA Mandiri. Not the official logo and no trademark license has been verified."
+    },
+    {
+      "insurer_id": "id-insurer-bri-life",
+      "display_name": "BRI Life",
+      "primary_color": "#00529C",
+      "placeholder": true,
+      "evidence_class": "PLACEHOLDER",
+      "license_status": "NOT_VERIFIED",
+      "logo": {
+        "asset_id": "asset-id-insurer-bri-life-primary",
+        "status": "placeholder",
+        "fetched": false,
+        "sha256_of": "generated_placeholder_file",
+        "public_url": "/assets/insurers/id-insurer-bri-life/bri_life_logo.svg",
+        "width": 320,
+        "height": 80,
+        "mime_type": "image/svg+xml",
+        "sha256": "7615adb06e6f7ca2c9ff37bb2ef19ee86f821fa2c6ce17c91279d336a63730d7"
+      },
+      "fallback": "insurance-category-icon",
+      "attribution": "Placeholder artwork for BRI Life. Not the official logo and no trademark license has been verified."
+    }
+  ]
+}

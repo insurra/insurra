@@ -12,6 +12,13 @@ from app.services.kb_loader import CountryKBLoader
 from app.tests.workspace_fixtures import reviewed_triage, workspace
 
 
+@pytest.fixture
+def kb_countries() -> str:
+    # Settings override scoped to this module: it uses the inactive legacy kb/AU folder as a
+    # fixture-only configuration. The default app keeps AU disabled (see conftest).
+    return "AU,CN,ID"
+
+
 def request(client, h, country="AU", **changes):
     return client.post(
         "/api/v1/pathways/compare",
@@ -294,3 +301,16 @@ def test_pathway_kb_rejects_noncanonical_policy_and_service_references(app, tmp_
         path.write_text(json.dumps(changed))
         with pytest.raises(ValueError, match="Unknown pathway"):
             CountryKBLoader(tmp_path).load("ID")
+
+
+def test_cn_pathways_never_fabricate_cost_direct_billing_or_network(client, app, monkeypatch):
+    reviewed_triage(app, monkeypatch)
+    h, _, _, _ = workspace(app, client, "CN")
+    response = request(client, h, "CN", complaint="Non-emergency outpatient check")
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["context_country_code"] == "CN"
+    assert len(result["paths"]) >= 2
+    assert all(p["est_out_of_pocket"] is None for p in result["paths"])
+    assert all(p["direct_billing"] is None for p in result["paths"])
+    assert all(p["in_network"] is None for p in result["paths"])

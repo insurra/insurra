@@ -100,7 +100,13 @@ def create_case(db, actor, kb, body, key, now=None):
         raise AppError(
             409, "COVERAGE_NEEDS_CHECK", "Perlindungan perlu diperiksa sebelum membuat kasus."
         )
+    from uuid import uuid4
+
+    from sqlalchemy.exc import OperationalError
+
+    case_id = uuid4()
     row = ClaimCaseRow(
+        id=case_id,
         **owner_values(actor),
         comparison_id=decision.id,
         idempotency_key=key,
@@ -109,14 +115,15 @@ def create_case(db, actor, kb, body, key, now=None):
         country_code=p.country_code,
         path=config.pathway_code,
         status="DRAFT",
-        complaint_summary="Kebutuhan layanan non-darurat; rincian keluhan disamarkan.",
+        complaint_summary="Non-emergency care pathway selected; symptom details redacted.",
         created_at=now,
     )
     db.add(row)
+    _bridge_workflow_claim(db, actor, p, coverage, config, row, key, now)
     log_actor_event(db, actor, "ACTION", subtype="claim_case_created")
     try:
         db.commit()
-    except IntegrityError:
+    except (IntegrityError, OperationalError):
         db.rollback()
         existing = find_existing(db, actor, body, key, payload_hash)
         if existing:
@@ -124,6 +131,90 @@ def create_case(db, actor, kb, body, key, now=None):
         raise AppError(
             409,
             "CASE_CREATION_CONFLICT",
-            "Konfirmasi sedang diproses. Coba kembali dengan kunci yang sama.",
+            "Confirmation is already being processed. Retry with the same Idempotency-Key.",
         ) from None
     return row.id
+
+
+def _bridge_workflow_claim(
+    db, actor, p, coverage, config, row: ClaimCaseRow, key: str, now: datetime
+) -> None:
+    from app.services.actor_scope import owner_for
+    from app.workflow import kbdata, states
+    from app.workflow.models import WfClaimCaseRow, WfClaimItemRow, WfClaimStatusEventRow
+
+    owner = owner_for(actor)
+    product = None
+    procedure = None
+    if p.country_code in kbdata.ACTIVE_COUNTRIES:
+        product = kbdata.match_product(
+            p.country_code, coverage.provider, coverage.provider, coverage.kind
+        )
+        if product:
+            procedure = kbdata.procedure_for_product(p.country_code, product["product_id"])
+    reference = f"CLM-{now.year}-{str(row.id)[:8].upper()}"
+    wf_case = WfClaimCaseRow(
+        id=row.id,
+        owner_kind=owner.kind,
+        owner_id=owner.id,
+        reference=reference,
+        title=f"{config.label} ({config.pathway_code})"[:200],
+        claim_type="Medical reimbursement",
+        country_code=p.country_code,
+        coverage_ref=str(coverage.id),
+        coverage_label=f"{coverage.kind} · {coverage.provider or 'Policy'}"[:200],
+        insured_person="Self",
+        claimant_name=(getattr(p, "full_name", None) or "User")[:200],
+        product_id=product["product_id"] if product else None,
+        procedure_id=procedure["procedure_id"] if procedure else None,
+        policy_start=str(coverage.start) if coverage.start else None,
+        policy_end=str(coverage.end) if coverage.end else None,
+        status=states.DRAFT,
+        origin="PATHWAY",
+        origin_ref=str(row.id),
+        idempotency_key=key,
+        is_synthetic=bool(actor.session_id),
+        conflict_notes={"acknowledged": {}, "origins": {}},
+        created_at=now,
+        updated_at=now,
+    )
+    db.add(wf_case)
+    for pos, (code, label, reason) in enumerate(
+        (
+            (
+                "POLICY",
+                "Policy information",
+                "Identifies the insured person and the policy period used by the claim checks.",
+            ),
+            (
+                "SERVICE_DATE",
+                "Service or visit date",
+                "The date of service is needed to compare against the policy period and filing deadline.",
+            ),
+            (
+                "PROVIDER_AMOUNT",
+                "Provider and claim amount",
+                "The claim form needs the provider, amount and currency taken from your documents.",
+            ),
+        ),
+        start=1,
+    ):
+        db.add(
+            WfClaimItemRow(
+                claim_id=row.id,
+                code=code,
+                label=label,
+                kind="INFO",
+                reason=reason,
+                position=pos,
+            )
+        )
+    db.add(
+        WfClaimStatusEventRow(
+            claim_id=row.id,
+            event_type="CASE_CREATED",
+            to_status=states.DRAFT,
+            source="USER",
+            created_at=now,
+        )
+    )

@@ -36,8 +36,10 @@ check-contracts:
 test-client:
 	cd frontend && npm run test:client
 
-.PHONY: check-prd-contracts check-prd-source
+.PHONY: check-prd-contracts check-prd-source agent-worker-once
 check-prd-contracts:
 	cd backend && $(UV) run python ../scripts/verify_prd_contracts.py
 check-prd-source:
 	cd backend && $(UV) run python ../scripts/verify_prd_contracts.py --csv "../docs/prd/PRD - Kontrak API.csv"
+agent-worker-once:
+	cd backend && $(UV) run python -m app.agent.worker

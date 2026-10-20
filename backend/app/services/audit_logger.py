@@ -478,17 +478,17 @@ def enrich_audit_event(
         if "citations" not in safe_meta and event_type in {"ANSWER", "POLICY_QUESTION_ANSWERED"}:
             safe_meta["citations"] = [
                 {
-                    "document_name": "Polis_OSHC_Allianz.pdf",
-                    "page": 4,
+                    "document_name": "student-insurance-certificate-synthetic.txt",
+                    "page": 1,
                     "quote": (
-                        "Klausul 4.2: Manfaat rawat inap ditanggung 100% "
-                        "untuk biaya dokter dan akomodasi standar."
+                        "SYNTHETIC DEMO ONLY. Not a real insurer product and not an "
+                        "official requirement."
                     ),
                 }
             ]
     if "rule_id" not in safe_meta:
         if event_type == "VISA_GAP_ASSESSED":
-            safe_meta["rule_id"] = "RULE-AU-OSHC-500"
+            safe_meta["rule_id"] = "cn-international-student-coverage-continuity-v1"
         elif "RECOMMEND" in event_type.upper() or category == "compare":
             safe_meta["rule_id"] = "RULE-PATH-TRIAGE-01"
     if category == "action":
@@ -547,7 +547,7 @@ DEMO_GUARDRAIL_SCENARIOS: tuple[tuple[str, dict[str, Any]], ...] = (
             "source_screen": "SC-03 · Dokumen Saya",
             "input_summary": (
                 "Unggah dokumen klaim dengan baris instruksi tersembunyi "
-                "(prompt injection) pada polis OSHC-8899001234."
+                "(prompt injection) pada polis POL-8899001234."
             ),
             "tools_called": ["policy_guard", "extract_text_or_ocr"],
             "result_summary": (
@@ -589,7 +589,7 @@ DEMO_GUARDRAIL_SCENARIOS: tuple[tuple[str, dict[str, Any]], ...] = (
             "subtype": "Jawaban tanpa sumber ditolak",
             "source_screen": "SC-06 · Tanya Polis",
             "input_summary": (
-                "Pertanyaan manfaat tanpa klausul pendukung pada dokumen polis OSHC-8899001234."
+                "Pertanyaan manfaat tanpa klausul pendukung pada dokumen polis POL-8899001234."
             ),
             "tools_called": ["retrieve_clause", "policy_guard"],
             "result_summary": (
@@ -609,7 +609,7 @@ DEMO_GUARDRAIL_SCENARIOS: tuple[tuple[str, dict[str, Any]], ...] = (
             "subtype": "Tindakan tanpa persetujuan diblokir",
             "source_screen": "SC-10 · Persetujuan Tindakan",
             "input_summary": (
-                "Percobaan eksekusi pengiriman draf klaim polis OSHC-8899001234 "
+                "Percobaan eksekusi pengiriman draf klaim polis POL-8899001234 "
                 "tanpa token persetujuan pengguna."
             ),
             "tools_called": ["policy_guard", "draft_claim_form"],

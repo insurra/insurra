@@ -1,0 +1,16 @@
+{
+  "evidence_class": "SYNTHETIC_FIXTURE",
+  "fixture_id": "synth-dec-country-mismatch",
+  "category": "decision_test_case",
+  "country_code": "CN",
+  "label": "Issuer Country Differing from Current Residence Country",
+  "description": "User resides in China on student visa but uploads Indonesian domestic private policy only.",
+  "payload": {
+    "profile_country": "CN",
+    "residence_context": "INTERNATIONAL_STUDENT",
+    "record_country": "ID",
+    "policy_territory": "Indonesia only"
+  },
+  "is_adversarial": false,
+  "expected_outcome": "NEEDS_VERIFICATION_TERRITORIAL_GAP"
+}

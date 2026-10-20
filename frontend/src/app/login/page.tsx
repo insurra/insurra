@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, LockKeyhole } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 
@@ -23,8 +23,29 @@ export default function LoginPage() {
 }
 
 function LoginContent() {
-  const { account, googleLoginUrl } = useAuth();
-  const failed = useSearchParams().get("error") === "google";
+  const { account, loading, googleLoginUrl } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const failed = searchParams.get("error") === "google";
+
+  useEffect(() => {
+    if (loading) return;
+    if (account) {
+      router.replace("/auth");
+      return;
+    }
+    // A prior OAuth failure can leave its query string behind after navigation.
+    if (failed) router.replace("/login");
+  }, [account, failed, loading, router]);
+
+  if (loading || account) {
+    return (
+      <main className="callback-page" role="status" aria-live="polite">
+        <p>{account ? "Opening your workspace…" : "Checking your session…"}</p>
+      </main>
+    );
+  }
+
   return (
     <main className="auth-page">
       <section className="auth-story">
@@ -69,40 +90,26 @@ function LoginContent() {
           <span className="auth-lock">
             <LockKeyhole />
           </span>
-          <h2>{account ? "You are signed in." : "Welcome to Insurra."}</h2>
-          <p>
-            {account
-              ? `Continue as ${account.display_name ?? account.email ?? "Member"}.`
-              : "Sign in with Google or your credentials to access your private workspace."}
-          </p>
+          <h2>Welcome to Insurra.</h2>
+          <p>Sign in with Google or your credentials to access your private workspace.</p>
           {failed && (
             <div className="alert error" role="alert">
               Google sign-in was not completed. Please try again.
             </div>
           )}
-          {account ? (
-            <Button asChild size="lg" className="auth-button">
-              <Link href="/account">
-                Open Workspace <ArrowRight />
-              </Link>
-            </Button>
-          ) : (
-            <>
-              <Button asChild variant="outline" size="lg" className="auth-button google-button">
-                <a href={googleLoginUrl}>
-                  <span className="google-mark">G</span> Continue with Google
-                </a>
-              </Button>
-              <div className="auth-divider">
-                <span>or</span>
-              </div>
-              <Button asChild size="lg" className="auth-button">
-                <Link href="/auth">
-                  Email & Password Sign In <ArrowRight />
-                </Link>
-              </Button>
-            </>
-          )}
+          <Button asChild variant="outline" size="lg" className="auth-button google-button">
+            <a href={googleLoginUrl}>
+              <span className="google-mark">G</span> Continue with Google
+            </a>
+          </Button>
+          <div className="auth-divider">
+            <span>or</span>
+          </div>
+          <Button asChild size="lg" className="auth-button">
+            <Link href="/auth">
+              Email & Password Sign In <ArrowRight />
+            </Link>
+          </Button>
           <div className="auth-divider">
             <span>or</span>
           </div>

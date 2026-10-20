@@ -2,17 +2,15 @@ import { defineConfig, devices } from "@playwright/test";
 import path from "node:path";
 
 const root = path.resolve(__dirname, "..");
-const apiBaseURL = process.env.INSURRA_E2E_API_URL ?? "http://localhost:8000";
-const webBaseURL = process.env.INSURRA_E2E_WEB_URL ?? "http://localhost:3000";
-const apiPort = new URL(apiBaseURL).port || "8000";
-const webPort = new URL(webBaseURL).port || "3000";
+const e2eDatabaseUrl =
+  process.env.INSURRA_E2E_DATABASE_URL ?? `sqlite:///${root}/.cache/e2e.db`;
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["demo.spec.ts", "workspace.spec.ts"],
+  testMatch: ["demo.spec.ts", "claims.spec.ts", "workspace.spec.ts", "account-journey.spec.ts"],
   fullyParallel: false,
   retries: 0,
   reporter: "list",
-  use: { baseURL: webBaseURL, trace: "retain-on-failure" },
+  use: { baseURL: "http://127.0.0.1:3177", trace: "retain-on-failure" },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     {
@@ -22,23 +20,23 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "make migrate && make seed && make dev-backend",
+      command: "make migrate && make seed && cd backend && uv run uvicorn app.main:app --host 127.0.0.1 --port 8177",
       cwd: root,
-      url: `${apiBaseURL}/health`,
-      reuseExistingServer: !process.env.CI,
+      url: "http://127.0.0.1:8177/health",
+      reuseExistingServer: false,
       env: {
-        DATABASE_URL: `sqlite:///${root}/.cache/e2e.db`,
-        FRONTEND_ORIGIN: webBaseURL,
-        API_PORT: apiPort,
+        DATABASE_URL: e2eDatabaseUrl,
+        FRONTEND_ORIGIN: "http://127.0.0.1:3177",
+        UV_CACHE_DIR: "/tmp/insurra-e2e-uv-cache",
       },
       timeout: 60_000,
     },
     {
       // CI exercises the built application, without on-demand dev compilation during assertions.
-      command: process.env.CI ? "npm run build && npm run start" : "npm run dev",
-      url: webBaseURL,
-      reuseExistingServer: !process.env.CI,
-      env: { NEXT_PUBLIC_API_BASE_URL: apiBaseURL, PORT: webPort },
+      command: "npm run build && npm run start -- --port 3177",
+      url: "http://127.0.0.1:3177",
+      reuseExistingServer: false,
+      env: { NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:8177" },
       timeout: 90_000,
     },
   ],

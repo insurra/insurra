@@ -1,0 +1,67 @@
+{
+  "template_id": "tmpl-cn-medical-fapiao",
+  "document_category": "DOC_MEDICAL_INVOICE",
+  "country_code": "CN",
+  "original_language": "zh",
+  "applicable_schemes": [
+    "All medical reimbursement plans in China"
+  ],
+  "required_fields": [
+    {
+      "field_key": "fapiao_code",
+      "label_en": "Fiscal Invoice Code",
+      "label_original": "发票代码",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "12-digit national fiscal invoice code",
+      "source_evidence_hint": "Top right header code"
+    },
+    {
+      "field_key": "fapiao_number",
+      "label_en": "Invoice Number",
+      "label_original": "发票号码",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "8-digit invoice sequence number",
+      "source_evidence_hint": "Below fiscal invoice code"
+    },
+    {
+      "field_key": "billing_date",
+      "label_en": "Billing Date",
+      "label_original": "开票日期",
+      "value_type": "date",
+      "required": true,
+      "normalization_rule": "ISO 8601 date YYYY-MM-DD",
+      "source_evidence_hint": "Date stamp in header area"
+    },
+    {
+      "field_key": "payer_name",
+      "label_en": "Patient / Payer Legal Name",
+      "label_original": "交款人",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Must match claimant passport name",
+      "source_evidence_hint": "Header row '交款人 / Name'"
+    },
+    {
+      "field_key": "total_amount",
+      "label_en": "Total Invoiced Amount",
+      "label_original": "合计金额（小写）",
+      "value_type": "money",
+      "required": true,
+      "normalization_rule": "Decimal string in CNY",
+      "source_evidence_hint": "Bottom summary row labeled '合计 / Total'"
+    },
+    {
+      "field_key": "hospital_name",
+      "label_en": "Hospital / Issuing Entity Name",
+      "label_original": "收款单位",
+      "value_type": "text",
+      "required": true,
+      "normalization_rule": "Official public hospital registered title",
+      "source_evidence_hint": "Bottom right official electronic fiscal seal"
+    }
+  ],
+  "optional_fields": [],
+  "review_requirements": "Verify national electronic fiscal seal and ensure invoice code passes checksum validation."
+}

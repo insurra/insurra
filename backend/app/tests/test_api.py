@@ -37,7 +37,7 @@ def test_health_and_docs(client):
 
 def test_country_discovery_and_personas(client):
     countries = client.get("/api/v1/countries").json()
-    assert {c["country_code"] for c in countries} == {"AU", "ID"}
+    assert {c["country_code"] for c in countries} == {"CN", "ID"}
     assert all(c["verification_status"] == "UNVERIFIED" for c in countries)
     assert {p["persona_id"] for p in client.get("/api/v1/demo/personas").json()} == {
         "raka",
@@ -279,8 +279,8 @@ def test_isolation_including_same_persona_and_document_identifiers(client, demo)
 @pytest.mark.parametrize(
     "persona,types,gap,status",
     [
-        ("raka", {"OSHC"}, 76, "NEEDS_VERIFICATION"),
-        ("sinta", {"BPJS", "EMPLOYER"}, None, "NOT_APPLICABLE"),
+        ("raka", {"INTERNATIONAL_STUDENT"}, 76, "NEEDS_VERIFICATION"),
+        ("sinta", {"BPJS", "EMPLOYER"}, None, "UNABLE_TO_DETERMINE"),
     ],
 )
 def test_records_and_assessments(client, demo, persona, types, gap, status):
@@ -294,6 +294,8 @@ def test_records_and_assessments(client, demo, persona, types, gap, status):
     )
     result = client.get("/api/v1/assessments/visa-gap", headers=h).json()
     assert result["gap_days"] == gap and result["assessment_status"] == status
+    if gap:
+        assert result["requirement_status"] == "NEEDS_VERIFICATION"
     if gap:
         assert result["gap_periods"] == [{"start_date": "2027-04-16", "end_date": "2027-06-30"}]
     assert client.get("/api/v1/audit?event_type=VISA_GAP_ASSESSED", headers=h).json()
@@ -315,13 +317,20 @@ def test_profile_validation_and_country_guard(client, demo):
     )
     assert (
         client.put(
-            "/api/v1/profile", headers=h, json={**body, "visa_expiry_date": None}
+            "/api/v1/profile",
+            headers=h,
+            json={
+                **body,
+                "visa_expiry_date": None,
+                "permit_end_date": None,
+                "study_end_date": None,
+            },
         ).status_code
         == 200
     )
     assert (
         client.get("/api/v1/assessments/visa-gap", headers=h).json()["assessment_status"]
-        == "NEEDS_VERIFICATION"
+        == "UNABLE_TO_DETERMINE"
     )
 
 
@@ -358,8 +367,18 @@ def test_skeletons_fail_honestly_and_require_consent(client, app, demo, method, 
     client.put("/api/v1/consent", headers=h, json={"processing_consent": True})
     client.post("/api/v1/consents", headers=h, json={"purpose": "external_ai", "granted": True})
     response = client.request(method, "/api/v1" + path, **kwargs)
-    assert response.status_code == 501
-    assert response.json()["code"] == "NOT_IMPLEMENTED"
+    if path == "/actions":
+        assert response.status_code == 200
+        assert response.json() == []
+    elif path.endswith("/approve"):
+        assert response.status_code == 422
+        assert response.json()["code"] == "EXPLICIT_CONFIRMATION_REQUIRED"
+    elif path.endswith("/reject"):
+        assert response.status_code == 200
+        assert response.json() == {"status": "REJECTED"}
+    else:
+        assert response.status_code == 501
+        assert response.json()["code"] == "NOT_IMPLEMENTED"
 
 
 def test_upload_is_explicitly_not_implemented(client, demo):

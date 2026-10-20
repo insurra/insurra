@@ -126,6 +126,27 @@ class ClaimCaseRow(Base):
     country_code: Mapped[str] = mapped_column(String(2))
     path: Mapped[str] = mapped_column(String(100))
     status: Mapped[str] = mapped_column(String(30), default="DRAFT")
+    claim_ref: Mapped[str | None] = mapped_column(String(100))
+    sandbox_status: Mapped[str | None] = mapped_column(String(50))
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    monitoring_state: Mapped[str | None] = mapped_column(String(30))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class ClaimCaseEventRow(Base):
+    __tablename__ = "claim_case_events"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["claim_case_id", "session_id"],
+            ["claim_cases.id", "claim_cases.session_id"],
+            name="fk_claim_event_owned_case",
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    session_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("demo_sessions.id"), index=True)
+    claim_case_id: Mapped[UUID] = mapped_column(Uuid, index=True)
+    event_type: Mapped[str] = mapped_column(String(50))
+    status_snapshot: Mapped[str] = mapped_column(String(30))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
@@ -146,3 +167,5 @@ class ActionRow(Base):
     status: Mapped[str] = mapped_column(String(30), default="PENDING")
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     approved_payload_sha256: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=now)
+    payload_version: Mapped[int | None] = mapped_column(Integer, default=1)

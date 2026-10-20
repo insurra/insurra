@@ -8,22 +8,22 @@ import "./workspace.css";
 type Workspace = ReturnType<typeof useWorkspace>;
 export function WorkspaceState({ workspace }: { workspace: Workspace }) {
   if (workspace.loading)
-    return <p role="status">Memuat konteks perlindungan…</p>;
+    return <p role="status">Loading protection context…</p>;
   if (workspace.error)
     return (
       <div className="vn-state" role="alert">
-        <h1>Data belum tersedia</h1>
+        <h1>Data Unavailable</h1>
         <p>{workspace.error}</p>
-        <button onClick={workspace.refresh}>Coba lagi</button>
-        <Link href="/onboarding">Periksa profil</Link>
+        <button onClick={workspace.refresh}>Try again</button>
+        <Link href="/onboarding">Review profile</Link>
       </div>
     );
   return (
     <div className="vn-state">
-      <h1>Masuk untuk membuka perlindungan Anda</h1>
-      <p>Gunakan akun atau sesi demo yang sudah tersedia.</p>
-      <Link href="/auth">Masuk</Link>
-      <Link href="/">Pilih demo</Link>
+      <h1>Sign in to access your protection workspace</h1>
+      <p>Use an authenticated account or choose an active demo persona.</p>
+      <Link href="/auth">Sign in</Link>
+      <Link href="/">Select demo</Link>
     </div>
   );
 }
@@ -33,24 +33,24 @@ export function EmergencyNotice({
   info?: components["schemas"]["EmergencyInfo"];
 }) {
   return (
-    <aside className="vn-emergency" aria-label="Bantuan darurat">
+    <aside className="vn-emergency" aria-label="Emergency Assistance">
       <strong>
-        {info?.label ?? "Darurat? Periksa layanan darurat setempat."}
+        {info?.label ?? "Emergency? Check local emergency services."}
       </strong>
       {info?.available && info.phone_number ? (
-        <a href={`tel:${info.phone_number}`}>Hubungi {info.phone_number}</a>
+        <a href={`tel:${info.phone_number}`}>Call {info.phone_number}</a>
       ) : (
         <p>
-          Jika membutuhkan bantuan segera, periksa layanan darurat setempat.
-          Pemeriksaan polis tidak menggantikan bantuan darurat.
+          If you require immediate medical attention, contact local emergency services immediately.
+          Policy checks do not replace emergency care.
         </p>
       )}
       {info?.source_url && (
         <a href={info.source_url} target="_blank" rel="noreferrer">
-          Sumber resmi · {info.checked_at}
+          Official source · {info.checked_at}
         </a>
       )}
-      <small>Arahan darurat SC-08 belum tersedia di aplikasi ini.</small>
+      <small>Full emergency escalation is available via topbar Emergency SOS.</small>
     </aside>
   );
 }
@@ -58,13 +58,11 @@ export function ConsentNotice({ ai = false }: { ai?: boolean }) {
   return (
     <div className="vn-state" role="note">
       <p>
-        Aktifkan persetujuan pemrosesan dokumen{ai ? " dan external AI" : ""}{" "}
-        sebelum melanjutkan.
+        Enable document processing{ai ? " and external AI" : ""} permissions before proceeding.
       </p>
-      <Link href="/settings/privacy">Privasi & Data Saya</Link>
+      <Link href="/settings/privacy">Settings & Privacy</Link>
       <small>
-        Demo: kelola external_ai melalui API persetujuan; kontrol demo lama
-        hanya mengatur dokumen.
+        Manage external AI and document data retention in your privacy controls.
       </small>
     </div>
   );

@@ -5,7 +5,7 @@
   "checked_at": null,
   "verification_status": "UNVERIFIED",
   "data": [
-    {"task_code": "visa_cover", "label": "Check insurance data for visa", "policy_types": ["OSHC"]},
+    {"task_code": "coverage_continuity", "label": "Protection continuity check", "policy_types": ["OSHC"]},
     {"task_code": "gp_visit", "label": "Preparation for GP visit", "policy_types": ["OSHC", "PERSONAL_HEALTH"]},
     {"task_code": "reimbursement", "label": "Preparation for reimbursement claim", "policy_types": ["OSHC", "PERSONAL_HEALTH"]}
   ]

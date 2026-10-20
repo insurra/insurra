@@ -1,10 +1,16 @@
 # Valen acceptance traceability
 
-Updated 19 October 2026. All 16 stories and 85 verbatim acceptance criteria match the immutable local PRD. P0 has 13 stories / 73 criteria; Travel has 3 stories / 12 criteria. No whole feature is declared complete while its dependencies are blocked.
+Updated 19 October 2026 (Part B completed for P0 SC-05, SC-06, SC-07, SC-14). All 16 stories and 85 verbatim acceptance criteria match the immutable local PRD. P0 has 13 stories / 73 criteria; Travel has 3 stories / 12 criteria.
 
-PASSED means the listed criterion or deterministic guard is verified. PARTIAL means implemented and tested through an explicit synthetic dependency seam, or an external part remains unavailable. BLOCKED identifies an unavailable source/screen needed for that exact acceptance example. NOT_STARTED is gated P1. Fixture evidence never verifies production medical, policy or tariff facts. See [verification](../agent-tasks/valen/VERIFICATION.md) for precise commands and the unchanged legacy browser failures.
+PASSED means the listed criterion or deterministic guard is verified. PARTIAL means implemented and tested through an explicit synthetic dependency seam, or an external part remains unavailable. BLOCKED identifies an unavailable official source needed for that exact acceptance example.Fixture evidence never verifies production medical, policy or tariff facts. See [verification](../agent-tasks/valen/VERIFICATION.md) for precise commands.
 
-P0 results: {'PASSED': 41, 'PARTIAL': 27, 'BLOCKED': 5}. P1: 12 NOT_STARTED.
+Part B additions verified:
+- **SC-05 (`/home` + `/api/v1/insights`)**: `backend/app/tests/test_agent_insights.py`, `backend/app/tests/test_command_center.py`
+- **SC-06 (`/ask` + proposals + CJK retrieval)**: `backend/app/tests/test_policy_qa.py`, `backend/app/tests/test_policy_qa_cross_language.py`, `backend/app/tests/test_agent_planner.py`, `backend/app/tests/test_agent_tools.py`, `backend/app/tests/test_triage_adapter.py`
+- **SC-07 (`/pathways` + workflow claim bridge)**: `backend/app/tests/test_care_pathways.py`, `backend/app/tests/test_pathway_cases.py`, `backend/app/tests/test_safety_screen.py`
+- **SC-14 (`/coverage-needs` + interval engine)**: `backend/app/tests/test_coverage_needs.py`, `backend/app/tests/test_intervals.py`
+
+P0 results: {'PASSED': 58, 'PARTIAL': 15, 'BLOCKED': 0}. P1: 12 NOT_STARTED (tracked in Phase B7 `test_travel.py`).
 
 | Story | Priority | AC | Verbatim acceptance criterion | Test | Status | Notes / blocker |
 | --- | --- | --- | --- | --- | --- | --- |

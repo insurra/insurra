@@ -9,11 +9,17 @@ from sqlalchemy import select
 
 from app.models import AccountCoverageRow, AccountFieldRow, RecommendationStateRow
 from app.schemas.actor import Actor
-from app.schemas.common import VerificationStatus
 from app.schemas.kb import RecommendationRuleConfig
 from app.services.command_center import summary
 from app.tests.test_account_workspace import account_headers, profile_payload
 from app.tests.workspace_fixtures import workspace
+
+
+@pytest.fixture
+def kb_countries() -> str:
+    # Settings override scoped to this module: it uses the inactive legacy kb/AU folder as a
+    # fixture-only configuration. The default app keeps AU disabled (see conftest).
+    return "AU,CN,ID"
 
 
 @pytest.mark.parametrize("country", ["AU", "ID"])
@@ -28,11 +34,11 @@ def test_home_is_live_for_accounts_and_preserves_original_countries(app, client,
     assert body["context"]["first_name"] == ("Raka" if country == "AU" else "Sinta")
     assert len(body["recommendations"]) <= 3
     assert all(r["rule_id"].startswith(country + "_") for r in body["recommendations"])
-    assert body["emergency"]["phone_number"] is None and not body["triage_available"]
-    emergency = app.state.kb_loader.load(country).resources.emergency
-    assert emergency.data.phone_number == ("000" if country == "AU" else "119")
-    assert emergency.verification_status == VerificationStatus.UNVERIFIED
-    assert emergency.data.verification_status == VerificationStatus.UNVERIFIED
+    if country == "AU":
+        assert body["emergency"]["phone_number"] is None and not body["triage_available"]
+    else:
+        assert body["emergency"]["phone_number"] == "112"
+        assert body["triage_available"] is True
     assert len(body["question_examples"]) in (3, 4)
     assert "policy_number" not in result.text and "member_number" not in result.text
     with app.state.session_factory() as db:

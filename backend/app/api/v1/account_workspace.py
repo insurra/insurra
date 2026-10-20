@@ -4,7 +4,7 @@ from datetime import UTC, date, datetime, timedelta
 from typing import Annotated, Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, Query, Request, Response
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
@@ -39,20 +39,39 @@ from app.schemas.account_workspace import (
     FamilyMember,
     FamilyMemberCreate,
 )
+from app.schemas.actor import Actor, ActorType
 from app.schemas.audit import AuditCategory, AuditEvent
 from app.schemas.common import CompletenessStatus
 from app.schemas.consent import POLICY_VERSION, ConsentPurpose, PurposeConsentUpdate
-from app.schemas.profile import ProfileData, ProfileUpdate, UserProfile
+from app.schemas.privacy import (
+    AccountExport,
+    ConnectedSources,
+    ConsentHistory,
+    ConsentHistoryItem,
+)
+from app.schemas.profile import COUNTRY_BOUND_FIELDS, ProfileData, ProfileUpdate, UserProfile
+from app.services.account_export import build_export
 from app.services.audit_logger import (
     CATEGORY_EVENT_TYPES,
     enrich_audit_event,
     ensure_account_guardrail_events,
 )
+from app.services.events import dispatch
 from app.services.policy_guard import PolicyGuard
+from app.services.profile_context import require_active_country
 from app.services.rules_engine import uncovered_interval
 from app.services.workspace_privacy import purge_content, purge_workspace
+from app.workflow.models import WfActionRow
+from app.workflow.owner import ACCOUNT
+
+# `visa_cover` is the retired task code; KB tasks now use `coverage_continuity`.
+SHARED_ASSESSMENT_TASKS = {"visa_cover", "coverage_continuity"}
 
 router = APIRouter(prefix="/account", tags=["Authenticated workspace"])
+
+
+def _actor(account_id: UUID) -> Actor:
+    return Actor(actor_type=ActorType.AUTHENTICATED_ACCOUNT, account_id=account_id)
 
 
 def audit(db: Session, account_id: UUID, event_type: str, **metadata: Any) -> None:
@@ -161,7 +180,8 @@ def update_consent(body: PurposeConsentUpdate, db: DB, account: ActiveAccount):
     rows = consent_rows(db, account.id)
     row = next(item for item in rows if item.purpose == body.purpose.value)
     now = datetime.now(UTC)
-    if row.granted != body.granted:
+    row_changed = row.granted != body.granted
+    if row_changed:
         if body.granted:
             row.granted_at = now
         else:
@@ -176,7 +196,22 @@ def update_consent(body: PurposeConsentUpdate, db: DB, account: ActiveAccount):
             document.content = None
     if not body.granted:
         purge_content(db, account.id, pages=body.purpose == ConsentPurpose.RETENTION)
-    audit(db, account.id, "CONSENT_CHANGED", purpose=body.purpose.value, granted=body.granted)
+    audit(
+        db,
+        account.id,
+        "CONSENT_CHANGED",
+        purpose=body.purpose.value,
+        granted=body.granted,
+        policy_version=body.policy_version,
+    )
+    if row_changed and not body.granted:
+        dispatch(
+            db,
+            _actor(account.id),
+            "consent.revoked",
+            body.purpose.value,
+            {"permission": body.purpose.value, "dedupe_part": now.isoformat()},
+        )
     db.commit()
     return get_consents(db, account)
 
@@ -191,9 +226,12 @@ def decide_consents(body: BulkConsentDecision, db: DB, account: ActiveAccount):
         ConsentPurpose.EXTERNAL_AI.value: False if body.skip else body.external_ai,
         ConsentPurpose.RETENTION.value: False if body.skip else body.retention,
     }
+    revoked: list[str] = []
     for row in rows:
         granted = decisions.get(row.purpose, False)
         if row.granted != granted:
+            if not granted:
+                revoked.append(row.purpose)
             if granted:
                 row.granted_at = now
             else:
@@ -207,7 +245,22 @@ def decide_consents(body: BulkConsentDecision, db: DB, account: ActiveAccount):
                 document.content = None
     if not all(decisions.values()):
         purge_content(db, account.id, pages=not decisions[ConsentPurpose.RETENTION.value])
-    audit(db, account.id, "CONSENTS_DECIDED", skip=body.skip, **decisions)
+    audit(
+        db,
+        account.id,
+        "CONSENTS_DECIDED",
+        skip=body.skip,
+        policy_version=POLICY_VERSION,
+        **decisions,
+    )
+    for purpose in revoked:
+        dispatch(
+            db,
+            _actor(account.id),
+            "consent.revoked",
+            purpose,
+            {"permission": purpose, "dedupe_part": now.isoformat()},
+        )
     db.commit()
     return get_consents(db, account)
 
@@ -240,15 +293,7 @@ def save_profile_draft(body: ProfileUpdate, db: DB, account: ActiveAccount):
     changes = body.model_dump(mode="json", exclude_unset=True)
     old = row.payload if row else {}
     if changes.get("country_code", old.get("country_code")) != old.get("country_code"):
-        for key in (
-            "city",
-            "timezone",
-            "institution_name",
-            "arrival_date",
-            "visa_expiry_date",
-            "budget_range",
-            "currency",
-        ):
+        for key in COUNTRY_BOUND_FIELDS:
             if key not in changes:
                 changes[key] = None
     payload = {**old, **changes}
@@ -264,13 +309,15 @@ def save_profile_draft(body: ProfileUpdate, db: DB, account: ActiveAccount):
 
 
 @router.put("/profile", response_model=AccountProfileState)
-def save_profile(body: ProfileData, db: DB, account: ActiveAccount, kb: KB):
+def save_profile(body: ProfileData, db: DB, account: ActiveAccount, kb: KB, request: Request):
+    require_active_country(request, body.country_code)
     kb.load(body.country_code)
     if (body.residence_context.value == "DOMESTIC") != (body.country_code == "ID"):
         raise AppError(
             422, "INVALID_COUNTRY_CONTEXT", "Konteks tempat tinggal tidak sesuai negara."
         )
     row = db.get(AccountProfileRow, account.id)
+    first_completion = row is None or not row.completed
     old_payload = row.payload if row and row.completed else {}
     now = datetime.now(UTC)
     payload = {
@@ -291,6 +338,8 @@ def save_profile(body: ProfileData, db: DB, account: ActiveAccount, kb: KB):
         row.updated_at = now
     audit(db, account.id, "PROFILE_UPDATED", country_code=body.country_code)
     audit(db, account.id, "profile_update", country_code=body.country_code)
+    if first_completion:
+        dispatch(db, _actor(account.id), "onboarding.completed", account.id)
     db.commit()
     suggested = [
         item.model_dump(mode="json")
@@ -310,7 +359,7 @@ def setup(country_code: str, kb: KB, account: ActiveAccount):
         country_label=country.manifest.label,
         kb_version=country.manifest.version,
         verification_status=country.manifest.verification_status,
-        currency="AUD" if country_code == "AU" else "IDR",
+        currency=country.manifest.default_currency,
         coverage_types=[item.model_dump(mode="json") for item in resources.coverage_types.data],
         document_types=[item.model_dump(mode="json") for item in resources.document_types.data],
         suggested_docs=[item.model_dump(mode="json") for item in resources.suggested_docs.data],
@@ -439,10 +488,105 @@ def completeness(
                 suggested_doc=requirement.suggested_doc,
             )
         )
+    if task == "coverage_continuity":
+        continuity_fields = {
+            "arrival_date": "Declared period start date",
+            "visa_expiry_date": "Declared period end date",
+            "coverage_start_date": "Policy coverage start date",
+            "coverage_end_date": "Policy coverage end date",
+        }
+        existing_keys = {item.field_key for item in items}
+        for key, label in continuity_fields.items():
+            if key in existing_keys:
+                continue
+            status, value, row = _field_value(key, profile, fields)
+            items.append(
+                AccountCompletenessItem(
+                    field_key=key,
+                    label=label,
+                    status=status,
+                    value=value,
+                    source_type=row.source_type if row else ("USER_PROVIDED" if value else None),
+                    document_id=row.document_id if row else None,
+                    source_page=row.source_page if row else None,
+                    suggested_doc=None,
+                )
+            )
     ready = sum(
         item.status in {CompletenessStatus.FOUND, CompletenessStatus.NOT_APPLICABLE}
         for item in items
     )
+    continuity = None
+    rule = next(
+        (
+            item
+            for item in country.rules
+            if item.kind == "coverage_continuity"
+            and (
+                not item.applicability.occupation
+                or profile.occupation in item.applicability.occupation
+            )
+            and (
+                not item.applicability.residence_context
+                or profile.residence_context in item.applicability.residence_context
+            )
+        ),
+        None,
+    )
+    if task == "coverage_continuity":
+        by_key = {item.field_key: item for item in items}
+        needed = ("arrival_date", "visa_expiry_date", "coverage_start_date", "coverage_end_date")
+        dates_available = all(
+            key in by_key and by_key[key].status == CompletenessStatus.FOUND for key in needed
+        )
+        rule_verified = bool(
+            rule
+            and rule.verification_status.value == "VERIFIED"
+            and country.manifest.verification_status.value == "VERIFIED"
+            and rule.source_url
+            and rule.checked_at
+        )
+        if not dates_available:
+            continuity = AccountVisaGap(
+                status="UNABLE_TO_DETERMINE",
+                explanation=(
+                    "Unable to determine continuity because confirmed policy and period dates "
+                    "are incomplete."
+                ),
+                source_url=rule.source_url if rule else None,
+                checked_at=rule.checked_at.isoformat() if rule and rule.checked_at else None,
+                verification_status=rule.verification_status
+                if rule
+                else country.manifest.verification_status,
+            )
+        else:
+            arrival = date.fromisoformat(str(by_key["arrival_date"].value))
+            visa_end = date.fromisoformat(str(by_key["visa_expiry_date"].value))
+            cover_start = date.fromisoformat(str(by_key["coverage_start_date"].value))
+            cover_end = date.fromisoformat(str(by_key["coverage_end_date"].value))
+            gap, _ = uncovered_interval(arrival, visa_end, [(cover_start, cover_end)])
+            continuity = AccountVisaGap(
+                status=(
+                    "POTENTIAL_COVERAGE_GAP"
+                    if gap and rule_verified
+                    else "DATE_DIFFERENCE_DETECTED"
+                    if gap
+                    else "NO_DATE_DIFFERENCE"
+                ),
+                requirement_status="VERIFIED" if rule_verified else "NEEDS_VERIFICATION",
+                gap_days=gap,
+                explanation=(
+                    f"A {gap}-day difference was detected between the declared period "
+                    "and policy dates."
+                    if gap
+                    else "No date difference was detected for the dates provided."
+                ),
+                source_url=rule.source_url if rule else None,
+                checked_at=rule.checked_at.isoformat() if rule and rule.checked_at else None,
+                verification_status=rule.verification_status
+                if rule
+                else country.manifest.verification_status,
+            )
     visa_gap = None
     rule = next((item for item in country.rules if item.kind == "visa_coverage"), None)
     from app.schemas.actor import Actor
@@ -451,7 +595,7 @@ def completeness(
 
     actor = Actor(actor_type="AUTHENTICATED_ACCOUNT", account_id=account.id)
     normalized = coverages(db, actor, kb)
-    if task == "visa_cover" and normalized:
+    if task in SHARED_ASSESSMENT_TASKS and normalized:
         report = visa_assessment(db, actor, kb, profile, normalized)
         source = report.rule_source
         visa_gap = AccountVisaGap(
@@ -462,7 +606,7 @@ def completeness(
             checked_at=source.checked_at.isoformat() if source and source.checked_at else None,
             verification_status=source.verification_status if source else "UNVERIFIED",
         )
-    elif rule and profile.occupation.value == "STUDENT" and task == "visa_cover":
+    elif rule and profile.occupation.value == "STUDENT" and task in SHARED_ASSESSMENT_TASKS:
         by_key = {item.field_key: item for item in items}
         needed = ("arrival_date", "visa_expiry_date", "coverage_start_date", "coverage_end_date")
         if not all(
@@ -502,9 +646,58 @@ def completeness(
         ready_pct=round(ready * 100 / len(items)) if items else 0,
         items=items,
         visa_gap=visa_gap,
+        coverage_continuity=continuity,
         kb_version=country.manifest.version,
         verification_status=country.resources.required_fields.verification_status,
     )
+
+
+@router.get("/consents/history", response_model=ConsentHistory)
+def consent_history(db: DB, account: ActiveAccount):
+    """Consent decisions from the account audit trail. Only purpose, grant and time are exposed."""
+    items: list[ConsentHistoryItem] = []
+    rows = db.scalars(
+        select(AccountAuditRow)
+        .where(
+            AccountAuditRow.account_id == account.id,
+            AccountAuditRow.event_type.in_(("CONSENT_CHANGED", "CONSENTS_DECIDED")),
+        )
+        .order_by(AccountAuditRow.created_at.desc(), AccountAuditRow.id)
+    )
+    known = {purpose.value for purpose in ConsentPurpose}
+    for row in rows:
+        meta = row.metadata_json or {}
+        version = meta.get("policy_version")
+        version = version if isinstance(version, str) else None
+        if row.event_type == "CONSENT_CHANGED":
+            decisions = {meta.get("purpose"): meta.get("granted")}
+        else:
+            decisions = {purpose: meta.get(purpose) for purpose in known}
+        for purpose, granted in decisions.items():
+            if purpose in known and isinstance(granted, bool):
+                items.append(
+                    ConsentHistoryItem(
+                        purpose=ConsentPurpose(purpose),
+                        granted=granted,
+                        policy_version=version,
+                        timestamp=row.created_at,
+                    )
+                )
+    return ConsentHistory(items=items)
+
+
+@router.get("/connected-sources", response_model=ConnectedSources)
+def connected_sources(account: ActiveAccount):
+    return ConnectedSources(items=[], reason="No connectors are available")
+
+
+@router.get("/export", response_model=AccountExport)
+def export_account_data(db: DB, account: ActiveAccount, response: Response):
+    bundle = build_export(db, account.id)
+    audit(db, account.id, "DATA_EXPORTED", category="consent")
+    db.commit()
+    response.headers["Cache-Control"] = "no-store"
+    return bundle
 
 
 @router.get("/inventory", response_model=AccountInventory)
@@ -530,7 +723,12 @@ def inventory(db: DB, account: ActiveAccount):
             select(func.count(ClaimCaseRow.id)).where(ClaimCaseRow.account_id == account.id)
         )
         or 0,
-        action_count=0,
+        action_count=db.scalar(
+            select(func.count(WfActionRow.id)).where(
+                WfActionRow.owner_kind == ACCOUNT, WfActionRow.owner_id == account.id
+            )
+        )
+        or 0,
         documents=[document_summary(row) for row in documents],
     )
 
@@ -702,7 +900,7 @@ def list_family_members(db: DB, account: ActiveAccount):
             birth_date=row.birth_date,
             consent_at=row.consent_at,
             created_at=row.created_at,
-            active_coverage_count=0,
+            active_coverage_count=None,
         )
         for row in rows
     ]
@@ -736,7 +934,7 @@ def add_family_member(body: FamilyMemberCreate, db: DB, account: ActiveAccount):
         birth_date=member.birth_date,
         consent_at=member.consent_at,
         created_at=member.created_at,
-        active_coverage_count=0,
+        active_coverage_count=None,
     )
 
 

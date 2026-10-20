@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 80" width="340" height="80">
+  <rect width="340" height="80" rx="8" fill="#FFFFFF" />
+  <rect x="20" y="15" width="50" height="50" rx="10" fill="#1890FF" />
+  <path d="M32 40 L42 50 L58 30" stroke="#FFFFFF" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="85" y="44" font-family="Arial, 'PingFang SC', sans-serif" font-size="20" font-weight="bold" fill="#1890FF">来华留学生综合保险</text>
+  <text x="85" y="64" font-family="Arial, sans-serif" font-size="11" font-weight="600" fill="#666666">CSC COMPREHENSIVE SCHEME (PING AN)</text>
+</svg>

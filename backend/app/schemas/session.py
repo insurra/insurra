@@ -13,6 +13,10 @@ class DemoPersona(Contract):
     country_code: CountryCode
     description: str
     synthetic: bool = True
+    city: str | None = None
+    role_label: str | None = None
+    insurance_categories: list[str] = Field(default_factory=list)
+    is_synthetic: bool = True
 
 
 class SessionCreate(Contract):

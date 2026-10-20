@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from app.core.config import ROOT
+from app.core.config import ROOT, Settings
 from app.models import ActionRow, ClaimCaseRow, DocumentRow, ExtractedFieldRow, PurposeConsentRow
 from app.schemas.actor import Actor
 from app.services.approval import payload_sha256
@@ -35,8 +35,8 @@ def test_purposes_are_explicit_independent_and_revocable(client, app, demo):
     assert ask().status_code == 403
     processing = grant(client, h, "process_documents")
     assert processing["granted_at"] and processing["policy_version"] == "1.5"
-    assert ask().status_code == 503
-    assert ask().json()["code"] == "TRIAGE_UNAVAILABLE"
+    assert ask().status_code == 200
+    assert ask().json()["disposition"] == "declined"
     revoked = grant(client, h, "external_ai", False)
     assert revoked["revoked_at"] and revoked["granted_at"]
     assert ask().status_code == 403
@@ -134,9 +134,69 @@ def test_object_stubs_check_identity_consent_ownership(client, resources, kind, 
     missing = client.request(
         method, "/api/v1" + path.format(id=str(uuid4())), headers=hb, json=body
     )
-    assert own.status_code == 501 and own.json()["code"] == "NOT_IMPLEMENTED"
+    if kind == "claim" and method == "GET":
+        assert own.status_code == 200
+        assert own.json()["case"]["id"] == ids["claim"]
+        assert own.json()["checklist"] == []
+    elif kind == "action" and method == "POST":
+        if path.endswith("/approve"):
+            assert own.status_code == 422
+            assert own.json()["code"] == "EXPLICIT_CONFIRMATION_REQUIRED"
+        else:
+            assert own.status_code == 200
+            assert own.json() == {"status": "REJECTED"}
+    else:
+        assert own.status_code == 501 and own.json()["code"] == "NOT_IMPLEMENTED"
     assert foreign.status_code == missing.status_code == 404
     assert foreign.json()["code"] == missing.json()["code"] == "RESOURCE_NOT_FOUND"
+
+
+def test_action_approval_is_owned_persisted_and_bound_to_payload(client, app, resources):
+    ids, _, _, owner, foreign = resources
+    grant(client, owner, "process_documents")
+    grant(client, foreign, "process_documents")
+    payload = {
+        "claim_case_id": ids["claim"],
+        "attachments": [{"document_id": ids["document"], "sha256": "a" * 64}],
+    }
+    with app.state.session_factory() as db:
+        action = db.get(ActionRow, UUID(ids["action"]))
+        action.payload = payload
+        db.commit()
+    url = f"/api/v1/actions/{ids['action']}/approve"
+    assert client.post(url, headers=foreign, json={"confirmed": True}).status_code == 404
+    assert client.post(url, headers=owner, json={"confirmed": False}).status_code == 422
+    assert (
+        client.post(
+            url, headers=owner, json={"confirmed": True, "expected_payload_sha256": "b" * 64}
+        ).json()["code"]
+        == "ACTION_PAYLOAD_CHANGED"
+    )
+    approved = client.post(
+        url,
+        headers=owner,
+        json={"confirmed": True, "expected_payload_sha256": payload_sha256(payload)},
+    )
+    assert approved.status_code == 200
+    assert approved.json() == {"status": "APPROVED"}
+    queued = client.get("/api/v1/actions", headers=owner).json()
+    assert len(queued) == 1
+    assert queued[0]["approved_payload_sha256"] == payload_sha256(payload)
+    assert queued[0]["proposed_payload_sha256"] == payload_sha256(payload)
+    timeline = client.get(f"/api/v1/claims/{ids['claim']}", headers=owner).json()["timeline"]
+    assert [item["event_type"] for item in timeline] == ["ACTION_APPROVED"]
+    assert client.get("/api/v1/actions", headers=foreign).json() == []
+    with app.state.session_factory() as db:
+        action = db.get(ActionRow, UUID(ids["action"]))
+        action.payload = {**payload, "attachments": []}
+        db.commit()
+    execute = client.post(
+        f"/api/v1/actions/{ids['action']}/execute",
+        headers=owner,
+        json={"approved_payload_sha256": payload_sha256(payload)},
+    )
+    assert execute.status_code == 403
+    assert execute.json()["code"] == "APPROVED_PAYLOAD_MISMATCH"
 
 
 def test_payload_ids_and_approval_hash_fail_closed(client, app, resources):
@@ -256,25 +316,44 @@ def test_actor_interface_does_not_authenticate_an_account(client):
 
 def test_country_resources_metadata_and_bad_config(tmp_path):
     loader = CountryKBLoader(ROOT / "kb")
-    expected_templates = {
-        "AU": {"policy_booklet", "oshc_certificate", "insurance_card"},
-        "ID": {"policy_booklet", "insurance_card"},
-    }
-    for code in ("AU", "ID"):
+    for code in ("AU", "ID", "CN"):
         kb = loader.load(code)
         for name in type(kb.resources).model_fields:
             resource = getattr(kb.resources, name)
             assert resource.schema_version == "1.5" and resource.version == kb.manifest.version
-            assert resource.verification_status == "UNVERIFIED"
-            if name in {"red_flags", "emergency"}:
-                assert resource.source_url and resource.source_url.startswith("https://")
-                assert resource.checked_at is not None
-            else:
-                assert resource.source_url is None
-        assert kb.resources.red_flags.data
-        assert {item.document_type for item in kb.resources.extraction_templates.data} == (
-            expected_templates[code]
-        )
+        if code == "AU":
+            assert kb.resources.red_flags.data
+            assert kb.resources.red_flags.verification_status == "UNVERIFIED"
+            assert all(
+                flag.verification_status == "UNVERIFIED" and flag.source_url and flag.checked_at
+                for flag in kb.resources.red_flags.data
+            )
+            assert kb.resources.emergency.data.verification_status == "UNVERIFIED"
+        elif code == "ID":
+            assert {item.document_type for item in kb.resources.extraction_templates.data} == {
+                "policy_booklet",
+                "insurance_card",
+            }
+            drafts = [
+                flag
+                for flag in kb.resources.red_flags.data
+                if flag.verification_status == "UNVERIFIED"
+            ]
+            assert len(drafts) == 4
+            assert all(
+                flag.source_url
+                == "https://jdih.kemkes.go.id/storage/documents/pdfs/2019kepmenkes796.pdf"
+                and flag.checked_at
+                and flag.jurisdiction == "ID"
+                for flag in drafts
+            )
+            assert kb.resources.emergency.verification_status == "VERIFIED"
+            assert all(contact.source_url for contact in kb.resources.emergency.data.contacts)
+        else:
+            assert kb.resources.extraction_templates.data == []
+            assert kb.resources.emergency.verification_status == "VERIFIED"
+            assert all(contact.source_url for contact in kb.resources.emergency.data.contacts)
+            assert all(flag.source_url for flag in kb.resources.red_flags.data)
     assert loader.load_injection_patterns().data == []
     shutil.copytree(ROOT / "kb/AU", tmp_path / "AU")
     path = tmp_path / "AU/tasks.json"
@@ -290,11 +369,14 @@ def test_country_resources_metadata_and_bad_config(tmp_path):
         CountryKBLoader(tmp_path).load("AU")
 
 
+def test_default_country_scope_stays_cn_id():
+    assert Settings(_env_file=None).active_kb_country_codes == frozenset({"CN", "ID"})
+
+
 @pytest.mark.parametrize(
     "method,path,body,needs_consent",
     [
         ("get", "/home/summary", None, False),
-        ("get", "/claims", None, False),
         ("get", "/coverage-needs", None, True),
         ("get", "/completeness?task=synthetic", None, True),
         (
@@ -303,7 +385,6 @@ def test_country_resources_metadata_and_bad_config(tmp_path):
             {"complaint": "synthetic", "service_type": "synthetic"},
             True,
         ),
-        ("post", "/triage", {"text": "synthetic"}, False),
     ],
 )
 def test_remaining_scoped_contract_routes(client, demo, method, path, body, needs_consent):
@@ -317,10 +398,10 @@ def test_remaining_scoped_contract_routes(client, demo, method, path, body, need
     grant(client, h, "process_documents")
     result = client.request(method, url, headers=h, json=body)
     assert result.status_code == (
-        200 if implemented else 503 if path == "/pathways/compare" else 501
+        200 if implemented else 422 if path == "/pathways/compare" else 501
     )
     if path == "/pathways/compare":
-        assert result.json()["code"] == "TRIAGE_UNAVAILABLE"
+        assert result.json()["code"] == "SERVICE_NOT_AVAILABLE"
 
 
 def test_upload_and_evidence_stubs_need_both_purposes(client, resources):

@@ -26,7 +26,7 @@ def inputs():
     )
 
 
-@pytest.mark.parametrize("country", ["AU", "ID"])
+@pytest.mark.parametrize("country", ["AU", "CN", "ID"])
 def test_kb_parses_all_resources(country):
     kb = CountryKBLoader(ROOT / "kb").load(country)
     assert kb.manifest.country_code == country
@@ -48,10 +48,13 @@ def test_missing_dates(inputs, field):
     profile, record = inputs
     if field.startswith("coverage"):
         setattr(record.policies[0], field, None)
+    elif field == "visa_expiry_date":
+        # Study and permit end dates mirror the end date, so all of them are removed.
+        profile.visa_expiry_date = profile.permit_end_date = profile.study_end_date = None
     else:
-        setattr(profile, field, None)
+        profile.arrival_date = profile.study_start_date = None
     result = RulesEngine(CountryKBLoader(ROOT / "kb")).assess_visa_coverage(profile, record)
-    assert result.assessment_status == "NEEDS_VERIFICATION" and result.gap_days is None
+    assert result.assessment_status == "UNABLE_TO_DETERMINE" and result.gap_days is None
 
 
 def test_invalid_ranges_and_money(inputs):
@@ -72,7 +75,7 @@ def test_invalid_ranges_and_money(inputs):
 
 
 @pytest.mark.parametrize(
-    "end,expected", [("2027-06-30", 0), ("2028-01-01", 0), ("2026-07-01", 364)]
+    "end,expected", [("2027-06-30", 0), ("2028-01-01", 0), ("2026-09-01", 302)]
 )
 def test_no_negative_and_inclusive_gap(inputs, end, expected):
     p, r = inputs
@@ -95,18 +98,30 @@ def test_overlapping_and_disjoint_policies(inputs):
     assert engine.assess_visa_coverage(p, r).gap_days == 15
 
 
-def test_new_country_requires_only_configuration(tmp_path, inputs):
+@pytest.mark.parametrize(
+    "evidence_class,status",
+    [("MANUALLY_CURATED", "NEEDS_VERIFICATION"), (None, "DATE_DIFFERENCE_DETECTED")],
+)
+def test_new_country_requires_only_configuration(tmp_path, inputs, evidence_class, status):
     import shutil
 
-    shutil.copytree(ROOT / "kb/AU", tmp_path / "XY")
+    shutil.copytree(ROOT / "kb/CN", tmp_path / "XY")
     manifest_path = tmp_path / "XY/manifest.json"
     manifest = json.loads(manifest_path.read_text())
     manifest["country_code"] = "XY"
     manifest_path.write_text(json.dumps(manifest))
+    rules_path = tmp_path / "XY/rules.json"
+    rules = json.loads(rules_path.read_text())
+    rules["data"][0]["evidence_class"] = evidence_class
+    rules_path.write_text(json.dumps(rules))
     p, r = inputs
     p.country_code = r.country_code = "XY"
     result = RulesEngine(CountryKBLoader(tmp_path)).assess_visa_coverage(p, r)
-    assert result.gap_days == 76 and result.rule_source.country_code == "XY"
+    assert result.gap_days == 76
+    assert result.assessment_status == status
+    assert result.requirement_status == "NEEDS_VERIFICATION"
+    assert result.rule_source.verification_status == "UNVERIFIED"
+    assert result.rule_source.source_url is None
 
 
 def test_extraction_confidence_is_conservative():

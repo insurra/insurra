@@ -4,11 +4,11 @@
 
 Insurra helps Indonesian speakers understand unfamiliar health insurance systems. The intended product connects document evidence, policy questions, coverage checks, care pathways, and claim preparation in one workspace.
 
-This repository contains the shared foundation, existing authenticated account workspace, and Valen’s P0 implementation for `/home`, `/ask`, `/pathways` and `/coverage-needs`. Original Raka/Sinta fixtures remain explicitly synthetic. **P0 is not acceptance-complete:** shared triage/emergency data and downstream claim/action screens are unavailable. See [criterion results](docs/prd/VALEN_TRACEABILITY.md) and [verification](docs/agent-tasks/valen/VERIFICATION.md).
+This repository implements **Phase 1.5: Shared Foundation Alignment** of a 48-hour hackathon MVP. Its working demo uses entirely synthetic data for Raka, a student in Melbourne, and Sinta, a new employee in Jakarta. No real policy documents, personal identifiers, provider integrations, or paid credentials are required.
 
 ## Hackathon Scope
 
-Valen’s authorized scope adds deterministic home recommendations, contextual protection needs, evidence-grounded policy Q&A, KB procedure comparisons and idempotent DRAFT case creation. It reuses current account/demo identities and normalized document fields. Shared triage, emergency UI, claim readiness, action approval/execution and Travel P1 remain deferred. No deployment, push or merge is performed.
+Phase 1.5 aligns the existing foundation with the complete PRD while preserving the working demo. A subsequent Joshua demo slice adds owner-scoped claim case creation/list/detail, action queue and persisted approval/rejection, plus truthful claim, action and general emergency screens. Evidence processing, claim drafts, action editing, insurer execution and receipts remain deferred and return `501 NOT_IMPLEMENTED` after applicable guards. No team ownership, feature branches or deployments are assigned or created.
 
 ## Features
 
@@ -16,24 +16,30 @@ Implemented:
 
 - Backend-backed, isolated demo sessions with opaque tokens, hashed at rest, expiring after 24 hours.
 - Independent `process_documents`, `external_ai`, and `retention` grants, false by default, with policy versions and grant/revocation timestamps. The existing demo control manages document-processing consent only; the canonical API manages all three purposes.
-- Session-scoped profile read/update, optional PRD profile metadata, seeded insurance records, and filtered audit history with optional pagination. Demo sessions remain distinct from existing authenticated bearer accounts.
-- Versioned, validated AU/ID country configuration and idempotent fixture seeding.
+- Session-scoped profile read/update, optional PRD profile metadata, seeded insurance records, and filtered audit history with optional pagination. Actor contracts distinguish demo sessions from future authenticated accounts.
+- Versioned, validated CN/ID active country configuration and idempotent fixture seeding. Other country folders remain inactive until enabled explicitly.
 - Deterministic, inclusive interval calculation: Raka has a **potential 76-day gap**, 16 April–30 June 2027. Because rules/policies are unverified, status is `NEEDS_VERIFICATION`, not a legal finding. Sinta returns `NOT_APPLICABLE`.
 - Responsive Indonesian application shell, persona selection, onboarding, dashboard, document metadata and audit pages.
-- Existing public cover, Google/password account sign-in, account onboarding/documents/privacy, revocable bearer sessions, and the guest/demo path.
-- Account/demo-aware home and protection-needs services; original record countries/currencies are preserved.
-- Bounded multilingual clause retrieval, owned source pages, validated citations, deterministic numeric facts, consent-rechecked JSON/SSE Q&A, rate limits, cancellation and feedback.
-- KB-driven non-medical pathway cards and verification questions; unknown tariffs stay null. Confirmed choices create one owned DRAFT case with a masked summary and audit event.
+- Joshua demo case creation/list/detail with factual case timelines and empty unverified checklists, scoped action queue and explicit hash-bound approval/rejection of valid persisted actions. The emergency page shows CN/ID contacts from checked official sources and limited positive-only Indonesian, English and Mandarin red-flag phrase escalation; a no-match result never clears an emergency.
+- Public cover, Google OAuth sign-in, revocable seven-day account sessions, and a guest/demo path.
 - Generated TypeScript/OpenAPI contracts, contract-drift checks, typed GET/POST/PUT/PATCH/DELETE and multipart/no-content/stream transport, additive migrations, scope/approval primitives, and automated verification.
 
-Live Valen routes and UI are implemented, but Q&A/care fail closed with `TRIAGE_UNAVAILABLE`: source-backed AU/ID red-flag drafts and emergency-number candidates remain `UNVERIFIED`. The candidate numbers are not exposed. Source-backed answers need retained owned pages and reviewed coverage-linked fields. Versioned extraction templates currently allow only provider and coverage dates for supported policy documents; extracted values remain `UNVERIFIED` until reviewed. CI and the opt-in live workflow check use explicitly synthetic triage fixtures without promoting them to production facts. Claim detail/checklist, reminders/actions, triage HTTP endpoint and legacy foundation processing routes remain `501`. Existing account endpoints under `/account` are separate live interfaces. See the [triage maintainer review checklist](docs/agent-tasks/valen/TRIAGE_REVIEW.md).
+Contract-only (`501`): document upload/detail/delete and field review in the demo API, home summary, policy Q&A/SSE, pathway comparison, claim evidence/draft, action edits/execution, data inventory/deletion, coverage needs, audit detail and sandbox submission. These are shared interfaces, not implemented product features. Sandbox monitoring, polling, receipts, and outbound follow-up remain inactive without an official endpoint. P1/bonus features and the full nineteen-screen PRD remain deferred; current pages are preserved.
+
+## Current Integration Status
+
+This section records the current Gemini and country-safety integration and supersedes older foundation-only descriptions above. `AI_PROVIDER=gemini` selects the Gemini gateway for account document extraction and Policy Q&A. The live API and browser checks use synthetic documents and a test-only triage fixture; CI never calls Gemini.
+
+The active country allowlist remains `CN,ID`, matching current master. AU source-backed triage drafts remain on disk but inactive. ID retains master-reviewed red-flag and emergency entries, plus new JDIH symptom-rule drafts marked `UNVERIFIED`. Strict screening ignores those draft entries; it continues to use only the existing verified ID rules. Missing or resource-level unverified safety data still returns `TRIAGE_UNAVAILABLE`. Existing CN reviewed safety rules and ID's verified 112/119 emergency contacts are preserved. Do not enable AU or change country scope without maintainer approval.
+
+The hosted deployment checklist below is preparation only. No public backend or frontend has been deployed, and a hosted PostgreSQL migration has not been verified.
 
 ## Tech Stack
 
 - Frontend: Next.js 16 App Router, React 19, TypeScript 5 strict mode, Tailwind CSS 4, initialized shadcn/ui Radix Button, Lucide, native fetch, React Context.
 - Backend: Python 3.11+, uv, FastAPI, Pydantic v2/Settings, SQLAlchemy 2, Alembic, Uvicorn, pytest, httpx, Ruff.
 - Persistence: SQLite locally; PostgreSQL through psycopg and `DATABASE_URL`. Supabase PostgreSQL is a future deployment option; Storage is not integrated.
-- AI seam: Google Gemini through the OpenAI Python SDK's Google Chat Completions endpoint and Pydantic structured parsing. The primary and fast models default to `gemini-3.5-flash-lite`, verified with a synthetic live request. Q&A uses the primary model after current consent, triage and source checks; document extraction uses the fast model. CI never calls a provider.
+- AI seam: Google Gemini through the OpenAI Python SDK's Google Chat Completions endpoint and Pydantic structured parsing. The primary and fast models default to `gemini-3.5-flash-lite`; CI does not make provider calls.
 - Contracts: OpenAPI → openapi-typescript. Browser smoke tests: Playwright/Chromium.
 - Deployment targets only: Vercel frontend and Railway backend. No deployment configuration or deployment is performed.
 
@@ -45,12 +51,12 @@ Exact dependency versions are pinned by `backend/uv.lock` and `frontend/package-
 
 ```mermaid
 flowchart LR
-  Web[Next.js frontend] -->|Typed fetch + bearer/demo token| API[FastAPI /api/v1]
+  Web[Next.js frontend] -->|Typed fetch + X-Demo-Session| API[FastAPI /api/v1]
   API --> Guard[Session dependencies + Policy Guard]
   Guard --> Services[Repositories and deterministic services]
   Services --> DB[(SQLite / PostgreSQL)]
   Services --> KB[Versioned country KB]
-  Services -. consent + triage + evidence .-> AI[GeminiGateway / Google Gemini]
+  Services -. consent + evidence + triage guards .-> AI[GeminiGateway / Google Gemini]
 ```
 
 The backend owns domain contracts, calculations, consent and ownership. The frontend owns presentation and explicitly displays uncertainty. Requests use a shared `ApiError` envelope, request IDs, and `Cache-Control: no-store`.
@@ -88,7 +94,7 @@ The backend owns domain contracts, calculations, consent and ownership. The fron
 
 ## Prerequisites
 
-Python 3.11+, Node.js 20.9+ (verified with Node 24.21.0), npm, `make`, Poppler (`pdfinfo`, `pdftotext`, `pdftoppm`) and Tesseract. On macOS, install the document tools with `brew install poppler tesseract`. OCR uses installed English and Indonesian language data when available and falls back to installed English data. An installed `uv` is preferred; `make setup` bootstraps a repository-local uv into ignored `.tools/` when absent. Initial package/browser downloads require internet access. Guest/demo and local account tests need no paid credentials. Google sign-in requires configured server-side OAuth credentials and callback URL. SQLite is supported locally.
+Python 3.11+, Node.js 20.9+ (verified with Node 24.21.0), npm, and `make`. An installed `uv` is preferred; `make setup` bootstraps a repository-local uv into ignored `.tools/` when absent. Initial package/browser downloads require internet access. Guest/demo mode needs no OAuth credential; Google sign-in requires a Google OAuth client and PostgreSQL database.
 
 ## Quick Start
 
@@ -114,7 +120,7 @@ In another:
 make dev-frontend
 ```
 
-Open **http://localhost:3000**. Use the existing account login/onboarding or cover’s demo wizard. For Valen screens open `/home`; account consent is managed under `/settings/privacy`. Seeded demo records remain accessible without processing consent; protected processing requires explicit purpose grants. Selecting a different persona creates a fresh session and clears the previous frontend state.
+Open **http://localhost:3000**. Choose Raka or Sinta, grant consent (or explicitly view seeded data without it), and visit the dashboard. Consent can be revoked under Privacy & Consent; audit history records changes. Selecting a different persona creates a fresh session and clears the previous frontend state.
 
 Backend: **http://localhost:8000**. Interactive API docs: **http://localhost:8000/docs**. Verify:
 
@@ -126,7 +132,7 @@ make check-contracts
 make test-client
 ```
 
-Next uses Webpack for dev/build to avoid Turbopack worker-port restrictions in some local sandboxes. Fonts are installed locally through locked npm packages; builds need no Google Fonts network access.
+Next uses Webpack for dev/build to avoid Turbopack worker-port restrictions in some local sandboxes. Fonts use a local system stack; builds need no Google Fonts network access.
 
 ## Environment Variables
 
@@ -137,35 +143,31 @@ Copy the root `.env.example` to `.env`. Pydantic and Next's configuration read t
 | `DATABASE_URL` | `sqlite:///./dev.db`; resolves in `backend/` with Make commands |
 | `FRONTEND_ORIGIN` | `http://localhost:3000`; one explicit CORS origin, wildcard rejected |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000`; browser-visible backend URL |
-| `AI_PROVIDER` | `gemini`; the supported AI provider |
-| `GEMINI_API_KEY` | Empty locally; server-only and required for real Gemini requests |
+| `AI_PROVIDER` | `gemini`; supported provider |
+| `GEMINI_API_KEY` | Empty locally; server-only and required for real model requests |
 | `GEMINI_MODEL` | `gemini-3.5-flash-lite`; primary Q&A model |
 | `GEMINI_FAST_MODEL` | `gemini-3.5-flash-lite`; document extraction model |
+| `ACTIVE_KB_COUNTRIES` | `CN,ID`; current master country allowlist |
 | `ENVIRONMENT` | `development` |
 | `SESSION_TTL_HOURS` | Optional, defaults to `24` |
 | `KB_ROOT` | Optional absolute override for the `kb/` folder |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Server-only Google OAuth credentials |
-| `GOOGLE_REDIRECT_URI` | Backend callback; locally `http://localhost:8000/auth/google/callback`; production path is `/auth/google/callback` |
-| `FRONTEND_URL` | Frontend origin used for OAuth result redirects and also allowed by CORS |
-| `BACKEND_URL` | Present in the example config but not currently read by application code |
-| `SESSION_SECRET` | Present in the example config but not currently used; account tokens are random and stored as hashes |
+| `GOOGLE_REDIRECT_URI` | Backend callback; locally `http://localhost:8000/auth/google/callback` |
+| `FRONTEND_URL`, `BACKEND_URL` | Trusted application URLs used by OAuth redirects |
+| `SESSION_SECRET` | Random server-only secret reserved for session hardening |
 | `ACCOUNT_SESSION_TTL_DAYS` | Account session lifetime; defaults to `7` |
 
-Never prefix secrets with `NEXT_PUBLIC_`. In hosted builds, supply the public base URL at frontend build time and backend credentials through server environment configuration. A production frontend without NEXT_PUBLIC_API_BASE_URL displays BACKEND_NOT_CONFIGURED instead of calling localhost. A frontend-only deployment cannot provide these backend features.
+Never prefix secrets with `NEXT_PUBLIC_`. In future hosted builds, supply the public base URL at frontend build time and backend credentials through server environment configuration.
 
-## Deployment checklist: Vercel frontend + public API
+## Deployment Checklist: Vercel Frontend and Public API
 
-No deployment has been performed. The repository has a Vercel-ready Next.js app under `frontend/`, but it has no `vercel.json`, backend container/host manifest, or checked-in deployment automation. README's target is a Vercel frontend and a separate Railway/FastAPI backend; the following steps remain manual.
+No deployment has been performed. The repository has no backend host manifest or deployment automation; provision and configure the services manually after review.
 
-1. **Provision the backend and database.** Use an HTTPS FastAPI host and durable PostgreSQL database. SQLite is for development/tests. Build the backend from `backend/` with `uv sync --locked`; start it without reload using `uv run uvicorn app.main:app --host 0.0.0.0 --port "$PORT"`. Include the repository's `kb/` directory (or set `KB_ROOT`) and OS packages `poppler-utils`, `tesseract-ocr`, and the English/Indonesian Tesseract language data for document text extraction/OCR.
-2. **Migrate and seed before serving.** Back up any existing database, then run `uv run alembic upgrade head` from `backend/` against the hosted `DATABASE_URL`, followed by `uv run python -m app.seeds.demo` to install the synthetic demo personas. Migrations are not run at application startup. Revision 0002 needs online execution for its historical consent backfill; revision 0008 is forward-only. Never use `create_all`, reset, or replace an existing database. A live PostgreSQL upgrade has not yet been verified.
-3. **Set backend runtime configuration.** The hosted app needs `DATABASE_URL` and `FRONTEND_ORIGIN`. Set `FRONTEND_URL` to the public site for account login/OAuth redirects. Set `AI_PROVIDER=gemini` explicitly and provide `GEMINI_API_KEY` for real extraction/Q&A requests. `GEMINI_MODEL` and `GEMINI_FAST_MODEL` default to `gemini-3.5-flash-lite`. Set `KB_ROOT` only if the packaged KB is outside the default repository path. `ENVIRONMENT`, `BACKEND_URL`, and `SESSION_SECRET` do not currently change runtime behavior; do not rely on the latter as a security control.
-4. **Configure account login only if the demo needs it.** Add server-only `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and register `GOOGLE_REDIRECT_URI=https://<api-host>/auth/google/callback` as the exact Google OAuth callback. Set `FRONTEND_URL` to the public frontend origin so successful and failed OAuth flows return to the right site. Demo-session flows do not require Google credentials.
-5. **Create the Vercel frontend project.** Connect the repository and set Root Directory to `frontend/`; use the detected Next.js framework, `npm ci`, and `npm run build`. There is no custom Vercel manifest. Add only `NEXT_PUBLIC_API_BASE_URL=https://<api-host>` to the frontend project. Set it separately for Production/Preview as needed and rebuild after changing it: Next.js embeds `NEXT_PUBLIC_*` values in browser bundles at build time. Never put Gemini, database, Google OAuth, or other privileged credentials in Vercel's public variables.
-6. **Align CORS and deployment domains.** Set backend `FRONTEND_ORIGIN` to the exact public HTTPS Vercel origin; the app allows `FRONTEND_ORIGIN` and `FRONTEND_URL`. Current settings are fixed origins, so preview URLs must be separately allow-listed before browser calls from previews will work. Use the production URL for Google OAuth.
-7. **Smoke-test the hosted pair with synthetic data.** Confirm `GET /health`, start and inspect a seeded demo session, then verify account login if configured. For document upload, explicitly grant `process_documents` and `external_ai`; grant `retention` only if originals/pages should be kept. Use only synthetic documents. Confirm extraction and owned source/citation access, and test consent revocation. Do not use the live Gemini test triage fixture in the deployed KB.
-
-Normal Policy Q&A and care remain blocked with `TRIAGE_UNAVAILABLE` until AU and ID red-flag resources are reviewed and verified. Emergency candidates remain hidden until independently approved. The Gemini live tests prove provider behavior only against synthetic data and a test-only triage seam; they do not establish production safety or real policy accuracy.
+1. Provision a public HTTPS FastAPI service and durable PostgreSQL database. Build from `backend/` with `uv sync --locked`; start with `uv run uvicorn app.main:app --host 0.0.0.0 --port "$PORT"`. Package `kb/` or set `KB_ROOT`. Install Poppler and Tesseract plus English, Indonesian, and Chinese OCR data used by the active country paths.
+2. Back up any existing database, then run `uv run alembic upgrade head` from `backend/` against the hosted `DATABASE_URL`. Revision 0002 requires an online migration for its historical consent backfill; revision 0008 is forward-only. Migrations do not run at startup. PostgreSQL deployment has not been verified.
+3. Set backend `DATABASE_URL`, `FRONTEND_ORIGIN`, `FRONTEND_URL`, `AI_PROVIDER=gemini`, `GEMINI_API_KEY`, and `ACTIVE_KB_COUNTRIES=CN,ID`. Keep `GEMINI_API_KEY`, database credentials, and OAuth secrets in the host's server-side secret store. Add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and the exact HTTPS `GOOGLE_REDIRECT_URI` only if the demo uses Google sign-in.
+4. Connect the repository to Vercel with Root Directory `frontend/`. Configure `NEXT_PUBLIC_API_BASE_URL=https://<api-host>` for each environment and rebuild after changes; this value is public and must not contain credentials. Configure the backend CORS origins to match the deployed frontend exactly.
+5. Apply migrations and seed only the intended synthetic demo data. Verify health, CORS preflight, account/demo session boundaries, consent revocation, file limits, and policy-Q&A fail-closed behavior. Do not expose provider or country rules that remain unreviewed.
 
 ## Demo Personas
 
@@ -180,7 +182,7 @@ Benefit coverage stays `UNKNOWN`, amounts stay null, and policies remain `UNVERI
 
 ## API Documentation
 
-OpenAPI UI: `/docs`; machine schema: `/openapi.json`; health: `/health`. Domain endpoints use `/api/v1`. Existing demo routes use `X-Demo-Session`; account routes use `Authorization: Bearer`. Valen routes accept either, rejecting ambiguous credentials. Session creation returns the token once; subsequent responses do not return it.
+OpenAPI UI: `/docs`; machine schema: `/openapi.json`; health: `/health`. Domain endpoints use `/api/v1` and `X-Demo-Session`. Session creation returns the token once; subsequent responses do not return it.
 
 | Method | Path | Behavior |
 | --- | --- | --- |
@@ -196,33 +198,23 @@ OpenAPI UI: `/docs`; machine schema: `/openapi.json`; health: `/health`. Domain 
 | GET | `/api/v1/assessments/visa-gap` | Deterministic calculation; audit event |
 | GET | `/api/v1/audit?event_type=CONSENT_GRANTED` | Scoped array; also supports type=consent, optional limit/offset and X-Total-Count |
 
-Canonical Valen operations:
+Canonical P0 future contracts return **501**; the complete method/path/schema/consent matrix is in [API_CONTRACTS.md](docs/prd/API_CONTRACTS.md). The PRD `/api/...` paths map to `/api/v1/...`. Existing `/chat/ask`, `/care/compare`, `/claims/draft`, `/documents/upload`, `/assessments/completeness` and `/assessments/coverage-needs` foundation stubs remain compatible aliases with their original response shapes; canonical PRD routes use `/ask`, `/pathways/compare`, `/claims`, `/documents`, `/completeness` and `/coverage-needs`.
 
-| Method/path under `/api/v1` | Behavior / purpose |
-| --- | --- |
-| GET `/home/summary` | Counts, context, configured recommendations and source availability; authenticated read |
-| POST `/home/recommendations/decision` | Persist seven-day dismissal or confirmed handled state |
-| GET `/coverage-needs` | Typed need list, current context and shared visa calculation; process_documents |
-| POST `/ask` | Owned policy Q&A JSON or named SSE; process_documents + external_ai; reviewed triage required |
-| GET/DELETE `/ask/sessions/{id}` | Scoped retained history / conversation deletion |
-| POST `/ask/sessions/{id}/feedback` | Scoped helpful/incorrect feedback without raw answer text |
-| GET `/ask/sources/{document_id}/{page}` | Owned retained source page; current processing + external_ai grants |
-| POST `/pathways/compare` | KB procedures, bounded questions, null or sourced Decimal costs; process_documents + reviewed triage |
-| POST `/claims` | Owned DRAFT creation only; process_documents, current comparison_id and Idempotency-Key |
-
-The complete method/schema matrix and exact additive changes are in [API_CONTRACTS.md](docs/prd/API_CONTRACTS.md). Existing legacy stubs keep their original response shapes. Identity failures return 401; missing purposes 403; absent/foreign owned IDs 404; stale choices 409; invalid input 422; missing source/provider dependencies 503. Every failure uses ApiError with a request ID and no raw private input. Account privacy deletion remains available without processing consent, using exact confirmation HAPUS.
+Identity failures return 401, missing required purposes return 403, and foreign/missing object IDs return the same 404. Owned deferred operations return 501. Body references (coverage/claim/document/action IDs) are scoped as well. Invalid input returns 422 without echoing raw values. Every error uses `ApiError(code,message,details,request_id)`. Privacy deletion requires identity and exact `confirm: "HAPUS"`, never processing permission, and always returns 501 until complete cleanup exists.
 
 Canonical PUT `/profile` now returns `{profile,suggested_docs}`; PUT consumers must read `.profile`. Existing GET/demo behavior remains unchanged. Full legacy update bodies and partial PRD bodies are accepted; same-country omitted fields are preserved, country switches reset omitted destination metadata, and merged dates are validated before saving. Suggestions only project a VERIFIED versioned country KB resource (max six); shipped unverified resources return an empty list.
 
 New generic claim-list contracts use `items` (each containing `case`, `checklist`, `consistency_checks`) plus `pagination(limit,offset,total)` with limits 1–100. Existing audit list stays an array and remains unbounded if limit is omitted, preserving old callers; new callers should request `limit=20&offset=0`. Optional `type` values are answer, compare, action, guardrail, deletion and consent. Exact `event_type` continues to work.
 
-The client retains static `get/post/put` convenience calls. Use `api.request(method, pathTemplate, { token, params, query, body, signal })` for generated dynamic routes, `api.patch/delete` for those methods, and `api.stream` for future native byte-stream transport. Browser FormData sets its own boundary. The Q&A stream parser validates UTF-8 framing, event order, citations, terminal completion and error/cancellation states. Provider/dependency failures never become fabricated answers.
+The client retains static `get/post/put` convenience calls. Use `api.request(method, pathTemplate, { token, params, query, body, signal })` for generated dynamic routes, `api.patch/delete` for those methods, and `api.stream` for future native byte-stream transport. Browser FormData sets its own boundary. No stream parser or AI response engine is active; all corresponding server routes still return ApiError/501.
 
 ## Database & Migrations
 
-`make migrate` applies released revisions 0001–0007 plus additive `0008_valen_workspace`. Released migration bytes remain unchanged. Existing account tables, demo JSON records and claim/action links are preserved. Revision 0008 adds content-free clause offsets/hashes, recommendation state, rolling question limits, bounded chat state and comparison proofs; it extends the existing claim_cases table with account ownership and uniqueness. No duplicate benefits table is created: reviewed AccountFieldRow values remain the authority.
+`make migrate` applies `0001` → `0002` → `0003` without resetting data. `0001` is unchanged. `0002` adds purpose grants plus owner-scoped document, extracted-field, claim-case and action primitives; it backfills the historical boolean into process_documents only. It retains legacy rows, timestamps and audit history. **external_ai and retention are never inferred from that boolean.** `0003` adds canonical server action payload storage for approval-hash binding; it does not approve/execute actions or promote statuses.
 
-SQLite fresh/populated upgrade and privacy/foreign-key regressions are tested. PostgreSQL DDL compiles, but no live PostgreSQL/Supabase upgrade was run. Revision 0002 needs online execution for its historical consent backfill; 0008 is deliberately forward-only pending a reviewed data-preserving downgrade. Never reset a populated database to install this work. See [ingestion contract](docs/agent-tasks/valen/INGESTION_CONTRACT.md) and [schema mapping](docs/prd/SCHEMA_MAPPING.md).
+`0002` must run against an online database because it reads historical rows for its portable UUID/timestamp-preserving backfill; `alembic --sql` is deliberately rejected for that revision. SQLite fresh and populated upgrade tests pass. New table DDL compiles for PostgreSQL, but no live PostgreSQL/Supabase upgrade was run. Use `make migrate` for both local and configured PostgreSQL environments.
+
+Original tables remain: demo_sessions, profiles, consents, insurance_records, audit_events, persona_templates. Added shared tables: purpose_consents, documents, extracted_fields, claim_cases, actions. Every new table has a specific identifier/consent/provenance purpose; these are not functioning product workflows. Composite owner foreign keys prevent cross-session document→field and claim→action links. Coverages remain validated insurance-record JSON and are scoped at API boundaries. Deeper feature storage, pages/OCR, benefits/chunks, claim histories, P1 and bonus tables are deferred. See [SCHEMA_MAPPING.md](docs/prd/SCHEMA_MAPPING.md).
 
 Startup never creates tables automatically. `make seed` inserts missing validated templates and leaves existing sessions untouched; repeat runs insert zero templates. Profiles use validated JSON with optional timezone/employment/dependents/coverage/priorities/budget/currency metadata, so existing rows require no destructive rewrite.
 
@@ -232,29 +224,29 @@ UUID/JSON types are portable; SQLite foreign keys are enabled. `postgres://` and
 
 Country edits select the new KB without rewriting original insurance/documents. On a country change, omitted city, timezone, institution, visa dates and budget/currency are cleared from the profile; explicit destination values remain accepted. Other same-country partial updates retain omitted values. A record/profile country mismatch returns NEEDS_VERIFICATION with no numerical gap; switching back cannot reuse old visa dates unless explicitly supplied again. Demo policy/document labels show the original record country. API shapes, purpose guards and migrations are unchanged.
 
-[SCREEN_ROUTES.md](docs/prd/SCREEN_ROUTES.md) records canonical routes and legacy compatibility. `/dashboard` remains the existing demo dashboard; `/ask-policy`, `/care` and `/coverage` reuse the new canonical Valen pages. Existing account onboarding/documents/privacy remain reachable through their current wrappers. Claim creation shows its real ID and the unavailable SC-09 checklist boundary rather than navigating to a missing detail screen.
+[SCREEN_ROUTES.md](docs/prd/SCREEN_ROUTES.md) maps every existing demo URL to its intended PRD screen: dashboard→home, ask-policy→ask, care→pathways, coverage→coverage-needs; documents/audit keep their paths. The consent-only onboarding page is not the planned profile wizard, and the claims placeholder has no detail case ID. No links, redirects or screens are added. [COUNTRY_INTEGRATION.md](docs/prd/COUNTRY_INTEGRATION.md) records US-02-02 behavior, future profile/cache coordination and exact unverified/missing KB prerequisites for SC-04, SC-07, SC-08 and SC-14.
 
 ## Country Knowledge Base
 
-AU and ID resources now use schema version `1.5` and country version `0.3.1`. Each resource file has `schema_version`, `version`, `source_url`, `checked_at`, `verification_status`, and typed `data`. Resource versions must match the manifest. The manifest retains its sources list. The loader exposes the existing `.rules`, `.coverage_needs`, `.pathways` and `.glossary` views, plus validated `.resources`. Direct JSON consumers must now unwrap `data` instead of treating files as bare arrays/objects.
+Country resources use schema version `1.5`; resource versions must match their manifest. The active country allowlist is CN/ID. AU files are inactive drafts, not supported runtime country rules. Each resource carries `schema_version`, `version`, `source_url`, `checked_at`, `verification_status`, and typed `data`. The loader exposes the existing `.rules`, `.coverage_needs`, `.pathways` and `.glossary` views, plus validated `.resources`. Direct JSON consumers must unwrap `data` instead of treating files as bare arrays/objects.
 
-Resources: rules, coverage_needs, pathways, glossary, coverage_types, document_types, extraction_templates, suggested_docs, tasks, required_fields, recommendation_rules, verification_steps, red_flags, emergency, example_questions and retrieval_terms. The root injection_patterns resource is also versioned. Structural references/duplicates and verified-source metadata are validated. Add countries through folders, without country-specific service branches.
+Resources: rules, coverage_needs, pathways, glossary, coverage_types, document_types, extraction_templates, suggested_docs, tasks, required_fields, recommendation_rules, verification_steps, red_flags and emergency. The root injection_patterns resource is also versioned. Structural references/duplicates and verified-source metadata are validated. Add countries through folders, without country-specific service branches.
 
-Regulatory activation requires checked official sources. The AU student-cover recommendation/need uses a reviewed Ombudsman source with explicit exceptions and uncertainty; descriptive urgent-care/JKN references do not establish policy eligibility or prices. Other needs and proposed verification questions stay explicitly unverified. Emergency/red_flags now contain source-backed draft entries but still lack maintainer review and remain unavailable. Extraction templates, task matrices and suggestions also lack reviewed content. Tariffs are null. See [KB sources and limits](docs/agent-tasks/valen/KB_SOURCES.md) and the [triage review checklist](docs/agent-tasks/valen/TRIAGE_REVIEW.md).
+Unknown resources remain empty UNVERIFIED placeholders with null official sources/review dates. ID's new symptom drafts include source URLs and checked dates but remain UNVERIFIED. The strict safety screen rejects incomplete red-flag resources. Emergency contacts are returned only from current verified KB entries; there are no hardcoded fallback numbers.
 
 The deterministic engine still unions matching policy intervals and counts inclusive uncovered calendar days once. Raka remains 76 potential gap days, never an automatic visa-violation finding. Missing dates/context return NEEDS_VERIFICATION with null counts; invalid ranges fail validation. Money remains a decimal string; no float money arithmetic or currency conversion occurs.
 
 ## Consent & Security
 
-Google OAuth account authentication and guest/demo sessions are separate. Google uses authorization code + PKCE and provider state cookies; the backend stores accounts, provider identities, and only SHA-256 hashes of revocable seven-day session tokens. Browser account tokens stay in per-tab `sessionStorage` and are returned from the callback in a URL fragment so they are not sent in HTTP referrers or server logs. Existing password account auth is preserved; canonical foundation password stubs retain their existing status. Demo sessions continue to use hashed opaque `X-Demo-Session` tokens and synthetic data only.
+Google OAuth account authentication and guest/demo sessions are separate. Google uses authorization code + PKCE and provider state cookies; the backend stores accounts, provider identities, and only SHA-256 hashes of revocable seven-day session tokens. Browser account tokens stay in per-tab `sessionStorage` and are returned from the callback in a URL fragment so they are not sent in HTTP referrers or server logs. Password auth remains 501. Demo sessions continue to use hashed opaque `X-Demo-Session` tokens and synthetic data only.
 
 Consent defaults false for all three purposes. Canonical GET/POST `/consents` reads/changes explicit purposes; policy_version is `1.5` for new decisions. The retained `/consent` API mirrors process_documents only. The existing screen grants/revokes documents only; it never silently enables AI or retention. Google sign-in does not grant processing consent.
 
-Every protected call rechecks current database grants. Upload/external extraction/Q&A/claim-evidence stubs require process_documents AND external_ai; local processing stubs require process_documents. Seeded profile/record reads, audit and deterministic date checks remain available without those grants. Optional retention is not a processing prerequisite. Account retention revocation removes retained originals/pages, derived chunks and history; processing/AI revocation blocks access and purges derived content. Regrant cannot restore removed sources. Reviewed structured fields remain separate from optional raw retention. Account data deletion includes Valen state/cases.
+Every protected call rechecks current database grants. Upload/external extraction/Q&A/claim-evidence stubs require process_documents AND external_ai; local processing stubs require process_documents. Seeded profile/record reads, audit and deterministic date checks remain available without those grants. Optional retention is not a processing prerequisite. Revocation blocks subsequent protected processing, but does not imply successful storage cleanup. No uploaded originals are stored by the current application; real retention cleanup must be implemented before storage is enabled.
 
 Consent does not authorize an action. Execution/sandbox stubs require an owned persisted APPROVED action, timestamp and exact canonical server payload SHA-256, with matching request context, before returning 501. They execute nothing. Future effects must also implement idempotency and lifecycle checks; approval/execute endpoints currently never return success.
 
-Audit metadata uses an allow-list of operational values; raw tokens, questions, document content and identifiers are excluded. Request IDs are generated by the server. CORS uses explicit frontend origins. Medical triage data remains unavailable. Retrieval excludes flagged documents and instruction-like/identifier lines; every returned citation must match an owned retained page. These checks do not establish real insurance eligibility or payment.
+Audit metadata uses an allow-list of operational values; raw tokens, questions, document content and identifiers are excluded. Request IDs are generated by the server. CORS uses explicit frontend origins. Password authentication, medical triage, injection detection and full page/citation verification are not complete; guard extension points fail closed.
 
 ## Development Commands
 
@@ -284,38 +276,30 @@ The CI workflow runs checks and browser smoke tests on locked dependencies; it h
 
 ## Testing
 
-Current exact commands/results and fixture boundaries are recorded here and in [Valen verification](docs/agent-tasks/valen/VERIFICATION.md). Historical foundation reports remain historical. `make test` uses isolated migrated databases; `make test-client` covers HTTP/SSE framing; `make check` runs Ruff, ESLint, TypeScript and production build. PostgreSQL DDL compilation is not a live database migration.
+Country-context integration verification on 17 October 2026: **134 backend tests, 7 typed-client tests and 4 desktop/mobile browser cases passed.** Ruff, ESLint, strict TypeScript, production build, migration/seed commands and generated-contract drift checks passed. No dependency upgrades were needed.
 
-Run every browser test, including preserved legacy assertions:
+Baseline stabilization commands and limitations are recorded in [FOUNDATION_VERIFICATION.md](docs/FOUNDATION_VERIFICATION.md). Current focused integration checks and decisions are in [COUNTRY_INTEGRATION.md](docs/prd/COUNTRY_INTEGRATION.md).
+
+Verification includes backend API/rules tests, fresh/populated migrations without data loss, idempotent fixtures, independent consent grant/revocation, owner-IDOR guards, composite foreign keys, persisted approval/hash validation, audit redaction/query pagination, OpenAPI references/snapshot and TypeScript artifact drift. Standard CI does not require a Gemini key or make live calls.
+
+`make test-client` runs typed transport tests for query encoding, multipart boundaries, PATCH/DELETE path/body handling, 204, future streaming/error responses, cancellation and compile-time contract misuse. `make check` covers Ruff, ESLint, strict TypeScript and the production build. PostgreSQL DDL is compiled in tests; a live database migration remains untested.
+
+For browser tests, with ports 3177/8177 available:
 
 ```sh
 cd frontend
 npx playwright install chromium
-CI=1 npm run test:e2e
+npm run test:e2e
 ```
 
-Playwright starts backend/frontend services against `.cache/e2e.db`. New account fixtures are CLI-only, fictional, and refuse any other database; real account login, ownership and page access remain in browser checks. Standard provider/triage-dependent UI branches use explicit synthetic mocks. Full legacy demo tests are retained even where baseline UI changes make their selectors fail. The opt-in live tests below send only fictional policy text to Gemini and use isolated temporary databases plus a test-only triage fixture; they do not unlock Q&A in the shipped KB.
-
-```sh
-cd backend
-INSURRA_LIVE_GEMINI=1 uv run pytest app/tests/test_live_gemini_workflow.py -q
-uv run python ../scripts/check_live_ai.py --live
-
-cd ../frontend
-INSURRA_LIVE_GEMINI=1 npm run test:e2e -- --config=playwright.live-gemini.config.ts
-CI=1 INSURRA_E2E_API_URL=http://127.0.0.1:8001 INSURRA_E2E_WEB_URL=http://127.0.0.1:3001 npm run test:e2e -- --project=desktop --grep SC-06
-CI=1 INSURRA_E2E_API_URL=http://127.0.0.1:8001 INSURRA_E2E_WEB_URL=http://127.0.0.1:3001 npm run test:e2e -- --project=mobile --grep SC-06
-```
-
-The API workflow test exercises PDF upload, Gemini extraction, persisted fields/pages, streamed Q&A citation validation, and an unsupported no-match question. The live browser test also completes account login and the three consent choices, uploads through the UI, displays the real Gemini answer citation in the source drawer, and shows an unsupported no-match response. Each workflow uses two provider calls; the separate connectivity check makes one. These live checks are opt-in, use a fresh isolated SQLite database and test-only triage data, and never run in CI. The live Playwright config builds the frontend and starts isolated services on ports 18001/13001 by default; set `INSURRA_E2E_API_URL` and `INSURRA_E2E_WEB_URL` to choose other free local ports.
+Playwright starts both local services, migrates/seeds a separate `.cache/e2e.db`, and runs the complete flow at desktop and mobile widths. With `CI=1`, it builds and serves the production frontend so assertions do not depend on development-route compilation; local runs use the development server. It checks consent, Raka's backend result, reload persistence, documents, audit filtering, revocation, persona switching, Sinta isolation, runtime errors and horizontal overflow. When services already run, Playwright reuses them; use `CI=1` to require fresh servers and the production frontend. A custom `PLAYWRIGHT_BROWSERS_PATH` may be used in restricted environments.
 
 ## Known Limitations
 
-- P0 is blocked by unverified triage and emergency resources; chat/care remain locked in the shipped configuration. SC-08, SC-09 detail, SC-10 reminders/actions and account audit display are external dependencies.
-- The extraction templates collect only provider and coverage dates; benefit amounts and coverage conclusions still require reviewed source-linked fields. Metadata-only demo fixtures cannot establish policy clauses or benefit amounts.
-- GP/employer guidance and tariff/eligibility data remain incomplete. Unknowns stay visible; no invented costs, diagnoses or exclusions.
-- Existing demo browser assertions predate the current landing/onboarding UI. See the exact full-suite result in the verification report; no test was removed or weakened.
-- No live PostgreSQL, Supabase, hosted deployment, or production-KB Q&A was tested. The opt-in workflow test verifies real Gemini extraction and Q&A against synthetic evidence under a test-only triage fixture; the shipped unverified red-flag drafts still keep chat locked. The separate connectivity check does not prove real-world policy accuracy. External AI and document-processing grants remain required before protected calls.
+- All future product/auth/privacy/streaming routes are deliberate 501s; no actual uploads/storage, parsing/OCR, retrieval, chat, care advice, benefit assessment, claim draft or execution is enabled.
+- Source validation and approval checks are conservative foundations, not completed citation/injection/triage/execution safeguards. File size/MIME enforcement, cleanup, upload deduplication/cache and rate limiting remain feature implementation work.
+- KB configuration is unchecked demo material, not regulatory guidance. No emergency-number or legal-compliance claims are made.
+- No live PostgreSQL, Supabase, hosted deployment or production-country Gemini Q&A has been verified. Opt-in Gemini checks use synthetic data and test-only triage.
 - The installed Starlette/FastAPI test client emits a deprecation notice for httpx; tests still pass with the requested httpx dependency.
 - `npm audit` reports five high findings in the development lint chain (`braces` → `micromatch` → `fast-glob` → Next ESLint tooling). No patched compatible `braces` version was available when installed. `npm audit --omit=dev` reports zero findings. Recheck upstream before publishing; do not blindly downgrade Next or use `audit fix --force`.
 
@@ -334,6 +318,6 @@ Original CSVs and the local alignment prompt remain reference material; CSVs are
 
 ## Next Steps
 
-Reviewed shared triage/emergency content, normalized ingestion evidence, claim readiness/actions/account audit and remaining screen integrations are needed before P0 acceptance can finish. Travel P1 has not started because its P0 gate is not met. Existing teammate interfaces and Git history are preserved; nothing is pushed or merged.
+Verified country content, password auth, extraction/retrieval, medical routing, claim workflows, privacy cleanup, remaining feature screens and P1/bonus work require separate reviewed scope. No task is assigned to a person or team here, and no feature branch is created.
 
 **No team ownership has been assigned. Foundation is ready for a separate feature split only after maintainer review.** Read root, frontend and backend AGENTS.md before extending the repository.

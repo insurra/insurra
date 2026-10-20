@@ -1,0 +1,23 @@
+{
+  "country_code": "CN",
+  "label": "China",
+  "version": "0.2.0",
+  "checked_at": null,
+  "sources": [],
+  "supported_features": [
+    "coverage_vocabulary",
+    "care_placeholders",
+    "student_medical_scheme"
+  ],
+  "verification_status": "UNVERIFIED",
+  "schema_version": "1.5",
+  "default_timezone": "Asia/Shanghai",
+  "official_source_hosts": [
+    "bjca.miit.gov.cn",
+    "www.nhc.gov.cn",
+    "nhc.gov.cn",
+    "www.who.int",
+    "who.int"
+  ],
+  "default_currency": "CNY"
+}

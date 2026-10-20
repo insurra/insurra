@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": null,
+  "checked_at": null,
+  "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer. Not retrieved or machine-verified.",
+  "data": [
+    {"task_code": "coverage_continuity", "label": "Protection continuity check", "policy_types": []},
+    {
+      "task_code": "student_outpatient_claim",
+      "label": "Outpatient and emergency claim preparation",
+      "policy_types": ["STUDENT_COMPREHENSIVE", "COMMERCIAL_HEALTH"]
+    },
+    {
+      "task_code": "student_inpatient_claim",
+      "label": "Hospitalization inpatient claim preparation",
+      "policy_types": ["STUDENT_COMPREHENSIVE", "COMMERCIAL_HEALTH"]
+    },
+    {
+      "task_code": "campus_insurance_verification",
+      "label": "University enrollment insurance verification",
+      "policy_types": ["STUDENT_COMPREHENSIVE"]
+    },
+    {
+      "task_code": "social_medical_care",
+      "label": "Social basic medical insurance consultation",
+      "policy_types": ["SOCIAL_MEDICAL", "EMPLOYER_GROUP"]
+    }
+  ]
+}

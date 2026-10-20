@@ -15,7 +15,7 @@ from app.services.rules_engine import RulesEngine
 
 @pytest.mark.parametrize(
     "persona,destination,residence,origin",
-    [("raka", "ID", "DOMESTIC", "AU"), ("sinta", "AU", "ABROAD", "ID")],
+    [("raka", "ID", "DOMESTIC", "CN"), ("sinta", "CN", "ABROAD", "ID")],
 )
 def test_country_switch_preserves_origin_and_consent_but_rechecks_assessment(
     client, app, demo, persona, destination, residence, origin
@@ -66,10 +66,10 @@ def test_country_round_trip_requires_new_country_details_before_reusing_gap(clie
     _, headers = demo()
     original = client.get("/api/v1/profile", headers=headers).json()
     metadata = {
-        "timezone": "Australia/Melbourne",
+        "timezone": "Asia/Shanghai",
         "institution_name": "Synthetic",
         "budget_range": "synthetic-range",
-        "currency": "AUD",
+        "currency": "CNY",
         "dependents": ["synthetic"],
         "priorities": ["synthetic"],
         "owned_coverage": ["synthetic"],
@@ -83,8 +83,11 @@ def test_country_round_trip_requires_new_country_details_before_reusing_gap(clie
         "visa_expiry_date",
         "budget_range",
         "currency",
+        "study_start_date",
+        "study_end_date",
+        "permit_end_date",
     )
-    for country, residence in [("ID", "DOMESTIC"), ("AU", "ABROAD")]:
+    for country, residence in [("ID", "DOMESTIC"), ("CN", "ABROAD")]:
         response = client.put(
             "/api/v1/profile",
             headers=headers,
@@ -99,7 +102,9 @@ def test_country_round_trip_requires_new_country_details_before_reusing_gap(clie
         for field in ("dependents", "priorities", "owned_coverage"):
             assert profile[field] == metadata[field]
         assessment = client.get("/api/v1/assessments/visa-gap", headers=headers).json()
-        assert assessment["assessment_status"] == "NEEDS_VERIFICATION"
+        assert assessment["assessment_status"] == (
+            "NEEDS_VERIFICATION" if country != original["country_code"] else "UNABLE_TO_DETERMINE"
+        )
         assert assessment["gap_days"] is None and assessment["gap_periods"] == []
     # Explicitly re-entered dates can be used again once profile and record countries match.
     response = client.put(
@@ -107,6 +112,9 @@ def test_country_round_trip_requires_new_country_details_before_reusing_gap(clie
         headers=headers,
         json={
             "arrival_date": original["arrival_date"],
+            "study_start_date": original["study_start_date"],
+            "study_end_date": original["study_end_date"],
+            "permit_end_date": original["permit_end_date"],
             "visa_expiry_date": original["visa_expiry_date"],
         },
     )
@@ -118,7 +126,7 @@ def test_same_country_merge_and_explicit_destination_details(client, demo):
     _, headers = demo()
     before = client.get("/api/v1/profile", headers=headers).json()
     same = client.put(
-        "/api/v1/profile", headers=headers, json={"country_code": "AU", "city": "Synthetic"}
+        "/api/v1/profile", headers=headers, json={"country_code": "CN", "city": "Synthetic"}
     )
     assert same.status_code == 200
     assert same.json()["profile"]["visa_expiry_date"] == before["visa_expiry_date"]
@@ -140,7 +148,7 @@ def test_same_country_merge_and_explicit_destination_details(client, demo):
     assert len(client.get("/api/v1/audit?event_type=PROFILE_UPDATED", headers=headers).json()) == 2
 
 
-@pytest.mark.parametrize("destination,origin", [("ID", "AU"), ("AU", "ID")])
+@pytest.mark.parametrize("destination,origin", [("ID", "CN"), ("CN", "ID")])
 def test_foreign_record_is_not_a_pass_or_non_applicability_fallback(destination, origin):
     profile = UserProfile.model_validate_json((ROOT / "fixtures/raka/profile.json").read_text())
     record = UnifiedInsuranceRecord.model_validate_json(

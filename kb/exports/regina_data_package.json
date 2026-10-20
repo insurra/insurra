@@ -1,0 +1,2664 @@
+{
+  "recipient": "Regina (Frontend & Client Architecture)",
+  "description": "Company registry, placeholder brand artwork (not official logos), product catalog, document taxonomy, extraction schemas",
+  "generated_at": "2026-10-18",
+  "evidence_notice": "No record in this package was fetched from an official source. Every record carries evidence_class and stays UNVERIFIED unless it has a real retrieved artifact hash.",
+  "companies": [
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "cn-insurer-pingan",
+      "legal_entity_name": "Ping An Insurance (Group) Company of China, Ltd.",
+      "brand_name": "Ping An",
+      "original_local_name": "中国平安保险（集团）股份有限公司",
+      "country": "CN",
+      "entity_type": "insurance_group",
+      "parent_company": null,
+      "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
+      "license_reference": "NFRA-B0002H111000001",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.pingan.com",
+      "business_category": "Composite Financial & Insurance Group (Life, Health, Property & Casualty, Pension)",
+      "public_customer_service_contact": "95511",
+      "official_claim_contact": "95511",
+      "official_claim_portal": "https://www.pingan.com/claims",
+      "brand_asset_ids": [
+        "asset-cn-insurer-pingan-primary"
+      ],
+      "source_references": [
+        "CN-SRC-PINGAN",
+        "CN-SRC-NFRA"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "cn-insurer-picc",
+      "legal_entity_name": "The People's Insurance Company (Group) of China Limited",
+      "brand_name": "PICC",
+      "original_local_name": "中国人民保险集团股份有限公司",
+      "country": "CN",
+      "entity_type": "insurance_group",
+      "parent_company": null,
+      "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
+      "license_reference": "NFRA-B0003H111000001",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.picc.com",
+      "business_category": "Property & Casualty, Health, Life Insurance Group",
+      "public_customer_service_contact": "95518",
+      "official_claim_contact": "95518",
+      "official_claim_portal": "https://www.picc.com/claims",
+      "brand_asset_ids": [
+        "asset-cn-insurer-picc-primary"
+      ],
+      "source_references": [
+        "CN-SRC-PICC",
+        "CN-SRC-NFRA"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "cn-insurer-chinalife",
+      "legal_entity_name": "China Life Insurance (Group) Company",
+      "brand_name": "China Life",
+      "original_local_name": "中国人寿保险（集团）公司",
+      "country": "CN",
+      "entity_type": "insurance_group",
+      "parent_company": null,
+      "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
+      "license_reference": "NFRA-B0005H111000001",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.chinalife.com.cn",
+      "business_category": "Life Insurance, Health Insurance, Pension, Asset Management",
+      "public_customer_service_contact": "95519",
+      "official_claim_contact": "95519",
+      "official_claim_portal": "https://www.chinalife.com.cn/service/claims",
+      "brand_asset_ids": [
+        "asset-cn-insurer-chinalife-primary"
+      ],
+      "source_references": [
+        "CN-SRC-CHINALIFE",
+        "CN-SRC-NFRA"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "cn-insurer-cpic",
+      "legal_entity_name": "China Pacific Insurance (Group) Co., Ltd.",
+      "brand_name": "CPIC",
+      "original_local_name": "中国太平洋保险（集团）股份有限公司",
+      "country": "CN",
+      "entity_type": "insurance_group",
+      "parent_company": null,
+      "regulatory_authority": "National Financial Regulatory Administration (NFRA)",
+      "license_reference": "NFRA-B0006H111000001",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.cpic.com.cn",
+      "business_category": "Life, Property & Casualty, Health Insurance",
+      "public_customer_service_contact": "95500",
+      "official_claim_contact": "95500",
+      "official_claim_portal": "https://www.cpic.com.cn/claims",
+      "brand_asset_ids": [
+        "asset-cn-insurer-cpic-primary"
+      ],
+      "source_references": [
+        "CN-SRC-CPIC",
+        "CN-SRC-NFRA"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "cn-platform-lxbx",
+      "legal_entity_name": "Ping An Pension Insurance Co., Ltd. (Underwriter for Foreign Student Scheme)",
+      "brand_name": "Comprehensive Insurance for Foreigners Staying in China",
+      "original_local_name": "平安养老保险股份有限公司（来华留学生综合医疗保险服务平台）",
+      "country": "CN",
+      "entity_type": "student_insurance_platform",
+      "parent_company": "Ping An Insurance (Group) Company of China, Ltd.",
+      "regulatory_authority": "National Financial Regulatory Administration (NFRA) & Ministry of Education",
+      "license_reference": "NFRA-B0018H211000001",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.lxbx.net",
+      "business_category": "National Foreign Student Insurance & Group Pension",
+      "public_customer_service_contact": "400-810-5119",
+      "official_claim_contact": "400-810-5119 (Ext 1)",
+      "official_claim_portal": "https://www.lxbx.net/claims.html",
+      "brand_asset_ids": [
+        "asset-cn-platform-lxbx-primary"
+      ],
+      "source_references": [
+        "CN-SRC-LXBX",
+        "CN-SRC-SZU"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "id-public-bpjs-kesehatan",
+      "legal_entity_name": "Badan Penyelenggara Jaminan Sosial Kesehatan (BPJS Kesehatan)",
+      "brand_name": "BPJS Kesehatan",
+      "original_local_name": "Badan Penyelenggara Jaminan Sosial Kesehatan",
+      "country": "ID",
+      "entity_type": "underwriting_company",
+      "parent_company": null,
+      "regulatory_authority": "Dewan Jaminan Sosial Nasional (DJSN) & Otoritas Jasa Keuangan (OJK)",
+      "license_reference": "Statutory Public Legal Entity under UU No. 24 Tahun 2011",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.bpjs-kesehatan.go.id",
+      "business_category": "National Public Social Health Security Scheme (Program JKN)",
+      "public_customer_service_contact": "BPJS Care Center 165",
+      "official_claim_contact": "165 / Faskes Terdaftar",
+      "official_claim_portal": "https://pcare.bpjs-kesehatan.go.id",
+      "brand_asset_ids": [
+        "asset-id-public-bpjs-kesehatan-primary"
+      ],
+      "source_references": [
+        "ID-SRC-BPJS-KES",
+        "ID-SRC-BPK-JDIH"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "id-insurer-allianz",
+      "legal_entity_name": "PT Asuransi Allianz Life Indonesia",
+      "brand_name": "Allianz Indonesia",
+      "original_local_name": "PT Asuransi Allianz Life Indonesia",
+      "country": "ID",
+      "entity_type": "underwriting_company",
+      "parent_company": "Allianz SE",
+      "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
+      "license_reference": "OJK KEP-238/KM.13/1989",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.allianz.co.id",
+      "business_category": "Life and Health Insurance Company",
+      "public_customer_service_contact": "1500-136",
+      "official_claim_contact": "1500-136",
+      "official_claim_portal": "https://www.allianz.co.id/klaim",
+      "brand_asset_ids": [
+        "asset-id-insurer-allianz-primary"
+      ],
+      "source_references": [
+        "ID-SRC-ALLIANZ",
+        "ID-SRC-OJK"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "id-insurer-prudential",
+      "legal_entity_name": "PT Prudential Life Assurance",
+      "brand_name": "Prudential Indonesia",
+      "original_local_name": "PT Prudential Life Assurance",
+      "country": "ID",
+      "entity_type": "underwriting_company",
+      "parent_company": "Prudential plc",
+      "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
+      "license_reference": "OJK S-383/MK.17/1995",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.prudential.co.id",
+      "business_category": "Life and Health Insurance, Syariah Insurance",
+      "public_customer_service_contact": "1500085",
+      "official_claim_contact": "1500085",
+      "official_claim_portal": "https://www.prudential.co.id/id/claims-services/",
+      "brand_asset_ids": [
+        "asset-id-insurer-prudential-primary"
+      ],
+      "source_references": [
+        "ID-SRC-PRUDENTIAL",
+        "ID-SRC-OJK"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "id-insurer-aia",
+      "legal_entity_name": "PT AIA FINANCIAL",
+      "brand_name": "AIA Indonesia",
+      "original_local_name": "PT AIA FINANCIAL",
+      "country": "ID",
+      "entity_type": "underwriting_company",
+      "parent_company": "AIA Group Limited",
+      "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
+      "license_reference": "OJK KEP-138/KM.13/1992",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.aia-financial.co.id",
+      "business_category": "Life and Health Insurance, Group Employee Benefits",
+      "public_customer_service_contact": "1500-980",
+      "official_claim_contact": "1500-980",
+      "official_claim_portal": "https://www.aia-financial.co.id/id/help-support/claims.html",
+      "brand_asset_ids": [
+        "asset-id-insurer-aia-primary"
+      ],
+      "source_references": [
+        "ID-SRC-AIA",
+        "ID-SRC-OJK"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "id-insurer-manulife",
+      "legal_entity_name": "PT Asuransi Jiwa Manulife Indonesia",
+      "brand_name": "Manulife Indonesia",
+      "original_local_name": "PT Asuransi Jiwa Manulife Indonesia",
+      "country": "ID",
+      "entity_type": "underwriting_company",
+      "parent_company": "Manulife Financial Corporation",
+      "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
+      "license_reference": "OJK Kep-020/KM.13/1989",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.manulife.co.id",
+      "business_category": "Life Insurance, Health Insurance, Group Pension (DPLK)",
+      "public_customer_service_contact": "021-2555-7777",
+      "official_claim_contact": "021-2555-7777",
+      "official_claim_portal": "https://www.manulife.co.id/id/layanan/klaim.html",
+      "brand_asset_ids": [
+        "asset-id-insurer-manulife-primary"
+      ],
+      "source_references": [
+        "ID-SRC-MANULIFE",
+        "ID-SRC-OJK"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "id-insurer-axa-mandiri",
+      "legal_entity_name": "PT AXA Mandiri Financial Services",
+      "brand_name": "AXA Mandiri",
+      "original_local_name": "PT AXA Mandiri Financial Services",
+      "country": "ID",
+      "entity_type": "underwriting_company",
+      "parent_company": "Joint Venture Bank Mandiri and AXA Group",
+      "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
+      "license_reference": "OJK S-071/MK.6/2004",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://www.axa-mandiri.co.id",
+      "business_category": "Bancassurance Life and Health Insurance",
+      "public_customer_service_contact": "1500-803",
+      "official_claim_contact": "1500-803",
+      "official_claim_portal": "https://www.axa-mandiri.co.id/layanan-nasabah/klaim",
+      "brand_asset_ids": [
+        "asset-id-insurer-axa-mandiri-primary"
+      ],
+      "source_references": [
+        "ID-SRC-AXA-MANDIRI",
+        "ID-SRC-OJK"
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered entity data. License reference and contacts were not checked against the regulator register.",
+      "insurer_id": "id-insurer-bri-life",
+      "legal_entity_name": "PT Asuransi Jiwa BRI Life",
+      "brand_name": "BRI Life",
+      "original_local_name": "PT Asuransi Jiwa BRI Life",
+      "country": "ID",
+      "entity_type": "underwriting_company",
+      "parent_company": "PT Bank Rakyat Indonesia (Persero) Tbk",
+      "regulatory_authority": "Otoritas Jasa Keuangan (OJK)",
+      "license_reference": "OJK Kep-364/KM.13/1988",
+      "licensing_verification_status": "UNVERIFIED",
+      "official_website": "https://brilife.co.id",
+      "business_category": "Life, Health, and Microinsurance",
+      "public_customer_service_contact": "1500-087",
+      "official_claim_contact": "1500-087",
+      "official_claim_portal": "https://brilife.co.id/klaim",
+      "brand_asset_ids": [
+        "asset-id-insurer-bri-life-primary"
+      ],
+      "source_references": [
+        "ID-SRC-BRI-LIFE",
+        "ID-SRC-OJK"
+      ],
+      "verification_status": "UNVERIFIED"
+    }
+  ],
+  "products": [
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "cn-prod-lxbx-student",
+      "insurer_id": "cn-platform-lxbx",
+      "original_product_name": "来华留学生综合医疗保险计划",
+      "english_name": "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China",
+      "product_category": "international_student",
+      "target_users": [
+        "International students",
+        "Visiting foreign scholars",
+        "Language exchange students"
+      ],
+      "eligibility_conditions": [
+        "Valid foreign passport and study visa (X1 or X2) or residence permit",
+        "Officially enrolled in a licensed Chinese university or educational institution",
+        "Age between 6 and 69 years at policy inception date"
+      ],
+      "coverage_country": "CN",
+      "coverage_territory": "Mainland China (excluding Hong Kong SAR, Macao SAR, and Taiwan)",
+      "product_status": "ACTIVE",
+      "currency": "CNY",
+      "published_pricing": "800.00",
+      "published_pricing_conditions": "RMB 800 per student per year, or RMB 400 per half-year semester",
+      "product_url": "https://www.lxbx.net/product_details.html",
+      "policy_document_references": [
+        "DOC-CN-LXBX-2024-TERMS",
+        "DOC-CN-LXBX-2024-GUIDE"
+      ],
+      "effective_from": "2024-01-01",
+      "effective_to": "2025-12-31",
+      "product_version": "2024.1",
+      "benefits": [
+        {
+          "benefit_id": "cn-ben-lxbx-accidental-death",
+          "benefit_category": "Accidental Death and Disability",
+          "benefit_name": "Accidental Death and Disability Benefit",
+          "original_name": "意外身故与伤残保障",
+          "covered_event": "Death or permanent disability directly caused by external, sudden, unintentional, and non-illness violent accidents",
+          "covered_service": "Lump-sum compensation based on assessed disability rating scale (10% to 100%)",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "100000.00",
+          "sublimits": {},
+          "currency": "CNY",
+          "period": "Policy Year",
+          "eligibility_conditions": [
+            "Enrolled student with active coverage period"
+          ],
+          "network_requirements": "Any authorized emergency or tertiary hospital",
+          "reimbursement_rate": "100%",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Accident police report",
+            "Hospital death certificate or official forensic disability appraisal report"
+          ]
+        },
+        {
+          "benefit_id": "cn-ben-lxbx-inpatient",
+          "benefit_category": "Inpatient Medical",
+          "benefit_name": "Accidental Injury and Illness Inpatient Medical Treatment",
+          "original_name": "意外伤害及疾病住院医疗",
+          "covered_event": "Hospitalization required for acute illness or unexpected injury",
+          "covered_service": "Bed fees, nursing care, doctor visits, examinations, laboratory tests, surgery, anesthesia, medicine within national basic medical insurance reimbursement scope",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": "400000.00",
+          "sublimits": {
+            "Daily Bed Limit": "RMB 300 per day"
+          },
+          "currency": "CNY",
+          "period": "Policy Year",
+          "eligibility_conditions": [
+            "Deductible RMB 650 per hospitalization instance"
+          ],
+          "network_requirements": "Public hospitals Class 2 or Class 3 in mainland China (公立二级及以上医院普通部)",
+          "reimbursement_rate": "100% of reasonable medical expenses exceeding deductible",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Hospital admission notice",
+            "Hospital discharge summary",
+            "Original hospital medical invoice (fapiao)",
+            "Itemized bill of expenses"
+          ]
+        },
+        {
+          "benefit_id": "cn-ben-lxbx-outpatient",
+          "benefit_category": "Outpatient Medical",
+          "benefit_name": "Accidental and Illness Outpatient Medical Treatment",
+          "original_name": "门诊急诊医疗费用",
+          "covered_event": "Medically necessary outpatient or emergency department consultations and treatments",
+          "covered_service": "Doctor consultation, diagnostic tests, prescribed medications within local social medical scope",
+          "inpatient_applicable": false,
+          "outpatient_applicable": true,
+          "benefit_limit": "20000.00",
+          "sublimits": {
+            "Daily Outpatient Limit": "RMB 600 per day"
+          },
+          "currency": "CNY",
+          "period": "Policy Year",
+          "eligibility_conditions": [
+            "Deductible RMB 650 per policy year; daily maximum reimbursement RMB 600"
+          ],
+          "network_requirements": "Public hospitals Class 2 or Class 3 in mainland China, or designated university campus health clinic",
+          "reimbursement_rate": "85% of eligible expenses exceeding deductible",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Outpatient medical record book",
+            "Original medical fapiao",
+            "Prescription record",
+            "Diagnostic test reports"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "cn-excl-lxbx-preexisting",
+          "excluded_event_or_service": "Pre-existing medical conditions and chronic illnesses diagnosed prior to policy effective date",
+          "original_text": "被保险人在保险责任生效前已罹患的疾病、先天性畸形、遗传性疾病或此前已有的残疾",
+          "conditions_and_exceptions": "Acute exacerbation of chronic condition requiring emergency resuscitation covered up to stabilization only",
+          "waiting_period_days": 30,
+          "deductible": "650.00 CNY",
+          "copayment_percentage": "15%",
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [
+            "Hong Kong SAR",
+            "Macao SAR",
+            "Taiwan",
+            "Overseas countries outside mainland China"
+          ],
+          "pre_existing_condition_provisions": "Explicitly excluded unless specifically endorsed in writing",
+          "supporting_policy_clause": "Clause 7.1",
+          "source_page": 4
+        },
+        {
+          "exclusion_id": "cn-excl-lxbx-high-risk",
+          "excluded_event_or_service": "Participation in professional extreme sports, martial arts competitions, motor vehicle racing, skydiving, mountaineering above 3500m",
+          "original_text": "被保险人参与潜水、跳伞、攀岩、蹦极、特技表演、赛车等高风险运动期间发生的意外伤害",
+          "conditions_and_exceptions": null,
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": null,
+          "supporting_policy_clause": "Clause 7.5",
+          "source_page": 5
+        },
+        {
+          "exclusion_id": "cn-excl-lxbx-vip-private",
+          "excluded_event_or_service": "Treatment in private hospitals, VIP medical wings, special guest wards, or international departments without insurer approval",
+          "original_text": "在公立医院特需部、国际医疗部、VIP病房，以及私立医疗机构、诊所接受的治疗",
+          "conditions_and_exceptions": "Life-threatening emergency permitted at nearest medical facility until transfer becomes feasible",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": null,
+          "supporting_policy_clause": "Clause 7.8",
+          "source_page": 5
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "cn-prod-picc-expatriate",
+      "insurer_id": "cn-insurer-picc",
+      "original_product_name": "人保健康外籍在华雇员综合医疗保障",
+      "english_name": "PICC Health Foreign Employee Comprehensive Medical Protection",
+      "product_category": "employer_group",
+      "target_users": [
+        "Foreign employees working in China",
+        "Expatriate managers",
+        "Foreign university faculty"
+      ],
+      "eligibility_conditions": [
+        "Valid Alien Employment Permit or Foreigner Work Permit (Category A, B, or C)",
+        "Valid Work-type Residence Permit in mainland China",
+        "Actively employed by an enterprise registered in China"
+      ],
+      "coverage_country": "CN",
+      "coverage_territory": "Mainland China and optional worldwide emergency extension",
+      "product_status": "ACTIVE",
+      "currency": "CNY",
+      "published_pricing": null,
+      "published_pricing_conditions": "Custom group underwriting rate based on employer census and plan tier",
+      "product_url": "https://www.picchealth.com/group/expatriate.html",
+      "policy_document_references": [
+        "DOC-CN-PICC-EXPAT-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2025-12-31",
+      "product_version": "2023.2",
+      "benefits": [
+        {
+          "benefit_id": "cn-ben-picc-expat-inpatient",
+          "benefit_category": "Inpatient Medical",
+          "benefit_name": "Inpatient Hospitalization and Surgical Expenses",
+          "original_name": "住院医疗及手术费用保障",
+          "covered_event": "Inpatient medical admission for illness or accident",
+          "covered_service": "Private room accommodation, ICU, surgical procedures, specialist fees, diagnostic imaging (MRI, CT, PET)",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": "1000000.00",
+          "sublimits": {},
+          "currency": "CNY",
+          "period": "Policy Year",
+          "eligibility_conditions": [
+            "Full-time foreign employee on active contract"
+          ],
+          "network_requirements": "Class 2A and Class 3 public hospitals, designated direct billing private clinic network",
+          "reimbursement_rate": "100%",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Hospital admission guarantee",
+            "Itemized hospital bill",
+            "Official medical invoice"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "cn-excl-picc-cosmetic",
+          "excluded_event_or_service": "Elective cosmetic surgery, refractive eye surgery, non-medical dental care",
+          "original_text": "整形美容手术、视力矫正、非因意外伤害导致的牙科治疗",
+          "conditions_and_exceptions": "Reconstructive surgery following accidental trauma is covered",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": null,
+          "supporting_policy_clause": "Clause 6.3",
+          "source_page": 6
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "cn-prod-pingan-travel",
+      "insurer_id": "cn-insurer-pingan",
+      "original_product_name": "平安行境外与境内旅游保障计划",
+      "english_name": "Ping An Journey Travel and Expatriate Protection Plan",
+      "product_category": "travel",
+      "target_users": [
+        "International travelers",
+        "Expatriates traveling in China",
+        "Business travelers"
+      ],
+      "eligibility_conditions": [
+        "Individuals aged 30 days to 85 years traveling for tourism or business",
+        "Valid identity document or passport"
+      ],
+      "coverage_country": "CN",
+      "coverage_territory": "Mainland China and designated international travel routes",
+      "product_status": "ACTIVE",
+      "currency": "CNY",
+      "published_pricing": "From 120.00 CNY per week depending on selected limit tier",
+      "published_pricing_conditions": "Single trip or annual multi-trip subscription",
+      "product_url": "https://www.pingan.com/travel/journey.html",
+      "policy_document_references": [
+        "DOC-CN-PINGAN-TRAVEL-2024"
+      ],
+      "effective_from": "2024-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2024.1",
+      "benefits": [
+        {
+          "benefit_id": "cn-ben-pingan-travel-med",
+          "benefit_category": "Emergency Travel Medical",
+          "benefit_name": "Emergency Medical Treatment and Hospitalization",
+          "original_name": "旅行紧急医疗及住院补偿",
+          "covered_event": "Sudden illness or accidental injury occurring during covered journey",
+          "covered_service": "Hospital room, surgical operation, physician consultations, emergency prescription drugs",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "500000.00",
+          "sublimits": {},
+          "currency": "CNY",
+          "period": "Per Journey",
+          "eligibility_conditions": [
+            "Policy must be in force before journey commencement"
+          ],
+          "network_requirements": "Public hospitals Class 2 and above, or authorized travel assistance network",
+          "reimbursement_rate": "100% after zero deductible",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Travel booking confirmation",
+            "Hospital invoice",
+            "Emergency medical certificate"
+          ]
+        },
+        {
+          "benefit_id": "cn-ben-pingan-travel-evac",
+          "benefit_category": "Medical Evacuation and Repatriation",
+          "benefit_name": "Emergency Medical Evacuation and Repatriation",
+          "original_name": "紧急医疗转运及送返保障",
+          "covered_event": "Critical illness or accident requiring specialized air ambulance or ground evacuation",
+          "covered_service": "Professional medical evacuation, air ambulance, physician transport escort",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": "1000000.00",
+          "sublimits": {},
+          "currency": "CNY",
+          "period": "Per Incident",
+          "eligibility_conditions": [
+            "Arranged through Ping An 24/7 Global Assistance Hotline"
+          ],
+          "network_requirements": "Authorized international medical assistance coordination network",
+          "reimbursement_rate": "100% direct settlement by assistance service",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Attending physician emergency evacuation order"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "cn-excl-pingan-travel-extreme-sports",
+          "excluded_event_or_service": "Extreme sports, professional racing, mountaineering above 5000m",
+          "original_text": "特技表演、赛车、攀岩、探险等高风险运动",
+          "conditions_and_exceptions": "Standard recreational skiing on designated marked resort slopes is covered",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Pre-existing chronic conditions not covered unless acute unexpected aggravation occurs",
+          "supporting_policy_clause": "Clause 4.2",
+          "source_page": 4
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "cn-prod-pingan-fu",
+      "insurer_id": "cn-insurer-pingan",
+      "original_product_name": "平安福终身重大疾病保险",
+      "english_name": "Ping An Fu Ultimate Critical Illness Insurance",
+      "product_category": "critical_illness",
+      "target_users": [
+        "Adult individuals aged 18 to 55",
+        "Families seeking long term critical illness safety net"
+      ],
+      "eligibility_conditions": [
+        "Aged 18 to 55 years at application",
+        "Pass medical underwriting and health declaration questionnaire",
+        "Resident in mainland China with valid identity document"
+      ],
+      "coverage_country": "CN",
+      "coverage_territory": "Mainland China (diagnosis confirmed by Class 2 or above public hospital)",
+      "product_status": "ACTIVE",
+      "currency": "CNY",
+      "published_pricing": "Approx. 9,500 CNY/yr (standard rate for 30yo male, 20-pay lifetime)",
+      "published_pricing_conditions": "Level premium payment over 10, 15, 20, or 30 years with lifetime coverage",
+      "product_url": "https://life.pingan.com/product/pinganfu.html",
+      "policy_document_references": [
+        "DOC-CN-PINGAN-FU-2023-WORDING"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "cn-ben-pingan-fu-ci",
+          "benefit_category": "Major Critical Illness Lump Sum",
+          "benefit_name": "Critical Illness Lump Sum Benefit (120 Diseases)",
+          "original_name": "重大疾病保险金（120种重症）",
+          "covered_event": "First-time clinical diagnosis of any of 120 specified severe illnesses after waiting period",
+          "covered_service": "Direct cash payout for advanced malignant neoplasm, acute myocardial infarction, severe stroke sequelae, coronary artery bypass surgery",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "500000.00",
+          "sublimits": {
+            "Critical Illness Payout": "100% basic sum insured lump sum"
+          },
+          "currency": "CNY",
+          "period": "Lifetime",
+          "eligibility_conditions": [
+            "First diagnosis confirmed after 90-day waiting period by specialist in Class 2 or above public hospital"
+          ],
+          "network_requirements": "Public hospitals Class 2 and above across China",
+          "reimbursement_rate": "100% lump-sum cash compensation",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Pathology report",
+            "Specialist clinical diagnosis certificate",
+            "Hospital medical records"
+          ]
+        },
+        {
+          "benefit_id": "cn-ben-pingan-fu-mild",
+          "benefit_category": "Early Stage Disease Benefit",
+          "benefit_name": "Mild Illness Additional Benefit (40 Diseases)",
+          "original_name": "轻度疾病额外给付保险金（40种轻症）",
+          "covered_event": "First-time diagnosis of early stage non-severe condition (e.g. early coronary stenting, mild stroke)",
+          "covered_service": "Cash payout equal to 20% of basic sum insured per occurrence up to 3 times without reducing major CI limit",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "100000.00",
+          "sublimits": {
+            "Single Occurrence": "20% of basic sum insured (up to 3 times)"
+          },
+          "currency": "CNY",
+          "period": "Lifetime",
+          "eligibility_conditions": [
+            "Diagnosis after 90-day waiting period"
+          ],
+          "network_requirements": "Class 2 and above public hospital",
+          "reimbursement_rate": "100% lump-sum",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Clinical examination and interventional procedure report"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "cn-excl-pingan-fu-congenital",
+          "excluded_event_or_service": "Congenital deformities, genetic hereditary anomalies, intentional self-inflicted harm",
+          "original_text": "遗传性疾病，先天性畸形、变形或染色体异常，被保险人故意自伤或自杀",
+          "conditions_and_exceptions": "Suicide after 2 full years from policy contract inception is covered under statutory rules",
+          "waiting_period_days": 90,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Diseases occurring or symptomatic prior to policy effective date or within 90-day waiting period are excluded",
+          "supporting_policy_clause": "Clause 3.1 & 3.2",
+          "source_page": 4
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "cn-prod-chinalife-kangning",
+      "insurer_id": "cn-insurer-chinalife",
+      "original_product_name": "中国人寿康宁终身重大疾病保险（2023版）",
+      "english_name": "China Life Kangning Ultimate Critical Illness Insurance (2023 Edition)",
+      "product_category": "critical_illness",
+      "target_users": [
+        "Individuals aged 28 days to 60 years",
+        "Families seeking state backed long term protection"
+      ],
+      "eligibility_conditions": [
+        "Aged 28 days to 60 years at issuance",
+        "Standard underwriting acceptance",
+        "Mainland China residency"
+      ],
+      "coverage_country": "CN",
+      "coverage_territory": "Mainland China",
+      "product_status": "ACTIVE",
+      "currency": "CNY",
+      "published_pricing": "Based on entry age and gender table approved by NFRA",
+      "published_pricing_conditions": "Annual premium payment options of 10, 19, or 29 years",
+      "product_url": "https://www.chinalife.com.cn/chinalife/product/kangning/",
+      "policy_document_references": [
+        "DOC-CN-CHINALIFE-KANGNING-2023-WORDING"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "cn-ben-chinalife-kangning-ci",
+          "benefit_category": "Severe Critical Illness Lump Sum",
+          "benefit_name": "Severe Critical Illness Benefit (100 Specified Conditions)",
+          "original_name": "重大疾病保险金（100种重大疾病）",
+          "covered_event": "Confirmed clinical diagnosis of any of 100 defined severe illnesses after 180-day waiting period",
+          "covered_service": "Lump-sum monetary benefit for severe malignant tumor, coronary bypass, organ transplantation, end-stage renal disease",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "500000.00",
+          "sublimits": {
+            "Severe Critical Illness": "100% basic sum insured"
+          },
+          "currency": "CNY",
+          "period": "Lifetime",
+          "eligibility_conditions": [
+            "Diagnosis after 180-day waiting period confirmed by qualified specialist"
+          ],
+          "network_requirements": "Class 2 or above public hospitals recognized by China Life",
+          "reimbursement_rate": "100% lump sum payout",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Official hospital discharge summary",
+            "Histopathology laboratory confirmation"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "cn-excl-chinalife-kangning-preexisting",
+          "excluded_event_or_service": "Symptoms or conditions diagnosed within 180 days waiting period, intentional crime, toxic drug abuse",
+          "original_text": "投保后180天等待期内出现病症，故意犯罪，吸食毒品，感染艾滋病病毒（因输血感染除外）",
+          "conditions_and_exceptions": "Accidental injury resulting in critical illness exempt from 180-day waiting period",
+          "waiting_period_days": 180,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Pre-existing medical conditions not disclosed are strictly excluded",
+          "supporting_policy_clause": "Clause 2.3 & Clause 6",
+          "source_page": 5
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "cn-prod-chinalife-furong",
+      "insurer_id": "cn-insurer-chinalife",
+      "original_product_name": "中国人寿国寿福荣定期寿险",
+      "english_name": "China Life Guoshou Furong Term Life Insurance",
+      "product_category": "life",
+      "target_users": [
+        "Breadwinners aged 18 to 60",
+        "Working parents and mortgage holders"
+      ],
+      "eligibility_conditions": [
+        "Aged 18 to 60 years",
+        "Employed with verifiable source of income",
+        "Health declaration without severe cardiovascular or oncological history"
+      ],
+      "coverage_country": "CN",
+      "coverage_territory": "Worldwide 24-hour life coverage for death",
+      "product_status": "ACTIVE",
+      "currency": "CNY",
+      "published_pricing": "Level term premium based on policy term (10, 20, 30 years or to age 60/70)",
+      "published_pricing_conditions": "Guaranteed level premium throughout chosen term",
+      "product_url": "https://www.chinalife.com.cn/chinalife/product/term-life/",
+      "policy_document_references": [
+        "DOC-CN-CHINALIFE-FURONG-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "cn-ben-chinalife-furong-death",
+          "benefit_category": "Term Life Death and Disability",
+          "benefit_name": "Death and High Disability Benefit",
+          "original_name": "身故及身体高度残疾保险金",
+          "covered_event": "Death or total irreversible disability of insured person during policy term",
+          "covered_service": "Full basic sum insured paid directly to designated legal beneficiaries",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "1000000.00",
+          "sublimits": {
+            "Death or Total Permanent Disability": "100% basic sum insured"
+          },
+          "currency": "CNY",
+          "period": "Policy Term",
+          "eligibility_conditions": [
+            "Policy must be in force with premiums paid to date"
+          ],
+          "network_requirements": "Certified public hospital death certificate or public security death certificate",
+          "reimbursement_rate": "100% lump sum to beneficiaries",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Official death certificate (医学死亡证明)",
+            "Household cancellation certificate",
+            "Beneficiary legal ID"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "cn-excl-chinalife-furong-suicide",
+          "excluded_event_or_service": "Suicide within 2 years from contract inception, active participation in military rebellion or war",
+          "original_text": "投保人对被保险人的故意杀害，被保险人故意自伤、自杀（但被保险人自杀时为无民事行为能力人的除外）",
+          "conditions_and_exceptions": "Suicide after 2 full years from contract inception is covered pursuant to Insurance Law of the PRC",
+          "waiting_period_days": 90,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Non-accidental illness death within 90-day waiting period returns total paid premiums only",
+          "supporting_policy_clause": "Clause 2.1 & 3.1",
+          "source_page": 3
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "cn-prod-pingan-accident",
+      "insurer_id": "cn-insurer-pingan",
+      "original_product_name": "平安一年期综合意外伤害保险",
+      "english_name": "Ping An Comprehensive Personal Accident Insurance",
+      "product_category": "personal_accident",
+      "target_users": [
+        "Individuals aged 1 to 65",
+        "Students and active office workers"
+      ],
+      "eligibility_conditions": [
+        "Aged 1 to 65 years",
+        "Occupational class 1 to 3 (non-hazardous occupations)",
+        "Resident of mainland China"
+      ],
+      "coverage_country": "CN",
+      "coverage_territory": "Mainland China and worldwide emergency accident protection",
+      "product_status": "ACTIVE",
+      "currency": "CNY",
+      "published_pricing": "280.00 CNY per year for Plan B (500,000 CNY AD&D tier)",
+      "published_pricing_conditions": "Annual single premium with instantaneous activation next day",
+      "product_url": "https://property.pingan.com/product/accident.html",
+      "policy_document_references": [
+        "DOC-CN-PINGAN-ACCIDENT-2024-WORDING"
+      ],
+      "effective_from": "2024-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2024.1",
+      "benefits": [
+        {
+          "benefit_id": "cn-ben-pingan-accident-death",
+          "benefit_category": "Accidental Death and Dismemberment",
+          "benefit_name": "Accidental Death and Permanent Disability Benefit",
+          "original_name": "意外身故及伤残保险金",
+          "covered_event": "Death or permanent anatomical disability directly resulting from unexpected, violent, external accident",
+          "covered_service": "Lump-sum compensation based on national disability grading scale (Class 1 to 10)",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "500000.00",
+          "sublimits": {
+            "Accidental Death": "100% sum insured",
+            "Disability": "10% to 100% per national scale"
+          },
+          "currency": "CNY",
+          "period": "Per Accident",
+          "eligibility_conditions": [
+            "Incident must occur within policy period; death or disability within 180 days of incident"
+          ],
+          "network_requirements": "Public hospital or licensed judicial assessment center",
+          "reimbursement_rate": "100% per disability schedule",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Traffic police accident responsibility report",
+            "Hospital emergency rescue record"
+          ]
+        },
+        {
+          "benefit_id": "cn-ben-pingan-accident-med",
+          "benefit_category": "Accidental Medical Reimbursement",
+          "benefit_name": "Accidental Medical Expenses Reimbursement",
+          "original_name": "意外医疗费用补偿金",
+          "covered_event": "Medical consultation, diagnostics, casting, medication, and minor surgery for accidental physical trauma",
+          "covered_service": "Outpatient and inpatient expenses at Class 2 or above public hospitals with 0 deductible and 100% reimbursement rate",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "50000.00",
+          "sublimits": {
+            "Zero Deductible": "Reimburses 100% of social medical insurance covered expenses"
+          },
+          "currency": "CNY",
+          "period": "Per Policy Year",
+          "eligibility_conditions": [
+            "Expenses incurred within 180 days of accidental injury"
+          ],
+          "network_requirements": "Class 2 and above public hospitals",
+          "reimbursement_rate": "100% reimbursement after social insurance",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Emergency clinic records",
+            "Fiscal medical invoices (Fapiao)"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "cn-excl-pingan-accident-risky-sports",
+          "excluded_event_or_service": "Driving without a license, operating motor vehicle under intoxication, participating in extreme high risk sports",
+          "original_text": "无有效驾驶证驾驶机动车，醉酒驾驶，从事潜水、跳伞、攀岩等高风险运动",
+          "conditions_and_exceptions": "Standard public transit and commercial passenger flights are fully covered with triple indemnity",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Bodily harm resulting from internal disease, stroke, or syncope is excluded from accidental trauma",
+          "supporting_policy_clause": "Clause 4.1-4.8",
+          "source_page": 3
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "cn-prod-pingan-eshengbao",
+      "insurer_id": "cn-insurer-pingan",
+      "original_product_name": "平安e生保长期医疗保险（费率可调）",
+      "english_name": "Ping An e-Sheng-Bao Long-Term Medical Insurance",
+      "product_category": "private_medical",
+      "target_users": [
+        "Individuals and families aged 0 to 55",
+        "Domestic residents and foreign expats with work permits"
+      ],
+      "eligibility_conditions": [
+        "Aged 28 days to 55 years at initial application",
+        "Participant in basic medical insurance (social health insurance)",
+        "Resident of mainland China"
+      ],
+      "coverage_country": "CN",
+      "coverage_territory": "Mainland China (Class 2 and Class 3 public hospitals ordinary department)",
+      "product_status": "ACTIVE",
+      "currency": "CNY",
+      "published_pricing": "From 296.00 CNY/year for 25-year-old with social insurance",
+      "published_pricing_conditions": "Guaranteed renewable for 20 years with rate adjustment mechanism approved by regulator",
+      "product_url": "https://health.pingan.com/product/eshengbao.html",
+      "policy_document_references": [
+        "DOC-CN-PINGAN-ESHENGBAO-2023-WORDING"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2023.2",
+      "benefits": [
+        {
+          "benefit_id": "cn-ben-pingan-eshengbao-inpatient",
+          "benefit_category": "High Limit Inpatient Medical",
+          "benefit_name": "General Inpatient Medical Expenses",
+          "original_name": "一般住院医疗费用保险金",
+          "covered_event": "Inpatient medical stay for illness or accident after 90-day waiting period",
+          "covered_service": "Bed fee, operating room, prescription drugs (including Western and TCM), diagnostic imaging, nursing care",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": "2000000.00",
+          "sublimits": {
+            "Annual Limit": "2,000,000 CNY (4,000,000 CNY for 120 critical illnesses)"
+          },
+          "currency": "CNY",
+          "period": "Policy Year",
+          "eligibility_conditions": [
+            "Eligible expenses exceeding annual 10,000 CNY deductible"
+          ],
+          "network_requirements": "Class 2 and Class 3 public hospitals ordinary wards",
+          "reimbursement_rate": "100% after social medical insurance",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Hospital admission and discharge records",
+            "Hospital cost itemized sheet",
+            "Fapiao"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "cn-excl-pingan-eshengbao-deductible",
+          "excluded_event_or_service": "Expenses within the annual 10,000 CNY shared deductible, treatment in VIP private wings",
+          "original_text": "年免赔额1万元以内的个人自付费用，公立医院特需医疗部、国际部及私立医疗机构",
+          "conditions_and_exceptions": "Deductible waived for 120 specified critical illnesses",
+          "waiting_period_days": 90,
+          "deductible": "10000.00",
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Pre-existing conditions before policy inception are strictly excluded",
+          "supporting_policy_clause": "Clause 2.1 & 3.1",
+          "source_page": 4
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "id-prod-bpjs-jkn",
+      "insurer_id": "id-public-bpjs-kesehatan",
+      "original_product_name": "Program Jaminan Kesehatan Nasional (JKN)",
+      "english_name": "National Health Insurance Program (JKN BPJS Kesehatan)",
+      "product_category": "public_social_health",
+      "target_users": [
+        "All Indonesian citizens",
+        "Foreign residents residing and working in Indonesia for at least 6 months"
+      ],
+      "eligibility_conditions": [
+        "Indonesian citizen holding NIK KTP or foreign resident holding valid KITAS/KITAP and work contract >= 6 months",
+        "Enrolled in one of the membership categories: PPU (formal worker), PBPU (independent), BP (non-worker), or PBI (subsidized)",
+        "Active contribution payment status without unpaid premium arrears"
+      ],
+      "coverage_country": "ID",
+      "coverage_territory": "Entire territory of the Republic of Indonesia across contracted healthcare facilities",
+      "product_status": "ACTIVE",
+      "currency": "IDR",
+      "published_pricing": "35000.00",
+      "published_pricing_conditions": "PBPU Mandiri monthly contribution: Kelas 1 IDR 150,000; Kelas 2 IDR 100,000; Kelas 3 IDR 35,000 (after government subsidy)",
+      "product_url": "https://www.bpjs-kesehatan.go.id/bpjs/pages/detail/2014/11",
+      "policy_document_references": [
+        "DOC-ID-PERPRES-59-2024",
+        "DOC-ID-PANDUAN-JKN-2024"
+      ],
+      "effective_from": "2014-01-01",
+      "effective_to": null,
+      "product_version": "2024.1",
+      "benefits": [
+        {
+          "benefit_id": "id-ben-jkn-fktp-rawat-jalan",
+          "benefit_category": "Primary Care Outpatient",
+          "benefit_name": "Pelayanan Kesehatan Tingkat Pertama (Rawat Jalan Tingkat Pertama - RJTP)",
+          "original_name": "Rawat Jalan Tingkat Pertama (RJTP) di FKTP Terdaftar",
+          "covered_event": "Non-emergency illness or consultation covered under primary care competencies",
+          "covered_service": "Doctor consultation, preventive services, health counseling, laboratory diagnostics according to primary clinic capacity, prescription medicines on Formularium Nasional (Fornas)",
+          "inpatient_applicable": false,
+          "outpatient_applicable": true,
+          "benefit_limit": null,
+          "sublimits": {},
+          "currency": "IDR",
+          "period": "Comprehensive",
+          "eligibility_conditions": [
+            "Active membership with registered FKTP (Puskesmas or primary clinic)"
+          ],
+          "network_requirements": "Must visit registered FKTP clinic on participant card (except medical emergencies)",
+          "reimbursement_rate": "100% cashless at registered FKTP network",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Active KIS digital card in Mobile JKN application",
+            "KTP or KITAS identification"
+          ]
+        },
+        {
+          "benefit_id": "id-ben-jkn-fktr-rawat-inap",
+          "benefit_category": "Advanced Hospital Inpatient",
+          "benefit_name": "Pelayanan Rawat Inap Tingkat Lanjutan (RITL) di Rumah Sakit",
+          "original_name": "Rawat Inap Tingkat Lanjutan (RITL) di FKRTL",
+          "covered_event": "Inpatient hospitalization for surgical or non-surgical disease requiring hospital care",
+          "covered_service": "Hospital room, intensive care unit (ICU, ICCU, PICU, NICU), surgery, anesthesia, specialist consultations, diagnostic imaging, medicine in Fornas",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": null,
+          "sublimits": {},
+          "currency": "IDR",
+          "period": "Comprehensive pursuant to medical necessity",
+          "eligibility_conditions": [
+            "Official electronic referral letter (Surat Rujukan) from FKTP or direct emergency admission"
+          ],
+          "network_requirements": "Contracted public or private hospitals (FKRTL) in BPJS network",
+          "reimbursement_rate": "100% under INA-CBGs tariff package with no out-of-pocket payment when following standard class",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Electronic referral from P-Care",
+            "Hospital admission order (Surat Eligibilitas Peserta - SEP)"
+          ]
+        },
+        {
+          "benefit_id": "id-ben-jkn-igd-emergency",
+          "benefit_category": "Emergency Medical Service",
+          "benefit_name": "Pelayanan Kegawatdaruratan Medis (Instalasi Gawat Darurat - IGD)",
+          "original_name": "Pelayanan Gawat Darurat di IGD Rumah Sakit",
+          "covered_event": "Life-threatening emergency, organ danger, severe acute trauma meeting criteria of Permenkes No. 47 Tahun 2018",
+          "covered_service": "Emergency resuscitation, emergency stabilization, medication, immediate life-saving surgery",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": null,
+          "sublimits": {},
+          "currency": "IDR",
+          "period": "Emergency episode",
+          "eligibility_conditions": [
+            "Meets medical emergency criteria; no prior referral letter required"
+          ],
+          "network_requirements": "Any hospital emergency room (IGD) in Indonesia, contracted or non-contracted",
+          "reimbursement_rate": "100% covered under statutory emergency rules",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "SEP Gawat Darurat generated by hospital emergency desk"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "id-excl-jkn-tanpa-rujukan",
+          "excluded_event_or_service": "Non-emergency healthcare obtained at hospital specialist clinics without primary referral from FKTP",
+          "original_text": "Pelayanan kesehatan yang dilakukan tanpa melalui prosedur rujukan dari Fasilitas Kesehatan Tingkat Pertama, kecuali dalam keadaan gawat darurat",
+          "conditions_and_exceptions": "True medical emergencies entering through the Emergency Department (IGD) are exempted",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [
+            "Healthcare services received outside the territory of Indonesia"
+          ],
+          "pre_existing_condition_provisions": "No pre-existing condition exclusions in JKN social health insurance",
+          "supporting_policy_clause": "Perpres No. 59 Tahun 2024 Pasal 52 ayat (1) huruf b",
+          "source_page": 12
+        },
+        {
+          "exclusion_id": "id-excl-jkn-kosmetik",
+          "excluded_event_or_service": "Cosmetic, aesthetic, and non-medically necessary plastic surgeries",
+          "original_text": "Pelayanan kesehatan untuk tujuan estetik atau kosmetik",
+          "conditions_and_exceptions": "Reconstructive surgery required following severe accidental trauma or burn is covered",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": null,
+          "supporting_policy_clause": "Perpres No. 59 Tahun 2024 Pasal 52 ayat (1) huruf f",
+          "source_page": 12
+        },
+        {
+          "exclusion_id": "id-excl-jkn-infertilitas",
+          "excluded_event_or_service": "Infertility treatments, in vitro fertilization (IVF), and elective vasectomy/tubectomy reversal",
+          "original_text": "Pelayanan untuk mengatasi infertilitas atau program mendapatkan keturunan",
+          "conditions_and_exceptions": null,
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": null,
+          "supporting_policy_clause": "Perpres No. 59 Tahun 2024 Pasal 52 ayat (1) huruf h",
+          "source_page": 12
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "id-prod-allianz-smarthealth",
+      "insurer_id": "id-insurer-allianz",
+      "original_product_name": "SmartHealth Maxi Violet",
+      "english_name": "SmartHealth Maxi Violet Individual Health Insurance",
+      "product_category": "private_medical",
+      "target_users": [
+        "Individuals",
+        "Families",
+        "Expatriates residing in Indonesia"
+      ],
+      "eligibility_conditions": [
+        "Age between 15 days and 60 years at policy issue date (renewable up to 70 years)",
+        "Indonesian citizen or foreign resident holding valid KITAS/KITAP",
+        "Medical underwriting questionnaire acceptance"
+      ],
+      "coverage_country": "ID",
+      "coverage_territory": "Indonesia and optional ASEAN regional coverage extension",
+      "product_status": "ACTIVE",
+      "currency": "IDR",
+      "published_pricing": null,
+      "published_pricing_conditions": "Underwriting premium dependent on entry age, gender, and selected room board plan tier",
+      "product_url": "https://www.allianz.co.id/produk/asuransi-kesehatan/individu/smarthealth-maxi-violet.html",
+      "policy_document_references": [
+        "DOC-ID-ALLIANZ-RIPLAY-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2025-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "id-ben-allianz-kamar-inap",
+          "benefit_category": "Inpatient Room and Board",
+          "benefit_name": "Kamar dan Menginap Harian Rumah Sakit",
+          "original_name": "Biaya Kamar dan Menginap di Rumah Sakit",
+          "covered_event": "Inpatient hospitalization due to illness or accidental injury",
+          "covered_service": "Hospital room accommodation up to plan daily allowance (Plan 500 up to Plan 2000)",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": "1000000.00",
+          "sublimits": {
+            "Maksimal Hari": "Up to 180 days per policy year"
+          },
+          "currency": "IDR",
+          "period": "Policy Year",
+          "eligibility_conditions": [
+            "Hospitalization minimum 24 consecutive hours unless surgical daycare"
+          ],
+          "network_requirements": "Cashless access at AdMedika network hospitals in Indonesia",
+          "reimbursement_rate": "100% within inner limit table",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "AdMedika cashless guarantee letter",
+            "Hospital discharge summary",
+            "Original invoice"
+          ]
+        },
+        {
+          "benefit_id": "id-ben-allianz-pembedahan",
+          "benefit_category": "Surgical Fees",
+          "benefit_name": "Biaya Pembedahan dan Operasi",
+          "original_name": "Biaya Pembedahan dan Kamar Operasi",
+          "covered_event": "Surgical operation performed by certified surgeon",
+          "covered_service": "Surgeon fee, operating theater fee, anesthesiologist fee",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": "50000000.00",
+          "sublimits": {
+            "Tipe Pembedahan": "Kategori Kompleks, Besar, Sedang, Kecil sesuai tabel"
+          },
+          "currency": "IDR",
+          "period": "Per disability",
+          "eligibility_conditions": [
+            "Medically necessary surgical procedure"
+          ],
+          "network_requirements": "Licensed hospital operating theater",
+          "reimbursement_rate": "100% of reasonable and customary charges within sublimit",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Operative report (Laporan Operasi)",
+            "Itemized bill"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "id-excl-allianz-waiting-special",
+          "excluded_event_or_service": "Specific illnesses (penyakit khusus) during the first 12 months of coverage",
+          "original_text": "Penyakit-penyakit tertentu seperti katarak, batu ginjal, hernia, penyakit amandel, wasir, dan tumor yang terjadi dalam 12 bulan pertama",
+          "conditions_and_exceptions": "Covered after continuous policy renewal beyond 12 months",
+          "waiting_period_days": 365,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Waiting period 12 months for 18 specific illnesses listed in policy",
+          "supporting_policy_clause": "Ketentuan Polis Pasal 5",
+          "source_page": 8
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "id-prod-prudential-pruwell",
+      "insurer_id": "id-insurer-prudential",
+      "original_product_name": "PRUWell Medical",
+      "english_name": "PRUWell Medical Comprehensive Health Insurance",
+      "product_category": "private_medical",
+      "target_users": [
+        "Individuals",
+        "Families",
+        "Business owners"
+      ],
+      "eligibility_conditions": [
+        "Age 30 days to 70 years",
+        "Indonesian citizen or foreigner with valid residency permit",
+        "Underwriting approval"
+      ],
+      "coverage_country": "ID",
+      "coverage_territory": "Indonesia and optional Asia wide territory",
+      "product_status": "ACTIVE",
+      "currency": "IDR",
+      "published_pricing": null,
+      "published_pricing_conditions": "Custom quote based on plan tier (Diamond, Platinum, Gold, Silver)",
+      "product_url": "https://www.prudential.co.id/id/our-products/products/pruwell-medical/",
+      "policy_document_references": [
+        "DOC-ID-PRUWELL-RIPLAY-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2025-12-31",
+      "product_version": "2023.2",
+      "benefits": [
+        {
+          "benefit_id": "id-ben-pruwell-as-charged",
+          "benefit_category": "Comprehensive Inpatient",
+          "benefit_name": "Perawatan Rumah Sakit Sesuai Tagihan (As Charged)",
+          "original_name": "Manfaat Rawat Inap Sesuai Tagihan (As Charged)",
+          "covered_event": "Inpatient medical hospitalization",
+          "covered_service": "Room and board standard 1 bed, doctor visits, medicines, surgical procedures reimbursed as charged",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": "10000000000.00",
+          "sublimits": {
+            "Batas Tahunan": "IDR 10 Milyar per tahun polis"
+          },
+          "currency": "IDR",
+          "period": "Policy Year",
+          "eligibility_conditions": [
+            "Eligible room tier matching chosen plan"
+          ],
+          "network_requirements": "PRUMedical Network cashless hospitals in Indonesia and regional Asia",
+          "reimbursement_rate": "100% as charged within annual limit",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Cashless verification via PRUMedical Network card",
+            "Hospital claim dossier"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "id-excl-pruwell-preexisting",
+          "excluded_event_or_service": "Pre-existing medical conditions not declared or accepted during underwriting",
+          "original_text": "Kondisi yang sudah ada sebelumnya (Pre-existing conditions) kecuali telah disetujui secara tertulis",
+          "conditions_and_exceptions": "Declared conditions accepted with standard terms or rated premium",
+          "waiting_period_days": 30,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Exclusion applies unless accepted at inception",
+          "supporting_policy_clause": "Pasal 8 Pengecualian",
+          "source_page": 14
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "id-prod-allianz-travelpro",
+      "insurer_id": "id-insurer-allianz",
+      "original_product_name": "Allianz TravelPro International",
+      "english_name": "Allianz TravelPro International Travel Insurance",
+      "product_category": "travel",
+      "target_users": [
+        "Indonesian outbound travelers",
+        "Families traveling overseas",
+        "Business travelers"
+      ],
+      "eligibility_conditions": [
+        "Indonesian citizen (WNI) or KITAS/KITAP holder residing in Indonesia",
+        "Aged 14 days to 84 years at departure date",
+        "Trip starts and ends in Indonesia"
+      ],
+      "coverage_country": "ID",
+      "coverage_territory": "Worldwide or Asia Pacific depending on selected region destination",
+      "product_status": "ACTIVE",
+      "currency": "IDR",
+      "published_pricing": "From IDR 250,000 for standard 7-day Asia trip",
+      "published_pricing_conditions": "Individual and family package available with single trip or annual policy",
+      "product_url": "https://www.allianz.co.id/produk/asuransi-umum/asuransi-perjalanan/travelpro.html",
+      "policy_document_references": [
+        "DOC-ID-ALLIANZ-TRAVELPRO-Wording-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2025-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "id-ben-allianz-travelpro-med",
+          "benefit_category": "Emergency Medical Abroad",
+          "benefit_name": "Biaya Medis Darurat dan Perawatan Rumah Sakit di Luar Negeri",
+          "original_name": "Manfaat Biaya Medis Darurat di Luar Negeri",
+          "covered_event": "Emergency medical treatment required for illness or accident during overseas journey",
+          "covered_service": "Inpatient and outpatient medical consultation, hospital stay, surgery, emergency medicine abroad",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "1500000000.00",
+          "sublimits": {
+            "Rawat Inap Luar Negeri": "Up to IDR 1.5 Milyar"
+          },
+          "currency": "IDR",
+          "period": "Per Journey",
+          "eligibility_conditions": [
+            "Policy active prior to border departure from Indonesia"
+          ],
+          "network_requirements": "Allianz Global Assistance 24/7 emergency network",
+          "reimbursement_rate": "100% cashless guarantee for inpatient admission via assistance desk",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Overseas medical invoices",
+            "Passport exit/entry stamps",
+            "Boarding pass"
+          ]
+        },
+        {
+          "benefit_id": "id-ben-allianz-travelpro-evac",
+          "benefit_category": "Medical Evacuation and Repatriation",
+          "benefit_name": "Evakuasi Medis Darurat dan Repatriasi Jenazah",
+          "original_name": "Evakuasi Medis dan Repatriasi Darurat",
+          "covered_event": "Medical emergency requiring urgent transfer to nearest appropriate medical facility or repatriation to Indonesia",
+          "covered_service": "Air ambulance, ground transport, medical escort, mortal remains return",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": "2000000000.00",
+          "sublimits": {},
+          "currency": "IDR",
+          "period": "Per Journey",
+          "eligibility_conditions": [
+            "Arranged directly via Allianz Global Assistance hotline +62 21 5695 8585"
+          ],
+          "network_requirements": "Allianz Global Assistance network",
+          "reimbursement_rate": "100% direct settlement by assistance service",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Emergency evacuation authorization by attending physician"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "id-excl-allianz-travelpro-war",
+          "excluded_event_or_service": "Travel to sanctioned countries or regions with active war declarations",
+          "original_text": "Perjalanan ke negara yang berada dalam sanksi internasional atau daerah konflik bersenjata aktif",
+          "conditions_and_exceptions": "None",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [
+            "Active war zones declared by Kemlu RI"
+          ],
+          "pre_existing_condition_provisions": "Pre-existing conditions excluded unless specific rider purchased",
+          "supporting_policy_clause": "Pasal 10 Pengecualian Umum Polis",
+          "source_page": 12
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "id-prod-prudential-prucritical88",
+      "insurer_id": "id-insurer-prudential",
+      "original_product_name": "Asuransi PRUCritical Benefit 88",
+      "english_name": "PRUCritical Benefit 88 Critical Illness Protection",
+      "product_category": "critical_illness",
+      "target_users": [
+        "Indonesian citizens and residents aged 1 to 60",
+        "Families seeking lump sum critical illness protection"
+      ],
+      "eligibility_conditions": [
+        "Aged 1 to 60 years at issuance",
+        "Indonesian citizen (WNI) or KITAS/KITAP holder residing in Indonesia",
+        "Pass medical underwriting and health questionnaire"
+      ],
+      "coverage_country": "ID",
+      "coverage_territory": "Worldwide lump sum monetary payout upon diagnosis by recognized medical specialist",
+      "product_status": "ACTIVE",
+      "currency": "IDR",
+      "published_pricing": "Based on age, gender, smoker status, and selected sum insured tier",
+      "published_pricing_conditions": "Single pay or regular payment options (5, 10, or 15 years) covering up to age 88",
+      "product_url": "https://www.prudential.co.id/id/our-products/products/prucritical-benefit-88/",
+      "policy_document_references": [
+        "DOC-ID-PRUCRITICAL88-RIPLAY-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "id-ben-prucritical88-ci",
+          "benefit_category": "Advanced Critical Illness Lump Sum",
+          "benefit_name": "Santunan Kondisi Kritis Tahap Akhir (60 Kondisi Kritis)",
+          "original_name": "Manfaat Kondisi Kritis Tahap Akhir",
+          "covered_event": "Clinical diagnosis confirmation of any of 60 specified advanced critical illness conditions after 90 days waiting period",
+          "covered_service": "Direct cash lump-sum payout of 100% basic sum insured for cancer, heart attack, stroke, kidney failure, major organ transplant",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "1000000000.00",
+          "sublimits": {
+            "Uang Pertanggungan": "100% basic sum insured lump sum (up to IDR 1 Milyar)"
+          },
+          "currency": "IDR",
+          "period": "Lifetime to Age 88",
+          "eligibility_conditions": [
+            "Survival period of 7 calendar days after diagnosis date"
+          ],
+          "network_requirements": "Specialist doctor in licensed hospital in Indonesia or recognized overseas medical center",
+          "reimbursement_rate": "100% cash lump sum settlement",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Dokumen resume medis dokter spesialis",
+            "Hasil laboratorium patologi anatomi",
+            "Hasil pemeriksaan diagnostik"
+          ]
+        },
+        {
+          "benefit_id": "id-ben-prucritical88-angio",
+          "benefit_category": "Special Cardiovascular Intervention",
+          "benefit_name": "Manfaat Tindakan Bedah Angioplasti",
+          "original_name": "Manfaat Khusus Tindakan Bedah Angioplasti",
+          "covered_event": "Undergoing coronary balloon angioplasty or stent placement for coronary artery disease",
+          "covered_service": "Additional cash payout equal to 10% of basic sum insured (maximum IDR 200,000,000) payable once",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "200000000.00",
+          "sublimits": {
+            "Maksimum Angioplasti": "10% UP (maksimum IDR 200 Juta)"
+          },
+          "currency": "IDR",
+          "period": "Lifetime",
+          "eligibility_conditions": [
+            "Undergoing catheter angioplasty after 90 days waiting period"
+          ],
+          "network_requirements": "Licensed cardiovascular catheterization laboratory hospital",
+          "reimbursement_rate": "100% lump sum payout",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Coronary angiography report",
+            "Cardiac surgeon operative report"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "id-excl-prucritical88-preexisting",
+          "excluded_event_or_service": "Pre-existing medical conditions not disclosed, congenital anomalies, self-inflicted injuries",
+          "original_text": "Kondisi yang sudah ada sebelumnya (Pre-existing conditions), kelainan bawaan (congenital), tindakan bunuh diri atau melukai diri sendiri",
+          "conditions_and_exceptions": "Declared conditions accepted in writing by insurer during policy underwriting",
+          "waiting_period_days": 90,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Strict 90-day waiting period from policy inception for critical illness diagnosis",
+          "supporting_policy_clause": "Pasal 8 Pengecualian Khusus",
+          "source_page": 11
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "id-prod-allianz-flexici",
+      "insurer_id": "id-insurer-allianz",
+      "original_product_name": "Allianz Flexi CI (Critical Illness)",
+      "english_name": "Allianz Flexi CI Multi-Stage Critical Illness Insurance",
+      "product_category": "critical_illness",
+      "target_users": [
+        "Working adults aged 18 to 65",
+        "Individuals seeking multi-stage critical illness cash security"
+      ],
+      "eligibility_conditions": [
+        "Aged 1 month to 65 years at issuance",
+        "Indonesian citizen or legal resident alien",
+        "Medical underwriting approval"
+      ],
+      "coverage_country": "ID",
+      "coverage_territory": "Indonesia and worldwide diagnosis verification",
+      "product_status": "ACTIVE",
+      "currency": "IDR",
+      "published_pricing": "Determined by chosen plan tier (Silver, Gold, Platinum) and entry age",
+      "published_pricing_conditions": "Standalone or rider attachment options with premium waiver feature",
+      "product_url": "https://www.allianz.co.id/produk/asuransi-jiwa/asuransi-penyakit-kritis/flexi-ci.html",
+      "policy_document_references": [
+        "DOC-ID-ALLIANZ-FLEXICI-RIPLAY-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "id-ben-allianz-flexici-advanced",
+          "benefit_category": "Major Stage Critical Illness",
+          "benefit_name": "Santunan Tunai Penyakit Kritis Tahap Major",
+          "original_name": "Manfaat Penyakit Kritis Kondisi Major",
+          "covered_event": "Confirmed clinical diagnosis of any major critical illness condition in policy schedule",
+          "covered_service": "Cash lump-sum of 100% sum insured paid to policyholder to replace income during medical treatment",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "500000000.00",
+          "sublimits": {
+            "Major Stage": "100% basic sum insured"
+          },
+          "currency": "IDR",
+          "period": "Policy Lifetime",
+          "eligibility_conditions": [
+            "Diagnosis after 90 days waiting period"
+          ],
+          "network_requirements": "Accredited hospital specialist in Indonesia or recognized overseas center",
+          "reimbursement_rate": "100% lump sum compensation",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Surat keterangan dokter spesialis",
+            "Hasil pemeriksaan laboratorium dan histopatologi"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "id-excl-allianz-flexici-waiting",
+          "excluded_event_or_service": "Symptoms arising within 90 days waiting period, intentional crime, alcohol and substance abuse",
+          "original_text": "Gejala atau tanda penyakit kritis yang timbul dalam masa tunggu 90 hari, tindakan kejahatan, penyalahgunaan obat terlarang",
+          "conditions_and_exceptions": "Accidental injuries resulting in immediate trauma are exempt from 90 days waiting period",
+          "waiting_period_days": 90,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Pre-existing medical conditions not accepted in policy schedule are excluded",
+          "supporting_policy_clause": "Pasal 7 Ketentuan Pengecualian",
+          "source_page": 9
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "id-prod-manulife-mea",
+      "insurer_id": "id-insurer-manulife",
+      "original_product_name": "Manulife Essential Assurance (MEA)",
+      "english_name": "Manulife Essential Assurance Whole Life Protection",
+      "product_category": "life",
+      "target_users": [
+        "Family breadwinners aged 18 to 60",
+        "Individuals securing guaranteed financial inheritance"
+      ],
+      "eligibility_conditions": [
+        "Aged 18 to 60 years at issuance",
+        "Indonesian citizen (WNI) or foreigner with valid residence permit (KITAS/KITAP)",
+        "Underwriting approval based on financial and medical profile"
+      ],
+      "coverage_country": "ID",
+      "coverage_territory": "Worldwide 24 hours death benefit protection",
+      "product_status": "ACTIVE",
+      "currency": "IDR",
+      "published_pricing": "Guaranteed level premium for chosen payment period (5, 10, or 20 years)",
+      "published_pricing_conditions": "Guaranteed whole life protection up to age 99 with cash value accumulation",
+      "product_url": "https://www.manulife.co.id/id/individu/produk/asuransi-jiwa/manulife-essential-assurance.html",
+      "policy_document_references": [
+        "DOC-ID-MANULIFE-MEA-POLIS-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "id-ben-manulife-mea-death",
+          "benefit_category": "Guaranteed Death Benefit",
+          "benefit_name": "Santunan Meninggal Dunia Alami atau Akibat Kecelakaan",
+          "original_name": "Manfaat Pertanggungan Meninggal Dunia",
+          "covered_event": "Death of insured person due to natural causes, illness, or accidental event",
+          "covered_service": "100% basic sum insured plus accumulated terminal bonus paid to designated heirs and beneficiaries",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "1000000000.00",
+          "sublimits": {
+            "Death Benefit": "100% basic sum insured lump sum"
+          },
+          "currency": "IDR",
+          "period": "To Age 99",
+          "eligibility_conditions": [
+            "Policy must remain active with premium obligations fulfilled"
+          ],
+          "network_requirements": "Official death certificate issued by hospital or civil registry (Dinas Dukcapil)",
+          "reimbursement_rate": "100% lump sum to designated beneficiaries",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Akta Kematian dari Catatan Sipil",
+            "Surat Keterangan Kematian dari Rumah Sakit",
+            "KTP Ahli Waris"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "id-excl-manulife-mea-suicide",
+          "excluded_event_or_service": "Suicide within first 2 years from policy inception date, execution of death penalty by court of law",
+          "original_text": "Tindakan bunuh diri yang terjadi dalam waktu 2 tahun sejak tanggal penerbitan polis, pelaksanaan hukuman mati oleh pengadilan",
+          "conditions_and_exceptions": "Suicide occurring after 2 years of active continuous policy is covered pursuant to Indonesian insurance law",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Non-accidental death within initial contestability period undergoes standard claim investigation",
+          "supporting_policy_clause": "Pasal 4 Pengecualian Manfaat Kematian",
+          "source_page": 6
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "id-prod-allianz-pa",
+      "insurer_id": "id-insurer-allianz",
+      "original_product_name": "Asuransi Kecelakaan Diri Allianz (Personal Accident)",
+      "english_name": "Allianz Comprehensive Personal Accident Insurance",
+      "product_category": "personal_accident",
+      "target_users": [
+        "Individuals aged 18 to 65",
+        "Commuters, field professionals, and active travelers"
+      ],
+      "eligibility_conditions": [
+        "Aged 18 to 65 years",
+        "Indonesian citizen (WNI) or KITAS holder residing in Indonesia",
+        "Occupational category class 1 to 3"
+      ],
+      "coverage_country": "ID",
+      "coverage_territory": "Indonesia and worldwide 24 hours accidental protection",
+      "product_status": "ACTIVE",
+      "currency": "IDR",
+      "published_pricing": "Annual premium from IDR 350,000 per year for IDR 500,000,000 protection package",
+      "published_pricing_conditions": "One-year annual policy with renewable term",
+      "product_url": "https://www.allianz.co.id/produk/asuransi-umum/asuransi-kecelakaan/personal-accident.html",
+      "policy_document_references": [
+        "DOC-ID-ALLIANZ-PA-POLIS-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "id-ben-allianz-pa-death",
+          "benefit_category": "Accidental Death and Permanent Disability",
+          "benefit_name": "Santunan Kematian dan Cacat Tetap Akibat Kecelakaan",
+          "original_name": "Manfaat Meninggal Dunia dan Cacat Tetap Akibat Kecelakaan",
+          "covered_event": "Death or permanent bodily dismemberment directly caused by sudden, violent, external accidental trauma",
+          "covered_service": "Direct lump-sum payout of 100% sum insured for accidental death or scaled permanent disability benefit",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "500000000.00",
+          "sublimits": {
+            "Accidental Death": "100% sum insured",
+            "Permanent Disability": "Up to 100% per indemnity table"
+          },
+          "currency": "IDR",
+          "period": "Per Accident",
+          "eligibility_conditions": [
+            "Accident occurs during policy in-force period; death/disability ensues within 90 days of accident"
+          ],
+          "network_requirements": "Hospital emergency department or medical examiner verification",
+          "reimbursement_rate": "100% lump sum compensation",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Surat Keterangan Kepolisian (Laporan Polisi)",
+            "Surat Kematian/Cacat Tetap dari Dokter Spesialis"
+          ]
+        },
+        {
+          "benefit_id": "id-ben-allianz-pa-med",
+          "benefit_category": "Accidental Medical Reimbursement",
+          "benefit_name": "Penggantian Biaya Medis dan Rawat Inap Akibat Kecelakaan",
+          "original_name": "Penggantian Biaya Medis Akibat Kecelakaan",
+          "covered_event": "Medical examination, wound care, bone fracture surgery, and hospitalization due to covered accident",
+          "covered_service": "Reimbursement of reasonable hospital and doctor fees with zero deductible",
+          "inpatient_applicable": true,
+          "outpatient_applicable": true,
+          "benefit_limit": "50000000.00",
+          "sublimits": {
+            "Biaya Medis Kecelakaan": "Up to IDR 50 Juta per kejadian"
+          },
+          "currency": "IDR",
+          "period": "Per Policy Year",
+          "eligibility_conditions": [
+            "Medical treatment commenced within 48 hours of accident"
+          ],
+          "network_requirements": "Any licensed clinic or hospital in Indonesia",
+          "reimbursement_rate": "100% reimbursement of eligible bills",
+          "preauthorization_required": false,
+          "evidence_references": [
+            "Kuitansi asli rumah sakit",
+            "Rincian biaya obat dan tindakan",
+            "Resume medis darurat"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "id-excl-allianz-pa-influence",
+          "excluded_event_or_service": "Driving under the influence of alcohol or narcotics, intentional self-harm, professional speed racing",
+          "original_text": "Mengemudi di bawah pengaruh minuman keras atau narkotika, tindakan sengaja mencelakai diri sendiri, balapan kendaraan bermotor berkecepatan tinggi",
+          "conditions_and_exceptions": "Accidents occurring as passenger on commercial public transport are covered with double indemnity",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Internal disease episodes, epilepsy, and cardiac arrests are excluded from accident definition",
+          "supporting_policy_clause": "Pasal 5 Pengecualian Umum Polis PA",
+          "source_page": 5
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "MANUALLY_CURATED",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Hand-entered product data. Pricing, limits and dates were not machine-verified against the insurer documents.",
+      "product_id": "id-prod-aia-corporate",
+      "insurer_id": "id-insurer-aia",
+      "original_product_name": "AIA Premier Hospital & Surgical Care Kumpulan",
+      "english_name": "AIA Corporate Premier Hospital & Surgical Care",
+      "product_category": "employer_group",
+      "target_users": [
+        "Corporate employees and registered family dependents",
+        "Enterprises operating in Indonesia"
+      ],
+      "eligibility_conditions": [
+        "Permanent or contract employee of enrolled enterprise",
+        "Aged 18 to 65 years (employee) or 15 days to 23 years (dependent child)",
+        "Enrolled under active corporate master policy"
+      ],
+      "coverage_country": "ID",
+      "coverage_territory": "Indonesia and Singapore/Malaysia direct cashless network",
+      "product_status": "ACTIVE",
+      "currency": "IDR",
+      "published_pricing": "Corporate group rate determined by company census and selected room plan tier",
+      "published_pricing_conditions": "Annual employer-sponsored master group contract",
+      "product_url": "https://www.aia-financial.co.id/id/our-products/corporate-solutions/",
+      "policy_document_references": [
+        "DOC-ID-AIA-CORP-GUIDE-2023"
+      ],
+      "effective_from": "2023-01-01",
+      "effective_to": "2026-12-31",
+      "product_version": "2023.1",
+      "benefits": [
+        {
+          "benefit_id": "id-ben-aia-corp-inpatient",
+          "benefit_category": "Group Inpatient Hospital and Surgery",
+          "benefit_name": "Rawat Inap dan Pembedahan Karyawan Perusahaan dan Tanggungan",
+          "original_name": "Manfaat Rawat Inap dan Bedah Kumpulan Karyawan",
+          "covered_event": "Hospital admission for acute illness, elective necessary surgery, or accident for employee and dependents",
+          "covered_service": "Hospital room, ICU, surgical procedures, specialist doctor visits, diagnostic tests, emergency outpatient treatment",
+          "inpatient_applicable": true,
+          "outpatient_applicable": false,
+          "benefit_limit": "500000000.00",
+          "sublimits": {
+            "Annual Limit": "IDR 500 Juta per family unit per policy year"
+          },
+          "currency": "IDR",
+          "period": "Policy Year",
+          "eligibility_conditions": [
+            "Registered full-time employee or verified legal dependent on master policy census"
+          ],
+          "network_requirements": "AIA Cashless Provider Network across Siloam, Mitra Keluarga, Pondok Indah, and Premier hospitals",
+          "reimbursement_rate": "100% cashless on eligible room plan tier",
+          "preauthorization_required": true,
+          "evidence_references": [
+            "Kartu Asuransi Elektronik Kumpulan",
+            "Surat Jaminan Rumah Sakit (Letter of Guarantee)"
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "exclusion_id": "id-excl-aia-corp-cosmetic",
+          "excluded_event_or_service": "Elective cosmetic surgery, non-medical aesthetic dental treatments, routine wellness checkups without rider",
+          "original_text": "Pembedahan kosmetik elektif, perawatan gigi estetika non-medis, pemeriksaan kesehatan rutin tanpa klausul khusus",
+          "conditions_and_exceptions": "Reconstructive surgery following accidental injury is covered",
+          "waiting_period_days": 0,
+          "deductible": null,
+          "copayment_percentage": null,
+          "coinsurance": null,
+          "excess": null,
+          "territorial_exclusions": [],
+          "pre_existing_condition_provisions": "Pre-existing condition coverage determined by master corporate policy endorsement waiver",
+          "supporting_policy_clause": "Buku Panduan Polis Kumpulan Bab 4",
+          "source_page": 8
+        }
+      ],
+      "verification_status": "UNVERIFIED"
+    }
+  ],
+  "brand_assets": [
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-cn-insurer-pingan-primary",
+      "insurer_id": "cn-insurer-pingan",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.pingan.com/app_common/images/logo.svg",
+      "official_source_domain": "pingan.com",
+      "original_filename": "pingan_logo_official.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 541,
+      "sha256": "24d896e3d0f42c010b979b4efec4caba6de8debb45cd96b459512d0bf18979be",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for Ping An Insurance (中国平安). Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/cn-insurer-pingan/pingan_logo_official.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-cn-insurer-picc-primary",
+      "insurer_id": "cn-insurer-picc",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.picc.com/static/images/logo.svg",
+      "official_source_domain": "picc.com",
+      "original_filename": "picc_logo_official.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 605,
+      "sha256": "6df5bfda809203172902ea99c1f910bfb70437800fb20983c174d594f548957d",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for PICC (中国人保). Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/cn-insurer-picc/picc_logo_official.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-cn-insurer-chinalife-primary",
+      "insurer_id": "cn-insurer-chinalife",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.chinalife.com.cn/chinalife/images/logo.svg",
+      "official_source_domain": "chinalife.com.cn",
+      "original_filename": "chinalife_logo_official.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 569,
+      "sha256": "f6f23aa232bdbdb78f5173f05dc313257338a7688a265017e0fdd96d3c36cb29",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for China Life (中国人寿). Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/cn-insurer-chinalife/chinalife_logo_official.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-cn-insurer-cpic-primary",
+      "insurer_id": "cn-insurer-cpic",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.cpic.com.cn/images/logo.svg",
+      "official_source_domain": "cpic.com.cn",
+      "original_filename": "cpic_logo_official.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 531,
+      "sha256": "166ee864b6e62d87e9cee3253947ad7958bdf550c3968f45d91dc632f8d27f5c",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for CPIC (中国太保). Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/cn-insurer-cpic/cpic_logo_official.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-cn-platform-lxbx-primary",
+      "insurer_id": "cn-platform-lxbx",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.lxbx.net/images/logo.svg",
+      "official_source_domain": "lxbx.net",
+      "original_filename": "lxbx_scheme_logo.svg",
+      "mime_type": "image/svg+xml",
+      "width": 340,
+      "height": 80,
+      "aspect_ratio": "340:80",
+      "file_size_bytes": 646,
+      "sha256": "58f2b21c39bf932d6a735df658c787454e5d540374bd96985ed55dddd580adc8",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for Comprehensive Student Insurance Scheme (来华留学生保险). Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/cn-platform-lxbx/lxbx_scheme_logo.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-id-public-bpjs-kesehatan-primary",
+      "insurer_id": "id-public-bpjs-kesehatan",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.bpjs-kesehatan.go.id/bpjs/assets/frontend/images/logo.svg",
+      "official_source_domain": "bpjs-kesehatan.go.id",
+      "original_filename": "bpjs_kesehatan_logo.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 576,
+      "sha256": "00366d342d3e0be3e2e0d3c2ebdf1009981e51a8b9b95d612183ddc58236c4d4",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for BPJS Kesehatan (JKN). Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/id-public-bpjs-kesehatan/bpjs_kesehatan_logo.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-id-insurer-allianz-primary",
+      "insurer_id": "id-insurer-allianz",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.allianz.co.id/media/allianz-logo.svg",
+      "official_source_domain": "allianz.co.id",
+      "original_filename": "allianz_indonesia_logo.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 669,
+      "sha256": "d0e96cf759856237ff1fc1e281905ae205763c99ea3e599d708daf273a369f2d",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for Allianz Indonesia. Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/id-insurer-allianz/allianz_indonesia_logo.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-id-insurer-prudential-primary",
+      "insurer_id": "id-insurer-prudential",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.prudential.co.id/media/prudential-logo.svg",
+      "official_source_domain": "prudential.co.id",
+      "original_filename": "prudential_indonesia_logo.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 532,
+      "sha256": "f17f8bd185af0c9c15c740c22761d32517ae60bb5c9074a0f80a4815a80fb356",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for Prudential Indonesia. Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/id-insurer-prudential/prudential_indonesia_logo.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-id-insurer-aia-primary",
+      "insurer_id": "id-insurer-aia",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.aia-financial.co.id/media/aia-logo.svg",
+      "official_source_domain": "aia-financial.co.id",
+      "original_filename": "aia_indonesia_logo.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 514,
+      "sha256": "f48093eb44e4b157becaf834d8ca7915a81702c7aa99be5bfa27b207b22273db",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for AIA Indonesia. Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/id-insurer-aia/aia_indonesia_logo.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-id-insurer-manulife-primary",
+      "insurer_id": "id-insurer-manulife",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.manulife.co.id/media/manulife-logo.svg",
+      "official_source_domain": "manulife.co.id",
+      "original_filename": "manulife_indonesia_logo.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 551,
+      "sha256": "b2ecc8295e91607c2459c0981f681fe997c1543bc37b9b72e60092f1d902cca8",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for Manulife Indonesia. Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/id-insurer-manulife/manulife_indonesia_logo.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-id-insurer-axa-mandiri-primary",
+      "insurer_id": "id-insurer-axa-mandiri",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://www.axa-mandiri.co.id/media/axa-mandiri-logo.svg",
+      "official_source_domain": "axa-mandiri.co.id",
+      "original_filename": "axa_mandiri_logo.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 599,
+      "sha256": "3754e68827a131235e561311b03fdf5f3a37ae8820637d162e987b7075608f88",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for AXA Mandiri. Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/id-insurer-axa-mandiri/axa_mandiri_logo.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    },
+    {
+      "evidence_class": "PLACEHOLDER",
+      "retrieval_artifact_sha256": null,
+      "provenance_note": "Generated placeholder artwork. Not an official or retrieved brand asset.",
+      "asset_id": "asset-id-insurer-bri-life-primary",
+      "insurer_id": "id-insurer-bri-life",
+      "product_id": null,
+      "asset_type": "logo_primary",
+      "source_url": "https://brilife.co.id/media/bri-life-logo.svg",
+      "official_source_domain": "brilife.co.id",
+      "original_filename": "bri_life_logo.svg",
+      "mime_type": "image/svg+xml",
+      "width": 320,
+      "height": 80,
+      "aspect_ratio": "320:80",
+      "file_size_bytes": 605,
+      "sha256": "7615adb06e6f7ca2c9ff37bb2ef19ee86f821fa2c6ce17c91279d336a63730d7",
+      "license_status": "NOT_VERIFIED",
+      "reuse_permission": "None verified. Placeholder artwork only; obtain a licensed logo before display as an official mark.",
+      "attribution_required": true,
+      "attribution_text": "Placeholder artwork for BRI Life. Not the official logo and no trademark license has been verified.",
+      "local_storage_path": "/assets/insurers/id-insurer-bri-life/bri_life_logo.svg",
+      "collection_date": "2026-10-18",
+      "verification_status": "UNVERIFIED"
+    }
+  ],
+  "document_taxonomy": {
+    "schema_version": "1.5",
+    "version": "1.0.0",
+    "taxonomy_name": "INSURRA Insurance Document Taxonomy",
+    "document_types": [
+      {
+        "code": "DOC_INS_POLICY_SCHEDULE",
+        "label_en": "Insurance Policy Schedule",
+        "label_zh": "保险单 / 保险凭证",
+        "label_id": "Ringkasan Polis Asuransi",
+        "category": "Policy Contract"
+      },
+      {
+        "code": "DOC_INS_CERTIFICATE",
+        "label_en": "Insurance Certificate of Coverage",
+        "label_zh": "留学生参保电子凭证",
+        "label_id": "Sertifikat Kepesertaan Asuransi",
+        "category": "Proof of Insurance"
+      },
+      {
+        "code": "DOC_JKN_CARD",
+        "label_en": "National Health Insurance Card (KIS)",
+        "label_zh": "印度尼西亚国民健康医保卡 (KIS)",
+        "label_id": "Kartu Indonesia Sehat (KIS / Mobile JKN)",
+        "category": "Public Scheme Membership"
+      },
+      {
+        "code": "DOC_MEDICAL_INVOICE",
+        "label_en": "Hospital Medical Invoice / Fapiao / Kwitansi",
+        "label_zh": "医疗费用发票 / 电子发票",
+        "label_id": "Kuitansi Pembayaran Rumah Sakit Asli",
+        "category": "Claim Evidence"
+      },
+      {
+        "code": "DOC_DOCTOR_DIAGNOSIS",
+        "label_en": "Physician Diagnosis Certificate / Medical Resume",
+        "label_zh": "医生诊断证明书 / 病历",
+        "label_id": "Surat Keterangan Dokter / Resume Medis",
+        "category": "Claim Evidence"
+      },
+      {
+        "code": "DOC_DISCHARGE_SUMMARY",
+        "label_en": "Hospital Inpatient Discharge Summary",
+        "label_zh": "出院小结 / 出院记录",
+        "label_id": "Surat Pulang / Resume Rawat Inap Rumah Sakit",
+        "category": "Claim Evidence"
+      },
+      {
+        "code": "DOC_EXPENSE_BREAKDOWN",
+        "label_en": "Hospital Itemized Expense Bill",
+        "label_zh": "医疗费用明细清单",
+        "label_id": "Rincian Biaya Medis dan Obat",
+        "category": "Claim Evidence"
+      },
+      {
+        "code": "DOC_REFERRAL_LETTER",
+        "label_en": "Tiered Medical Referral Letter",
+        "label_zh": "转诊证明单",
+        "label_id": "Surat Rujukan FKTP ke Rumah Sakit",
+        "category": "Care Pathway"
+      },
+      {
+        "code": "DOC_CLAIM_FORM",
+        "label_en": "Official Claim Application Form",
+        "label_zh": "理赔申请表",
+        "label_id": "Formulir Pengajuan Klaim Asuransi",
+        "category": "Claim Administration"
+      }
+    ]
+  },
+  "extraction_templates": [
+    {
+      "template_id": "tmpl-cn-student-cert",
+      "document_category": "DOC_INS_CERTIFICATE",
+      "country_code": "CN",
+      "original_language": "zh",
+      "applicable_schemes": [
+        "Comprehensive Insurance & Protection Scheme for Foreigners Staying in China"
+      ],
+      "required_fields": [
+        {
+          "field_key": "insured_name",
+          "label_en": "Insured Legal Name",
+          "label_original": "被保险人姓名",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Uppercase English name as printed in foreign passport",
+          "source_evidence_hint": "Top section under '姓名 / Name'"
+        },
+        {
+          "field_key": "passport_number",
+          "label_en": "Passport Number",
+          "label_original": "护照号码",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Alphanumeric string without spaces",
+          "source_evidence_hint": "Identifier field next to passport label"
+        },
+        {
+          "field_key": "institution_name",
+          "label_en": "Educational Institution Name",
+          "label_original": "学校名称",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Standard university title in China (e.g., Shenzhen University)",
+          "source_evidence_hint": "Header block or school declaration"
+        },
+        {
+          "field_key": "coverage_start_date",
+          "label_en": "Coverage Inception Date",
+          "label_original": "保险起期",
+          "value_type": "date",
+          "required": true,
+          "normalization_rule": "ISO 8601 date YYYY-MM-DD",
+          "source_evidence_hint": "'保险期间 / Coverage Period' start timestamp"
+        },
+        {
+          "field_key": "coverage_end_date",
+          "label_en": "Coverage Expiry Date",
+          "label_original": "保险止期",
+          "value_type": "date",
+          "required": true,
+          "normalization_rule": "ISO 8601 date YYYY-MM-DD",
+          "source_evidence_hint": "'保险期间 / Coverage Period' end timestamp"
+        },
+        {
+          "field_key": "policy_number",
+          "label_en": "Insurance Policy Number",
+          "label_original": "保单号",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Numeric or alphanumeric policy tracking code",
+          "source_evidence_hint": "Upper right corner of electronic certificate"
+        }
+      ],
+      "optional_fields": [
+        {
+          "field_key": "premium_amount",
+          "label_en": "Premium Paid",
+          "label_original": "保费金额",
+          "value_type": "money",
+          "required": false,
+          "normalization_rule": "Decimal string in CNY (e.g., 800.00)",
+          "source_evidence_hint": "Payment receipt summary row"
+        }
+      ],
+      "review_requirements": "Human confirmation required if OCR confidence is below 0.85 or passport number has special characters."
+    },
+    {
+      "template_id": "tmpl-cn-medical-fapiao",
+      "document_category": "DOC_MEDICAL_INVOICE",
+      "country_code": "CN",
+      "original_language": "zh",
+      "applicable_schemes": [
+        "All medical reimbursement plans in China"
+      ],
+      "required_fields": [
+        {
+          "field_key": "fapiao_code",
+          "label_en": "Fiscal Invoice Code",
+          "label_original": "发票代码",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "12-digit national fiscal invoice code",
+          "source_evidence_hint": "Top right header code"
+        },
+        {
+          "field_key": "fapiao_number",
+          "label_en": "Invoice Number",
+          "label_original": "发票号码",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "8-digit invoice sequence number",
+          "source_evidence_hint": "Below fiscal invoice code"
+        },
+        {
+          "field_key": "billing_date",
+          "label_en": "Billing Date",
+          "label_original": "开票日期",
+          "value_type": "date",
+          "required": true,
+          "normalization_rule": "ISO 8601 date YYYY-MM-DD",
+          "source_evidence_hint": "Date stamp in header area"
+        },
+        {
+          "field_key": "payer_name",
+          "label_en": "Patient / Payer Legal Name",
+          "label_original": "交款人",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Must match claimant passport name",
+          "source_evidence_hint": "Header row '交款人 / Name'"
+        },
+        {
+          "field_key": "total_amount",
+          "label_en": "Total Invoiced Amount",
+          "label_original": "合计金额（小写）",
+          "value_type": "money",
+          "required": true,
+          "normalization_rule": "Decimal string in CNY",
+          "source_evidence_hint": "Bottom summary row labeled '合计 / Total'"
+        },
+        {
+          "field_key": "hospital_name",
+          "label_en": "Hospital / Issuing Entity Name",
+          "label_original": "收款单位",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Official public hospital registered title",
+          "source_evidence_hint": "Bottom right official electronic fiscal seal"
+        }
+      ],
+      "optional_fields": [],
+      "review_requirements": "Verify national electronic fiscal seal and ensure invoice code passes checksum validation."
+    },
+    {
+      "template_id": "tmpl-id-jkn-card",
+      "document_category": "DOC_JKN_CARD",
+      "country_code": "ID",
+      "original_language": "id",
+      "applicable_schemes": [
+        "Program Jaminan Kesehatan Nasional (JKN)"
+      ],
+      "required_fields": [
+        {
+          "field_key": "participant_name",
+          "label_en": "Participant Legal Name",
+          "label_original": "Nama Peserta",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Uppercase text matching KTP / KITAS",
+          "source_evidence_hint": "Center field on front of KIS digital card"
+        },
+        {
+          "field_key": "bpjs_card_number",
+          "label_en": "BPJS Participant Number (No. Kartu KIS)",
+          "label_original": "Nomor Kartu",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "13-digit numeric string",
+          "source_evidence_hint": "Large digits below participant name or barcode"
+        },
+        {
+          "field_key": "nik",
+          "label_en": "National Identity Number (NIK)",
+          "label_original": "NIK",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "16-digit numeric string",
+          "source_evidence_hint": "Field labeled NIK"
+        },
+        {
+          "field_key": "fktp_registered",
+          "label_en": "Registered Primary Clinic (Faskes Tingkat 1)",
+          "label_original": "Fasilitas Kesehatan Tingkat 1 (FKTP)",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Registered clinic title (e.g., Puskesmas Cilandak)",
+          "source_evidence_hint": "Middle row labeled 'Faskes Tk. 1'"
+        },
+        {
+          "field_key": "membership_class",
+          "label_en": "Entitled Care Class Tier",
+          "label_original": "Kelas Rawat",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Kelas 1, Kelas 2, or Kelas 3",
+          "source_evidence_hint": "Lower section labeled 'Kelas'"
+        }
+      ],
+      "optional_fields": [],
+      "review_requirements": "Check active payment status in Mobile JKN to confirm card is not suspended for premium arrears."
+    },
+    {
+      "template_id": "tmpl-id-medical-kwitansi",
+      "document_category": "DOC_MEDICAL_INVOICE",
+      "country_code": "ID",
+      "original_language": "id",
+      "applicable_schemes": [
+        "Indonesian commercial health insurance and private hospital claims"
+      ],
+      "required_fields": [
+        {
+          "field_key": "receipt_number",
+          "label_en": "Official Receipt Number",
+          "label_original": "Nomor Kuitansi / No. Bukti Pembayaran",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Alphanumeric sequence code",
+          "source_evidence_hint": "Top header of receipt"
+        },
+        {
+          "field_key": "patient_name",
+          "label_en": "Patient Name",
+          "label_original": "Sudah Terima Dari / Nama Pasien",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Must match policy insured member name",
+          "source_evidence_hint": "Patient name row"
+        },
+        {
+          "field_key": "total_amount_idr",
+          "label_en": "Total Payment Amount in Rupiah",
+          "label_original": "Jumlah Pembayaran (Rp)",
+          "value_type": "money",
+          "required": true,
+          "normalization_rule": "Decimal string in IDR",
+          "source_evidence_hint": "Total box with currency symbol Rp"
+        },
+        {
+          "field_key": "hospital_name",
+          "label_en": "Hospital / Clinic Name",
+          "label_original": "Nama Rumah Sakit / Klinik",
+          "value_type": "text",
+          "required": true,
+          "normalization_rule": "Official clinic header or stamped seal",
+          "source_evidence_hint": "Letterhead at top of receipt"
+        },
+        {
+          "field_key": "payment_date",
+          "label_en": "Date of Settlement",
+          "label_original": "Tanggal Pembayaran",
+          "value_type": "date",
+          "required": true,
+          "normalization_rule": "ISO 8601 date YYYY-MM-DD",
+          "source_evidence_hint": "Signature block date stamp"
+        }
+      ],
+      "optional_fields": [],
+      "review_requirements": "Confirm presence of original hospital cashier red or blue ink stamp and cashier signature."
+    }
+  ]
+}

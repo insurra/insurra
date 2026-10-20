@@ -1,9 +1,6 @@
-import hashlib
-from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import Depends, Header, Request
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -12,15 +9,38 @@ from app.models import AccountRow, DemoSessionRow
 from app.schemas.actor import Actor, ActorType
 from app.schemas.consent import ConsentPurpose
 from app.services.account_access import active_account
+from app.services.actor_scope import actor_for, owner_for
 from app.services.consents import require_purposes
+from app.services.demo_access import find_demo_session, reject_ambiguous_actor
 from app.services.kb_loader import CountryKBLoader
+
+__all__ = [
+    "AISession",
+    "ActiveAccount",
+    "ActiveActor",
+    "ActiveSession",
+    "ConsentedSession",
+    "DB",
+    "KB",
+    "actor_for",
+    "ai_session",
+    "consent_session",
+    "current_account",
+    "current_actor",
+    "current_session",
+    "get_kb",
+    "owner_for",
+]
 
 DB = Annotated[Session, Depends(get_db)]
 
 
 def current_account(
-    db: DB, authorization: Annotated[str | None, Header(max_length=300)] = None
+    db: DB,
+    authorization: Annotated[str | None, Header(max_length=300)] = None,
+    x_demo_session: Annotated[str | None, Header(max_length=128)] = None,
 ) -> AccountRow:
+    reject_ambiguous_actor(authorization, x_demo_session)
     return active_account(db, authorization)[1]
 
 
@@ -35,13 +55,15 @@ KB = Annotated[CountryKBLoader, Depends(get_kb)]
 
 
 def current_session(
-    db: DB, x_demo_session: Annotated[str | None, Header(max_length=128)] = None
+    db: DB,
+    x_demo_session: Annotated[str | None, Header(max_length=128)] = None,
+    authorization: Annotated[str | None, Header(max_length=300)] = None,
 ) -> DemoSessionRow:
+    reject_ambiguous_actor(authorization, x_demo_session)
     if not x_demo_session:
         raise AppError(401, "INVALID_SESSION", "Pilih persona demo untuk memulai sesi.")
-    token_hash = hashlib.sha256(x_demo_session.encode()).hexdigest()
-    row = db.scalar(select(DemoSessionRow).where(DemoSessionRow.token_hash == token_hash))
-    if row is None or row.expires_at.replace(tzinfo=UTC) <= datetime.now(UTC):
+    row = find_demo_session(db, x_demo_session)
+    if row is None:
         raise AppError(401, "INVALID_SESSION", "Sesi tidak valid atau sudah kedaluwarsa.")
     return row
 

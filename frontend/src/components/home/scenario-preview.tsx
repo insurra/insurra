@@ -18,6 +18,7 @@ interface ScenarioPreviewProps {
   persona: PersonaType;
   onSelectPersona: (p: PersonaType) => void;
   onOpenDemo?: () => void;
+  demoLoading?: boolean;
 }
 
 const personaData = {
@@ -58,6 +59,7 @@ export function ScenarioPreview({
   persona,
   onSelectPersona,
   onOpenDemo,
+  demoLoading = false,
 }: ScenarioPreviewProps) {
   const current = personaData[persona];
 
@@ -153,10 +155,11 @@ export function ScenarioPreview({
           <div
             className="insight"
             role="button"
-            tabIndex={0}
-            onClick={onOpenDemo}
+            tabIndex={demoLoading ? -1 : 0}
+            aria-disabled={demoLoading}
+            onClick={demoLoading ? undefined : onOpenDemo}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
+              if (!demoLoading && (e.key === "Enter" || e.key === " ")) {
                 e.preventDefault();
                 onOpenDemo?.();
               }

@@ -4,6 +4,8 @@
   "source_url": null,
   "checked_at": null,
   "verification_status": "UNVERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer. Not retrieved or machine-verified.",
   "data": {
     "dental": [
       "gigi",

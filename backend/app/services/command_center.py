@@ -33,8 +33,11 @@ def checked_official(country, item) -> bool:
 
 
 def emergency_info(country) -> EmergencyInfo:
+    from app.services.safety_screen import get_verified_emergency_contacts
+
     resource = country.resources.emergency
     item = resource.data
+    info = get_verified_emergency_contacts(country)
     if (
         checked_official(country, resource)
         and checked_official(country, item)
@@ -42,12 +45,13 @@ def emergency_info(country) -> EmergencyInfo:
     ):
         return EmergencyInfo(
             phone_number=item.phone_number,
-            label=f"Darurat? Hubungi {item.phone_number}",
+            label=f"Emergency? Call {item.phone_number}",
             source_url=item.source_url,
             checked_at=item.checked_at,
             available=True,
+            contacts=info.get("contacts", []),
         )
-    return EmergencyInfo()
+    return EmergencyInfo(contacts=info.get("contacts", []))
 
 
 def local_day(p, country, now: datetime):
@@ -200,17 +204,100 @@ def summary(db, actor, kb, now=None) -> HomeSummary:
         )
     elapsed = (today - p.arrival_date).days if p.arrival_date else None
     red_flags = country.resources.red_flags
+
+    from sqlalchemy import func
+
+    from app.agent.insights import refresh_owner_insights
+    from app.schemas.workspace import HomeActivityItem, HomeAttention
+    from app.services.actor_scope import owner_for
+    from app.workflow.models import WfActionRow, WfAuditLogRow, WfClaimCaseRow
+
+    owner = owner_for(actor)
+    try:
+        open_insights = refresh_owner_insights(db, owner, kb_loader=kb, today=today)
+    except Exception:  # noqa: BLE001
+        open_insights = []
+
+    open_claims = int(
+        db.scalar(
+            select(func.count())
+            .select_from(WfClaimCaseRow)
+            .where(
+                WfClaimCaseRow.owner_kind == owner.kind,
+                WfClaimCaseRow.owner_id == owner.id,
+                WfClaimCaseRow.status.notin_(("APPROVED_IN_SANDBOX", "REJECTED_IN_SANDBOX")),
+            )
+        )
+        or 0
+    )
+    claims_needing_evidence = int(
+        db.scalar(
+            select(func.count())
+            .select_from(WfClaimCaseRow)
+            .where(
+                WfClaimCaseRow.owner_kind == owner.kind,
+                WfClaimCaseRow.owner_id == owner.id,
+                WfClaimCaseRow.status.in_(("NEEDS_EVIDENCE", "ADDITIONAL_INFO_REQUIRED")),
+            )
+        )
+        or 0
+    )
+    pending_approvals = int(
+        db.scalar(
+            select(func.count())
+            .select_from(WfActionRow)
+            .where(
+                WfActionRow.owner_kind == owner.kind,
+                WfActionRow.owner_id == owner.id,
+                WfActionRow.status.in_(("AWAITING_APPROVAL", "APPROVED")),
+            )
+        )
+        or 0
+    )
+    expiring_count = sum(c.expiring_30d for c in cards)
+    audit_rows = list(
+        db.scalars(
+            select(WfAuditLogRow)
+            .where(
+                WfAuditLogRow.owner_kind == owner.kind,
+                WfAuditLogRow.owner_id == owner.id,
+            )
+            .order_by(WfAuditLogRow.created_at.desc(), WfAuditLogRow.id.desc())
+            .limit(5)
+        )
+    )
+    recent_activity = [
+        HomeActivityItem(
+            id=str(a.id),
+            event_type=a.event_type,
+            category=a.category,
+            title=a.title,
+            summary=a.summary,
+            created_at=a.created_at,
+            synthetic=bool(actor.session_id),
+        )
+        for a in audit_rows
+    ]
+
     return HomeSummary(
         active=sum(c.active for c in cards),
-        expiring_30d=sum(c.expiring_30d for c in cards),
+        expiring_30d=expiring_count,
         needs_verification=sum(c.needs_verification for c in cards),
         recommendations=recommendations[:3],
+        insights=open_insights[:3],
+        attention=HomeAttention(
+            open_claims=open_claims,
+            claims_needing_evidence=claims_needing_evidence,
+            pending_approvals=pending_approvals,
+            expiring_policies=expiring_count,
+        ),
+        recent_activity=recent_activity,
         context=WorkspaceContext(
             first_name=p.display_name.split()[0],
             country_code=p.country_code,
             country_label=country.manifest.label,
             city=p.city,
-            occupation_label={"STUDENT": "Pelajar", "EMPLOYEE": "Pekerja", "OTHER": "Lainnya"}[
+            occupation_label={"STUDENT": "Student", "EMPLOYEE": "Employee", "OTHER": "Other"}[
                 p.occupation
             ],
             today=today,

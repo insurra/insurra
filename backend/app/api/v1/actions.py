@@ -6,13 +6,16 @@ from typing import Annotated, Any
 from urllib.parse import quote
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, Header, Query, Response
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.dependencies import DB, ActiveActor, ConsentedSession
 from app.core.errors import AppError, not_implemented
 from app.models import ActionRow, ClaimCaseRow, DocumentRow
+from app.models.foundation import ClaimCaseEventRow
 from app.repositories.ownership import approved_action, owned_resource
 from app.schemas.action import (
     ActionDecisionResult,
@@ -25,6 +28,7 @@ from app.schemas.foundation import (
     ActionDecisionRequest,
     ActionExecutionRequest,
     ClaimCaseStatus,
+    ClaimSubmissionPayload,
     SandboxClaimRequest,
     SandboxClaimResponse,
     SandboxLogEntry,
@@ -33,6 +37,20 @@ from app.services.approval import payload_sha256
 from app.services.audit_logger import log_event
 
 router = APIRouter(prefix="/actions", tags=["Actions"])
+
+
+def _enforce_legacy_freeze(x_freeze_legacy: str | None = None) -> None:
+    if get_settings().freeze_legacy_actions or (x_freeze_legacy or "").strip().lower() in (
+        "1",
+        "true",
+    ):
+        raise AppError(
+            410,
+            "LEGACY_ROUTE_FROZEN",
+            "Legacy /api/v1/actions write endpoints are frozen. Use /api/v1/workflow/actions.",
+            {"canonical_endpoint": "/api/v1/workflow/actions"},
+        )
+
 
 ALLOWED_ACTION_TOOLS: dict[str, tuple[ActionPermissionLevel, str]] = {
     "create_reminder": (ActionPermissionLevel.L1, "Pengingat"),
@@ -273,7 +291,7 @@ DEMO_ACTION_TEMPLATES: tuple[tuple[str, dict[str, Any], int], ...] = (
             "permission_level": "L2",
             "summary_action": "Klaim akan dikirim ke penyedia (sandbox)",
             "preview": (
-                "Klaim akan dikirim ke penyedia (sandbox) — Rawat Jalan GP Allianz OSHC "
+                "Klaim akan dikirim ke penyedia (sandbox) — Rawat Jalan GP, rencana asuransi sintetis "
                 "(Polis ****1234)"
             ),
             "source_screen": "SC-09 · Kesiapan Klaim",
@@ -284,10 +302,10 @@ DEMO_ACTION_TEMPLATES: tuple[tuple[str, dict[str, Any], int], ...] = (
             "reminder_date": "2026-10-25",
             "bank_account_holder": "",
             "additional_notes": "",
-            "provider": "Allianz Care Australia (OSHC)",
+            "provider": "Synthetic Student Health Plan (demo, not a real insurer product)",
             "policy_number": "****1234",
             "diagnosis_code": "J06.9 - Acute upper respiratory infection",
-            "claim_amount": "125.00 AUD",
+            "claim_amount": "450.00 CNY",
             "document_sourced_fields": [
                 "provider",
                 "policy_number",
@@ -318,7 +336,7 @@ DEMO_ACTION_TEMPLATES: tuple[tuple[str, dict[str, Any], int], ...] = (
             ),
             "reminder_date": "2026-10-22",
             "recipient_department": "",
-            "provider": "Allianz Care Australia (OSHC)",
+            "provider": "Synthetic Student Health Plan (demo, not a real insurer product)",
             "policy_number": "****1234",
             "document_sourced_fields": ["provider", "policy_number"],
         },
@@ -327,17 +345,17 @@ DEMO_ACTION_TEMPLATES: tuple[tuple[str, dict[str, Any], int], ...] = (
     (
         "create_reminder",
         {
-            "title": "Pengingat perpanjangan masa berlaku polis OSHC",
-            "reason": "Dibuat karena ada jeda 76 hari antara asuransi dan visa",
+            "title": "Pengingat masa berlaku polis asuransi mahasiswa (sintetis)",
+            "reason": "Dibuat karena ada selisih tanggal 76 hari antara akhir asuransi dan akhir studi",
             "permission_level": "L1",
             "summary_action": "Pengingat perpanjangan polis akan ditambahkan ke jadwal",
             "preview": (
-                "Pengingat perpanjangan masa berlaku polis OSHC ****1234 sebelum visa berakhir"
+                "Pengingat masa berlaku polis asuransi mahasiswa ****1234 sebelum studi berakhir"
             ),
             "source_screen": "SC-04 · Cek Kelengkapan Data",
             "message": (
-                "Perpanjang polis OSHC ****1234 minimal 30 hari sebelum tanggal kedaluwarsa "
-                "untuk mencegah jeda perlindungan visa selama 76 hari."
+                "Tinjau polis ****1234 minimal 30 hari sebelum tanggal kedaluwarsa "
+                "karena ada selisih tanggal 76 hari dengan akhir studi."
             ),
             "reminder_date": "2027-03-15",
             "notification_channel": "",
@@ -444,6 +462,8 @@ def serialize_action(row: ActionRow) -> ProposedAction:
         permission_level=_resolve_permission_level(row),
         source_screen=source_screen,
         approved_payload_sha256=row.approved_payload_sha256,
+        proposed_payload_sha256=payload_sha256(row.payload),
+        payload_version=row.payload_version,
         title=title,
         is_stale=is_stale,
         stale_label=stale_label,
@@ -592,6 +612,104 @@ def ensure_demo_actions(db: Session, session_id: UUID) -> None:
     db.commit()
 
 
+def _approve_claim_action(
+    action_id: UUID,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+    body: ActionDecisionRequest | None,
+) -> ActionDecisionResult:
+    """Hash-bound claim-submission approve (claim-linked actions only)."""
+    action = owned_resource(db, actor, "action", action_id)
+    if body is None or not body.confirmed:
+        raise AppError(
+            422, "EXPLICIT_CONFIRMATION_REQUIRED", "Konfirmasi tindakan secara eksplisit."
+        )
+    if body.edited_payload is not None:
+        not_implemented()
+    if body.expected_payload_sha256 != payload_sha256(action.payload):
+        raise AppError(409, "ACTION_PAYLOAD_CHANGED", "Payload berubah setelah ditinjau.")
+    if action.status != ActionStatus.PENDING.value:
+        raise AppError(409, "ACTION_NOT_PENDING", "Tindakan tidak menunggu persetujuan.")
+    if action.type != "claim_submit" or action.claim_case_id is None:
+        not_implemented()
+    try:
+        payload = ClaimSubmissionPayload.model_validate(
+            {
+                "claim_case_id": action.payload.get("claim_case_id"),
+                "attachments": action.payload.get("attachments"),
+            }
+        )
+    except ValidationError:
+        raise AppError(409, "ACTION_PAYLOAD_INVALID", "Payload tindakan tidak valid.") from None
+    if payload.claim_case_id != action.claim_case_id:
+        raise AppError(409, "ACTION_CONTEXT_MISMATCH", "Kasus tindakan tidak cocok.")
+    claim = owned_resource(db, actor, "claim", payload.claim_case_id)
+    for item in payload.attachments:
+        owned_resource(db, actor, "document", item.document_id)
+    action.status = ActionStatus.APPROVED.value
+    action.approved_at = datetime.now(UTC)
+    action.approved_payload_sha256 = payload_sha256(action.payload)
+    db.add(
+        ClaimCaseEventRow(
+            id=uuid4(),
+            session_id=session.id,
+            claim_case_id=claim.id,
+            event_type="ACTION_APPROVED",
+            status_snapshot=claim.status,
+        )
+    )
+    log_event(
+        db,
+        session.id,
+        "ACTION_APPROVED",
+        feature="actions",
+        action_id=str(action.id),
+        claim_case_id=str(claim.id),
+    )
+    db.commit()
+    return ActionDecisionResult(status=ActionStatus.APPROVED)
+
+
+def _reject_claim_action(
+    action_id: UUID,
+    session: ConsentedSession,
+    actor: ActiveActor,
+    db: DB,
+    body: ActionDecisionRequest | None,
+) -> ActionDecisionResult:
+    """Hash-bound claim-submission reject (claim-linked actions only)."""
+    action = owned_resource(db, actor, "action", action_id)
+    if action.status == ActionStatus.REJECTED.value:
+        return ActionDecisionResult(status=ActionStatus.REJECTED)
+    if action.status not in {ActionStatus.PENDING.value, ActionStatus.APPROVED.value}:
+        raise AppError(409, "ACTION_NOT_REVIEWABLE", "Tindakan tidak dapat ditolak.")
+    action.status = ActionStatus.REJECTED.value
+    action.approved_at = None
+    action.approved_payload_sha256 = None
+    if action.claim_case_id is not None:
+        claim = owned_resource(db, actor, "claim", action.claim_case_id)
+        db.add(
+            ClaimCaseEventRow(
+                id=uuid4(),
+                session_id=session.id,
+                claim_case_id=claim.id,
+                event_type="ACTION_REJECTED",
+                status_snapshot=claim.status,
+            )
+        )
+    log_event(
+        db,
+        session.id,
+        "ACTION_REJECTED",
+        feature="actions",
+        action_id=str(action.id),
+        claim_case_id=str(action.claim_case_id) if action.claim_case_id else None,
+    )
+    db.commit()
+    return ActionDecisionResult(status=ActionStatus.REJECTED)
+
+
 @router.get("", response_model=list[ProposedAction])
 def actions(
     session: ConsentedSession,
@@ -606,8 +724,6 @@ def actions(
             select(ActionRow).where(ActionRow.session_id == session.id).order_by(ActionRow.id.asc())
         )
     )
-    if not rows and not include_empty:
-        not_implemented()
     return [serialize_action(row) for row in rows]
 
 
@@ -617,7 +733,9 @@ def propose_action(
     session: ConsentedSession,
     actor: ActiveActor,
     db: DB,
+    x_freeze_legacy: str | None = Header(default=None, alias="X-Freeze-Legacy-Actions"),
 ):
+    _enforce_legacy_freeze(x_freeze_legacy)
     raw_type = body.action_type.strip()
     req_level = (body.permission_level or "").strip().upper()
 
@@ -812,8 +930,18 @@ def approve(
     actor: ActiveActor,
     db: DB,
     body: ActionDecisionRequest | None = None,
+    x_freeze_legacy: str | None = Header(default=None, alias="X-Freeze-Legacy-Actions"),
 ):
+    _enforce_legacy_freeze(x_freeze_legacy)
     row = owned_resource(db, actor, "action", action_id)
+    # Minimal canonical claim actions always require the reviewed hash. Legacy sandbox
+    # actions retain their explicit-confirmation flow and still persist a payload hash.
+    minimal_claim = isinstance(row.payload, dict) and set(row.payload) == {
+        "claim_case_id",
+        "attachments",
+    }
+    if minimal_claim or body is None or body.expected_payload_sha256 is not None:
+        return _approve_claim_action(action_id, session, actor, db, body)
     if body is None:
         not_implemented()
     if row.status != ActionStatus.PENDING.value:
@@ -900,8 +1028,12 @@ def reject(
     actor: ActiveActor,
     db: DB,
     body: ActionDecisionRequest | None = None,
+    x_freeze_legacy: str | None = Header(default=None, alias="X-Freeze-Legacy-Actions"),
 ):
+    _enforce_legacy_freeze(x_freeze_legacy)
     row = owned_resource(db, actor, "action", action_id)
+    if row.claim_case_id is not None or body is None:
+        return _reject_claim_action(action_id, session, actor, db, body)
     if body is None:
         not_implemented()
     if row.status != ActionStatus.PENDING.value:
@@ -1603,7 +1735,9 @@ def execute(
     actor: ActiveActor,
     db: DB,
     simulate_failure: Annotated[bool, Query()] = False,
+    x_freeze_legacy: str | None = Header(default=None, alias="X-Freeze-Legacy-Actions"),
 ):
+    _enforce_legacy_freeze(x_freeze_legacy)
     row = approved_action(db, actor, action_id, body.approved_payload_sha256)
     raw_payload = dict(row.payload) if isinstance(row.payload, dict) else {}
     clean_payload = {k: v for k, v in raw_payload.items() if k != "_execution_meta"}

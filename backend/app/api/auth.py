@@ -21,6 +21,7 @@ from app.models import AccountProfileRow, AccountRow, AccountSessionRow, OAuthId
 from app.schemas.actor import Actor, ActorType
 from app.schemas.foundation import (
     AccountSummary,
+    AuthCapabilities,
     AuthMessage,
     AuthSession,
     EmailRequest,
@@ -30,6 +31,7 @@ from app.schemas.foundation import (
     VerificationRequest,
 )
 from app.services.account_access import active_account
+from app.services.demo_access import reject_ambiguous_actor
 
 public_router = APIRouter(prefix="/auth", tags=["Authentication"])
 api_router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -77,6 +79,26 @@ def _verify_password(password: str, hashed: str) -> bool:
         return secrets.compare_digest(key, expected_key)
     except Exception:
         return False
+
+
+VERIFICATION_TTL = timedelta(hours=48)
+RESET_TTL = timedelta(hours=1)
+RESET_COOLDOWN_SECONDS = 60
+# Verified against when the email is unknown so response time does not reveal registration.
+_DUMMY_PASSWORD_HASH = _hash_password(secrets.token_urlsafe(16))
+
+
+def _hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _token_candidates(token: str) -> list[str]:
+    """New rows store sha256 hex (64 chars). Legacy plaintext tokens are shorter, and a
+    64-char value is never compared as plaintext so a leaked hash cannot be replayed."""
+    candidates = [_hash_token(token)]
+    if len(token) != 64:
+        candidates.append(token)
+    return candidates
 
 
 def _as_utc(dt: datetime) -> datetime:
@@ -301,14 +323,17 @@ def register(body: RegisterRequest, db: DB):
 
     now = datetime.now(UTC)
     raw_pw = body.password.get_secret_value()
+    # No email transport exists yet (see /auth/capabilities); the raw token is never stored,
+    # returned or logged, so a new account stays unverified until delivery is configured.
     token = secrets.token_urlsafe(32)
     account = AccountRow(
         email=email_clean,
         display_name=email_clean.split("@")[0],
         email_verified=False,
         password_hash=_hash_password(raw_pw),
-        verification_token=token,
+        verification_token=_hash_token(token),
         verification_sent_at=now,
+        verification_token_expires_at=now + VERIFICATION_TTL,
         failed_login_attempts=0,
         locked_until=None,
         consent_decided=False,
@@ -328,6 +353,7 @@ def login(body: LoginRequest, db: DB, request: Request):
     now = datetime.now(UTC)
     account = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
     if account is None:
+        _verify_password(body.password.get_secret_value(), _DUMMY_PASSWORD_HASH)
         raise AppError(401, "INVALID_CREDENTIALS", "Invalid email or password.")
 
     if account.locked_until is not None:
@@ -384,16 +410,33 @@ def login(body: LoginRequest, db: DB, request: Request):
     )
 
 
+def _verification_expired(account: AccountRow, now: datetime) -> bool:
+    if account.verification_token_expires_at is not None:
+        return _as_utc(account.verification_token_expires_at) < now
+    # Legacy row without expiry: age from the send time, or accept once when unknown.
+    if account.verification_sent_at is not None:
+        return _as_utc(account.verification_sent_at) + VERIFICATION_TTL < now
+    return False
+
+
 @account_auth_router.post("/verify-email", response_model=AuthMessage)
 def verify_email(body: VerificationRequest, db: DB):
     token = body.token.get_secret_value().strip()
-    account = db.scalar(select(AccountRow).where(AccountRow.verification_token == token))
-    if account is None:
+    account = db.scalar(
+        select(AccountRow).where(AccountRow.verification_token.in_(_token_candidates(token)))
+    )
+    now = datetime.now(UTC)
+    if account is None or _verification_expired(account, now):
+        if account is not None:
+            # An expired token is single-use garbage; clear it so it cannot be retried.
+            account.verification_token = None
+            account.verification_token_expires_at = None
+            db.commit()
         raise AppError(400, "INVALID_VERIFICATION_TOKEN", "Invalid or expired verification token.")
 
-    now = datetime.now(UTC)
     account.email_verified = True
     account.verification_token = None
+    account.verification_token_expires_at = None
     account.verification_sent_at = None
     account.updated_at = now
     db.commit()
@@ -421,8 +464,9 @@ def resend_verification(body: EmailRequest, db: DB):
                 {"retry_after": retry_after},
             )
 
-    account.verification_token = secrets.token_urlsafe(32)
+    account.verification_token = _hash_token(secrets.token_urlsafe(32))
     account.verification_sent_at = now
+    account.verification_token_expires_at = now + VERIFICATION_TTL
     account.updated_at = now
     db.commit()
     return AuthMessage(message="Verification email resent successfully.")
@@ -434,10 +478,17 @@ def forgot_password(body: EmailRequest, db: DB):
     account = db.scalar(select(AccountRow).where(AccountRow.email == email_clean))
     if account is not None and account.password_hash:
         now = datetime.now(UTC)
-        account.reset_token = secrets.token_urlsafe(32)
-        account.reset_token_expires_at = now + timedelta(hours=1)
-        account.updated_at = now
-        db.commit()
+        issued_at = (
+            _as_utc(account.reset_token_expires_at) - RESET_TTL
+            if account.reset_token_expires_at is not None
+            else None
+        )
+        # Throttled requests get the same response as unknown emails (no enumeration).
+        if issued_at is None or (now - issued_at).total_seconds() >= RESET_COOLDOWN_SECONDS:
+            account.reset_token = _hash_token(secrets.token_urlsafe(32))
+            account.reset_token_expires_at = now + RESET_TTL
+            account.updated_at = now
+            db.commit()
     return AuthMessage(
         message="If this email is registered, password reset instructions have been sent."
     )
@@ -446,7 +497,9 @@ def forgot_password(body: EmailRequest, db: DB):
 @account_auth_router.post("/reset-password", response_model=AuthMessage)
 def reset_password(body: ResetPasswordRequest, db: DB):
     token = body.token.get_secret_value().strip()
-    account = db.scalar(select(AccountRow).where(AccountRow.reset_token == token))
+    account = db.scalar(
+        select(AccountRow).where(AccountRow.reset_token.in_(_token_candidates(token)))
+    )
     now = datetime.now(UTC)
     if (
         account is None
@@ -466,14 +519,35 @@ def reset_password(body: ResetPasswordRequest, db: DB):
     return AuthMessage(message="Password reset successfully. Please log in with your new password.")
 
 
+@api_router.get("/capabilities", response_model=AuthCapabilities)
+def capabilities(request: Request):
+    settings = request.app.state.settings
+    return AuthCapabilities(
+        email_delivery=settings.email_delivery_enabled,
+        google_oauth=bool(
+            settings.google_client_id and settings.google_client_secret.get_secret_value()
+        ),
+    )
+
+
 @api_router.get("/me", response_model=AccountSummary)
-def account_me(db: DB, authorization: str | None = Header(default=None, max_length=300)):
+def account_me(
+    db: DB,
+    authorization: str | None = Header(default=None, max_length=300),
+    x_demo_session: str | None = Header(default=None, max_length=128),
+):
+    reject_ambiguous_actor(authorization, x_demo_session)
     _, account = active_account(db, authorization)
     return _account_summary(account, db)
 
 
 @api_router.post("/logout", status_code=204)
-def logout(db: DB, authorization: str | None = Header(default=None, max_length=300)):
+def logout(
+    db: DB,
+    authorization: str | None = Header(default=None, max_length=300),
+    x_demo_session: str | None = Header(default=None, max_length=128),
+):
+    reject_ambiguous_actor(authorization, x_demo_session)
     session, _ = active_account(db, authorization)
     session.revoked_at = datetime.now(UTC)
     db.commit()

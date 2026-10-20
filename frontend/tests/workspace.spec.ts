@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { accountWorkspace, workspaceApiBase } from "./helpers/workspace";
+import { accountWorkspace } from "./helpers/workspace";
 import type { components } from "../src/lib/api/types.gen";
 
 type Comparison = components["schemas"]["PathwayComparison"];
@@ -11,7 +11,7 @@ test("SC-05 and SC-06 empty workspace links to documents and disables processing
   expect(
     (
       await page.request.delete(
-        `${workspaceApiBase}/api/v1/account/documents/${fixture.document_id}`,
+        `http://127.0.0.1:8177/api/v1/account/documents/${fixture.document_id}`,
         {
           headers: fixture.headers,
           data: { confirm: "HAPUS" },
@@ -138,7 +138,7 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
   page,
 }) => {
   const fixture = await pathwayFixture(page);
-  fixture.comparison.paths[0].direct_billing = true;
+  fixture.comparison.paths![0].direct_billing = true;
   const requests: { key: string | undefined; body: unknown }[] = [];
   const caseId = crypto.randomUUID();
   await page.route("**/api/v1/claims", async (route) => {
@@ -212,8 +212,8 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
 
 test("SC-07 emergency card never sends case creation", async ({ page }) => {
   const fixture = await pathwayFixture(page);
-  fixture.comparison.paths[0].emergency = true;
-  fixture.comparison.paths[0].name = "IGD · synthetic UI fixture";
+  fixture.comparison.paths![0].emergency = true;
+  fixture.comparison.paths![0].name = "IGD · synthetic UI fixture";
   let calls = 0;
   await page.route("**/api/v1/claims", (route) => {
     calls += 1;
@@ -347,7 +347,7 @@ test("SC-14 account needs share the visa result and refresh after profile change
 }) => {
   const fixture = await accountWorkspace(page);
   const response = await page.request.get(
-    `${workspaceApiBase}/api/v1/account/profile`,
+    "http://127.0.0.1:8177/api/v1/account/profile",
     { headers: fixture.headers },
   );
   const state = await response.json();
@@ -358,7 +358,7 @@ test("SC-14 account needs share the visa result and refresh after profile change
   profile.visa_expiry_date = "2027-06-30";
   expect(
     (
-      await page.request.put(`${workspaceApiBase}/api/v1/account/profile`, {
+      await page.request.put("http://127.0.0.1:8177/api/v1/account/profile", {
         headers: fixture.headers,
         data: profile,
       })
@@ -386,7 +386,7 @@ test("SC-14 account needs share the visa result and refresh after profile change
   profile.occupation = "EMPLOYEE";
   expect(
     (
-      await page.request.put(`${workspaceApiBase}/api/v1/account/profile`, {
+      await page.request.put("http://127.0.0.1:8177/api/v1/account/profile", {
         headers: fixture.headers,
         data: profile,
       })
@@ -422,7 +422,7 @@ test("SC-06 live dependency fallback locks chat and exposes privacy and document
   ).toBeDisabled();
   expect(
     (
-      await page.request.post(`${workspaceApiBase}/api/v1/account/consents`, {
+      await page.request.post("http://127.0.0.1:8177/api/v1/account/consents", {
         headers: fixture.headers,
         data: { purpose: "external_ai", granted: false },
       })
@@ -443,7 +443,7 @@ test("SC-06 mocked validated SSE opens a real owned source page and original doc
   // Only the provider/triage availability seam is mocked. Auth, ownership and source access use the real backend.
   const fixture = await accountWorkspace(page);
   const source = await page.request.get(
-    `${workspaceApiBase}/api/v1/ask/sources/${fixture.document_id}/1`,
+    `http://127.0.0.1:8177/api/v1/ask/sources/${fixture.document_id}/1`,
     { headers: fixture.headers },
   );
   expect(source.status()).toBe(200);

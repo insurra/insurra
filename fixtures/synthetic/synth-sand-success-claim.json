@@ -1,0 +1,22 @@
+{
+  "evidence_class": "SYNTHETIC_FIXTURE",
+  "fixture_id": "synth-sand-success-claim",
+  "category": "sandbox_integration_test",
+  "country_code": "CN",
+  "label": "Mock Successful Sandbox Claim Preauthorization Response",
+  "description": "Simulated insurer sandbox API returning status ACCEPTED and claim tracking ID.",
+  "payload": {
+    "sandbox_endpoint": "/sandbox/v1/preauth/claims",
+    "simulated_status": 200,
+    "response_body": {
+      "claim_submission_id": "SANDBOX-CN-CLM-889900",
+      "status": "PREAUTH_ACCEPTED",
+      "deductible_applied": "650.00",
+      "estimated_eligible_payout": "3200.00",
+      "currency": "CNY",
+      "audit_timestamp": "2026-10-18T10:00:00Z"
+    }
+  },
+  "is_adversarial": false,
+  "expected_outcome": "SANDBOX_STATUS_ACCEPTED"
+}

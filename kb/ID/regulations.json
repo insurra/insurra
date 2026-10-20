@@ -1,0 +1,105 @@
+[
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "regulation_id": "ID-REG-UU-40-2004",
+    "country_code": "ID",
+    "jurisdiction": "ID-National",
+    "issuing_authority": "Dewan Perwakilan Rakyat dan Presiden Republik Indonesia",
+    "title_original": "Undang-Undang Republik Indonesia Nomor 40 Tahun 2004 tentang Sistem Jaminan Sosial Nasional",
+    "title_english": "Law No. 40 Year 2004 on the National Social Security System (UU SJSN)",
+    "legal_reference_number": "UU No. 40 Tahun 2004 (LN Tahun 2004 No. 150)",
+    "promulgation_date": "2004-10-19",
+    "effective_date": "2004-10-19",
+    "category": "Foundational Social Security Law",
+    "summary": "Foundational statute establishing the principles of mandatory social security, mutual cooperation (gotong royong), non-profit operation, and universal health security for all residents of Indonesia.",
+    "key_provisions": [
+      "Pasal 19: Health security is implemented on the principle of social insurance and equity, ensuring comprehensive medical benefits.",
+      "Pasal 22: Health security benefits are intended to maintain and enhance the health degree of participants and their family members."
+    ],
+    "applicable_population": [
+      "All residents of Indonesia",
+      "Foreigners residing and working for at least 6 months"
+    ],
+    "source_url": "https://peraturan.bpk.go.id/Details/40764/uu-no-40-tahun-2004",
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "regulation_id": "ID-REG-PERPRES-59-2024",
+    "country_code": "ID",
+    "jurisdiction": "ID-National",
+    "issuing_authority": "Presiden Republik Indonesia",
+    "title_original": "Peraturan Presiden Nomor 59 Tahun 2024 tentang Perubahan Ketiga atas Peraturan Presiden Nomor 82 Tahun 2018 tentang Jaminan Kesehatan",
+    "title_english": "Presidential Regulation No. 59 Year 2024 on Health Security (Perpres JKN 2024)",
+    "legal_reference_number": "Perpres No. 59 Tahun 2024",
+    "promulgation_date": "2024-05-08",
+    "effective_date": "2024-05-08",
+    "category": "National Health Insurance Regulation",
+    "summary": "Regulates the implementation of Standard Inpatient Classes (Kelas Rawat Inap Standar - KRIS), service referral mechanisms, contribution tiers, and comprehensive list of excluded medical procedures under JKN BPJS Kesehatan.",
+    "key_provisions": [
+      "Pasal 46: Implementation of KRIS minimum hospital facility criteria across all participating JKN partner hospitals.",
+      "Pasal 52: Exhaustive statutory exclusions list from JKN benefits (aesthetic surgery, non-referral non-emergencies, overseas care, injuries from intoxication)."
+    ],
+    "applicable_population": [
+      "BPJS Kesehatan participants",
+      "Healthcare provider facilities (FKTP and FKRTL) in Indonesia"
+    ],
+    "source_url": "https://peraturan.bpk.go.id/Details/285514/perpres-no-59-tahun-2024",
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "regulation_id": "ID-REG-POJK-22-2023",
+    "country_code": "ID",
+    "jurisdiction": "ID-National",
+    "issuing_authority": "Otoritas Jasa Keuangan (OJK)",
+    "title_original": "Peraturan Otoritas Jasa Keuangan Nomor 22 Tahun 2023 tentang Pelindungan Konsumen dan Masyarakat di Sektor Jasa Keuangan",
+    "title_english": "OJK Regulation No. 22 Year 2023 on Consumer Protection in Financial Services (POJK 22/2023)",
+    "legal_reference_number": "POJK No. 22 Tahun 2023",
+    "promulgation_date": "2023-12-12",
+    "effective_date": "2024-01-01",
+    "category": "Financial Consumer Protection",
+    "summary": "Mandates transparency, fair treatment, clear policy wording disclosure (RIPLAY), and internal dispute resolution standards for licensed insurance companies operating in Indonesia.",
+    "key_provisions": [
+      "Pasal 14: Insurers must deliver accurate, balanced, and understandable Product and Service Information Summary (RIPLAY) prior to policy contracting.",
+      "Pasal 38: Financial service businesses must handle consumer complaints within a maximum of 10 working days (extendable by 10 working days for complex cases)."
+    ],
+    "applicable_population": [
+      "Licensed commercial insurance companies in Indonesia",
+      "Insurance consumers and policyholders"
+    ],
+    "source_url": "https://www.ojk.go.id/id/regulasi/Pages/Pelindungan-Konsumen-dan-Masyarakat-di-Sektor-Jasa-Keuangan.aspx",
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": null,
+    "regulation_id": "ID-REG-UU-27-2022",
+    "country_code": "ID",
+    "jurisdiction": "ID-National",
+    "issuing_authority": "Dewan Perwakilan Rakyat dan Presiden Republik Indonesia",
+    "title_original": "Undang-Undang Republik Indonesia Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi",
+    "title_english": "Law No. 27 Year 2022 on Personal Data Protection (UU PDP)",
+    "legal_reference_number": "UU No. 27 Tahun 2022 (LN Tahun 2022 No. 196)",
+    "promulgation_date": "2022-10-17",
+    "effective_date": "2024-10-17",
+    "category": "Data Protection & Privacy",
+    "summary": "Indonesia's comprehensive data privacy statute, defining health data, biometrics, and personal financial data as Specific Personal Data requiring explicit consent and high-standard data governance.",
+    "key_provisions": [
+      "Pasal 4 ayat (2): Health data and information, genetic data, and personal financial data are Specific Personal Data (Data Pribadi yang Bersifat Spesifik).",
+      "Pasal 20: Processing of personal data requires valid legal basis, including explicit consent from the data subject for specified purposes."
+    ],
+    "applicable_population": [
+      "Data controllers and data processors handling personal data of Indonesian residents"
+    ],
+    "source_url": "https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022",
+    "verification_status": "UNVERIFIED"
+  }
+]

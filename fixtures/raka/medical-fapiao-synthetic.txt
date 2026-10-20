@@ -1,0 +1,8 @@
+合成演示文件，仅用于演示。非真实医疗发票。
+SYNTHETIC DEMO ONLY. Not a real medical invoice.
+
+医疗电子票据（合成） / Medical fapiao (synthetic)
+患者 / Patient: Raka
+就诊日期 / Service date: 2026-10-12
+医疗机构 / Clinic: Shenzhen Demo Community Clinic (fictional) / 深圳示范社区门诊（虚构）
+金额 / Amount: 450.00 CNY

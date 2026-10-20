@@ -11,6 +11,14 @@ from app.models import AccountAuditRow, AccountCoverageRow, ClaimCaseRow, Pathwa
 from app.tests.test_account_workspace import grant
 from app.tests.test_care_pathways import request
 from app.tests.workspace_fixtures import reviewed_triage, workspace
+from app.workflow.models import WfClaimCaseRow
+
+
+@pytest.fixture
+def kb_countries() -> str:
+    # Settings override scoped to this module: it uses the inactive legacy kb/AU folder as a
+    # fixture-only configuration. The default app keeps AU disabled (see conftest).
+    return "AU,CN,ID"
 
 
 def prepared(app, client, monkeypatch, code="AU"):
@@ -50,6 +58,9 @@ def test_create_draft_real_account_one_audit_no_raw_symptom_and_privacy_cleanup(
         assert row.status == "DRAFT" and row.account_id == account and row.session_id is None
         assert row.coverage_id == coverage and row.country_code == code and row.path == body["path"]
         assert len(row.complaint_summary) <= 80 and "PRIVATE" not in row.complaint_summary
+        wf_row = db.get(WfClaimCaseRow, case_id)
+        assert wf_row is not None
+        assert wf_row.origin == "PATHWAY" and wf_row.origin_ref == str(case_id)
         audit = db.scalars(
             select(AccountAuditRow).where(
                 AccountAuditRow.account_id == account, AccountAuditRow.event_type == "ACTION"
@@ -66,6 +77,7 @@ def test_create_draft_real_account_one_audit_no_raw_symptom_and_privacy_cleanup(
     )
     with app.state.session_factory() as db:
         assert db.get(ClaimCaseRow, case_id) is None
+        assert db.get(WfClaimCaseRow, case_id) is None
         assert db.get(PathwayDecisionRow, UUID(body["comparison_id"])) is None
 
 

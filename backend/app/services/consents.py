@@ -74,5 +74,16 @@ def update_purpose(db: Session, session_id: UUID, body: PurposeConsentUpdate):
         policy_version=body.policy_version,
         changed=changed,
     )
+    if changed and not body.granted:
+        from app.schemas.actor import Actor, ActorType
+        from app.services.events import dispatch
+
+        dispatch(
+            db,
+            Actor(actor_type=ActorType.DEMO_SESSION, session_id=session_id),
+            "consent.revoked",
+            body.purpose.value,
+            {"permission": body.purpose.value, "dedupe_part": timestamp.isoformat()},
+        )
     db.commit()
     return row

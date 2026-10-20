@@ -214,8 +214,8 @@ def test_profile_suggestions_only_project_checked_country_kb(client, app, demo, 
     _, headers = demo()
     loader = app.state.kb_loader
     original = loader.load
-    country = copy.deepcopy(original("AU"))
-    # Synthetic in-memory fixture; production triage drafts remain unverified and unavailable.
+    country = copy.deepcopy(original("CN"))
+    # Synthetic in-memory fixture; ID production triage remains blocked by pending draft rules.
     from app.schemas.kb import SuggestedDocument
 
     country.resources.suggested_docs.data = [
@@ -223,7 +223,7 @@ def test_profile_suggestions_only_project_checked_country_kb(client, app, demo, 
             document_type="synthetic", label="Synthetic", requirement_level="RECOMMENDED"
         )
     ]
-    monkeypatch.setattr(loader, "load", lambda code: country if code == "AU" else original(code))
+    monkeypatch.setattr(loader, "load", lambda code: country if code == "CN" else original(code))
     assert client.put("/api/v1/profile", headers=headers, json={}).json()["suggested_docs"] == []
     country.resources.suggested_docs.verification_status = VerificationStatus.VERIFIED
     country.resources.suggested_docs.source_url = "https://synthetic.example.test/source"

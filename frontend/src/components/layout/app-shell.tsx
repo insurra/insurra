@@ -1,85 +1,63 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   Activity,
-  ArrowLeftRight,
-  ArrowUpRight,
+  Bell,
+  ChevronDown,
   ClipboardCheck,
   FileText,
   HeartPulse,
-  LayoutDashboard,
+  Home,
   LogOut,
-  MessageSquareText,
+  PhoneCall,
   ShieldCheck,
-  SlidersHorizontal,
   Sparkles,
-  LockKeyhole,
+  Settings,
+  User,
 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
-import { api } from "@/lib/api/client";
+import { useUserContext } from "@/lib/user-context";
+import { SessionRequired } from "@/components/session-required";
+import { signInUrl } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/layout/notification-bell";
+import { DemoBanner } from "@/components/layout/demo-banner";
+
+// Account-only routes send visitors without an account to sign in.
+const accountOnlyRoute = (pathname: string) =>
+  pathname.startsWith("/account") ||
+  pathname === "/completeness" ||
+  pathname === "/policies" ||
+  pathname === "/family";
+
+// Safety guidance stays reachable without a session.
+const sessionFreeRoute = (pathname: string) => pathname === "/emergency";
 
 const navigation = [
-  { href: "/home", label: "Home", icon: LayoutDashboard },
+  { href: "/home", label: "Home", icon: Home },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
+  { href: "/claims", label: "Claims Center", icon: ClipboardCheck },
   { href: "/documents", label: "Documents", icon: FileText },
-  {
-    href: "/ask",
-    label: "Tanya polis",
-    icon: MessageSquareText,
-  },
-  { href: "/pathways", label: "Jalur layanan", icon: HeartPulse },
-  {
-    href: "/claims",
-    label: "Claims Center",
-    icon: ClipboardCheck,
-    soon: true,
-  },
-  {
-    href: "/actions",
-    label: "Persetujuan Tindakan",
-    icon: ShieldCheck,
-  },
-  {
-    href: "/audit",
-    label: "Activity & Audit",
-    icon: Activity,
-  },
-  { href: "/settings/privacy", label: "Settings & Privacy", icon: LockKeyhole },
+  { href: "/ask", label: "Ask INSURRA", icon: Sparkles },
+  { href: "/pathways", label: "Care Pathways", icon: HeartPulse },
+  { href: "/audit", label: "Activity & Audit", icon: Activity },
+  { href: "/settings/privacy", label: "Settings & Privacy", icon: Settings },
 ];
 
 const accountNavigation = [
-  { href: "/home", label: "Home", icon: LayoutDashboard },
+  { href: "/home", label: "Home", icon: Home },
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
+  { href: "/claims", label: "Claims Center", icon: ClipboardCheck },
   { href: "/documents", label: "Documents", icon: FileText },
-  {
-    href: "/ask",
-    label: "Tanya polis",
-    icon: MessageSquareText,
-  },
-  { href: "/pathways", label: "Jalur layanan", icon: HeartPulse },
-  {
-    href: "/claims",
-    label: "Claims Center",
-    icon: ClipboardCheck,
-    soon: true,
-  },
-  {
-    href: "/actions",
-    label: "Persetujuan Tindakan",
-    icon: ShieldCheck,
-  },
-  {
-    href: "/audit",
-    label: "Activity & Audit",
-    icon: Activity,
-  },
-  { href: "/settings/privacy", label: "Settings & Privacy", icon: LockKeyhole },
+  { href: "/ask", label: "Ask INSURRA", icon: Sparkles },
+  { href: "/pathways", label: "Care Pathways", icon: HeartPulse },
+  { href: "/audit", label: "Activity & Audit", icon: Activity },
+  { href: "/settings/privacy", label: "Settings & Privacy", icon: Settings },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -103,64 +81,35 @@ function PrivateShell({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { data, loading, error, clearSession } = useSession();
-  const { account, token, logout } = useAuth();
-  const [pendingActionsCount, setPendingActionsCount] = useState<number>(0);
-
-  useEffect(() => {
-    const handleActionsUpdated = (e: Event) => {
-      const custom = e as CustomEvent<{ pendingCount?: number }>;
-      if (typeof custom.detail?.pendingCount === "number") {
-        setPendingActionsCount(custom.detail.pendingCount);
-      }
-    };
-    window.addEventListener("insurra:actions-updated", handleActionsUpdated);
-    return () => {
-      window.removeEventListener("insurra:actions-updated", handleActionsUpdated);
-    };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    async function syncPendingBadge() {
-      if (!data?.session.id || !data?.consent.processing_consent) {
-        if (active) setPendingActionsCount(0);
-        return;
-      }
-      const storedToken =
-        typeof window !== "undefined"
-          ? window.sessionStorage.getItem("insurra.demo-session")
-          : null;
-      if (!storedToken) return;
-      try {
-        const list = await api.request("get", "/api/v1/actions", {
-          headers: { "X-Demo-Session": storedToken },
-        });
-        if (active) {
-          setPendingActionsCount(list.filter((item) => item.status === "PENDING").length);
-        }
-      } catch {
-        // Ignore 501 when no actions exist yet in this session
-      }
-    }
-    void syncPendingBadge();
-    return () => {
-      active = false;
-    };
-  }, [data?.session.id, data?.consent.processing_consent, pathname]);
-
+  const { data, loading, error } = useSession();
+  const { account, token, loading: authLoading, logout } = useAuth();
+  const { residenceCountry, countryFlag } = useUserContext();
   const accountMode =
     Boolean(token && account) ||
     pathname.startsWith("/account") ||
     pathname === "/completeness" ||
-    pathname === "/settings/privacy" ||
     pathname === "/policies" ||
     pathname === "/family";
 
   const items = accountMode ? accountNavigation : navigation;
+  const demoMode = !accountMode && Boolean(data);
+
+  const sessionsReady = !authLoading && !loading;
+  const hasAccount = Boolean(token && account);
+  const needsSignIn = sessionsReady && !hasAccount && accountOnlyRoute(pathname);
+  const needsSession =
+    sessionsReady && !hasAccount && !data && !accountOnlyRoute(pathname) && !sessionFreeRoute(pathname);
+
+  useEffect(() => {
+    if (!needsSignIn) return;
+    router.replace(signInUrl(`${pathname}${window.location.search}`));
+  }, [needsSignIn, pathname, router]);
 
   const isNavActive = (href: string) => {
     if (href === pathname) return true;
+    if (href === "/home") {
+      return pathname === "/home" || pathname === "/dashboard" || pathname === "/account";
+    }
     if (href === "/protection") {
       return (
         pathname === "/protection" ||
@@ -168,21 +117,50 @@ function PrivateShell({
         pathname.startsWith("/completeness") ||
         pathname.startsWith("/family") ||
         pathname.startsWith("/coverage") ||
+        pathname.startsWith("/coverage-needs") ||
         pathname.startsWith("/employer-benefits")
       );
+    }
+    if (href === "/claims") {
+      return pathname === "/claims" || pathname.startsWith("/claims/") || pathname === "/actions";
     }
     if (href === "/documents") {
       return pathname === "/documents" || pathname.startsWith("/documents/");
     }
-    if (href === "/dashboard" || href === "/account") {
-      return pathname === "/dashboard" || pathname === "/account";
+    if (href === "/ask") {
+      return pathname === "/ask" || pathname === "/ask-policy";
+    }
+    if (href === "/pathways") {
+      return pathname === "/pathways" || pathname === "/care";
+    }
+    if (href === "/audit") {
+      return pathname === "/audit";
+    }
+    if (href === "/settings/privacy") {
+      return (
+        pathname === "/settings/privacy" ||
+        pathname === "/account/privacy" ||
+        pathname.startsWith("/settings")
+      );
     }
     return false;
   };
 
   const pageTitle =
-    pathname === "/protection"
+    pathname === "/home" || pathname === "/dashboard" || pathname === "/account"
+      ? "Home"
+      : pathname === "/protection"
       ? "My Protection"
+      : pathname.startsWith("/claims/")
+      ? "Claim Detail"
+      : pathname === "/claims"
+      ? "Claims Center"
+      : pathname === "/actions"
+      ? "Action Approvals"
+      : pathname === "/emergency"
+      ? "Emergency Guidance"
+      : pathname === "/products/compare"
+      ? "Insurance Product Comparison"
       : pathname === "/policies"
       ? "Policy Wallet"
       : pathname === "/completeness"
@@ -191,19 +169,34 @@ function PrivateShell({
       ? "Family Coverage"
       : pathname === "/documents" || pathname.startsWith("/documents/")
       ? "Documents"
-      : pathname === "/coverage"
+      : pathname === "/coverage-needs" || pathname === "/coverage"
       ? "Coverage Needs"
       : pathname === "/employer-benefits"
       ? "Employer Benefits"
-      : pathname === "/actions"
-      ? "Persetujuan Tindakan"
+      : pathname === "/ask" || pathname === "/ask-policy"
+      ? "Ask INSURRA"
+      : pathname === "/pathways" || pathname === "/care"
+      ? "Care Pathways"
       : pathname === "/audit"
       ? "Activity & Audit"
-      : pathname === "/settings/privacy"
+      : pathname === "/notifications"
+      ? "Notifications"
+      : pathname === "/profile"
+      ? "Profile"
+      : pathname.startsWith("/settings") || pathname === "/account/privacy"
       ? "Settings & Privacy"
       : pathname === "/onboarding"
       ? "User Context"
       : items.find((item) => item.href === pathname)?.label ?? "Dashboard";
+
+  const breadcrumbParent = pathname.startsWith("/claims/") || pathname === "/actions"
+    ? { href: "/claims", label: "Claims Center" }
+    : pathname === "/policies" || pathname === "/employer-benefits" || pathname === "/coverage-needs" || pathname === "/completeness" || pathname === "/family"
+    ? { href: "/protection", label: "My Protection" }
+    : pathname === "/products/compare"
+    ? { href: "/policies", label: "Policy Wallet" }
+    : null;
+  const workspaceHref = "/home";
 
   return (
     <div className="app-frame">
@@ -231,74 +224,33 @@ function PrivateShell({
             >
               <Icon size={19} />
               <span>{label}</span>
-              {href === "/actions" && pendingActionsCount > 0 && (
-                <span
-                  data-testid="nav-pending-actions-badge"
-                  aria-label={`${pendingActionsCount} tindakan menunggu`}
-                  className="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-extrabold"
-                >
-                  {pendingActionsCount}
-                </span>
-              )}
               {"soon" in rest && Boolean(rest.soon) && (
                 <span className="nav-dot" aria-label="Upcoming phase" />
               )}
             </Link>
           ))}
-          {!accountMode && (
-            <Link
-              href="/audit"
-              aria-current={pathname === "/audit" ? "page" : undefined}
-              className={cn(
-                "nav-item mobile-utility",
-                pathname === "/audit" && "active"
-              )}
-            >
-              <Activity size={18} />
-              Audit History
-            </Link>
-          )}
-          {!accountMode && (
-            <Link
-              href="/onboarding"
-              aria-current={pathname === "/onboarding" ? "page" : undefined}
-              className={cn(
-                "nav-item mobile-utility",
-                pathname === "/onboarding" && "active"
-              )}
-            >
-              <SlidersHorizontal size={18} />
-              Privacy & Consent
-            </Link>
-          )}
         </nav>
         <div className="sidebar-bottom">
-          <div className="help-card">
-            <Sparkles size={21} />
-            <strong>Understand your coverage.</strong>
-            <p>One place for insurance clarity, backed by document evidence.</p>
-            <Link href={accountMode ? "/settings/privacy" : "/onboarding"}>
-              Manage Consent <ArrowUpRight size={15} />
+          <div className="sidebar-bottom-nav" style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+            <Link
+              href="/notifications"
+              aria-current={pathname === "/notifications" ? "page" : undefined}
+              className={cn("nav-item", pathname === "/notifications" && "active")}
+              style={{ display: "flex", alignItems: "center", gap: 10 }}
+            >
+              <Bell size={19} />
+              <span>Notifications</span>
+            </Link>
+            <Link
+              href="/profile"
+              aria-current={pathname === "/profile" ? "page" : undefined}
+              className={cn("nav-item", pathname === "/profile" && "active")}
+              style={{ display: "flex", alignItems: "center", gap: 10 }}
+            >
+              <User size={19} />
+              <span>Profile</span>
             </Link>
           </div>
-          {!accountMode && (
-            <Link
-              className={cn("nav-item", pathname === "/audit" && "active")}
-              href="/audit"
-            >
-              <Activity size={18} />
-              Audit History
-            </Link>
-          )}
-          {!accountMode && (
-            <Link
-              className={cn("nav-item", pathname === "/onboarding" && "active")}
-              href="/onboarding"
-            >
-              <SlidersHorizontal size={18} />
-              Privacy & Consent
-            </Link>
-          )}
           <div className="sidebar-foot">
             <span className="status-dot" />{" "}
             {accountMode ? "AUTHENTICATED ACCOUNT" : "SYNTHETIC DEMO"}{" "}
@@ -308,53 +260,60 @@ function PrivateShell({
       </aside>
       <div className="app-column">
         <header className="topbar">
-          <div className="breadcrumb">
-            Workspace <span>/</span> <strong>{pageTitle}</strong>
-          </div>
-          <div className="topbar-right">
-            <span className="demo-badge">
-              {accountMode ? "AUTHENTICATED" : "DEMO SESSION"}
-            </span>
+          <nav className="breadcrumb" aria-label="Breadcrumb">
+            <Link href={workspaceHref}>Workspace</Link>
+            <span>/</span>
+            {breadcrumbParent && (
+              <>
+                <Link href={breadcrumbParent.href}>{breadcrumbParent.label}</Link>
+                <span>/</span>
+              </>
+            )}
+            <strong aria-current="page">{pageTitle}</strong>
+          </nav>
+          <div className="topbar-right" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {/* Country Selector from Active Context */}
+            <div className="figma-topbar-country" title={`Active Country: ${residenceCountry}`}>
+              <span style={{ fontSize: 15 }}>{countryFlag}</span>
+              <span>{residenceCountry}</span>
+              <ChevronDown size={14} color="#64748b" />
+            </div>
 
-            {accountMode ? (
-              <Link
-                href="/onboarding?mode=edit"
-                className="topbar-profile-btn"
-                title="My Profile"
+            {/* Emergency SOS Quick Button */}
+            <Link
+              href="/emergency"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-full shadow-sm transition-all"
+              title="Emergency Guidance & Crisis Lines"
+            >
+              <PhoneCall size={13} />
+              <span>Emergency SOS</span>
+            </Link>
+
+            {/* Notification Bell */}
+            <NotificationBell />
+
+            {/* User Profile Avatar */}
+            <Link href="/profile" title="Profile" aria-label="Profile">
+              <div
                 style={{
-                  display: "inline-flex",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  border: "1.5px solid #0ea58a",
+                  background: "#eaf8f4",
+                  color: "#08876f",
+                  display: "flex",
                   alignItems: "center",
-                  gap: 8,
-                  textDecoration: "none",
-                  padding: "4px 10px 4px 4px",
-                  borderRadius: 999,
-                  background: "#f0f6f8",
-                  border: "1px solid #dce7eb",
-                  transition: "all 0.15s ease",
+                  justifyContent: "center",
+                  fontWeight: 800,
+                  fontSize: 14,
                 }}
               >
-                <div
-                  className="avatar small"
-                  style={{ margin: 0 }}
-                  aria-label={account?.display_name ?? "User"}
-                >
-                  {(account?.display_name ?? "U").slice(0, 1)}
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 750, color: "#19354b" }}>
-                  My Profile
-                </span>
-              </Link>
-            ) : (
-              <div
-                className="avatar small"
-                title={data?.profile.display_name ?? "User"}
-                aria-label={data?.profile.display_name ?? "User"}
-              >
-                {(data?.profile.display_name ?? "U").slice(0, 1)}
+                {(account?.display_name ?? data?.profile.display_name ?? "U").slice(0, 1).toUpperCase()}
               </div>
-            )}
+            </Link>
 
-            {accountMode ? (
+            {accountMode && (
               <button
                 type="button"
                 onClick={async () => {
@@ -367,28 +326,10 @@ function PrivateShell({
                 <LogOut size={14} />
                 <span>Log out</span>
               </button>
-            ) : (
-              <div className="demo-topbar-actions">
-                <Link href="/" className="persona-switch">
-                  <ArrowLeftRight size={14} />
-                  <span>Switch Persona</span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    clearSession();
-                    router.push("/");
-                  }}
-                  className="topbar-logout-btn"
-                  title="Exit demo session"
-                >
-                  <LogOut size={14} />
-                  <span>Exit Demo</span>
-                </button>
-              </div>
             )}
           </div>
         </header>
+        {demoMode && <DemoBanner />}
         <main id="main-content" className="main-content">
           {!accountMode && error && (
             <div role="alert" className="alert error">
@@ -400,7 +341,7 @@ function PrivateShell({
               Connecting session...
             </div>
           )}
-          {children}
+          {needsSignIn ? null : needsSession ? <SessionRequired /> : children}
         </main>
         <footer className="page-footer">
           <span>

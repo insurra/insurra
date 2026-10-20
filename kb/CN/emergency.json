@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.5",
+  "version": "0.2.0",
+  "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+  "checked_at": "2026-10-19",
+  "verification_status": "VERIFIED",
+  "evidence_class": "MANUALLY_CURATED",
+  "provenance_note": "Hand-written by a developer from a cited public page. Not retrieved or machine-verified.",
+  "data": {
+    "label": "Kontak darurat resmi untuk Tiongkok daratan.",
+    "phone_number": "120",
+    "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+    "checked_at": "2026-10-19",
+    "verification_status": "VERIFIED",
+    "evidence_class": "MANUALLY_CURATED",
+    "contacts": [
+      {
+        "service_code": "medical",
+        "label": "Ambulans / 急救",
+        "phone_number": "120",
+        "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+        "checked_at": "2026-10-19",
+        "verification_status": "VERIFIED",
+        "evidence_class": "MANUALLY_CURATED",
+        "jurisdiction": "CN mainland"
+      },
+      {
+        "service_code": "police",
+        "label": "Polisi / 报警",
+        "phone_number": "110",
+        "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+        "checked_at": "2026-10-19",
+        "verification_status": "VERIFIED",
+        "evidence_class": "MANUALLY_CURATED",
+        "jurisdiction": "CN mainland"
+      },
+      {
+        "service_code": "fire",
+        "label": "Pemadam kebakaran / 火警",
+        "phone_number": "119",
+        "source_url": "https://bjca.miit.gov.cn/zwgk/tzgg/art/2022/art_8d4eb93ee3424f30826c97ee400e8937.html",
+        "checked_at": "2026-10-19",
+        "verification_status": "VERIFIED",
+        "evidence_class": "MANUALLY_CURATED",
+        "jurisdiction": "CN mainland"
+      }
+    ]
+  }
+}

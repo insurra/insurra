@@ -24,6 +24,13 @@ from app.tests.test_account_workspace import account_headers, grant
 from app.tests.workspace_fixtures import POLICY_TEXT, reviewed_triage, workspace
 
 
+@pytest.fixture
+def kb_countries() -> str:
+    # Settings override scoped to this module: it uses the inactive legacy kb/AU folder as a
+    # fixture-only configuration. The default app keeps AU disabled (see conftest).
+    return "AU,CN,ID"
+
+
 class GatewayFixture:
     def __init__(self, doc, quote=None, points=None):
         self.doc = doc
