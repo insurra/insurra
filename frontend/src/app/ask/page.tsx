@@ -245,6 +245,21 @@ const SINTA_INITIAL_TURN: Turn = {
   },
 };
 
+function renderInline(text: string) {
+  return text.split("\n").map((line, li) => (
+    <span key={li}>
+      {li > 0 && <br />}
+      {line.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+        part.startsWith("**") && part.endsWith("**") && part.length > 4 ? (
+          <strong key={i}>{part.slice(2, -2)}</strong>
+        ) : (
+          part
+        ),
+      )}
+    </span>
+  ));
+}
+
 export default function AskPage() {
   const router = useRouter();
   const workspace = useWorkspace();
@@ -498,6 +513,7 @@ export default function AskPage() {
         if (event.event === "error") throw new Error(event.data.message);
       }
     } catch (cause) {
+      if (abort.signal.aborted && controller.current !== abort) return;
       setTurns(base.slice(0, -1));
       setStatus("");
       setError(
@@ -508,9 +524,24 @@ export default function AskPage() {
           : "Could not retrieve answer. Please try again."
       );
     } finally {
-      setPending(false);
-      controller.current = null;
+      if (controller.current === abort) {
+        setPending(false);
+        controller.current = null;
+      }
     }
+  }
+
+  function cancelRequest() {
+    controller.current?.abort();
+    controller.current = null;
+    setPending(false);
+    setStatus("");
+    setTurns((current) =>
+      current.length && current[current.length - 1].answer === null
+        ? current.slice(0, -1)
+        : current,
+    );
+    setError("Request cancelled; no answer recorded.");
   }
 
   async function reset() {
@@ -753,14 +784,7 @@ export default function AskPage() {
                         turn.answer.answer_markdown
                           .split("\n\n")
                           .map((para, pIdx) => (
-                            <p
-                              key={pIdx}
-                              dangerouslySetInnerHTML={{
-                                __html: para
-                                  .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                                  .replace(/\n/g, "<br/>"),
-                              }}
-                            />
+                            <p key={pIdx}>{renderInline(para)}</p>
                           ))
                       ) : (
                         turn.answer.answer_points?.map((pt, pIdx) => (
@@ -1062,15 +1086,17 @@ export default function AskPage() {
 
               {pending ? (
                 <button
+                  key="cancel-request"
                   type="button"
                   className="ask-send-btn px-2 text-xs"
                   aria-label="Batalkan"
-                  onClick={() => controller.current?.abort()}
+                  onClick={cancelRequest}
                 >
                   Batalkan
                 </button>
               ) : (
                 <button
+                  key="send-question"
                   type="submit"
                   className="ask-send-btn"
                   disabled={!hasPolicies || !question.trim() || pending || !triageAvailable}

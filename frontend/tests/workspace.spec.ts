@@ -76,7 +76,7 @@ test("SC-05 document deletion clears retained pages and Q&A requires source evid
   await expect(page.getByText("No documents uploaded yet")).toBeVisible();
   await expect(page.getByRole("button", { name: "Upload First Document" })).toBeVisible();
   await page.goto("/ask");
-  await expect(page.getByRole("textbox", { name: "Pertanyaan Anda" })).toBeDisabled();
+  await expect(page.getByRole("textbox", { name: "Your question" })).toBeDisabled();
   await expect(page.getByRole("link", { name: "Upload document", exact: true })).toHaveAttribute(
     "href",
     "/documents",
@@ -313,7 +313,7 @@ test("SC-06 unavailable triage blocks Q&A and revoked AI consent stays blocked",
   await page.goto("/ask");
   await expect(page.getByRole("heading", { name: "Ask INSSURA", exact: true })).toBeVisible();
   await expect(page.getByText(/Pemeriksaan tanda bahaya belum tersedia/)).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "Pertanyaan Anda" })).toBeDisabled();
+  await expect(page.getByRole("textbox", { name: "Your question" })).toBeDisabled();
   expect(
     (
       await page.request.post(`${apiBase}/api/v1/account/consents`, {
@@ -367,7 +367,7 @@ test("SC-06 mocked citation opens the owned source page and original document", 
   });
   await page.goto("/ask");
   await page.getByRole("combobox", { name: "Filter policy scope" }).selectOption(fixture.coverage_id);
-  await page.getByRole("textbox", { name: "Pertanyaan Anda" }).fill("Is dental care covered?");
+  await page.getByRole("textbox", { name: "Your question" }).fill("Is dental care covered?");
   const start = Date.now();
   const send = page.getByRole("button", { name: "Kirim", exact: true });
   if (testInfo.project.name === "mobile") await send.press("Enter");
@@ -409,7 +409,7 @@ test("SC-06 cancellation and retry keep incomplete answers out of history", asyn
       .catch(() => undefined);
   });
   await page.goto("/ask");
-  await page.getByRole("textbox", { name: "Pertanyaan Anda" }).fill("What is not in the document?");
+  await page.getByRole("textbox", { name: "Your question" }).fill("What is not in the document?");
   const send = page.getByRole("button", { name: "Kirim", exact: true });
   if (testInfo.project.name === "mobile") await send.press("Enter");
   else await send.click();

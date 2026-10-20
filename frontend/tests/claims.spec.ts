@@ -43,7 +43,7 @@ test("demo claim cases remain owner-scoped and emergency guidance uses CN", asyn
     .getByPlaceholder(/Describe your symptoms/)
     .fill("我今天胸痛很严重");
   await page.getByRole("button", { name: "Check Safety" }).click();
-  await expect(page.getByText("Tanda bahaya terdeteksi")).toBeVisible();
+  await expect(page.getByText("Critical red flag detected")).toBeVisible();
 });
 
 test("claims without a session offers Try Demo or Sign in and never creates a session", async ({
