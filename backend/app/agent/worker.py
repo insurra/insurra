@@ -137,12 +137,25 @@ def _handle_insights_and_schedules(db: Session, owner: Owner, event: WfAgentEven
             followup.sync_policy_reminders(db, owner)
 
 
+def _handle_reminder_due(db: Session, owner: Owner, event: WfAgentEventRow) -> None:
+    """Flow A consumer: when a policy expiry reminder is due, prepare the renewal action and refresh insights."""
+    if purpose_granted(db, owner, "process_documents"):
+        followup.prepare_proactive_renewal_actions(db, owner)
+    _handle_insights_and_schedules(db, owner, event)
+
+
 def _register_builtin_consumers() -> None:
     register_consumer(
         "consent.revoked",
         _handle_consent_revoked,
         name="cancel_on_consent_revoked",
         required_purposes=(),
+    )
+    register_consumer(
+        "reminder.due",
+        _handle_reminder_due,
+        name="prepare_proactive_renewal_on_reminder",
+        required_purposes=("process_documents",),
     )
     for ev in (
         "profile.context.changed",
@@ -300,6 +313,14 @@ def _process_due_reminders(factory: sessionmaker, now: datetime, limit: int) -> 
                 dedupe_key=f"reminder.due:{rem.id}:{rem.due_date}",
                 entity_type="reminder",
             )
+            if rem.kind == "POLICY_EXPIRY":
+                followup.prepare_proactive_renewal_actions(db, owner, today=now.date())
+                try:
+                    from app.agent.insights import refresh_owner_insights
+
+                    refresh_owner_insights(db, owner, today=now.date())
+                except ImportError:
+                    pass
             db.commit()
             fired += 1
     return fired

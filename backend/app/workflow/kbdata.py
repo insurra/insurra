@@ -59,6 +59,10 @@ def companies(country_code: str) -> list[dict]:
     return [p for p in raw(country_code, "companies") if isinstance(p, dict)]
 
 
+def consumer_disputes(country_code: str) -> list[dict]:
+    return [p for p in raw(country_code, "consumer_disputes") if isinstance(p, dict)]
+
+
 def product(country_code: str, product_id: str | None) -> dict | None:
     if not product_id:
         return None

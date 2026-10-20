@@ -61,9 +61,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.session_factory = session_factory(engine)
     app.state.kb_loader = CountryKBLoader(settings.kb_root, settings.active_kb_country_codes)
+    cors_origins = [settings.frontend_origin, settings.frontend_url]
+    if settings.environment == "development":
+        for o in list(cors_origins):
+            if "localhost" in o:
+                cors_origins.append(o.replace("localhost", "127.0.0.1"))
+            elif "127.0.0.1" in o:
+                cors_origins.append(o.replace("127.0.0.1", "localhost"))
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=list(dict.fromkeys([settings.frontend_origin, settings.frontend_url])),
+        allow_origins=list(dict.fromkeys([o for o in cors_origins if o])),
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Authorization", "Content-Type", "X-Demo-Session"],
         expose_headers=["X-Request-ID", "X-Total-Count"],

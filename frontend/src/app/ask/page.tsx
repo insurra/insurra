@@ -333,7 +333,23 @@ export default function AskPage() {
           ))}
         </select>
       </label>
-      <section className="ask-suggestions"><h2>💡 Coba tanyakan…</h2><div className="vn-chips" aria-label="Contoh pertanyaan">
+      <section className="ask-suggestions">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+          <h2 className="m-0">💡 Coba tanyakan…</h2>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span className="text-slate-500 font-medium mr-1">Label bukti:</span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+              ✓ Dari dokumen
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200 font-semibold">
+              ≈ Perkiraan
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
+              ? Perlu konfirmasi
+            </span>
+          </div>
+        </div>
+        <div className="vn-chips" aria-label="Contoh pertanyaan">
         {s.question_examples?.map((q) => (
           <button
             key={q}
@@ -353,25 +369,56 @@ export default function AskPage() {
         {turns.map((t, index) => (
           <article className="ask-turn" key={index}>
             <div className="ask-user-message">{t.question}</div>
-            {t.answer && <div className="ask-answer-heading"><Image src="/mascot-logo.png" alt="" width={30} height={30} /><strong>Jawaban INSURRA</strong></div>}
+            {t.answer && (
+              <div className="ask-answer-heading">
+                <Image src="/mascot-logo.png" alt="" width={30} height={30} />
+                <strong>Jawaban INSURRA</strong>
+                <Link
+                  href="/protection"
+                  className="ml-auto text-xs text-teal-700 hover:text-teal-900 font-medium inline-flex items-center gap-1"
+                  title="Lihat temuan lengkap di My Protection"
+                >
+                  <ShieldCheck size={13} /> My Protection <ArrowRight size={11} />
+                </Link>
+              </div>
+            )}
             <div className="ask-answer-content">
             {t.answer?.intent && (
-              <small data-testid="ask-intent">Intent: {t.answer.intent}</small>
+              <small
+                data-testid="ask-intent"
+                className="inline-flex items-center self-start px-2.5 py-0.5 rounded-md bg-slate-200/70 text-slate-700 text-[11px] font-semibold"
+              >
+                Intent: {t.answer.intent}
+              </small>
             )}
             {t.answer?.answer_points.map((point, n) => (
               <section key={n}>
-                <span className="vn-badge">{labels[point.label]}</span>
+                <span
+                  className={`vn-badge ${
+                    point.label === "FROM_DOCUMENT"
+                      ? "badge-doc"
+                      : point.label === "ESTIMATE"
+                      ? "badge-estimate"
+                      : "badge-confirm"
+                  }`}
+                >
+                  {labels[point.label]}
+                </span>
                 <p className="vn-message">{point.text}</p>
                 {point.citations.map((c, i) => (
                   <div key={i} className="vn-card" data-testid="answer-citation">
                     {c.explanation_label && (
-                      <small data-testid="citation-explanation-note">
+                      <small data-testid="citation-explanation-note" className="text-xs font-semibold text-teal-800">
                         {c.explanation_label}
                       </small>
                     )}
                     <blockquote lang={c.language ?? ""}>{c.quote}</blockquote>
                     <div className="vn-actions">
-                      <button onClick={() => setSource(c)}>
+                      <button
+                        onClick={() => setSource(c)}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <FileText size={13} />
                         {c.document_name ?? "Document"} · p. {c.page}
                         {c.language ? ` (${c.language})` : ""}
                       </button>
@@ -418,8 +465,10 @@ export default function AskPage() {
             ))}
             {t.answer?.numeric_facts?.map((f) => (
               <div key={`${f.coverage_id}:${f.category}`} className="vn-card">
-                <strong>{f.policy_label}</strong>
-                <span className="vn-badge">{labels[f.label]}</span>
+                <div className="flex items-center justify-between">
+                  <strong>{f.policy_label}</strong>
+                  <span className="vn-badge">{labels[f.label]}</span>
+                </div>
                 <div className="vn-numbers">
                   <div>
                     Limit{" "}
@@ -440,7 +489,18 @@ export default function AskPage() {
                     </strong>
                   </div>
                 </div>
-                <small>{f.explanation} Original currency, no automated conversion.</small>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2 pt-2 border-t border-slate-100">
+                  <small>{f.explanation} Original currency, no automated conversion.</small>
+                  <Link
+                    href="/protection"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-800 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2.5 py-1 rounded-md transition-colors shrink-0"
+                    title="Buka temuan di My Protection"
+                  >
+                    <ShieldCheck size={13} />
+                    Temuan di My Protection
+                    <ArrowRight size={12} />
+                  </Link>
+                </div>
               </div>
             ))}
             {t.answer?.disposition === "no_match" && (
@@ -541,9 +601,51 @@ export default function AskPage() {
           : "Konteks percakapan hanya ada dalam sesi ini; teks pertanyaan tidak disimpan di server."}
       </p>
       </div><aside className="ask-sidebar" aria-label="Konteks dan bukti">
-        <section className="ask-side-panel"><h2><Layers3 size={21} /> Konteks & bukti</h2><p>Informasi yang dapat dipakai saat menjawab pertanyaanmu.</p><div className="ask-side-inner"><div className="ask-side-heading"><strong>Polis tercatat ({s.coverages?.length ?? 0})</strong><Link href="/policies">Lihat semua</Link></div>{s.coverages?.length ? s.coverages.map((coverage) => <div className="ask-policy-item" key={coverage.id}><span><ShieldCheck size={19} /></span><div><strong>{coverage.provider || coverage.kind}</strong><p>{coverage.kind} · {coverage.country_label || coverage.country_code}</p><small>{coverage.needs_verification ? "Perlu verifikasi" : coverage.active ? "Aktif" : "Status perlu dicek"}</small></div></div>) : <p>Belum ada polis yang tercatat.</p>}</div></section>
+        <section className="ask-side-panel">
+          <h2><Layers3 size={21} /> Konteks & bukti</h2>
+          <p>Informasi yang dapat dipakai saat menjawab pertanyaanmu.</p>
+          <div className="ask-side-inner">
+            <div className="ask-side-heading">
+              <strong>Polis tercatat ({s.coverages?.length ?? 0})</strong>
+              <Link href="/protection">Lihat My Protection</Link>
+            </div>
+            {s.coverages?.length ? (
+              s.coverages.map((coverage) => (
+                <Link
+                  href="/protection"
+                  className="ask-policy-item hover:opacity-85 transition-opacity"
+                  key={coverage.id}
+                  title="Buka temuan polis di My Protection"
+                >
+                  <span><ShieldCheck size={19} /></span>
+                  <div>
+                    <strong>{coverage.provider || coverage.kind}</strong>
+                    <p>{coverage.kind} · {coverage.country_label || coverage.country_code}</p>
+                    <small>{coverage.needs_verification ? "Perlu verifikasi" : coverage.active ? "Aktif" : "Status perlu dicek"}</small>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <p>Belum ada polis yang tercatat.</p>
+            )}
+          </div>
+        </section>
         <section className="ask-side-panel"><h2><FileText size={20} /> Sumber jawaban</h2><p>Kutipan dan halaman hanya muncul jika jawaban yang terverifikasi tersedia.</p><div className="ask-side-inner">{turns.flatMap((turn) => turn.answer?.answer_points.flatMap((point) => point.citations) ?? []).slice(-5).map((citation, index) => <button type="button" className="ask-source-item" key={`${citation.document_name}-${citation.page}-${index}`} onClick={() => setSource(citation)}><FileText size={18} /><span>{citation.document_name || "Dokumen"} · hlm. {citation.page}</span><ArrowRight size={15} /></button>)}{!turns.some((turn) => turn.answer?.answer_points.some((point) => point.citations.length)) && <p>Belum ada sumber untuk ditampilkan.</p>}</div></section>
-        <section className="ask-side-panel"><h2><BookOpen size={20} /> Langkah berikutnya</h2><Link className="ask-next-link" href="/documents"><FileText size={18} /> Tinjau dokumen <ArrowRight size={15} /></Link><Link className="ask-next-link" href="/coverage-needs"><ShieldCheck size={18} /> Analisis perlindungan <ArrowRight size={15} /></Link><Link className="ask-next-link" href="/pathways"><MessageCircle size={18} /> Care pathways <ArrowRight size={15} /></Link></section>
+        <section className="ask-side-panel">
+          <h2><BookOpen size={20} /> Langkah berikutnya</h2>
+          <Link className="ask-next-link" href="/protection">
+            <ShieldCheck size={18} /> Temuan My Protection <ArrowRight size={15} />
+          </Link>
+          <Link className="ask-next-link" href="/documents">
+            <FileText size={18} /> Tinjau dokumen <ArrowRight size={15} />
+          </Link>
+          <Link className="ask-next-link" href="/coverage-needs">
+            <ShieldCheck size={18} /> Analisis perlindungan <ArrowRight size={15} />
+          </Link>
+          <Link className="ask-next-link" href="/pathways">
+            <MessageCircle size={18} /> Care pathways <ArrowRight size={15} />
+          </Link>
+        </section>
         <section className="ask-safety-note"><h2><AlertTriangle size={20} /> Catatan keselamatan</h2><p>Informasi polis bukan nasihat medis. Jika memerlukan pertolongan segera, hubungi layanan darurat setempat.</p><Link href="/emergency">Lihat panduan darurat <ArrowRight size={15} /></Link></section>
         <EmergencyNotice info={s.emergency} />
       </aside></div>

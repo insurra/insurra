@@ -23,19 +23,21 @@ type AuthContextValue = {
   error: string | null;
   googleLoginUrl: string;
   acceptToken: (token: string) => Promise<boolean>;
+  loginWithSupabase: (params: { access_token?: string; code?: string }) => Promise<AuthResult>;
   loginWithPassword: (email: string, password: string) => Promise<AuthResult>;
   registerWithPassword: (
     email: string,
     password: string,
     passwordConfirmation: string,
   ) => Promise<AuthResult>;
-  verifyEmail: (token: string) => Promise<AuthResult>;
+  verifyEmail: (token: string, email?: string) => Promise<AuthResult>;
   resendVerification: (email: string) => Promise<AuthResult>;
   forgotPassword: (email: string) => Promise<AuthResult>;
   resetPassword: (
     token: string,
     password: string,
     passwordConfirmation: string,
+    email?: string,
   ) => Promise<AuthResult>;
   submitConsents: (decision: {
     process_documents: boolean;
@@ -158,6 +160,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const loginWithSupabase = useCallback(
+    async (params: { access_token?: string; code?: string }): Promise<AuthResult> => {
+      setError(null);
+      try {
+        const session = await api.request("post", "/api/v1/account/auth/supabase", {
+          body: {
+            access_token: params.access_token,
+            code: params.code,
+          },
+        });
+        sessionStorage.setItem(storageKey, session.access_token);
+        setAccount(session.account);
+        setToken(session.access_token);
+        return { success: true };
+      } catch (cause) {
+        if (cause instanceof ApiClientError) {
+          return { success: false, error: cause.error.message, code: cause.error.code };
+        }
+        return {
+          success: false,
+          error: cause instanceof Error ? cause.message : "Failed to authenticate with Supabase.",
+        };
+      }
+    },
+    [],
+  );
+
   const registerWithPassword = useCallback(
     async (
       email: string,
@@ -192,22 +221,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const verifyEmail = useCallback(async (verifyToken: string): Promise<AuthResult> => {
-    try {
-      const result = await api.request("post", "/api/v1/account/auth/verify-email", {
-        body: { token: verifyToken },
-      });
-      return { success: true, message: result.message };
-    } catch (cause) {
-      if (cause instanceof ApiClientError) {
-        return { success: false, error: cause.error.message, code: cause.error.code };
+  const verifyEmail = useCallback(
+    async (verifyToken: string, email?: string): Promise<AuthResult> => {
+      try {
+        const result = await api.request("post", "/api/v1/account/auth/verify-email", {
+          body: { token: verifyToken, email: email || undefined },
+        });
+        return { success: true, message: result.message };
+      } catch (cause) {
+        if (cause instanceof ApiClientError) {
+          return { success: false, error: cause.error.message, code: cause.error.code };
+        }
+        return {
+          success: false,
+          error: cause instanceof Error ? cause.message : "Failed to verify email.",
+        };
       }
-      return {
-        success: false,
-        error: cause instanceof Error ? cause.message : "Failed to verify email.",
-      };
-    }
-  }, []);
+    },
+    [],
+  );
 
   const resendVerification = useCallback(async (email: string): Promise<AuthResult> => {
     try {
@@ -256,6 +288,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       resetToken: string,
       password: string,
       passwordConfirmation: string,
+      email?: string,
     ): Promise<AuthResult> => {
       try {
         const result = await api.request("post", "/api/v1/account/auth/reset-password", {
@@ -263,6 +296,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             token: resetToken,
             password,
             password_confirmation: passwordConfirmation,
+            email: email || undefined,
           },
         });
         return { success: true, message: result.message };
@@ -325,6 +359,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error,
         googleLoginUrl: `${config.apiBaseUrl.replace(/\/$/, "")}/auth/google`,
         acceptToken,
+        loginWithSupabase,
         loginWithPassword,
         registerWithPassword,
         verifyEmail,
