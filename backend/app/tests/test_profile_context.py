@@ -185,3 +185,40 @@ def test_context_requires_actor_and_rejects_ambiguity(app, client, demo):
     _, demo_headers = demo()
     both = {**demo_headers, **account_headers(app, "both")}
     assert client.get("/api/v1/context", headers=both).status_code == 422
+
+
+def test_account_profile_update_persists_display_name_and_merges_fields(app, client):
+    headers = account_headers(app, "persists")
+    initial_payload = {
+        **profile_payload(),
+        "display_name": "First Name",
+        "budget_range": "$50 - $150 / month",
+        "nationality": "ID",
+        "goals": ["FIND_CARE"],
+    }
+    res = client.put(ACCOUNT, headers=headers, json=initial_payload)
+    assert res.status_code == 200
+
+    me = client.get("/api/v1/auth/me", headers=headers).json()
+    assert me["display_name"] == "First Name"
+
+    # Update profile with new name and new city, omitting budget_range
+    update_payload = {
+        **profile_payload(),
+        "display_name": "Updated Name",
+        "city": "Guangzhou",
+        "goals": ["FIND_CARE", "PREPARE_CLAIM"],
+    }
+    res2 = client.put(ACCOUNT, headers=headers, json=update_payload)
+    assert res2.status_code == 200
+
+    # Ensure AccountRow.display_name was updated in database
+    me2 = client.get("/api/v1/auth/me", headers=headers).json()
+    assert me2["display_name"] == "Updated Name"
+
+    # Ensure profile payload updated display_name and city, and preserved budget_range
+    profile_data = client.get(ACCOUNT, headers=headers).json()["profile"]
+    assert profile_data["display_name"] == "Updated Name"
+    assert profile_data["city"] == "Guangzhou"
+    assert profile_data["budget_range"] == "$50 - $150 / month"
+    assert profile_data["goals"] == ["FIND_CARE", "PREPARE_CLAIM"]

@@ -17,6 +17,7 @@ import {
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useActor } from "@/lib/actor";
+import { useAuth } from "@/lib/auth";
 import { useUserContext } from "@/lib/user-context";
 import "./profile.css";
 
@@ -54,6 +55,7 @@ const BUDGET_OPTIONS = [
 export default function ProfilePage() {
   const { mode, headers, loading: actorLoading } = useActor();
   const { updateContext } = useUserContext();
+  const { refreshAccount } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -112,6 +114,7 @@ export default function ProfilePage() {
 
         const me = await api.request("get", "/api/v1/auth/me", { headers });
         if (me?.email) setEmail(me.email);
+        if (!p.display_name && me?.display_name) setDisplayName(me.display_name);
       } else if (mode === "demo") {
         const p = await api.request("get", "/api/v1/profile", { headers });
         if (p.display_name) setDisplayName(p.display_name);
@@ -206,7 +209,7 @@ export default function ProfilePage() {
       situation === "STUDENT" ? "STUDENT" : situation === "EMPLOYEE" ? "EMPLOYEE" : "OTHER";
 
     const residenceContext: ResidenceContext =
-      residenceCountry === nationality ? "DOMESTIC" : "ABROAD";
+      residenceCountry === "ID" ? "DOMESTIC" : "ABROAD";
 
     const currency: "CNY" | "IDR" = residenceCountry === "CN" ? "CNY" : "IDR";
 
@@ -248,12 +251,19 @@ export default function ProfilePage() {
       setOriginalCountry(residenceCountry);
       setSuccess("Profile saved successfully.");
 
-      // Sync active context so topbar reflects changes
-      updateContext({
-        countryCode: residenceCountry,
-        residenceCity: city.trim() || (residenceCountry === "CN" ? "Shenzhen" : "Jakarta"),
-        userSegment: situation === "STUDENT" ? "student" : situation === "EMPLOYEE" ? "employee" : "other",
-      });
+      // Sync active context so topbar reflects changes without background re-sync
+      updateContext(
+        {
+          countryCode: residenceCountry,
+          residenceCity: city.trim() || (residenceCountry === "CN" ? "Shenzhen" : "Jakarta"),
+          userSegment: situation === "STUDENT" ? "student" : situation === "EMPLOYEE" ? "employee" : "other",
+        },
+        { sync: false }
+      );
+
+      if (mode === "account") {
+        await refreshAccount();
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Failed to update profile.");
     } finally {
