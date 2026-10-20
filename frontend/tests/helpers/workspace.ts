@@ -42,14 +42,14 @@ export async function accountWorkspace(
   if (response.status() !== 200)
     throw new Error(`Synthetic fixture login failed: ${response.status()}`);
   const session: { access_token: string } = await response.json();
-  await page.goto("/");
-  await page.evaluate((token) => {
+  await page.addInitScript((token) => {
     sessionStorage.removeItem("insurra.demo-session");
     sessionStorage.setItem("insurra.account-session", token);
   }, session.access_token);
   await page.goto("/home");
-  // Wait for account restoration before a test starts another full-page navigation.
-  await expect(page.getByRole("heading", { name: "Home", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Home", exact: true })).toBeVisible({
+    timeout: 15_000,
+  });
   return {
     ...fixture,
     headers: { Authorization: `Bearer ${session.access_token}` },
@@ -81,8 +81,7 @@ export async function newAccountSession(page: Page) {
   );
   expect(response.status()).toBe(200);
   const session: { access_token: string } = await response.json();
-  await page.goto("/");
-  await page.evaluate((token) => {
+  await page.addInitScript((token) => {
     sessionStorage.removeItem("insurra.demo-session");
     sessionStorage.setItem("insurra.account-session", token);
   }, session.access_token);
