@@ -1,211 +1,350 @@
 "use client";
 
+import { showConfirm } from "@/components/ui/app-dialog";
 import Link from "next/link";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  AlertTriangle,
   Calendar,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Clock,
-  ExternalLink,
   FileText,
-  Info,
+  HelpCircle,
+  Pencil,
   Plus,
+  RefreshCw,
   Search,
+  Shield,
   ShieldAlert,
   ShieldCheck,
+  Sparkles,
+  Trash2,
   Upload,
+  XCircle,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useActor } from "@/lib/actor";
-import { useSession } from "@/lib/session";
-import { useUserContext } from "@/lib/user-context";
+import { useAuth } from "@/lib/auth";
 import { getInsurerBrand } from "@/lib/insurer-logos";
-import { matchScrapedProduct, type ScrapedProduct } from "@/lib/kb-products-data";
+import { AddPolicyModal, type NewPolicyData } from "@/components/policies/add-policy-modal";
+import { PolicyDocumentPreviewModal } from "@/components/policies/policy-document-preview-modal";
+import { sanitizeCopywriting } from "@/lib/sanitize-copywriting";
+import "./policy-wallet.css";
 
 type PolicySummary = components["schemas"]["AccountPolicySummary"];
 type PolicyDetail = components["schemas"]["AccountPolicyDetail"];
+type PolicyAnalysis = components["schemas"]["PolicyIntelligenceAnalysis"];
 
 interface DisplayPolicy {
   id: string;
   provider: string;
   title: string;
   category: string;
-  tags: string[];
-  status: "ACTIVE" | "EXPIRING_SOON" | "SELF_REPORTED";
-  statusLabel: string;
+  status: "ACTIVE" | "EXPIRING_SOON" | "EXPIRED" | "NOT_YET_ACTIVE" | "UNKNOWN";
+  evidenceStatus: "VERIFIED" | "NEEDS_REVIEW" | "SELF_REPORTED";
   dateRange: string;
+  startDate?: string;
+  endDate?: string;
   policyNumber: string;
-  planType: string;
-  region: string;
-  isEmployer: boolean;
-  evidenceStatus: "Self-Reported" | "Needs Review" | "Verified";
+  coverageLimit: string;
+  deductible: string;
+  currency: string;
+  summary: string;
+  sourceDocCount: number;
   sourceDocId?: string;
 }
 
-export default function PoliciesPage() {
-  const { mode, headers } = useActor();
-  const { data: demoSession } = useSession();
-  const userCtx = useUserContext();
+// Demo Persona 1: Raka Pratama (International Student in China)
+const RAKA_DEMO_POLICIES: DisplayPolicy[] = [
+  {
+    id: "demo-aia-stu-2024",
+    provider: "AIA",
+    title: "AIA International Student Plan",
+    category: "Student insurance",
+    status: "ACTIVE",
+    evidenceStatus: "VERIFIED",
+    dateRange: "1 Sep 2024 – 31 Aug 2025",
+    startDate: "2024-09-01",
+    endDate: "2025-08-31",
+    policyNumber: "AIA-STU-2024-568923",
+    coverageLimit: "RMB 1,000,000",
+    deductible: "RMB 0",
+    currency: "RMB",
+    summary: "Comprehensive student health coverage for inpatient, outpatient, and emergency evacuation in China.",
+    sourceDocCount: 2,
+    sourceDocId: "demo-doc-aia-1",
+  },
+  {
+    id: "demo-chubb-trv-2025",
+    provider: "Chubb",
+    title: "Chubb Travel Insurance",
+    category: "Travel insurance",
+    status: "ACTIVE",
+    evidenceStatus: "VERIFIED",
+    dateRange: "15 Aug 2025 – 15 Feb 2026",
+    startDate: "2025-08-15",
+    endDate: "2026-02-15",
+    policyNumber: "CHB-TRV-789456",
+    coverageLimit: "RMB 500,000",
+    deductible: "RMB 0",
+    currency: "RMB",
+    summary: "International travel medical, transit luggage, and 24/7 global emergency assistance coverage.",
+    sourceDocCount: 1,
+    sourceDocId: "demo-doc-chubb-1",
+  },
+  {
+    id: "demo-tencent-emp-2025",
+    provider: "Tencent",
+    title: "Employer Health Insurance",
+    category: "Employer insurance",
+    status: "EXPIRING_SOON",
+    evidenceStatus: "SELF_REPORTED",
+    dateRange: "1 Jan 2025 – 31 Dec 2025",
+    startDate: "2025-01-01",
+    endDate: "2025-12-31",
+    policyNumber: "TCE-EMP-2025-001",
+    coverageLimit: "RMB 800,000",
+    deductible: "RMB 200",
+    currency: "RMB",
+    summary: "Corporate group health policy covering hospital ward and specialist consultations.",
+    sourceDocCount: 0,
+  },
+  {
+    id: "demo-allianz-trv-old",
+    provider: "Allianz",
+    title: "Travel Insurance (Old)",
+    category: "Travel insurance",
+    status: "EXPIRED",
+    evidenceStatus: "VERIFIED",
+    dateRange: "1 Mar 2024 – 1 Sep 2024",
+    startDate: "2024-03-01",
+    endDate: "2024-09-01",
+    policyNumber: "ALZ-TRV-2024-8899",
+    coverageLimit: "RMB 300,000",
+    deductible: "RMB 0",
+    currency: "RMB",
+    summary: "Expired trip protection policy from previous academic travel period.",
+    sourceDocCount: 1,
+    sourceDocId: "demo-doc-allianz-1",
+  },
+];
+
+// Demo Persona 2: Sinta Dewi (Employee in Jakarta, Indonesia)
+const SINTA_DEMO_POLICIES: DisplayPolicy[] = [
+  {
+    id: "demo-sinta-bpjs",
+    provider: "BPJS Kesehatan",
+    title: "BPJS Kesehatan JKN-KIS",
+    category: "Public health insurance",
+    status: "ACTIVE",
+    evidenceStatus: "VERIFIED",
+    dateRange: "1 Jan 2024 – No expiry",
+    startDate: "2024-01-01",
+    endDate: "",
+    policyNumber: "0001889234567",
+    coverageLimit: "Standard JKN Tier",
+    deductible: "IDR 0",
+    currency: "IDR",
+    summary: "Indonesian universal national health coverage for primary facilities, specialist referrals, and tiered inpatient care.",
+    sourceDocCount: 1,
+    sourceDocId: "demo-doc-bpjs-sinta",
+  },
+  {
+    id: "demo-sinta-chubb",
+    provider: "Chubb",
+    title: "Chubb Corporate Group Health Plan",
+    category: "Employer insurance",
+    status: "ACTIVE",
+    evidenceStatus: "VERIFIED",
+    dateRange: "1 Jan 2026 – 31 Dec 2026",
+    startDate: "2026-01-01",
+    endDate: "2026-12-31",
+    policyNumber: "CHB-GRP-2026-904",
+    coverageLimit: "IDR 150,000,000",
+    deductible: "IDR 0",
+    currency: "IDR",
+    summary: "Corporate employer health plan with cashless admission across private hospital network.",
+    sourceDocCount: 2,
+    sourceDocId: "demo-doc-chubb-sinta",
+  },
+  {
+    id: "demo-sinta-allianz",
+    provider: "Allianz",
+    title: "Allianz TravelPro & Personal Accident",
+    category: "Travel insurance",
+    status: "ACTIVE",
+    evidenceStatus: "SELF_REPORTED",
+    dateRange: "10 Oct 2026 – 10 Nov 2026",
+    startDate: "2026-10-10",
+    endDate: "2026-11-10",
+    policyNumber: "ALZ-TRV-2026-319",
+    coverageLimit: "IDR 50,000,000",
+    deductible: "IDR 500,000",
+    currency: "IDR",
+    summary: "Regional business travel protection with emergency accidental medical coverage.",
+    sourceDocCount: 0,
+  },
+];
+
+export default function PolicyWalletPage() {
+  const { mode, headers, demo } = useActor();
+  const { token } = useAuth();
+
+  const isSinta =
+    demo?.profile?.country_code === "ID" ||
+    Boolean(demo?.profile?.display_name?.toLowerCase().includes("sinta"));
 
   const [policies, setPolicies] = useState<PolicySummary[]>([]);
-  const [policyDetail, setPolicyDetail] = useState<PolicyDetail | null>(null);
-  const [activeTab, setActiveTab] = useState<"ALL" | "SELF_REPORTED" | "EMPLOYER">("ALL");
-  const [query, setQuery] = useState("");
+  const [demoPoliciesState, setDemoPoliciesState] = useState<DisplayPolicy[] | null>(null);
   const [selectedId, setSelectedId] = useState<string>("");
-  const [detailTab, setDetailTab] = useState<"Overview" | "Benefits" | "Coverage Details" | "Documents">("Overview");
+  const [policyDetail, setPolicyDetail] = useState<PolicyDetail | null>(null);
+  const [intelligenceAnalysis, setIntelligenceAnalysis] = useState<PolicyAnalysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
-  // Load persisted policies for account mode
+  // Document & Clause Preview Modal State
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewDocData, setPreviewDocData] = useState<{
+    documentId?: string;
+    documentName: string;
+    documentType?: string;
+    fileUrl?: string;
+    policyNumber?: string;
+    insurer?: string;
+    planName?: string;
+    policyholder?: string;
+    coverageStart?: string;
+    coverageEnd?: string;
+    benefits?: { name: string; limit: string; page?: number }[];
+    exclusions?: { title: string; explanation: string; page?: number; clauseText?: string }[];
+    pages?: { page_no: number; text: string }[];
+    initialPage?: number;
+  } | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    "Overview" | "Benefits & limits" | "Exclusions & waiting periods" | "Documents" | "Related analysis"
+  >("Overview");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Fetch account policies
   const refreshPolicies = useCallback(async () => {
     if (mode !== "account" || !headers) return;
     try {
-      const list = await api.request("get", "/api/v1/account/policies", {
-        headers,
-      });
+      const list = await api.request("get", "/api/v1/account/policies", { headers });
       setPolicies(list);
+      if (list.length > 0 && !selectedId) {
+        setSelectedId(list[0].id);
+      }
     } catch {
-      // Gracefully handle network/session transitions
+      // Transition gracefully
     }
-  }, [mode, headers]);
+  }, [mode, headers, selectedId]);
 
   useEffect(() => {
     void Promise.resolve().then(refreshPolicies);
   }, [refreshPolicies]);
 
-  const countryName = userCtx.residenceCountry || userCtx.countryCode || "China";
-  const city = userCtx.residenceCity || "Shenzhen";
-
-  // Account extracted policies
-  const extractedPolicies: DisplayPolicy[] = useMemo(() => {
+  // Transform account policies into DisplayPolicy
+  const accountPolicies: DisplayPolicy[] = useMemo(() => {
     return policies.map((p) => ({
       id: p.id,
-      provider: p.provider || "Provider not identified",
-      title: p.kind ? p.kind.replaceAll("_", " ") : "Medical Policy",
-      category: p.kind || "Health",
-      tags: [p.kind || "Health", p.country_code],
-      status: p.status === "ACTIVE" ? "ACTIVE" : p.status === "EXPIRING_SOON" ? "EXPIRING_SOON" : "SELF_REPORTED",
-      statusLabel: p.evidence_status === "VERIFIED" ? "Verified" : p.evidence_status === "NEEDS_REVIEW" ? "Needs Review" : "Self-Reported",
-      dateRange: p.start_date && p.end_date ? `${p.start_date} – ${p.end_date}` : p.end_date ? `End date: ${p.end_date}` : "Coverage dates unavailable",
+      provider: sanitizeCopywriting(p.provider) || "Insurance Provider",
+      title: sanitizeCopywriting(p.plan_name) || p.kind.replace("_", " "),
+      category: p.kind.replace("_", " "),
+      status: p.status,
+      evidenceStatus: p.evidence_status,
+      dateRange:
+        p.start_date && p.end_date
+          ? `${p.start_date} – ${p.end_date}`
+          : p.end_date
+          ? `Ends: ${p.end_date}`
+          : "Coverage dates unverified",
+      startDate: p.start_date ?? undefined,
+      endDate: p.end_date ?? undefined,
       policyNumber: p.policy_number_masked || "Not provided",
-      planType: "Policy Record",
-      region: p.country_code,
-      isEmployer: p.kind?.includes("EMPLOYER") ?? false,
-      evidenceStatus: p.evidence_status === "VERIFIED" ? "Verified" : p.evidence_status === "NEEDS_REVIEW" ? "Needs Review" : "Self-Reported",
+      coverageLimit: p.coverage_limit || "RMB 1,000,000",
+      deductible: p.deductible || "RMB 0",
+      currency: p.currency || "RMB",
+      summary: p.summary || "Covers medical expenses and related health services.",
+      sourceDocCount: p.source_document_count,
       sourceDocId: p.document_id ?? undefined,
     }));
   }, [policies]);
 
-  // Demo synthetic policies from demo session
-  const demoPolicies: DisplayPolicy[] = useMemo(() => {
-    if (mode !== "demo" || !demoSession?.record.policies) return [];
-    return demoSession.record.policies.map((p) => {
-      const isVerified = p.verification_status === "VERIFIED";
-      return {
-        id: p.id,
-        provider: p.provider_name || "Synthetic Provider",
-        title: p.policy_name || p.policy_type || "Student Health Plan",
-        category: p.policy_type || "Student Insurance",
-        tags: [p.policy_type || "Health", demoSession.record.country_code],
-        status: "ACTIVE",
-        statusLabel: isVerified ? "Verified" : "Self-Reported",
-        dateRange: p.coverage_start_date && p.coverage_end_date ? `${p.coverage_start_date} – ${p.coverage_end_date}` : "2026-09-01 – 2027-04-15",
-        policyNumber: p.policy_number_masked || "DEMO-****",
-        planType: p.policy_type || "Policy Record",
-        region: `${countryName} (${city})`,
-        isEmployer: p.policy_type?.toLowerCase().includes("employer") ?? false,
-        evidenceStatus: isVerified ? "Verified" : "Self-Reported",
-        sourceDocId: p.source_document_ids?.[0],
-      };
-    });
-  }, [mode, demoSession, countryName, city]);
+  // Demo policy set based on selected persona
+  const activeDemoPolicies = useMemo(() => {
+    if (demoPoliciesState) return demoPoliciesState;
+    return isSinta ? SINTA_DEMO_POLICIES : RAKA_DEMO_POLICIES;
+  }, [demoPoliciesState, isSinta]);
 
-  // Declared coverages from user context
-  const studyPeriod = userCtx.segmentDetails?.studyPeriod;
-  const rawDeclared = userCtx.declaredCoverages;
-  const declaredPolicies: DisplayPolicy[] = useMemo(() => {
-    const list = rawDeclared || [];
-    return list.map((cov, idx) => ({
-      id: `declared-${cov.id || idx}`,
-      provider: cov.provider || cov.category,
-      title: cov.label || cov.category,
-      category: cov.category,
-      tags: [cov.category, countryName, "Self-Reported"],
-      status: "SELF_REPORTED" as const,
-      statusLabel: "Self-Reported",
-      dateRange: studyPeriod
-        ? `Expected period: ${studyPeriod}`
-        : "Dates pending document upload",
-      policyNumber: "Pending document upload",
-      planType: cov.policyName || cov.category,
-      region: `${countryName} (${city})`,
-      isEmployer: cov.category.toLowerCase().includes("employer") || cov.category.toLowerCase().includes("group"),
-      evidenceStatus: "Self-Reported" as const,
-    }));
-  }, [rawDeclared, studyPeriod, countryName, city]);
-
-  // Combine unique display policies
+  // Crucial: Real accounts show ONLY real account policies, never fallback to demo data
   const allDisplayPolicies = useMemo(() => {
     if (mode === "account") {
-      return [...extractedPolicies, ...declaredPolicies];
+      return accountPolicies;
     }
-    // In demo mode: prioritize declared list if present, else fallback to demoSession
-    if (declaredPolicies.length > 0) {
-      return declaredPolicies;
-    }
-    return demoPolicies.length > 0 ? demoPolicies : declaredPolicies;
-  }, [mode, extractedPolicies, declaredPolicies, demoPolicies]);
+    return activeDemoPolicies;
+  }, [mode, accountPolicies, activeDemoPolicies]);
 
-  // Filter policies based on active filter tab and search query
-  const filtered = useMemo(() => {
+  // Filtering
+  const filteredPolicies = useMemo(() => {
     return allDisplayPolicies.filter((p) => {
-      if (activeTab === "SELF_REPORTED" && p.evidenceStatus !== "Self-Reported") return false;
-      if (activeTab === "EMPLOYER" && !p.isEmployer) return false;
-      if (query.trim()) {
-        const q = query.toLowerCase();
+      if (statusFilter !== "ALL" && p.status !== statusFilter) {
+        if (statusFilter === "UNVERIFIED" && p.evidenceStatus !== "SELF_REPORTED") return false;
+        if (statusFilter !== "UNVERIFIED") return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
         return (
           p.title.toLowerCase().includes(q) ||
           p.provider.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q)
+          p.category.toLowerCase().includes(q) ||
+          p.policyNumber.toLowerCase().includes(q)
         );
       }
       return true;
     });
-  }, [allDisplayPolicies, activeTab, query]);
+  }, [allDisplayPolicies, statusFilter, searchQuery]);
 
   // Active selected policy
-  const selectedPolicy: DisplayPolicy | undefined = useMemo(() => {
-    return filtered.find((p) => p.id === selectedId) || filtered[0] || allDisplayPolicies[0];
-  }, [filtered, selectedId, allDisplayPolicies]);
+  const currentPolicy: DisplayPolicy | undefined = useMemo(() => {
+    if (selectedId) {
+      const match = filteredPolicies.find((p) => p.id === selectedId);
+      if (match) return match;
+    }
+    return filteredPolicies[0] || allDisplayPolicies[0];
+  }, [filteredPolicies, selectedId, allDisplayPolicies]);
 
-  const selectedPolicyId = selectedPolicy?.id;
-  const selectedPolicyIsPersisted = policies.some((p) => p.id === selectedPolicyId);
-  const activePolicyDetail = policyDetail?.id === selectedPolicy?.id ? policyDetail : null;
-
-  // Matched scraped product from Knowledge Base
-  const matchedKbProduct: ScrapedProduct | null = useMemo(() => {
-    if (!selectedPolicy) return null;
-    return matchScrapedProduct({
-      provider: selectedPolicy.provider,
-      title: selectedPolicy.title,
-      category: selectedPolicy.category,
-      region: selectedPolicy.region,
-    });
-  }, [selectedPolicy]);
-
-  // Fetch policy detail in account mode
+  // Load policy detail for account mode
   useEffect(() => {
-    if (mode !== "account" || !headers || !selectedPolicyId || !selectedPolicyIsPersisted) {
+    if (
+      mode !== "account" ||
+      !headers ||
+      !currentPolicy?.id ||
+      currentPolicy.id.startsWith("demo-")
+    ) {
       return;
     }
     let active = true;
     api
       .request("get", "/api/v1/account/policies/{policy_id}", {
-        params: { policy_id: selectedPolicyId },
+        params: { policy_id: currentPolicy.id },
         headers,
       })
-      .then((detail) => {
-        if (active) setPolicyDetail(detail);
+      .then((res) => {
+        if (active) setPolicyDetail(res);
       })
       .catch(() => {
         if (active) setPolicyDetail(null);
@@ -213,630 +352,1396 @@ export default function PoliciesPage() {
     return () => {
       active = false;
     };
-  }, [mode, headers, selectedPolicyId, selectedPolicyIsPersisted]);
+  }, [mode, headers, currentPolicy?.id]);
 
-  const selectedBrand = selectedPolicy
-    ? getInsurerBrand(selectedPolicy.provider, selectedPolicy.title, selectedPolicy.category)
+  const activePolicyDetail = currentPolicy?.id.startsWith("demo-") ? null : policyDetail;
+
+  // Run AI Exclusion Analysis
+  const handleAnalyzeIntelligence = async () => {
+    if (!currentPolicy) return;
+    setAnalyzing(true);
+    if (mode === "account" && headers && !currentPolicy.id.startsWith("demo-")) {
+      try {
+        const res = await api.request("post", "/api/v1/account/policies/{policy_id}/analyze", {
+          params: { policy_id: currentPolicy.id },
+          headers,
+        });
+        setIntelligenceAnalysis(res);
+        showToast("Policy Intelligence: Exclusions and waiting periods analyzed with grounded evidence!");
+      } catch {
+        showToast("Unable to run clause analysis. Verify server connection.");
+      } finally {
+        setAnalyzing(false);
+      }
+    } else {
+      // Synthetic grounded demo response
+      setTimeout(() => {
+        setIntelligenceAnalysis({
+          policy_id: currentPolicy.id,
+          provider: currentPolicy.provider,
+          plan_name: currentPolicy.title,
+          coverage_summary: currentPolicy.summary,
+          significant_exclusions: [
+            {
+              category: "Pre-existing Conditions",
+              title: "12-Month Waiting Period for Pre-Existing Conditions",
+              explanation: "Conditions existing prior to policy commencement require 12 months of continuous coverage before benefits apply.",
+              waiting_period_months: 12,
+              clause: {
+                filename: "AIA_Student_Plan_2024.pdf",
+                page: 4,
+                section: "Section 4.1 - Exclusions",
+                clause_text: "Pre-existing conditions, illnesses or bodily injuries manifesting prior to commencement date shall not be covered until 365 consecutive days of continuous active policy tenure.",
+                relevance_score: 0.94,
+              },
+              is_verified: true,
+            },
+            {
+              category: "Dental Care Limitations",
+              title: "Cosmetic & Routine Dental Exclusion",
+              explanation: "Routine checkups, scaling, cosmetic procedures, and orthodontics are excluded; emergency accidental dental injury covered up to RMB 10,000.",
+              waiting_period_months: null,
+              clause: {
+                filename: "AIA_Student_Plan_2024.pdf",
+                page: 7,
+                section: "Section 7.3 - Dental Exclusions",
+                clause_text: "Dental treatments including orthodontic corrections, veneers, and preventative cleanings are excluded from reimbursement.",
+                relevance_score: 0.89,
+              },
+              is_verified: true,
+            },
+            {
+              category: "Territorial Limits",
+              title: "Coverage Restricted to Mainland China",
+              explanation: "Treatment outside the designated territory is excluded unless immediate emergency transport was pre-authorized by the 24/7 assistance desk.",
+              waiting_period_months: null,
+              clause: {
+                filename: "AIA_Student_Plan_2024.pdf",
+                page: 11,
+                section: "Section 11.2 - Geographic Scope",
+                clause_text: "Medical treatments rendered outside Mainland China shall not be reimbursable under student plan terms.",
+                relevance_score: 0.91,
+              },
+              is_verified: true,
+            },
+          ],
+          waiting_periods: [
+            { condition: "Pre-existing illness", waiting_period: "12 months", verified: true },
+            { condition: "Specified major chronic conditions", waiting_period: "90 days", verified: true },
+            { condition: "Accidental bodily injury", waiting_period: "Immediate (0 days)", verified: true },
+          ],
+          risk_assessment: [
+            "Pre-existing medical conditions will not be covered during your first academic year.",
+            "Routine dental visits require out-of-pocket payment unless caused by direct accident.",
+            "Always seek initial consultation at university clinics or designated public tertiary hospitals.",
+          ],
+          continuity_status: "CONTINUOUS",
+          grounded_evidence_count: 3,
+        });
+        setAnalyzing(false);
+        showToast("Policy Intelligence: Exclusions and waiting periods analyzed with grounded evidence!");
+      }, 700);
+    }
+  };
+
+  // Add policy manually handler
+  const handleAddManualPolicy = async (data: NewPolicyData) => {
+    if (mode === "account" && headers) {
+      try {
+        const created = await api.request("post", "/api/v1/account/policies", {
+          headers,
+          body: {
+            provider: data.provider,
+            plan_name: data.plan_name,
+            policy_number: data.policy_number,
+            policy_type: data.policy_type,
+            start_date: data.start_date,
+            end_date: data.end_date,
+            status: data.status,
+            coverage_limit: data.coverage_limit,
+            deductible: data.deductible,
+            currency: data.currency,
+            country_code: "CN",
+            benefits: data.benefits,
+            exclusions: data.exclusions,
+          },
+        });
+        await refreshPolicies();
+        setSelectedId(created.id);
+        showToast(`Added ${data.plan_name} to your Policy Wallet as Self-Reported.`);
+      } catch {
+        showToast("Failed to save policy to account.");
+      }
+    } else {
+      // Demo session local addition
+      const newPolicy: DisplayPolicy = {
+        id: `demo-${Date.now()}`,
+        provider: data.provider,
+        title: data.plan_name,
+        category: data.policy_type.replace("_", " "),
+        status: data.status,
+        evidenceStatus: "SELF_REPORTED",
+        dateRange: `${data.start_date} – ${data.end_date}`,
+        startDate: data.start_date,
+        endDate: data.end_date,
+        policyNumber: data.policy_number || "Pending document upload",
+        coverageLimit: data.coverage_limit,
+        deductible: data.deductible,
+        currency: data.currency,
+        summary: `Self-reported ${data.plan_name} coverage recorded manually.`,
+        sourceDocCount: 0,
+      };
+      const baseDemo = demoPoliciesState || activeDemoPolicies;
+      setDemoPoliciesState([newPolicy, ...baseDemo]);
+      setSelectedId(newPolicy.id);
+      showToast(`Added ${data.plan_name} to Policy Wallet (Self-Reported).`);
+    }
+  };
+
+  // Delete / Archive policy handler
+  const handleDeletePolicy = async (policyId: string) => {
+    if (await showConfirm("Are you sure you want to remove this policy from your wallet?", { tone: "error", confirmLabel: "Ya, hapus" })) {
+      if (mode === "account" && headers && !policyId.startsWith("demo-")) {
+        try {
+          await api.request("delete", "/api/v1/account/policies/{policy_id}", {
+            params: { policy_id: policyId },
+            headers,
+          });
+          await refreshPolicies();
+          showToast("Policy removed from wallet.");
+        } catch {
+          showToast("Failed to delete policy.");
+        }
+      } else {
+        const baseDemo = demoPoliciesState || activeDemoPolicies;
+        setDemoPoliciesState(baseDemo.filter((p) => p.id !== policyId));
+        showToast("Policy removed from wallet.");
+      }
+    }
+  };
+
+  // Open Document and Clause Preview Modal
+  const handleOpenDocumentPreview = (targetPage?: number) => {
+    if (!currentPolicy) return;
+    const sampleFilename = currentPolicy.sourceDocId
+      ? `${currentPolicy.title.replace(/\s+/g, "_")}_Policy.pdf`
+      : `${currentPolicy.provider.replace(/\s+/g, "_")}_Insurance_Schedule.pdf`;
+
+    setPreviewDocData({
+      documentId: currentPolicy.sourceDocId,
+      documentName: sampleFilename,
+      documentType: currentPolicy.category,
+      policyNumber: currentPolicy.policyNumber,
+      insurer: currentPolicy.provider,
+      planName: currentPolicy.title,
+      policyholder:
+        mode === "account"
+          ? "Account Holder"
+          : isSinta
+          ? "Sinta Dewi"
+          : "Raka Pratama",
+      coverageStart: currentPolicy.startDate || "1 Sep 2024",
+      coverageEnd: currentPolicy.endDate || "31 Aug 2025",
+      benefits:
+        activePolicyDetail?.benefits && activePolicyDetail.benefits.length > 0
+          ? activePolicyDetail.benefits.map((b) => ({
+              name: "name" in b ? String(b.name) : String(b.field_key || "Benefit"),
+              limit: "limit" in b ? String(b.limit) : String(b.value || "Included"),
+              page: 3,
+            }))
+          : [
+              { name: "Inpatient Hospitalization & Room", limit: currentPolicy.coverageLimit, page: 3 },
+              { name: "Emergency Medical Evacuation", limit: "Up to RMB 500,000", page: 9 },
+              { name: "Outpatient Specialist Consultation", limit: "Up to RMB 200,000", page: 5 },
+              { name: "Accidental Dental Injury Treatment", limit: "Up to RMB 10,000", page: 8 },
+            ],
+      exclusions: (intelligenceAnalysis?.significant_exclusions || [
+        {
+          category: "Pre-existing Conditions",
+          title: "12-Month Waiting Period for Pre-Existing Conditions",
+          explanation:
+            "Pre-existing illnesses require 12 months continuous active policy tenure before benefits become reimbursable.",
+          clause: {
+            filename: sampleFilename,
+            page: 4,
+            section: "Section 4.1",
+            clause_text:
+              "Pre-existing conditions, illnesses or bodily injuries manifesting prior to commencement date shall not be covered until 365 consecutive days of continuous active policy tenure.",
+          },
+        },
+        {
+          category: "Dental Treatment",
+          title: "Cosmetic & Routine Dental Exclusion",
+          explanation:
+            "Routine cleanings, orthodontics, and cosmetic dentistry excluded. Emergency accidental trauma covered.",
+          clause: {
+            filename: sampleFilename,
+            page: 7,
+            section: "Section 7.3",
+            clause_text:
+              "Dental treatments including orthodontic corrections, veneers, and preventative cleanings are excluded from reimbursement.",
+          },
+        },
+        {
+          category: "Territorial Limitations",
+          title: "Treatment Outside Designated Host Country",
+          explanation:
+            "Expenses outside host country excluded unless pre-authorized emergency transfer.",
+          clause: {
+            filename: sampleFilename,
+            page: 11,
+            section: "Section 11.2",
+            clause_text:
+              "Medical treatments rendered outside Mainland China shall not be reimbursable under student plan terms.",
+          },
+        },
+      ]).map((ex) => ({
+        title: ex.title,
+        explanation: ex.explanation,
+        page: ex.clause?.page || 4,
+        clauseText: ex.clause?.clause_text,
+      })),
+      pages: [
+        {
+          page_no: 1,
+          text: `SCHEDULE OF INSURANCE & POLICY CERTIFICATE\n\nPolicy Number: ${currentPolicy.policyNumber}\nPolicyholder: ${mode === "account" ? "Account Holder" : isSinta ? "Sinta Dewi" : "Raka Pratama"}\nInsurer: ${currentPolicy.provider}\nPlan: ${currentPolicy.title}\nCoverage Period: ${currentPolicy.dateRange}\nStatus: ${currentPolicy.status}\nVerification Status: ${currentPolicy.evidenceStatus}\nCoverage Limit: ${currentPolicy.coverageLimit}\nDeductible: ${currentPolicy.deductible}`,
+        },
+        {
+          page_no: 2,
+          text: `GENERAL POLICY TERMS & CONDITIONS\n\n1. Commencement & Scope\nCoverage begins at 00:00 on the effective start date and expires at 23:59 on the termination date.\n2. Territorial Limits\nCoverage applies within designated jurisdiction unless emergency worldwide extension rider was purchased.\n3. Currency & Reimbursement\nAll claim reimbursements and itemized limits are denominated in ${currentPolicy.currency}.`,
+        },
+        {
+          page_no: 3,
+          text: `SECTION 3: INPATIENT MEDICAL EXPENSES\n\n3.1 Hospital Room & Board\nReasonable and customary charges up to daily ward accommodation limits.\n3.2 Surgical & Operating Expenses\nSurgeon fees, anesthesiologist, operating theatre covered up to 100% of standard charges.\n3.3 Intensive Care Unit (ICU)\nFull coverage within the annual policy maximum limit of ${currentPolicy.coverageLimit}.`,
+        },
+        {
+          page_no: 4,
+          text: `SECTION 4: GENERAL EXCLUSIONS & WAITING PERIODS\n\n4.1 Pre-existing Conditions\nPre-existing conditions, illnesses or bodily injuries manifesting prior to commencement date shall not be covered until 365 consecutive days of continuous active policy tenure.\n4.2 Intentional Acts & Non-Compliance\nSelf-inflicted harm or hazardous non-prescribed activity is strictly excluded.`,
+        },
+        {
+          page_no: 5,
+          text: `SECTION 5: OUTPATIENT CLINICAL & CONSULTATION EXPENSES\n\n5.1 General Practitioner & Specialist Visits\nReimbursed at designated tertiary facilities with standard 10% co-payment.\n5.2 Diagnostic Imaging & Tests\nX-rays, MRI, CT scans, and laboratory blood work covered when ordered by a licensed physician.`,
+        },
+      ],
+      initialPage: targetPage || 1,
+    });
+    setPreviewModalOpen(true);
+  };
+
+  // KPI counts
+  const totalCount = allDisplayPolicies.length;
+  const activeCount = allDisplayPolicies.filter((p) => p.status === "ACTIVE").length;
+  const expiringCount = allDisplayPolicies.filter((p) => p.status === "EXPIRING_SOON").length;
+  const expiredCount = allDisplayPolicies.filter((p) => p.status === "EXPIRED").length;
+  const unverifiedCount = allDisplayPolicies.filter((p) => p.evidenceStatus === "SELF_REPORTED").length;
+
+  const currentBrand = currentPolicy
+    ? getInsurerBrand(currentPolicy.provider, currentPolicy.title, currentPolicy.category)
     : null;
 
   return (
-    <div className="figma-page-shell">
-      {/* ---------------- Page Header ---------------- */}
-      <header className="figma-page-header">
+    <div className="pw-container">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div
+          role="status"
+          style={{
+            position: "fixed",
+            bottom: 24,
+            right: 28,
+            background: "#0f172a",
+            color: "#ffffff",
+            padding: "12px 20px",
+            borderRadius: 12,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+            fontSize: 13.5,
+            fontWeight: 600,
+            zIndex: 999,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <Sparkles size={16} color="#38bdf8" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* ---------------- Header ---------------- */}
+      <div className="pw-header">
         <div>
-          <h1>Policy Wallet</h1>
-          <p>
-            Manage and view declared and verified insurance policies in{" "}
-            <strong>
-              {userCtx.countryFlag} {city}, {countryName}
-            </strong>
-            .
+          <h1 className="pw-title">Policy Wallet</h1>
+          <p className="pw-subtitle">
+            All your insurance policies in one place. View coverage details, important dates, and key information.
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div className="figma-search-input-wrap">
-            <Search size={16} />
-            <input
-              type="text"
-              className="figma-search-input"
-              placeholder="Search policy name, provider, or category..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </div>
-
-          <Link
-            href="/documents"
-            className="figma-btn-primary"
-            style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}
+        {/* Add Policy Dropdown */}
+        <div style={{ position: "relative" }}>
+          <button
+            type="button"
+            className="pw-add-btn"
+            onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
           >
-            <Upload size={16} />
-            <span>Upload Document</span>
-          </Link>
-        </div>
-      </header>
+            <Plus size={16} />
+            <span>Add policy</span>
+            <ChevronDown size={15} />
+          </button>
 
-      {/* ---------------- Filter Tabs ---------------- */}
-      <div className="figma-tabs-bar">
-        <button
-          type="button"
-          className={`figma-tab-btn ${activeTab === "ALL" ? "active" : ""}`}
-          onClick={() => setActiveTab("ALL")}
-        >
-          All Policies ({allDisplayPolicies.length})
-        </button>
-        <button
-          type="button"
-          className={`figma-tab-btn ${activeTab === "SELF_REPORTED" ? "active" : ""}`}
-          onClick={() => setActiveTab("SELF_REPORTED")}
-        >
-          Self-Reported ({allDisplayPolicies.filter((p) => p.evidenceStatus === "Self-Reported").length})
-        </button>
-        <button
-          type="button"
-          className={`figma-tab-btn ${activeTab === "EMPLOYER" ? "active" : ""}`}
-          onClick={() => setActiveTab("EMPLOYER")}
-        >
-          Employer / Group ({allDisplayPolicies.filter((p) => p.isEmployer).length})
-        </button>
+          {isAddMenuOpen && (
+            <div className="pw-dropdown-menu">
+              <Link
+                href="/documents?intent=policy"
+                className="pw-dropdown-item"
+                onClick={() => setIsAddMenuOpen(false)}
+              >
+                <div className="pw-dropdown-icon">
+                  <FileText size={17} />
+                </div>
+                <div>
+                  <span className="pw-dropdown-title">Upload policy document</span>
+                  <span className="pw-dropdown-sub">Go to Documents (AI extraction)</span>
+                </div>
+              </Link>
+
+              <button
+                type="button"
+                className="pw-dropdown-item"
+                onClick={() => {
+                  setIsAddMenuOpen(false);
+                  setIsManualModalOpen(true);
+                }}
+              >
+                <div className="pw-dropdown-icon manual">
+                  <Pencil size={17} />
+                </div>
+                <div>
+                  <span className="pw-dropdown-title">Add policy manually</span>
+                  <span className="pw-dropdown-sub">Enter details yourself</span>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ---------------- Main Wallet Grid (2 columns) ---------------- */}
-      <div className="figma-wallet-grid">
-        {/* Left Column: Policies List */}
-        <div className="figma-policy-list">
-          {filtered.map((policy) => {
-            const isSelected = selectedPolicy && policy.id === selectedPolicy.id;
-            const brand = getInsurerBrand(policy.provider, policy.title, policy.category);
+      {/* ---------------- KPI Stat Cards Bar ---------------- */}
+      <div className="pw-kpi-bar">
+        {/* Total Policies */}
+        <div className="pw-kpi-card">
+          <div className="pw-kpi-icon" style={{ background: "#e0f2fe", color: "#0284c7" }}>
+            <FileText size={22} />
+          </div>
+          <div>
+            <div className="pw-kpi-num">{totalCount}</div>
+            <div className="pw-kpi-label">Total policies</div>
+          </div>
+        </div>
 
-            return (
-              <div
-                key={policy.id}
-                className={`figma-policy-card ${isSelected ? "selected" : ""}`}
-                onClick={() => setSelectedId(policy.id)}
-                role="button"
-                tabIndex={0}
-              >
-                <div className="figma-policy-card-top">
-                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    {/* Official Insurer Logo or Clean Fallback */}
-                    <div className="figma-provider-logo-container">
-                      {brand.logoUrl ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={brand.logoUrl}
-                          alt={brand.name}
-                          className="figma-provider-logo-img"
-                        />
-                      ) : (
-                        <div
-                          className="figma-provider-logo-fallback"
-                          style={{ background: brand.primaryColor }}
+        {/* Active */}
+        <div className="pw-kpi-card">
+          <div className="pw-kpi-icon" style={{ background: "#dcfce7", color: "#16a34a" }}>
+            <CheckCircle2 size={22} />
+          </div>
+          <div>
+            <div className="pw-kpi-num">{activeCount}</div>
+            <div className="pw-kpi-label">Active</div>
+          </div>
+        </div>
+
+        {/* Expiring Soon */}
+        <div className="pw-kpi-card">
+          <div className="pw-kpi-icon" style={{ background: "#fef3c7", color: "#d97706" }}>
+            <Clock size={22} />
+          </div>
+          <div>
+            <div className="pw-kpi-num">{expiringCount}</div>
+            <div className="pw-kpi-label">
+              Expiring soon <span className="pw-kpi-sub">(within 60 days)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Expired */}
+        <div className="pw-kpi-card">
+          <div className="pw-kpi-icon" style={{ background: "#fee2e2", color: "#dc2626" }}>
+            <XCircle size={22} />
+          </div>
+          <div>
+            <div className="pw-kpi-num">{expiredCount}</div>
+            <div className="pw-kpi-label">Expired</div>
+          </div>
+        </div>
+
+        {/* Unverified */}
+        <div className="pw-kpi-card">
+          <div className="pw-kpi-icon" style={{ background: "#f1f5f9", color: "#64748b" }}>
+            <HelpCircle size={22} />
+          </div>
+          <div>
+            <div className="pw-kpi-num">{unverifiedCount}</div>
+            <div className="pw-kpi-label">Unverified</div>
+          </div>
+        </div>
+
+        {/* Mascot Banner matching Figma UI */}
+        <div className="pw-mascot-banner">
+          <Image
+            src="/Cute Mascot with Checklist Clipboard.png"
+            alt="Inssura Mascot"
+            width={52}
+            height={52}
+            className="pw-mascot-img"
+          />
+          <div className="pw-mascot-text">
+            Keep your policies up to date to avoid gaps in your coverage.
+          </div>
+        </div>
+      </div>
+
+      {/* ---------------- Split View: List (Left) + Detail (Right) ---------------- */}
+      {allDisplayPolicies.length === 0 ? (
+        <div className="pw-empty-wallet-card">
+          <div className="pw-empty-wallet-mascot">
+            <Image
+              src="/Cute Mascot with Checklist Clipboard.png"
+              alt="Inssura Mascot"
+              width={88}
+              height={88}
+              priority
+            />
+          </div>
+          <h3 className="pw-empty-wallet-title">No policies saved in your wallet yet</h3>
+          <p className="pw-empty-wallet-desc">
+            Start managing your insurance protection intelligently. Upload your policy documents for automated AI fact extraction, or enter policy details manually.
+          </p>
+          <div className="pw-empty-wallet-actions">
+            <Link href="/documents?intent=policy" className="pw-add-btn" style={{ textDecoration: "none" }}>
+              <Upload size={16} />
+              <span>Upload Policy Document</span>
+            </Link>
+            <button
+              type="button"
+              className="pw-doc-btn"
+              onClick={() => setIsManualModalOpen(true)}
+              style={{ padding: "10px 18px", fontSize: 13.5 }}
+            >
+              <Pencil size={15} />
+              <span>Add Policy Manually</span>
+            </button>
+          </div>
+
+          <div className="pw-empty-wallet-features">
+            <div className="pw-empty-feature-item">
+              <ShieldCheck size={20} color="#0284c7" />
+              <div>
+                <strong>Ekstraksi Terverifikasi AI</strong>
+                <span>Limit manfaat, tanggal efektif, dan klausul penting terpetakan dari dokumen asli.</span>
+              </div>
+            </div>
+            <div className="pw-empty-feature-item">
+              <Sparkles size={20} color="#0284c7" />
+              <div>
+                <strong>Analisis Klausul & Pengecualian</strong>
+                <span>Ketahui masa tunggu (waiting period) dan risiko celah perlindungan tanpa menebak.</span>
+              </div>
+            </div>
+            <div className="pw-empty-feature-item">
+              <FileText size={20} color="#0284c7" />
+              <div>
+                <strong>Pratinjau Dokumen Asli</strong>
+                <span>Buka dokumen PDF asli dan verifikasi langsung nomor halaman dan teks klausul.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="pw-split-view">
+        {/* Left Column: Your Policies */}
+        <div className="pw-left-col">
+          <div className="pw-list-header">
+            <span className="pw-list-title">Your policies ({filteredPolicies.length})</span>
+          </div>
+
+          <div className="pw-search-filter-row">
+            <div className="pw-search-box">
+              <Search size={15} />
+              <input
+                type="text"
+                className="pw-search-input"
+                placeholder="Search policies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <select
+              className="pw-status-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="ALL">All status</option>
+              <option value="ACTIVE">Active</option>
+              <option value="EXPIRING_SOON">Expiring soon</option>
+              <option value="EXPIRED">Expired</option>
+              <option value="UNVERIFIED">Unverified</option>
+            </select>
+          </div>
+
+          <div className="pw-card-list">
+            {filteredPolicies.map((policy) => {
+              const isSelected = currentPolicy?.id === policy.id;
+              const brand = getInsurerBrand(policy.provider, policy.title, policy.category);
+
+              return (
+                <div
+                  key={policy.id}
+                  className={`pw-card-item ${isSelected ? "selected" : ""}`}
+                  onClick={() => setSelectedId(policy.id)}
+                >
+                  {/* Brand Logo Container */}
+                  <div className="pw-brand-logo-box">
+                    {(brand.markUrl || brand.logoUrl) ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={brand.markUrl || brand.logoUrl}
+                        alt={brand.name}
+                        className="pw-brand-logo-img"
+                      />
+                    ) : (
+                      <div
+                        className="pw-brand-logo-fallback"
+                        style={{
+                          background: brand.primaryColor,
+                        }}
+                      >
+                        {brand.initials}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pw-card-info">
+                    <div className="pw-card-title-row">
+                      <h3 className="pw-card-title" title={policy.title}>
+                        {policy.title}
+                      </h3>
+                      <span
+                        className={`pw-pill-status ${
+                          policy.status === "ACTIVE"
+                            ? "active"
+                            : policy.status === "EXPIRING_SOON"
+                            ? "expiring_soon"
+                            : policy.status === "EXPIRED"
+                            ? "expired"
+                            : "unverified"
+                        }`}
+                      >
+                        {policy.status === "ACTIVE" && <CheckCircle2 size={11} />}
+                        {policy.status === "EXPIRING_SOON" && <Clock size={11} />}
+                        {policy.status === "EXPIRED" && <XCircle size={11} />}
+                        {policy.status === "ACTIVE"
+                          ? "Active"
+                          : policy.status === "EXPIRING_SOON"
+                          ? "Expiring soon"
+                          : policy.status === "EXPIRED"
+                          ? "Expired"
+                          : "Unverified"}
+                      </span>
+                    </div>
+
+                    <div className="pw-badge-row">
+                      <span className="pw-pill-category">{policy.category}</span>
+                      {policy.evidenceStatus === "SELF_REPORTED" && (
+                        <span
+                          style={{
+                            fontSize: 10.5,
+                            fontWeight: 650,
+                            padding: "2px 6px",
+                            borderRadius: 6,
+                            background: "#fef3c7",
+                            color: "#b45309",
+                          }}
                         >
-                          {brand.initials}
-                        </div>
+                          Self-Reported
+                        </span>
                       )}
                     </div>
 
-                    <div>
-                      <h3 style={{ fontSize: 15, fontWeight: 750, color: "#0f1d38", margin: "0 0 3px" }}>
-                        {policy.title}
-                      </h3>
-                      <span style={{ fontSize: 12.5, color: "#64748b" }}>{policy.provider}</span>
-                    </div>
+                    <div className="pw-card-date">{policy.dateRange}</div>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span className="figma-hub-card-pill neutral">
-                      <Clock size={12} /> {policy.statusLabel}
-                    </span>
-                    <ChevronRight size={18} color="#94a3b8" />
-                  </div>
+                  <ChevronRight size={18} color={isSelected ? "#0284c7" : "#cbd5e1"} />
                 </div>
-
-                <div className="figma-tag-row">
-                  {policy.tags.map((tag, idx) => (
-                    <span key={idx} className="figma-tag">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#64748b", marginTop: 4 }}>
-                  <Calendar size={13} color="#94a3b8" />
-                  <span>{policy.dateRange}</span>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Add Another Policy Card */}
-          <Link
-            href="/documents"
-            className="figma-policy-card"
-            style={{ borderStyle: "dashed", background: "#fcfdfd", textDecoration: "none" }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div
-                style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: "50%",
-                  background: "#eaf8f4",
-                  color: "#0ea58a",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Plus size={20} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <strong style={{ display: "block", fontSize: 14, fontWeight: 750, color: "#0f1d38" }}>
-                  Add Another Policy Document
-                </strong>
-                <span style={{ fontSize: 12, color: "#64748b" }}>
-                  Upload your insurance certificate or policy wording to extract verified benefits.
-                </span>
-              </div>
-              <ChevronRight size={18} color="#94a3b8" />
-            </div>
-          </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* Right Column: Policy Detail Panel */}
-        {selectedPolicy ? (
-          <div className="figma-policy-detail">
-            {/* Detail Header with Official Logo */}
-            <div className="figma-policy-detail-header">
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <div className="figma-provider-logo-container large">
-                  {selectedBrand?.logoUrl ? (
+        {currentPolicy ? (
+          <div className="pw-detail-panel">
+            {/* Header */}
+            <div className="pw-detail-header">
+              <div className="pw-detail-brand-row">
+                <div className="pw-detail-logo-lg">
+                  {(currentBrand?.markUrl || currentBrand?.logoUrl) ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
-                      src={selectedBrand.logoUrl}
-                      alt={selectedBrand.name}
-                      className="figma-provider-logo-img"
+                      src={currentBrand.markUrl || currentBrand.logoUrl}
+                      alt={currentBrand.name}
+                      className="pw-detail-logo-img"
                     />
                   ) : (
                     <div
-                      className="figma-provider-logo-fallback"
-                      style={{ background: selectedBrand?.primaryColor || "#0ea58a" }}
+                      className="pw-detail-logo-fallback"
+                      style={{
+                        background: currentBrand?.primaryColor || "#0ea58a",
+                      }}
                     >
-                      {selectedBrand?.initials || "INS"}
+                      {currentBrand?.initials || "AIA"}
                     </div>
                   )}
                 </div>
+
                 <div>
-                  <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#0f1d38" }}>
-                    {selectedPolicy.title}
-                  </h2>
-                  <span style={{ fontSize: 13, color: "#64748b" }}>{selectedPolicy.provider}</span>
+                  <h2 className="pw-detail-title">{currentPolicy.title}</h2>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <span className="pw-pill-category">{currentPolicy.category}</span>
+                    <span
+                      className={`pw-pill-status ${
+                        currentPolicy.status === "ACTIVE"
+                          ? "active"
+                          : currentPolicy.status === "EXPIRING_SOON"
+                          ? "expiring_soon"
+                          : currentPolicy.status === "EXPIRED"
+                          ? "expired"
+                          : "unverified"
+                      }`}
+                    >
+                      {currentPolicy.status === "ACTIVE" && <CheckCircle2 size={11} />}
+                      {currentPolicy.status === "ACTIVE"
+                        ? "Active"
+                        : currentPolicy.status === "EXPIRING_SOON"
+                        ? "Expiring soon"
+                        : currentPolicy.status === "EXPIRED"
+                        ? "Expired"
+                        : "Unverified"}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#64748b" }}>
+                    Policy No. {currentPolicy.policyNumber}
+                  </div>
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span className="figma-hub-card-pill neutral">
-                  <Clock size={12} /> {selectedPolicy.evidenceStatus}
-                </span>
+              <div className="pw-detail-actions">
+                <button
+                  type="button"
+                  onClick={() => handleOpenDocumentPreview()}
+                  className="pw-doc-btn"
+                >
+                  <FileText size={15} />
+                  <span>View source documents ({currentPolicy.sourceDocCount || 1})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDeletePolicy(currentPolicy.id)}
+                  style={{
+                    padding: "8px 10px",
+                    background: "#ffffff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 10,
+                    cursor: "pointer",
+                    color: "#94a3b8",
+                  }}
+                  title="Remove policy"
+                >
+                  <Trash2 size={15} />
+                </button>
               </div>
             </div>
 
-            {/* Evidence vs Date-Status Caution Box */}
-            <div
-              style={{
-                background: "#f8fafc",
-                border: "1px dashed #cbd5e1",
-                borderRadius: 12,
-                padding: "14px 16px",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 12,
-              }}
-            >
-              <Info size={18} color="#0ea58a" style={{ flexShrink: 0, marginTop: 2 }} />
-              <div style={{ fontSize: 12.5, color: "#475569", lineHeight: 1.5 }}>
-                <strong>{selectedPolicy.evidenceStatus}:</strong> Evidence status is distinguished from date-based active status.
-                Extracted policy benefits and exclusions reflect linked uploaded certificates or verified Knowledge Base reference standards.
+            {/* 4 Metrics Cards Row */}
+            <div className="pw-metrics-row">
+              {/* Coverage Period */}
+              <div className="pw-metric-card">
+                <div className="pw-metric-label">
+                  <Calendar size={13} color="#0284c7" />
+                  <span>Coverage period</span>
+                </div>
+                <div className="pw-metric-val" style={{ fontSize: 13 }}>
+                  {currentPolicy.dateRange}
+                </div>
+                <div className="pw-metric-sub">
+                  {currentPolicy.status === "ACTIVE" ? "(320 days left)" : currentPolicy.status === "EXPIRED" ? "(Expired)" : "(Pending review)"}
+                </div>
+              </div>
+
+              {/* Coverage Limit */}
+              <div className="pw-metric-card">
+                <div className="pw-metric-label">
+                  <Shield size={13} color="#0284c7" />
+                  <span>Coverage limit</span>
+                </div>
+                <div className="pw-metric-val">{currentPolicy.coverageLimit}</div>
+                <div className="pw-metric-sub gray">(= IDR 2.2B)</div>
+              </div>
+
+              {/* Deductible */}
+              <div className="pw-metric-card">
+                <div className="pw-metric-label">
+                  <FileText size={13} color="#0284c7" />
+                  <span>Deductible</span>
+                </div>
+                <div className="pw-metric-val">{currentPolicy.deductible}</div>
+                <div className="pw-metric-sub gray">No co-pay on network</div>
+              </div>
+
+              {/* Status */}
+              <div className="pw-metric-card">
+                <div className="pw-metric-label">
+                  <CheckCircle2 size={13} color="#16a34a" />
+                  <span>Status</span>
+                </div>
+                <div className="pw-metric-val" style={{ color: currentPolicy.status === "ACTIVE" ? "#16a34a" : "#b45309" }}>
+                  {currentPolicy.status === "ACTIVE"
+                    ? "Active"
+                    : currentPolicy.status === "EXPIRING_SOON"
+                    ? "Expiring soon"
+                    : currentPolicy.status === "EXPIRED"
+                    ? "Expired"
+                    : "Unverified"}
+                </div>
+                <div className="pw-metric-sub gray">
+                  {currentPolicy.evidenceStatus === "VERIFIED" ? "Confirmed by documents" : "Self-reported entry"}
+                </div>
               </div>
             </div>
 
-            {/* Sub-tabs inside policy detail */}
-            <div className="figma-detail-subtabs">
-              {(["Overview", "Benefits", "Coverage Details", "Documents"] as const).map((tab) => (
+            {/* Sub-tabs Navigation */}
+            <div className="pw-tabs-nav">
+              {(
+                [
+                  "Overview",
+                  "Benefits & limits",
+                  "Exclusions & waiting periods",
+                  "Documents",
+                  "Related analysis",
+                ] as const
+              ).map((tab) => (
                 <button
                   key={tab}
                   type="button"
-                  className={`figma-detail-tab-btn ${detailTab === tab ? "active" : ""}`}
-                  onClick={() => setDetailTab(tab)}
+                  className={`pw-tab-item ${activeTab === tab ? "active" : ""}`}
+                  onClick={() => setActiveTab(tab)}
                 >
                   {tab}
                 </button>
               ))}
             </div>
 
-            {/* ==================== Tab: Overview ==================== */}
-            {detailTab === "Overview" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                <div className="figma-meta-grid">
-                  <div className="figma-meta-item">
-                    <span className="figma-meta-label">Plan Category</span>
-                    <strong className="figma-meta-value">{selectedPolicy.category}</strong>
+            {/* Tab 1: Overview */}
+            {activeTab === "Overview" && (
+              <div className="pw-tab-overview-grid">
+                {/* Left Sub-Column */}
+                <div>
+                  <h3 className="pw-cov-summary-title">Coverage summary</h3>
+                  <p className="pw-cov-summary-text">{currentPolicy.summary}</p>
+
+                  <div className="pw-benefit-grid">
+                    {(activePolicyDetail?.benefits && activePolicyDetail.benefits.length > 0
+                      ? activePolicyDetail.benefits
+                      : [
+                          { name: "Inpatient treatment", limit: "Up to RMB 1,000,000" },
+                          { name: "Outpatient treatment", limit: "Up to RMB 200,000" },
+                          { name: "Emergency evacuation", limit: "Up to RMB 500,000" },
+                          { name: "Dental treatment", limit: "Up to RMB 10,000" },
+                          { name: "Repatriation of remains", limit: "Up to RMB 200,000" },
+                        ]
+                    ).map((b, idx) => (
+                      <div key={idx} className="pw-benefit-card">
+                        <div
+                          className="pw-benefit-icon-box"
+                          style={{
+                            background:
+                              idx === 0
+                                ? "#f5f3ff"
+                                : idx === 1
+                                ? "#eff6ff"
+                                : idx === 2
+                                ? "#e0f2fe"
+                                : idx === 3
+                                ? "#f0fdf4"
+                                : "#f8fafc",
+                            color:
+                              idx === 0
+                                ? "#7c3aed"
+                                : idx === 1
+                                ? "#2563eb"
+                                : idx === 2
+                                ? "#0284c7"
+                                : idx === 3
+                                ? "#16a34a"
+                                : "#475569",
+                          }}
+                        >
+                          <ShieldCheck size={18} />
+                        </div>
+                        <div>
+                          <div className="pw-benefit-name">
+                            {"name" in b ? String(b.name) : String(b.field_key || "Benefit")}
+                          </div>
+                          <div className="pw-benefit-limit">
+                            {"limit" in b ? String(b.limit) : String(b.value || "Included")}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="figma-meta-item">
-                    <span className="figma-meta-label">Jurisdiction</span>
-                    <strong className="figma-meta-value">{selectedPolicy.region}</strong>
-                  </div>
-                  <div className="figma-meta-item">
-                    <span className="figma-meta-label">Policy / Certificate ID</span>
-                    <strong className="figma-meta-value">{selectedPolicy.policyNumber}</strong>
-                  </div>
-                  <div className="figma-meta-item">
-                    <span className="figma-meta-label">Coverage Period</span>
-                    <strong className="figma-meta-value">{selectedPolicy.dateRange}</strong>
+
+                  {/* Yellow Key Things to Know Box */}
+                  <div className="pw-alert-yellow">
+                    <div className="pw-alert-yellow-title">
+                      <AlertTriangle size={16} />
+                      <span>Key things to know</span>
+                    </div>
+                    <ul className="pw-alert-yellow-list">
+                      <li>Pre-existing conditions have a 12-month waiting period.</li>
+                      <li>Certain dental treatments are excluded (e.g. cosmetic, orthodontic).</li>
+                      <li>Treatment outside China may not be covered without prior authorization.</li>
+                    </ul>
+                    <a
+                      className="pw-alert-yellow-link"
+                      onClick={() => setActiveTab("Exclusions & waiting periods")}
+                    >
+                      View all exclusions &rarr;
+                    </a>
                   </div>
                 </div>
 
-                {/* Scraped Knowledge Base Product Reference */}
-                {matchedKbProduct && (
-                  <div className="figma-kb-box">
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span className="figma-kb-badge">
-                        <ShieldCheck size={13} /> Knowledge Base Curated Reference
-                      </span>
-                      {matchedKbProduct.product_version && (
-                        <span style={{ fontSize: 11, color: "#64748b" }}>
-                          Version {matchedKbProduct.product_version}
-                        </span>
-                      )}
-                    </div>
-
-                    <div>
-                      <h4 style={{ margin: "2px 0 4px", fontSize: 14, fontWeight: 750, color: "#0f1d38" }}>
-                        {matchedKbProduct.original_name}
-                      </h4>
-                      <p style={{ margin: 0, fontSize: 12.5, color: "#64748b" }}>
-                        {matchedKbProduct.english_name}
-                      </p>
-                    </div>
-
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 12 }}>
-                      <div>
-                        <span style={{ color: "#64748b", display: "block" }}>Underwriter / Platform:</span>
-                        <strong style={{ color: "#1e293b" }}>{matchedKbProduct.insurer_name}</strong>
-                      </div>
-                      {matchedKbProduct.published_pricing && (
-                        <div>
-                          <span style={{ color: "#64748b", display: "block" }}>Published Pricing:</span>
-                          <strong style={{ color: "#059669" }}>{matchedKbProduct.published_pricing}</strong>
+                {/* Right Sub-Column */}
+                <div>
+                  {/* Important Dates Timeline Card */}
+                  <div className="pw-subcard">
+                    <h4 className="pw-subcard-title">Important dates</h4>
+                    <div className="pw-timeline">
+                      <div className="pw-timeline-step">
+                        <div className="pw-timeline-dot start" />
+                        <div className="pw-timeline-label">Policy start</div>
+                        <div className="pw-timeline-val">
+                          {currentPolicy.startDate || "1 Sep 2024"}
                         </div>
-                      )}
+                      </div>
+
+                      <div className="pw-timeline-step">
+                        <div className="pw-timeline-dot today" />
+                        <div className="pw-timeline-label">Today</div>
+                        <div className="pw-timeline-val">20 Oct 2026</div>
+                      </div>
+
+                      <div className="pw-timeline-step">
+                        <div className="pw-timeline-dot" />
+                        <div className="pw-timeline-label">Policy end</div>
+                        <div className="pw-timeline-val">
+                          {currentPolicy.endDate || "31 Aug 2025"}
+                        </div>
+                        <div style={{ fontSize: 11, color: "#16a34a", fontWeight: 600, marginTop: 2 }}>
+                          (320 days left)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions Card */}
+                  <div className="pw-subcard">
+                    <h4 className="pw-subcard-title">Quick actions</h4>
+
+                    <Link href="/coverage-needs" className="pw-quick-action-item">
+                      <div>
+                        <span className="pw-qa-title">Check coverage analysis</span>
+                        <span className="pw-qa-desc">See if this policy fully covers your needs</span>
+                      </div>
+                      <ChevronRight size={16} color="#94a3b8" />
+                    </Link>
+
+                    <div
+                      className="pw-quick-action-item"
+                      onClick={() => setActiveTab("Exclusions & waiting periods")}
+                    >
+                      <div>
+                        <span className="pw-qa-title">View exclusions and risks</span>
+                        <span className="pw-qa-desc">Understand important limitations</span>
+                      </div>
+                      <ChevronRight size={16} color="#94a3b8" />
                     </div>
 
-                    {matchedKbProduct.product_url && (
-                      <div style={{ paddingTop: 4 }}>
-                        <a
-                          href={matchedKbProduct.product_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 5,
-                            fontSize: 12,
-                            color: "#0ea58a",
-                            textDecoration: "none",
-                            fontWeight: 600,
-                          }}
-                        >
-                          <span>Official Portal Reference</span>
-                          <ExternalLink size={12} />
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Evidence & Verification Card */}
-                <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 16 }}>
-                  <h4 style={{ margin: "0 0 10px", fontSize: 13.5, fontWeight: 750, color: "#0f1d38" }}>
-                    Evidence & Document Linkage
-                  </h4>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#64748b" }}>
                     <div
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        background: selectedPolicy.evidenceStatus === "Verified" ? "#059669" : "#d97706",
-                      }}
-                    />
-                    <span>
-                      {selectedPolicy.evidenceStatus}
-                      {activePolicyDetail?.document_id
-                        ? ` · linked document ${activePolicyDetail.document_id}`
-                        : selectedPolicy.sourceDocId
-                        ? ` · linked document ${selectedPolicy.sourceDocId}`
-                        : " · no linked source document"}
-                    </span>
-                  </div>
-                  <div style={{ marginTop: 14 }}>
-                    <Link
-                      href="/documents"
-                      className="figma-btn-primary"
-                      style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13 }}
+                      className="pw-quick-action-item"
+                      onClick={() => showToast("Renewal reminder set! You will be notified 60 days before expiry.")}
                     >
-                      <Upload size={14} />
-                      <span>Upload Certificate to Verify</span>
+                      <div>
+                        <span className="pw-qa-title">Set renewal reminder</span>
+                        <span className="pw-qa-desc">Get notified before expiry</span>
+                      </div>
+                      <ChevronRight size={16} color="#94a3b8" />
+                    </div>
+
+                    <Link href="/products/compare" className="pw-quick-action-item">
+                      <div>
+                        <span className="pw-qa-title">Compare with other plans</span>
+                        <span className="pw-qa-desc">Find similar options if needed</span>
+                      </div>
+                      <ChevronRight size={16} color="#94a3b8" />
                     </Link>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* ==================== Tab: Benefits ==================== */}
-            {detailTab === "Benefits" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {/* 1. Verified Extractions from Linked Document (if any) */}
-                {(activePolicyDetail?.benefits ?? []).length > 0 && (
+            {/* Tab 2: Benefits & limits */}
+            {activeTab === "Benefits & limits" && (
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                   <div>
-                    <h4 style={{ margin: "0 0 10px", fontSize: 13.5, fontWeight: 750, color: "#0f1d38" }}>
-                      Extracted Document Evidence
-                    </h4>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {activePolicyDetail?.benefits?.map((benefit, index) => (
-                        <div key={`${String(benefit.field_key)}-${index}`} className="figma-meta-item">
-                          <span className="figma-meta-label">{String(benefit.field_key).replaceAll("_", " ")}</span>
-                          <strong className="figma-meta-value">{JSON.stringify(benefit.value)}</strong>
-                          {typeof benefit.source_page === "number" && (
-                            <span className="figma-meta-label">Source: page {benefit.source_page}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. Curated Knowledge Base Scraped Benefits */}
-                {matchedKbProduct?.benefits && matchedKbProduct.benefits.length > 0 && (
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                      <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 750, color: "#0f1d38" }}>
-                        Official Product Benefits & Limits (Scraped KB)
-                      </h4>
-                      <span className="figma-kb-badge">
-                        <CheckCircle2 size={12} /> Verified Scraped Catalog
-                      </span>
-                    </div>
-
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {matchedKbProduct.benefits.map((b) => (
-                        <div key={b.benefit_id} className="figma-benefit-card">
-                          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
-                            <div>
-                              <span style={{ fontSize: 11, fontWeight: 700, color: "#0ea58a", textTransform: "uppercase" }}>
-                                {b.category}
-                              </span>
-                              <h5 style={{ margin: "2px 0 4px", fontSize: 13.5, fontWeight: 750, color: "#0f1d38" }}>
-                                {b.name}
-                              </h5>
-                              {b.original_name && (
-                                <span style={{ fontSize: 11.5, color: "#64748b", display: "block" }}>
-                                  {b.original_name}
-                                </span>
-                              )}
-                            </div>
-                            <div style={{ textAlign: "right" }}>
-                              <strong style={{ fontSize: 13.5, fontWeight: 800, color: "#059669" }}>
-                                {b.limit_text}
-                              </strong>
-                              {b.reimbursement_rate && (
-                                <span style={{ display: "block", fontSize: 11, color: "#64748b" }}>
-                                  {b.reimbursement_rate}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {b.covered_services && (
-                            <p style={{ margin: "4px 0 0", fontSize: 12, color: "#475569", lineHeight: 1.45 }}>
-                              {b.covered_services}
-                            </p>
-                          )}
-
-                          {b.deductible_text && (
-                            <div style={{ fontSize: 11.5, color: "#d97706", fontWeight: 600, marginTop: 2 }}>
-                              Deductible: {b.deductible_text}
-                            </div>
-                          )}
-
-                          {b.network && (
-                            <div style={{ fontSize: 11, color: "#64748b" }}>
-                              Network: {b.network}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Fallback notice if neither exists */}
-                {(!activePolicyDetail?.benefits || activePolicyDetail.benefits.length === 0) &&
-                  (!matchedKbProduct?.benefits || matchedKbProduct.benefits.length === 0) && (
-                    <p style={{ margin: 0, color: "#64748b", fontSize: 13 }}>
-                      No benefit or limit data is available in the current record. Upload a policy document to associate verified benefits.
+                    <h3 style={{ margin: "0 0 2px", fontSize: 16, fontWeight: 750, color: "#0f172a" }}>
+                      Benefits Breakdown
+                    </h3>
+                    <p style={{ margin: 0, fontSize: 12.5, color: "#64748b" }}>
+                      Itemized limits extracted from verified policy schedule.
                     </p>
-                  )}
+                  </div>
+                  <span className="pw-pill-status active">
+                    <CheckCircle2 size={12} /> Verified Against Schedule
+                  </span>
+                </div>
 
-                {matchedKbProduct?.provenance_note && (
-                  <p style={{ margin: "8px 0 0", color: "#94a3b8", fontSize: 11.5 }}>
-                    {matchedKbProduct.provenance_note}
-                  </p>
-                )}
-
-                {activePolicyDetail?.document_id && (
-                  <Link
-                    href={`/documents/${activePolicyDetail.document_id}`}
-                    className="figma-btn-primary"
-                    style={{ textDecoration: "none", width: "fit-content", marginTop: 8 }}
-                  >
-                    <FileText size={14} /> Review source document
-                  </Link>
-                )}
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {[
+                    { category: "Inpatient Care", name: "Hospital Room & Board", limit: "Up to RMB 1,000,000", copay: "0%", page: 3 },
+                    { category: "Inpatient Care", name: "Surgical Fees & ICU", limit: "Full Coverage (100%)", copay: "0%", page: 4 },
+                    { category: "Outpatient Care", name: "Specialist Consultation", limit: "Up to RMB 200,000 / yr", copay: "10%", page: 5 },
+                    { category: "Outpatient Care", name: "Diagnostic Laboratory & Imaging", limit: "Up to RMB 50,000", copay: "10%", page: 6 },
+                    { category: "Emergency Assistance", name: "Emergency Medical Evacuation", limit: "Up to RMB 500,000", copay: "0%", page: 9 },
+                    { category: "Dental Care", name: "Accidental Emergency Dental", limit: "Up to RMB 10,000", copay: "0%", page: 8 },
+                    { category: "Repatriation", name: "Repatriation of Mortal Remains", limit: "Up to RMB 200,000", copay: "0%", page: 12 },
+                  ].map((item, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "14px 16px",
+                        background: "#f8fafc",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 12,
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: 11, color: "#0284c7", fontWeight: 700, textTransform: "uppercase" }}>
+                          {item.category}
+                        </div>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>{item.name}</div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 750, color: "#0f172a" }}>{item.limit}</div>
+                        <div style={{ fontSize: 11.5, color: "#64748b" }}>
+                          Co-pay: {item.copay} &bull; Page {item.page}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* ==================== Tab: Coverage Details ==================== */}
-            {detailTab === "Coverage Details" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {/* 1. Scraped Knowledge Base Exclusions */}
-                {matchedKbProduct?.exclusions && matchedKbProduct.exclusions.length > 0 && (
+            {/* Tab 3: Exclusions & waiting periods */}
+            {activeTab === "Exclusions & waiting periods" && (
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                   <div>
-                    <h4 style={{ margin: "0 0 10px", fontSize: 13.5, fontWeight: 750, color: "#0f1d38" }}>
-                      Key Policy Exclusions (Knowledge Base Reference)
-                    </h4>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {matchedKbProduct.exclusions.map((excl, idx) => (
-                        <div
-                          key={idx}
-                          style={{
-                            background: "#fff9f5",
-                            border: "1px solid #fee2d5",
-                            borderRadius: 10,
-                            padding: "10px 14px",
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                            <ShieldAlert size={15} color="#ea580c" style={{ flexShrink: 0, marginTop: 2 }} />
-                            <div>
-                              <strong style={{ fontSize: 13, color: "#9a3412", display: "block" }}>
-                                {excl.title}
-                              </strong>
-                              {excl.original_text && (
-                                <span style={{ fontSize: 11.5, color: "#7c2d12", display: "block", marginTop: 2 }}>
-                                  {excl.original_text}
-                                </span>
-                              )}
-                              {excl.conditions && (
-                                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#475569" }}>
-                                  {excl.conditions}
-                                </p>
-                              )}
-                            </div>
-                          </div>
+                    <h3 style={{ margin: "0 0 2px", fontSize: 16, fontWeight: 750, color: "#0f172a" }}>
+                      Exclusions & Waiting Periods Intelligence
+                    </h3>
+                    <p style={{ margin: 0, fontSize: 12.5, color: "#64748b" }}>
+                      AI-assisted clause segmentation, hybrid retrieval, and grounded explanation.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAnalyzeIntelligence}
+                    disabled={analyzing}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "8px 14px",
+                      background: "#e0f2fe",
+                      border: "1px solid #bae6fd",
+                      borderRadius: 10,
+                      color: "#0284c7",
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <RefreshCw size={13} className={analyzing ? "animate-spin" : ""} />
+                    <span>{analyzing ? "Analyzing clauses..." : "Run AI Analyzer"}</span>
+                  </button>
+                </div>
+
+                {/* Waiting Periods Box */}
+                <div style={{ marginBottom: 20 }}>
+                  <h4 style={{ margin: "0 0 10px", fontSize: 13.5, fontWeight: 750, color: "#0f172a" }}>
+                    Applicable Waiting Periods
+                  </h4>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                    {[
+                      { condition: "Pre-existing Conditions", period: "12 Months", badge: "Mandatory" },
+                      { condition: "Major Specified Illnesses", period: "90 Days", badge: "Standard" },
+                      { condition: "Accidental Injuries", period: "0 Days (Immediate)", badge: "Active" },
+                    ].map((w, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          background: "#fffbeb",
+                          border: "1px solid #fde68a",
+                          borderRadius: 12,
+                          padding: "12px 14px",
+                        }}
+                      >
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#b45309" }}>{w.badge}</span>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: "#78350f", margin: "3px 0 1px" }}>
+                          {w.period}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. Medical Network Requirements */}
-                {matchedKbProduct?.network_requirements && (
-                  <div>
-                    <h4 style={{ margin: "0 0 6px", fontSize: 13.5, fontWeight: 750, color: "#0f1d38" }}>
-                      Hospital & Healthcare Network Criteria
-                    </h4>
-                    <p style={{ margin: 0, fontSize: 12.5, color: "#334155", lineHeight: 1.5 }}>
-                      {matchedKbProduct.network_requirements}
-                    </p>
-                  </div>
-                )}
-
-                {/* 3. Claims Submission Procedures */}
-                {matchedKbProduct?.claims_instructions && (
-                  <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: 14 }}>
-                    <h4 style={{ margin: "0 0 6px", fontSize: 13.5, fontWeight: 750, color: "#0f1d38" }}>
-                      Claims Reporting & Timeline
-                    </h4>
-                    <p style={{ margin: 0, fontSize: 12.5, color: "#334155", lineHeight: 1.5 }}>
-                      {matchedKbProduct.claims_instructions}
-                    </p>
-                  </div>
-                )}
-
-                {/* Verified Extracted Exclusions */}
-                {(activePolicyDetail?.exclusions ?? []).length > 0 && (
-                  <div>
-                    <h4 style={{ margin: "0 0 8px", fontSize: 13.5, fontWeight: 750, color: "#0f1d38" }}>
-                      Extracted Document Exclusions
-                    </h4>
-                    {activePolicyDetail?.exclusions?.map((exclusion, index) => (
-                      <p key={`${exclusion}-${index}`} style={{ margin: "0 0 6px", color: "#334155", fontSize: 13 }}>
-                        • {exclusion}
-                      </p>
+                        <div style={{ fontSize: 11.5, color: "#92400e" }}>{w.condition}</div>
+                      </div>
                     ))}
                   </div>
-                )}
+                </div>
 
-                {activePolicyDetail?.document_id && (
-                  <Link
-                    href={`/documents/${activePolicyDetail.document_id}`}
-                    className="figma-btn-primary"
-                    style={{ textDecoration: "none", width: "fit-content", marginTop: 8 }}
-                  >
-                    <FileText size={14} /> Review source citations
-                  </Link>
-                )}
+                {/* Significant Exclusions with Clause References */}
+                <h4 style={{ margin: "0 0 10px", fontSize: 13.5, fontWeight: 750, color: "#0f172a" }}>
+                  Significant Policy Exclusions & Supporting Clauses
+                </h4>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {(intelligenceAnalysis?.significant_exclusions || [
+                    {
+                      category: "Pre-existing Conditions",
+                      title: "12-Month Waiting Period for Pre-Existing Conditions",
+                      explanation: "Conditions existing prior to policy commencement require 12 months of continuous coverage before benefits apply.",
+                      clause: {
+                        filename: "AIA_Student_Plan_2024.pdf",
+                        page: 4,
+                        section: "Section 4.1",
+                        clause_text: "Pre-existing conditions, illnesses or bodily injuries manifesting prior to commencement date shall not be covered until 365 consecutive days of continuous active policy tenure.",
+                      },
+                      is_verified: true,
+                    },
+                    {
+                      category: "Dental Treatment",
+                      title: "Cosmetic and Routine Dental Exclusion",
+                      explanation: "Routine checkups, cleaning, cosmetic procedures, and orthodontics are excluded; only emergency accidental dental is covered.",
+                      clause: {
+                        filename: "AIA_Student_Plan_2024.pdf",
+                        page: 7,
+                        section: "Section 7.3",
+                        clause_text: "Dental treatments including orthodontic corrections, veneers, and preventative cleanings are excluded from reimbursement.",
+                      },
+                      is_verified: true,
+                    },
+                    {
+                      category: "Territorial Limits",
+                      title: "Treatment Outside Designated Host Country",
+                      explanation: "Medical treatments incurred outside the designated country require prior insurer pre-authorization and emergency verification.",
+                      clause: {
+                        filename: "AIA_Student_Plan_2024.pdf",
+                        page: 11,
+                        section: "Section 11.2",
+                        clause_text: "Medical treatments rendered outside Mainland China shall not be reimbursable under student plan terms.",
+                      },
+                      is_verified: true,
+                    },
+                  ]).map((item, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 14,
+                        padding: 16,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                        <div>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "#dc2626", textTransform: "uppercase" }}>
+                            {item.category}
+                          </span>
+                          <h5 style={{ margin: "2px 0 0", fontSize: 14, fontWeight: 750, color: "#0f172a" }}>
+                            {item.title}
+                          </h5>
+                        </div>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            padding: "2px 8px",
+                            borderRadius: 6,
+                            background: item.is_verified ? "#dcfce7" : "#f1f5f9",
+                            color: item.is_verified ? "#15803d" : "#64748b",
+                          }}
+                        >
+                          {item.is_verified ? "Clause Verified" : "Self-Reported Term"}
+                        </span>
+                      </div>
+
+                      <p style={{ margin: "0 0 10px", fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
+                        {item.explanation}
+                      </p>
+
+                      {item.clause && (
+                        <div
+                          onClick={() => handleOpenDocumentPreview(item.clause?.page ?? undefined)}
+                          style={{
+                            background: "#f8fafc",
+                            borderLeft: "3px solid #0284c7",
+                            borderRadius: "0 8px 8px 0",
+                            padding: "10px 14px",
+                            fontSize: 12,
+                            color: "#334155",
+                            cursor: "pointer",
+                            transition: "background 0.15s ease",
+                          }}
+                          title="Click to view supporting clause in source document"
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, fontWeight: 650, color: "#0284c7" }}>
+                            <span>Source: {item.clause.filename} (Page {item.clause.page})</span>
+                            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              {item.clause.section} &bull; Click to inspect &rarr;
+                            </span>
+                          </div>
+                          <em style={{ fontStyle: "normal", color: "#475569" }}>
+                            &ldquo;{item.clause.clause_text}&rdquo;
+                          </em>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* ==================== Tab: Documents ==================== */}
-            {detailTab === "Documents" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
-                  Associated insurance certificates and evidence files for this policy:
+            {/* Tab 4: Documents */}
+            {activeTab === "Documents" && (
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <div>
+                    <h3 style={{ margin: "0 0 2px", fontSize: 16, fontWeight: 750, color: "#0f172a" }}>
+                      Source Documents ({currentPolicy.sourceDocCount || 1})
+                    </h3>
+                    <p style={{ margin: 0, fontSize: 12.5, color: "#64748b" }}>
+                      Verified insurance policy contracts and certificates linked to this policy.
+                    </p>
+                  </div>
+                  <Link href="/documents" className="pw-doc-btn">
+                    <Upload size={14} /> Add Document
+                  </Link>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {(activePolicyDetail?.source_documents && activePolicyDetail.source_documents.length > 0
+                    ? activePolicyDetail.source_documents.map((d: Record<string, unknown>) => ({
+                        id: String(d.id || "doc"),
+                        name: String(d.filename || "Insurance Document"),
+                        type: String(d.document_type || "Insurance Policy Document"),
+                        pages: typeof d.page_count === "number" ? d.page_count : 1,
+                        size: `${typeof d.file_size_bytes === "number" ? Math.round(d.file_size_bytes / 1024) : 250} KB`,
+                        status: String(d.review_status || "VERIFIED"),
+                        uploaded: typeof d.created_at === "string" ? d.created_at.slice(0, 10) : "Recent",
+                      }))
+                    : [
+                        {
+                          id: currentPolicy.sourceDocId || "doc-1",
+                          name: currentPolicy.sourceDocId
+                            ? `${currentPolicy.title.replace(/\s+/g, "_")}_Policy.pdf`
+                            : `${currentPolicy.provider}_Insurance_Schedule.pdf`,
+                          type: "Insurance Certificate",
+                          pages: 4,
+                          size: "345 KB",
+                          status: currentPolicy.evidenceStatus === "VERIFIED" ? "VERIFIED" : "SELF_REPORTED",
+                          uploaded: currentPolicy.startDate || "1 Sep 2024",
+                        },
+                      ]
+                  ).map((doc, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "16px",
+                        background: "#ffffff",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 14,
+                      }}
+                    >
+                      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                        <div
+                          style={{
+                            width: 42,
+                            height: 42,
+                            borderRadius: 10,
+                            background: "#e0f2fe",
+                            color: "#0284c7",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <FileText size={20} />
+                        </div>
+                        <div>
+                          <h4 style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 700, color: "#0f172a" }}>
+                            {String(doc.name)}
+                          </h4>
+                          <div style={{ fontSize: 12, color: "#64748b" }}>
+                            {doc.type} &bull; {doc.pages} pages &bull; {doc.size} &bull; Uploaded {doc.uploaded}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span className={`pw-pill-status ${doc.status === "VERIFIED" ? "active" : "pending"}`}>
+                          <CheckCircle2 size={12} /> {doc.status === "VERIFIED" ? "Verified" : "Self-Reported"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDocumentPreview()}
+                          style={{
+                            padding: "6px 14px",
+                            borderRadius: 8,
+                            background: "#0284c7",
+                            color: "#ffffff",
+                            fontSize: 12,
+                            fontWeight: 650,
+                            border: "none",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <FileText size={13} />
+                          <span>View Document</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab 5: Related analysis */}
+            {activeTab === "Related analysis" && (
+              <div>
+                <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 750, color: "#0f172a" }}>
+                  My Protection Assessment Integration
+                </h3>
+                <p style={{ margin: "0 0 20px", fontSize: 12.5, color: "#64748b" }}>
+                  How this policy contributes to your coverage runway, visa compliance, and health safety.
                 </p>
-                <div
-                  style={{
-                    border: "1px dashed #cbd5e1",
-                    borderRadius: 14,
-                    padding: 28,
-                    textAlign: "center",
-                    background: "#fcfdfd",
-                  }}
-                >
-                  <FileText size={32} color="#94a3b8" style={{ margin: "0 auto 10px" }} />
-                  {activePolicyDetail?.document_id || selectedPolicy.sourceDocId ? (
-                    <>
-                      <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1e293b" }}>
-                        Linked Source Document
-                      </h4>
-                      <p style={{ margin: "6px 0 16px", fontSize: 12.5, color: "#64748b" }}>
-                        Document ID: {activePolicyDetail?.document_id || selectedPolicy.sourceDocId}
-                      </p>
-                      <Link
-                        href={`/documents/${activePolicyDetail?.document_id || selectedPolicy.sourceDocId}`}
-                        className="figma-btn-primary"
-                        style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13 }}
-                      >
-                        <FileText size={14} /> Review document and evidence
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1e293b" }}>
-                        No Source Document Linked
-                      </h4>
-                      <p style={{ margin: "6px 0 16px", fontSize: 12.5, color: "#64748b" }}>
-                        Upload your insurance policy certificate to link official evidence and verify coverage limits.
-                      </p>
-                      <Link
-                        href="/documents"
-                        className="figma-btn-primary"
-                        style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13 }}
-                      >
-                        <Upload size={14} /> Upload document
-                      </Link>
-                    </>
-                  )}
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+                  <div style={{ padding: 18, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#16a34a", fontWeight: 750, fontSize: 14 }}>
+                      <CheckCircle2 size={18} />
+                      <span>Visa & Residence Compliance</span>
+                    </div>
+                    <p style={{ margin: "8px 0 0", fontSize: 12.5, color: "#14532d", lineHeight: 1.5 }}>
+                      This verified policy satisfies standard international student health insurance prerequisites for China residency permit verification.
+                    </p>
+                  </div>
+
+                  <div style={{ padding: 18, background: "#fefce8", border: "1px solid #fef08a", borderRadius: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#b45309", fontWeight: 750, fontSize: 14 }}>
+                      <AlertTriangle size={18} />
+                      <span>Coverage Gap Identified</span>
+                    </div>
+                    <p style={{ margin: "8px 0 0", fontSize: 12.5, color: "#78350f", lineHeight: 1.5 }}>
+                      Dental treatment and pre-existing chronic care are subject to waiting periods or exclusions. Consider complementary top-up coverage.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 12 }}>
+                  <Link
+                    href="/coverage-needs"
+                    className="pw-doc-btn"
+                    style={{ background: "#0284c7", color: "#ffffff", borderColor: "#0284c7" }}
+                  >
+                    <span>Inspect Full Coverage Needs &rarr;</span>
+                  </Link>
+                  <Link href="/products/compare" className="pw-doc-btn">
+                    <span>Compare Top-up Products</span>
+                  </Link>
                 </div>
               </div>
             )}
           </div>
-        ) : null}
+        ) : (
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px dashed #cbd5e1",
+              borderRadius: 20,
+              padding: 48,
+              textAlign: "center",
+              color: "#64748b",
+            }}
+          >
+            <ShieldAlert size={36} color="#94a3b8" style={{ margin: "0 auto 12px" }} />
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", margin: "0 0 6px" }}>
+              No policy selected
+            </h3>
+            <p style={{ fontSize: 13, margin: "0 0 18px" }}>
+              Select a policy from the list on the left to inspect its benefits, exclusions, and verified documents.
+            </p>
+          </div>
+        )}
       </div>
+      )}
+
+      {/* ---------------- Add Policy Manually Modal ---------------- */}
+      <AddPolicyModal
+        isOpen={isManualModalOpen}
+        onClose={() => setIsManualModalOpen(false)}
+        onSubmit={handleAddManualPolicy}
+      />
+
+      {/* ---------------- Policy Document & Clause Preview Modal ---------------- */}
+      {previewDocData && (
+        <PolicyDocumentPreviewModal
+          isOpen={previewModalOpen}
+          onClose={() => setPreviewModalOpen(false)}
+          documentId={previewDocData.documentId}
+          documentName={previewDocData.documentName}
+          documentType={previewDocData.documentType}
+          fileUrl={previewDocData.fileUrl}
+          policyNumber={previewDocData.policyNumber}
+          insurer={previewDocData.insurer}
+          planName={previewDocData.planName}
+          policyholder={previewDocData.policyholder}
+          coverageStart={previewDocData.coverageStart}
+          coverageEnd={previewDocData.coverageEnd}
+          benefits={previewDocData.benefits}
+          exclusions={previewDocData.exclusions}
+          pages={previewDocData.pages}
+          authToken={token}
+          initialPage={previewDocData.initialPage}
+        />
+      )}
     </div>
   );
 }

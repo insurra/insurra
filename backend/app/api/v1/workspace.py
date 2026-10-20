@@ -6,6 +6,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Header
 from sqlalchemy import select
 
+from app.agent.protection_review import get_latest_assessment, run_protection_review
 from app.core.dependencies import DB, KB
 from app.core.errors import AppError
 from app.models import ClaimCaseRow
@@ -14,6 +15,7 @@ from app.repositories.ownership import owned_resource
 from app.repositories.session_data import insurance_row
 from app.schemas.assessment import CoverageNeed
 from app.schemas.foundation import (
+    AntiLapseAgentStatus,
     ClaimCaseCreate,
     ClaimCaseCreated,
     ClaimCaseStatus,
@@ -22,12 +24,19 @@ from app.schemas.foundation import (
     PathwayComparison,
     PathwayComparisonRequest,
 )
+from app.schemas.protection_plan import (
+    AssessmentRunRequest,
+    PersonalProtectionPlan,
+    ProtectionAssessmentDetail,
+)
 from app.schemas.workspace import RecommendationDecision, SavedDecision
+from app.services.actor_scope import owner_for
 from app.services.audit_logger import log_event
 from app.services.care_pathways import compare
 from app.services.command_center import save_recommendation, summary
 from app.services.coverage_matching import match_needs
 from app.services.pathway_cases import create_case
+from app.services.protection_plan import build_protection_plan
 from app.services.workspace import WorkspaceActor, require_grants
 
 router = APIRouter(tags=["Workspace"])
@@ -36,6 +45,24 @@ router = APIRouter(tags=["Workspace"])
 @router.get("/home/summary", response_model=HomeSummary)
 def home_summary(db: DB, kb: KB, actor: WorkspaceActor):
     return summary(db, actor, kb)
+
+
+@router.get("/agent/anti-lapse/status", response_model=AntiLapseAgentStatus)
+def get_anti_lapse_agent_status(db: DB, actor: WorkspaceActor):
+    from app.services.anti_lapse_agent import run_anti_lapse_agent
+
+    owner = owner_for(actor)
+    return run_anti_lapse_agent(db, owner, actor=actor, force_scan=False)
+
+
+@router.post("/agent/anti-lapse/scan", response_model=AntiLapseAgentStatus)
+def trigger_anti_lapse_agent_scan(db: DB, actor: WorkspaceActor):
+    from app.services.anti_lapse_agent import run_anti_lapse_agent
+
+    owner = owner_for(actor)
+    res = run_anti_lapse_agent(db, owner, actor=actor, force_scan=True)
+    db.commit()
+    return res
 
 
 @router.post("/home/recommendations/decision", response_model=SavedDecision)
@@ -48,6 +75,24 @@ def recommendation_decision(body: RecommendationDecision, db: DB, kb: KB, actor:
 def coverage_needs(db: DB, kb: KB, actor: WorkspaceActor):
     require_grants(db, actor)
     return match_needs(db, actor, kb)
+
+
+@router.get("/protection-plan", response_model=PersonalProtectionPlan)
+def protection_plan(db: DB, kb: KB, actor: WorkspaceActor):
+    return build_protection_plan(db, actor, kb)
+
+
+@router.get("/protection-assessment", response_model=ProtectionAssessmentDetail)
+def protection_assessment(db: DB, actor: WorkspaceActor):
+    owner = owner_for(actor)
+    return get_latest_assessment(db, owner)
+
+
+@router.post("/protection-assessment/run", response_model=ProtectionAssessmentDetail)
+def run_protection_assessment(body: AssessmentRunRequest, db: DB, actor: WorkspaceActor):
+    owner = owner_for(actor)
+    run_protection_review(db, owner, trigger_reason=body.trigger_reason, force=body.force)
+    return get_latest_assessment(db, owner)
 
 
 @router.post("/pathways/compare", response_model=PathwayComparison | EmergencyRedirect)

@@ -34,7 +34,7 @@ def find_existing(db, actor, body, key, fingerprint):
     ).all()
     if any(row.payload_sha256 != fingerprint for row in rows):
         raise AppError(
-            409, "IDEMPOTENCY_CONFLICT", "Konfirmasi ini sudah dipakai untuk pilihan berbeda."
+            409, "IDEMPOTENCY_CONFLICT", "This confirmation was already used for another option."
         )
     return rows[0] if rows else None
 
@@ -46,10 +46,10 @@ def create_case(db, actor, kb, body, key, now=None):
     # Ownership precedes proof/key errors; foreign and missing policy IDs both return 404.
     if not key or not re.fullmatch(r"[A-Za-z0-9_.:-]{8,128}", key):
         raise AppError(
-            422, "IDEMPOTENCY_KEY_REQUIRED", "Konfirmasi memerlukan Idempotency-Key yang valid."
+            422, "IDEMPOTENCY_KEY_REQUIRED", "Confirmation requires a valid Idempotency-Key."
         )
     if not body.comparison_id:
-        raise AppError(409, "COMPARISON_REQUIRED", "Bandingkan jalur sebelum membuat kasus.")
+        raise AppError(409, "COMPARISON_REQUIRED", "Compare care options before creating a case.")
     p = profile(db, actor)
     country = kb.load(p.country_code)
     payload_hash = payload_sha256({**body.model_dump(mode="json"), "country_code": p.country_code})
@@ -81,14 +81,18 @@ def create_case(db, actor, kb, body, key, now=None):
     config = next((c for c in country.pathways.pathways if c.pathway_code == body.path), None)
     option = next((c for c in decision.options if c["path"] == body.path), None)
     if (config and config.emergency) or (option and option.get("emergency")):
-        raise AppError(409, "EMERGENCY_PATH", "Jalur darurat tidak membuat kasus di sini.")
+        raise AppError(409, "EMERGENCY_PATH", "Emergency options do not create a case here.")
     if not config or not option or option.get("coverage_id") != str(coverage.id):
         raise AppError(
-            409, "INVALID_PATHWAY_CHOICE", "Pilih jalur dan perlindungan dari perbandingan aktif."
+            409,
+            "INVALID_PATHWAY_CHOICE",
+            "Choose a pathway and coverage from the active comparison.",
         )
     if option.get("fingerprint") != context_fingerprint(p, country, items):
         raise AppError(
-            409, "CONTEXT_CHANGED", "Data atau KB berubah. Bandingkan ulang sebelum mengonfirmasi."
+            409,
+            "CONTEXT_CHANGED",
+            "Your data or the KB changed. Compare again before confirming.",
         )
     today, _, _ = local_day(p, country, now)
     if (
@@ -98,7 +102,9 @@ def create_case(db, actor, kb, body, key, now=None):
         or coverage.needs_check()
     ):
         raise AppError(
-            409, "COVERAGE_NEEDS_CHECK", "Perlindungan perlu diperiksa sebelum membuat kasus."
+            409,
+            "COVERAGE_NEEDS_CHECK",
+            "Coverage must be reviewed before creating a case.",
         )
     from uuid import uuid4
 

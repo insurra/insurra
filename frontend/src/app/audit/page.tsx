@@ -96,7 +96,7 @@ export default function AuditPage() {
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-3 py-1.5 rounded-full">
-              <ShieldCheck size={13} /> Demo Session Audit (Synthetic)
+              <ShieldCheck size={13} /> Sesi Audit Log
             </span>
           )}
           <Button
@@ -213,7 +213,7 @@ export default function AuditPage() {
                           data-testid="audit-synthetic-badge"
                           className="text-[10px] font-semibold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded"
                         >
-                          SYNTHETIC
+                          SIMULASI
                         </span>
                       )}
                       {ev.source_table && (

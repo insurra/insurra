@@ -10,6 +10,7 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 
 from app.agent.intents import classify_intent
+from app.agent.langchain_agent import build_context_aware_response
 from app.agent.planner import build_plan
 from app.core.errors import AppError
 from app.models import AskLimitRow, ChatSessionRow
@@ -345,6 +346,15 @@ def answer(db, actor, kb, body, settings, gateway_factory=None, cancelled=None):
             )
         if not steps:
             warnings.append("Langkah verifikasi negara belum tersedia dalam KB.")
+        enriched_no_match = build_context_aware_response(
+            question=body.question,
+            country_code=p.country_code,
+            items=items,
+            clauses=[],
+            facts=[],
+            intent=intent,
+            chat_history=chat.turns if chat else None,
+        )
         return AskAnswer(
             answer_points=[],
             disposition="no_match",
@@ -352,6 +362,14 @@ def answer(db, actor, kb, body, settings, gateway_factory=None, cancelled=None):
             tool_steps=tool_steps,
             proposals=proposals,
             warnings=warnings,
+            answer_markdown=enriched_no_match.get("answer_markdown"),
+            key_coverage_details=enriched_no_match.get("key_coverage_details", []),
+            policies_used=enriched_no_match.get("policies_used", []),
+            sources_referenced=enriched_no_match.get("sources_referenced", []),
+            suggested_next_steps=enriched_no_match.get("suggested_next_steps", []),
+            related_links=enriched_no_match.get("related_links", []),
+            follow_up_questions=enriched_no_match.get("follow_up_questions", []),
+            evidence_verification_banner=enriched_no_match.get("evidence_verification_banner"),
             **common,
         )
     today, _, _ = local_day(p, country, datetime.now(UTC))
@@ -473,6 +491,15 @@ def answer(db, actor, kb, body, settings, gateway_factory=None, cancelled=None):
         has_uncertain_points=any(pt.label != "FROM_DOCUMENT" for pt in points),
     )
     db.commit()  # Persist masked guardrail events, even if the answer is rejected.
+    enriched = build_context_aware_response(
+        question=body.question,
+        country_code=p.country_code,
+        items=current_items,
+        clauses=clauses,
+        facts=facts,
+        intent=intent,
+        chat_history=chat.turns if chat else None,
+    )
     return AskAnswer(
         answer_points=points,
         numeric_facts=facts if points else [],
@@ -483,6 +510,14 @@ def answer(db, actor, kb, body, settings, gateway_factory=None, cancelled=None):
         warnings=["Keputusan pembayaran ada pada penyedia."]
         if points
         else ["Tidak ditemukan di dokumen dengan bukti yang valid."],
+        answer_markdown=enriched.get("answer_markdown"),
+        key_coverage_details=enriched.get("key_coverage_details", []),
+        policies_used=enriched.get("policies_used", []),
+        sources_referenced=enriched.get("sources_referenced", []),
+        suggested_next_steps=enriched.get("suggested_next_steps", []),
+        related_links=enriched.get("related_links", []),
+        follow_up_questions=enriched.get("follow_up_questions", []),
+        evidence_verification_banner=enriched.get("evidence_verification_banner"),
         **common,
     )
 

@@ -23,6 +23,7 @@ from app.models import (
     ProfileRow,
     PurposeConsentRow,
 )
+from app.models.account_data import AccountFieldRow
 from app.services.account_access import active_account
 from app.services.demo_access import find_demo_session, reject_ambiguous_actor
 
@@ -173,17 +174,36 @@ def owner_policies(db: Session, owner: Owner) -> list[PolicyView]:
         .where(AccountCoverageRow.account_id == owner.id)
         .order_by(AccountCoverageRow.created_at)
     )
+    docs = {
+        r.id: r
+        for r in db.scalars(
+            select(AccountDocumentRow).where(AccountDocumentRow.account_id == owner.id)
+        )
+    }
+    plan_names = {
+        r.document_id: str(r.value)
+        for r in db.scalars(
+            select(AccountFieldRow).where(
+                AccountFieldRow.account_id == owner.id,
+                AccountFieldRow.field_key == "plan_name",
+            )
+        )
+    }
     return [
         PolicyView(
             ref=str(row.id),
             provider=row.provider,
-            name=None,
+            name=plan_names.get(row.document_id),
             kind=row.kind,
             number_masked=row.policy_number_masked,
             start=row.start_date,
             end=row.end_date,
             country_code=row.country_code,
-            verification="UNVERIFIED",
+            verification=(
+                "VERIFIED"
+                if (row.document_id in docs and docs[row.document_id].status == "VERIFIED")
+                else "UNVERIFIED"
+            ),
             source_document_ids=[str(row.document_id)] if row.document_id else [],
         )
         for row in rows

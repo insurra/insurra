@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr = SecretStr("")
     openai_model: str = "gpt-6.1-sol"
     openai_fast_model: str = "gpt-6-luna"
+    gemini_api_key: SecretStr = SecretStr("")
+    gemini_model: str = "gemini-3.5-flash-lite"
     environment: str = "development"
     session_ttl_hours: int = 24
     kb_root: Path = ROOT / "kb"

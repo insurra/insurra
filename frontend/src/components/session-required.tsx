@@ -14,8 +14,7 @@ export function SessionRequired() {
       <Image src="/mascot-shield.png" alt="" width={120} height={110} />
       <h1>Choose how to continue.</h1>
       <p>
-        This page needs a session. Try a synthetic demo profile, or sign in to use your own
-        account.
+        Halaman ini memerlukan sesi aktif. Coba profil simulasi interaktif, atau masuk untuk menggunakan akun Anda sendiri.
       </p>
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center" }}>
         <Link href="/#demo" className="dx-link">

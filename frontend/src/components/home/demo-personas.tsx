@@ -48,7 +48,7 @@ export function DemoPersonas() {
       <div className="shell">
         <h2 id="demo-title">Try the interactive demo</h2>
         <p className="demo-intro">
-          Pick a persona to explore Insurra with synthetic data. The demo runs in its own isolated
+          Pick a persona to explore Inssura. The demo runs in its own isolated
           session, it is not a real account, and nothing you do there is linked to a real person or
           a real insurer.
         </p>
@@ -70,7 +70,7 @@ export function DemoPersonas() {
             {personas.map((persona) => (
               <li key={persona.persona_id} className="demo-card" data-testid="persona-card">
                 <span className="demo-badge">
-                  <FlaskConical size={13} aria-hidden="true" /> Synthetic demo data
+                  <FlaskConical size={13} aria-hidden="true" /> Profil Interaktif
                 </span>
                 <h3>{persona.display_name}</h3>
                 <p className="demo-role">{persona.role_label ?? "Demo persona"}</p>

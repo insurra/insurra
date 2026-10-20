@@ -40,7 +40,7 @@ export default function AuthPage() {
       fallback={
         <main className="journey-auth-page">
           <section className="journey-auth-panel">
-            <p>Loading Insurra authentication...</p>
+            <p>Loading Inssura authentication...</p>
           </section>
         </main>
       }
@@ -399,11 +399,11 @@ function AuthContent() {
   return (
     <main className="journey-auth-page">
       {/* Left visual column */}
-      <section className="journey-auth-visual" aria-label="Insurra insurance journey">
-        <Link href="/" className="journey-auth-logo" aria-label="Insurra home">
+      <section className="journey-auth-visual" aria-label="Inssura insurance journey">
+        <Link href="/" className="journey-auth-logo" aria-label="Inssura home">
           <Image
             src="/mascot-logo.png"
-            alt="Insurra: Your AI Insurance Companion"
+            alt="Inssura: Your AI Insurance Companion"
             width={1774}
             height={887}
             priority
@@ -449,7 +449,7 @@ function AuthContent() {
         </div>
 
         <div className="journey-mascot-note">
-          <Image src="/mascot-bubble.png" alt="Insurra kangaroo mascot" width={1312} height={1199} />
+          <Image src="/mascot-bubble.png" alt="Inssura kangaroo mascot" width={1312} height={1199} />
           <p>Clear before you need it.</p>
         </div>
 
@@ -487,7 +487,7 @@ function AuthContent() {
             <div className="journey-consent-view">
               <div className="journey-consent-header">
                 <h2>Before We Get Started</h2>
-                <p>You stay in control of how INSURRA uses your information.</p>
+                <p>You stay in control of how INSSURA uses your information.</p>
               </div>
 
               {formError && (
@@ -506,7 +506,7 @@ function AuthContent() {
                       <span className="journey-badge-required">Required</span>
                     </div>
                     <p className="journey-consent-desc">
-                      Allow INSURRA to read and process insurance documents I upload.
+                      Allow INSSURA to read and process insurance documents I upload.
                     </p>
                   </div>
                   <label className="journey-consent-toggle-wrap">
@@ -618,7 +618,7 @@ function AuthContent() {
               {emailDelivery && (
                 <form onSubmit={handleOtpSubmit} className="w-full my-4 text-left">
                   <label htmlFor="otp-input" className="journey-label block mb-1.5 font-medium text-xs text-gray-700">
-                    Atau Masukkan Kode OTP / Verifikasi (6 digit)
+                    Or Enter Verification / OTP Code (6 digits)
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -626,7 +626,7 @@ function AuthContent() {
                       type="text"
                       inputMode="numeric"
                       maxLength={6}
-                      placeholder="Contoh: 123456"
+                      placeholder="e.g. 123456"
                       value={otpCode}
                       onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
                       className="journey-input text-center text-base tracking-widest font-mono flex-1"
@@ -807,11 +807,11 @@ function AuthContent() {
           ) : (
             /* STATE 5: Default Login & Register Tabs (US-01-01, US-01-02) */
             <div>
-              <h2>{mode === "login" ? "Log in to Insurra" : "Create your account"}</h2>
+              <h2>{mode === "login" ? "Log in to Inssura" : "Create your account"}</h2>
               <p className="journey-auth-lead">
                 {mode === "login"
                   ? "Welcome back to your private insurance companion."
-                  : "Start your protection journey with INSURRA."}
+                  : "Start your protection journey with INSSURA."}
               </p>
 
               {/* Top mode tabs (Default tab: Log In) (FR-14) */}

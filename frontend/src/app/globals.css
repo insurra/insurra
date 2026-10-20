@@ -117,11 +117,11 @@ p {
   min-height: 100vh;
 }
 .sidebar {
-  width: 246px;
+  width: 256px;
   flex-shrink: 0;
   position: fixed;
   inset: 0 auto 0 0;
-  padding: 33px 20px 18px;
+  padding: 0 14px 18px;
   background: #fff;
   border-right: 1px solid #e5ebef;
   display: flex;
@@ -132,7 +132,7 @@ p {
   display: flex;
   align-items: center;
   gap: 9px;
-  margin: 0 14px;
+  margin: 0;
   font-size: 31px;
   font-weight: 750;
   letter-spacing: -1.5px;
@@ -148,30 +148,35 @@ p {
   margin-left: -10px;
 }
 .workspace-label {
-  font-size: 9px;
-  font-weight: 650;
-  letter-spacing: 1.35px;
-  color: #7c8d98;
-  margin: 39px 14px 18px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #94a3b8;
+  padding: 0 8px;
+  margin: 10px 0 6px;
+  text-transform: uppercase;
 }
 .main-nav {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
+  width: 100%;
 }
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
-  border-radius: 7px;
-  font-size: 13px;
-  color: #657987;
-  transition: background 0.15s;
+  padding: 9.5px 12px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: #475569;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
 }
 .nav-item:hover {
-  background: #f5f8f8;
-  color: #166451;
+  background: #f8fafc;
+  color: #0f172a;
 }
 .nav-item.active {
   background: #eaf5f1;
@@ -187,7 +192,11 @@ p {
 }
 .sidebar-bottom {
   margin-top: auto;
-  padding-top: 40px;
+  padding-top: 14px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .help-card {
   padding: 19px 16px;
@@ -238,7 +247,7 @@ p {
 .app-column {
   flex: 1;
   min-width: 0;
-  margin-left: 246px;
+  margin-left: 256px;
 }
 .topbar {
   min-height: 79px;

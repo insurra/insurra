@@ -26,7 +26,7 @@ def grant(client, headers, purpose, value=True):
 def test_purposes_are_explicit_independent_and_revocable(client, app, demo):
     _, h = demo()
     states = client.get("/api/v1/consents", headers=h).json()
-    assert len(states) == 3 and all(not s["granted"] and s["granted_at"] is None for s in states)
+    assert len(states) == 4 and all(not s["granted"] and s["granted_at"] is None for s in states)
     grant(client, h, "external_ai")
 
     def ask():
@@ -60,7 +60,7 @@ def test_purposes_are_explicit_independent_and_revocable(client, app, demo):
         == 422
     )
     with app.state.session_factory() as db:
-        assert len(list(db.scalars(select(PurposeConsentRow)))) == 3
+        assert len(list(db.scalars(select(PurposeConsentRow)))) == 4
     audit = client.get("/api/v1/audit", headers=h).json()
     assert any(e["metadata"].get("purpose") == "external_ai" for e in audit)
     assert "Synthetic?" not in json.dumps(audit)
@@ -70,7 +70,12 @@ def test_legacy_grant_never_implies_ai_or_retention(client, demo):
     _, h = demo()
     client.put("/api/v1/consent", headers=h, json={"processing_consent": True})
     states = {s["purpose"]: s["granted"] for s in client.get("/api/v1/consents", headers=h).json()}
-    assert states == {"process_documents": True, "external_ai": False, "retention": False}
+    assert states == {
+        "process_documents": True,
+        "external_ai": False,
+        "retention": False,
+        "health_profile": False,
+    }
     assert (
         client.post("/api/v1/chat/ask", headers=h, json={"question": "Synthetic?"}).status_code
         == 403

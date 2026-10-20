@@ -8,16 +8,16 @@
     "pathways": [
       {
         "pathway_code": "GP",
-        "label": "Dokter umum (GP)",
-        "description": "Panduan pertanyaan untuk menyiapkan layanan; belum memverifikasi syarat fasilitas atau polis Anda.",
+        "label": "General practitioner (GP)",
+        "description": "Questions to help prepare for care; facility and policy requirements have not been verified yet.",
         "required_documents": [
-          "Kartu kepesertaan atau ringkasan polis, jika diminta fasilitas.",
-          "Rujukan dan bukti layanan atau pembayaran, bila berlaku; pastikan kepada fasilitas."
+          "Membership card or policy summary, if requested by the facility.",
+          "Referral and service or payment evidence, when applicable; confirm with the facility."
         ],
         "estimated_out_of_pocket": null,
         "currency": "AUD",
         "uncertainties": [
-          "Daftar ini berisi langkah verifikasi, bukan konfirmasi kelayakan atau pembayaran."
+          "This list contains verification steps, not confirmation of eligibility or payment."
         ],
         "source_url": "https://www.healthdirect.gov.au/the-role-of-a-gp",
         "verification_status": "UNVERIFIED",
@@ -36,30 +36,30 @@
           "benefit"
         ],
         "steps": [
-          "Konfirmasi kelayakan layanan dan manfaat dengan penyedia atau fasilitas.",
-          "Periksa jaringan, prosedur rujukan, dan cara pembayaran sebelum berangkat.",
-          "Cek jadwal atau booking online melalui kanal fasilitas.",
-          "Tanyakan dokumen yang diperlukan; simpan bukti layanan dan pembayaran jika diminta."
+          "Confirm service eligibility and benefits with the provider or facility.",
+          "Check the network, referral procedure, and payment method before you go.",
+          "Check schedules or book online through the facility's official channel.",
+          "Ask which documents are required; keep service and payment evidence if requested."
         ],
         "requirements": [
-          "Kepesertaan aktif dan manfaat yang sesuai perlu dikonfirmasi.",
-          "Jaringan provider, rujukan, dan direct billing atau reimbursement mengikuti dokumen serta konfirmasi fasilitas."
+          "Active membership and applicable benefits must be confirmed.",
+          "Provider network, referral, direct billing, and reimbursement rules depend on policy documents and facility confirmation."
         ],
         "checked_at": null,
         "tariff": null
       },
       {
         "pathway_code": "URGENT_CARE",
-        "label": "Layanan perawatan mendesak",
-        "description": "Sumber pemerintah menjelaskan Medicare UCC untuk kebutuhan mendesak yang tidak mengancam jiwa. Kelayakan dan biaya untuk pemegang OSHC belum dikonfirmasi; tanyakan langsung kepada klinik.",
+        "label": "Urgent care service",
+        "description": "The government source describes Medicare UCCs for urgent, non-life-threatening needs. Eligibility and costs for OSHC holders have not been confirmed; ask the clinic directly.",
         "required_documents": [
-          "Kartu kepesertaan atau ringkasan polis, jika diminta fasilitas.",
-          "Rujukan dan bukti layanan atau pembayaran, bila berlaku; pastikan kepada fasilitas."
+          "Membership card or policy summary, if requested by the facility.",
+          "Referral and service or payment evidence, when applicable; confirm with the facility."
         ],
         "estimated_out_of_pocket": null,
         "currency": "AUD",
         "uncertainties": [
-          "Daftar ini berisi langkah verifikasi, bukan konfirmasi kelayakan atau pembayaran."
+          "This list contains verification steps, not confirmation of eligibility or payment."
         ],
         "source_url": "https://www.health.gov.au/our-work/medicare-urgent-care-clinics/about-medicare-urgent-care-clinics",
         "verification_status": "VERIFIED",
@@ -78,21 +78,21 @@
           "benefit"
         ],
         "steps": [
-          "Konfirmasi kelayakan layanan dan manfaat dengan penyedia atau fasilitas.",
-          "Periksa jaringan, prosedur rujukan, dan cara pembayaran sebelum berangkat.",
-          "Cek jadwal atau booking online melalui kanal fasilitas.",
-          "Tanyakan dokumen yang diperlukan; simpan bukti layanan dan pembayaran jika diminta."
+          "Confirm service eligibility and benefits with the provider or facility.",
+          "Check the network, referral procedure, and payment method before you go.",
+          "Check schedules or book online through the facility's official channel.",
+          "Ask which documents are required; keep service and payment evidence if requested."
         ],
         "requirements": [
-          "Kepesertaan aktif dan manfaat yang sesuai perlu dikonfirmasi.",
-          "Jaringan provider, rujukan, dan direct billing atau reimbursement mengikuti dokumen serta konfirmasi fasilitas."
+          "Active membership and applicable benefits must be confirmed.",
+          "Provider network, referral, direct billing, and reimbursement rules depend on policy documents and facility confirmation."
         ],
         "checked_at": "2026-10-19",
         "tariff": null
       }
     ],
     "emergency": {
-      "label": "Informasi darurat lokal harus diverifikasi sebelum aktivasi navigasi.",
+      "label": "Local emergency information must be verified before navigation is enabled.",
       "phone_number": null,
       "source_url": null,
       "checked_at": null,
@@ -101,18 +101,18 @@
     "service_types": [
       {
         "code": "GP",
-        "label": "Dokter umum (GP)"
+        "label": "General practitioner (GP)"
       }
     ],
-    "help_text": "Sampaikan kebutuhan layanan non-darurat. Keluhan tidak dipakai untuk diagnosis dan tidak disimpan lengkap.",
+    "help_text": "Describe your non-emergency care needs. Your message is not used for diagnosis and is not stored in full.",
     "priority_rules": [
       {
         "codes": [
           "low_cost",
-          "Biaya berobat rendah"
+          "Low care cost"
         ],
         "kind": "lowest_cost",
-        "explanation": "Rentang perkiraan biaya pribadi paling rendah dari tarif dan manfaat yang dapat diverifikasi; bukan penilaian medis."
+        "explanation": "Lowest estimated personal cost range based on verifiable tariffs and benefits; this is not a medical assessment."
       }
     ]
   }

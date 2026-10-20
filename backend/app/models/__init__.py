@@ -6,7 +6,12 @@ from app.models.account_data import (
     AccountDocumentRow,
     AccountFieldRow,
     AccountProfileRow,
+    EmployerBenefitRow,
     FamilyMemberRow,
+    FamilyPolicyLinkRow,
+)
+from app.models.account_data import (
+    AccountProtectionAssessmentRow as AccountProtectionAssessmentRow,
 )
 from app.models.auth import AccountRow, AccountSessionRow, OAuthIdentityRow
 from app.models.catalog import (
@@ -68,7 +73,9 @@ __all__ = [
     "AccountDocumentRow",
     "AccountFieldRow",
     "AccountProfileRow",
+    "EmployerBenefitRow",
     "FamilyMemberRow",
+    "FamilyPolicyLinkRow",
     "AuditRow",
     "ConsentRow",
     "DemoSessionRow",

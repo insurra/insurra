@@ -1,13 +1,20 @@
 """Opt-in provider connectivity only; no insurance or personal documents are sent."""
 
 import argparse
+import sys
+from pathlib import Path
 
-from app.core.config import Settings
-from app.core.errors import AppError
-from app.services.ai_gateway import ResponsesGateway
-from app.services.policy_qa import ModelAnswer
 from openai import OpenAIError
 from pydantic import ValidationError
+
+BACKEND_ROOT = Path(__file__).resolve().parents[1] / "backend"
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
+
+from app.core.config import Settings  # noqa: E402
+from app.core.errors import AppError  # noqa: E402
+from app.services.ai_gateway import ResponsesGateway  # noqa: E402
+from app.services.policy_qa import ModelAnswer  # noqa: E402
 
 
 def main():
@@ -32,9 +39,7 @@ def main():
         raise SystemExit(
             "Provider check unavailable; no provider details or credentials logged"
         ) from None
-    print(
-        f"Structured provider response received ({len(result.answer_points)} points)."
-    )
+    print(f"Structured provider response received ({len(result.answer_points)} points).")
 
 
 if __name__ == "__main__":

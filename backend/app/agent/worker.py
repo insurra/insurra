@@ -121,12 +121,19 @@ def _handle_consent_revoked(db: Session, owner: Owner, event: WfAgentEventRow) -
 
 
 def _handle_insights_and_schedules(db: Session, owner: Owner, event: WfAgentEventRow) -> None:
-    """Refresh deterministic protection insights and policy reminders when context changes."""
+    """Refresh deterministic protection insights, protection review agent assessment, and policy reminders when context changes."""
     try:
         from app.agent.insights import refresh_owner_insights
 
         refresh_owner_insights(db, owner)
     except ImportError:
+        pass
+    try:
+        from app.agent.protection_review import run_protection_review
+
+        ev_type = event.event_type or event.tool or "EVENT_TRIGGER"
+        run_protection_review(db, owner, trigger_reason=ev_type, force=True)
+    except Exception:
         pass
     try:
         from app.agent.schedules import reconcile_owner_reminders
@@ -161,6 +168,7 @@ def _register_builtin_consumers() -> None:
         "profile.context.changed",
         "onboarding.completed",
         "document.field.confirmed",
+        "document.verified",
         "coverage.updated",
         "claim.created",
         "claim.status.changed",

@@ -315,7 +315,7 @@ export default function ProfilePage() {
           <div>
             <strong>Country Switch Notice:</strong> Switching residence country clears
             country-bound fields (city, institution/employer, study and permit dates, currency) to
-            maintain data integrity with the target country knowledge base.
+            maintain data integrity with the target country regulations.
           </div>
         </div>
       )}
@@ -388,11 +388,11 @@ export default function ProfilePage() {
               value={residenceCountry}
               onChange={(e) => handleCountryChange(e.target.value as "CN" | "ID")}
             >
-              <option value="CN">China 🇨🇳 (Active KB)</option>
-              <option value="ID">Indonesia 🇮🇩 (Active KB)</option>
+              <option value="CN">China 🇨🇳 (Supported)</option>
+              <option value="ID">Indonesia 🇮🇩 (Supported)</option>
             </select>
             <span className="profile-field-hint">
-              Active insurance knowledge bases are China and Indonesia.
+              Supported insurance coverage regions are China and Indonesia.
             </span>
           </div>
 

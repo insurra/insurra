@@ -56,7 +56,7 @@ export default function OnboardingPage() {
         </div>
         <h2>Processing Consent</h2>
         <p>
-          This control approves local document processing only. Transmission to external AI services and retention of original files require separate explicit grants. Synthetic data remains inspectable without consent.
+          This control approves local document processing only. Transmission to external AI services and retention of original files require separate explicit grants. Preview data remains inspectable without consent.
         </p>
         <div className="consent-point">
           <FileCheck2 size={21} />

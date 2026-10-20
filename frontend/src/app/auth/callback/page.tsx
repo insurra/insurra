@@ -45,7 +45,7 @@ export default function AuthCallbackPage() {
     if (token) {
       void acceptToken(token).then((success) => {
         if (success) router.replace("/account/onboarding");
-        else setMessage("Sesi tidak dapat diverifikasi. Silakan masuk kembali.");
+        else setMessage("Session could not be verified. Please sign in again.");
       });
     }
   }, [acceptToken, loginWithSupabase, router]);

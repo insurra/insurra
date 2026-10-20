@@ -14,6 +14,7 @@ class ConsentPurpose(StrEnum):
     PROCESS_DOCUMENTS = "process_documents"
     EXTERNAL_AI = "external_ai"
     RETENTION = "retention"
+    HEALTH_PROFILE = "health_profile"
 
 
 class PurposeConsentUpdate(Contract):

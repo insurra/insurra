@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
-from app.models import ConsentRow, PurposeConsentRow
+from app.models import ConsentRow, ProfileRow, PurposeConsentRow
 from app.schemas.consent import POLICY_VERSION, ConsentPurpose, PurposeConsentUpdate
 from app.services.audit_logger import log_event
 
@@ -31,7 +31,17 @@ def purpose_row(db: Session, session_id: UUID, purpose: ConsentPurpose) -> Purpo
         )
     )
     if row is None:
-        raise AppError(403, "CONSENT_REQUIRED", "Persetujuan tujuan belum tersedia.")
+        row = PurposeConsentRow(
+            session_id=session_id,
+            purpose=purpose.value,
+            granted=False,
+            policy_version=POLICY_VERSION,
+            granted_at=None,
+            revoked_at=None,
+            updated_at=datetime.now(UTC),
+        )
+        db.add(row)
+        db.flush()
     return row
 
 
@@ -62,6 +72,16 @@ def update_purpose(db: Session, session_id: UUID, body: PurposeConsentUpdate):
         legacy = db.get(ConsentRow, session_id)
         legacy.processing_consent = body.granted
         legacy.updated_at = timestamp
+    if body.purpose == ConsentPurpose.HEALTH_PROFILE and not body.granted:
+        from app.schemas.profile import HEALTH_PROFILE_FIELDS
+
+        profile = db.scalar(select(ProfileRow).where(ProfileRow.session_id == session_id))
+        if profile is not None:
+            profile.payload = {
+                key: value
+                for key, value in profile.payload.items()
+                if key not in HEALTH_PROFILE_FIELDS
+            }
     log_event(
         db,
         session_id,

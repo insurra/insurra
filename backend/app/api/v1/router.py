@@ -13,6 +13,7 @@ from app.api.v1 import (
     consent,
     context,
     documents,
+    family,
     foundation,
     insights,
     insurance,
@@ -20,6 +21,7 @@ from app.api.v1 import (
     policy_qa,
     preferences,
     profiles,
+    protection,
     sessions,
     workspace,
 )
@@ -38,6 +40,7 @@ for module in (
     profiles,
     documents,
     insurance,
+    family,
     assessments,
     chat,
     care,
@@ -51,5 +54,6 @@ for module in (
     insights,
     notifications,
     preferences,
+    protection,
 ):
     router.include_router(module.router)

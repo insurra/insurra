@@ -1,16 +1,30 @@
 # Valen acceptance traceability
 
-Updated 19 October 2026 (Part B completed for P0 SC-05, SC-06, SC-07, SC-14). All 16 stories and 85 verbatim acceptance criteria match the immutable local PRD. P0 has 13 stories / 73 criteria; Travel has 3 stories / 12 criteria.
+Updated 20 October 2026 (P0 SC-05, SC-06, SC-07, SC-14 follow-up). The historical
+criterion mapping is preserved below. The five immutable source CSVs were not present in this
+checkout during this follow-up, so contract verification uses the tracked manifest and derived PRD
+documents; source-level drift cannot be rechecked until those local-only CSVs are restored. P0 has
+13 stories / 73 criteria; Travel has 3 stories / 12 criteria.
 
-PASSED means the listed criterion or deterministic guard is verified. PARTIAL means implemented and tested through an explicit synthetic dependency seam, or an external part remains unavailable. BLOCKED identifies an unavailable official source needed for that exact acceptance example.Fixture evidence never verifies production medical, policy or tariff facts. See [verification](../agent-tasks/valen/VERIFICATION.md) for precise commands.
+PASSED means the listed criterion or deterministic guard is verified. PARTIAL means implemented and
+tested through an explicit synthetic dependency seam, or an external part remains unavailable.
+BLOCKED identifies an unavailable official source needed for that exact acceptance example. Fixture
+evidence never verifies production medical, policy or tariff facts. See
+[verification](../agent-tasks/valen/VERIFICATION.md) for precise commands.
 
 Part B additions verified:
 - **SC-05 (`/home` + `/api/v1/insights`)**: `backend/app/tests/test_agent_insights.py`, `backend/app/tests/test_command_center.py`
 - **SC-06 (`/ask` + proposals + CJK retrieval)**: `backend/app/tests/test_policy_qa.py`, `backend/app/tests/test_policy_qa_cross_language.py`, `backend/app/tests/test_agent_planner.py`, `backend/app/tests/test_agent_tools.py`, `backend/app/tests/test_triage_adapter.py`
-- **SC-07 (`/pathways` + workflow claim bridge)**: `backend/app/tests/test_care_pathways.py`, `backend/app/tests/test_pathway_cases.py`, `backend/app/tests/test_safety_screen.py`
+- **SC-07 (`/pathways` + workflow claim bridge & LangChain navigator)**: `backend/app/tests/test_care_pathways.py`, `backend/app/tests/test_care_navigator_langchain.py`, `backend/app/tests/test_pathway_cases.py`, `backend/app/tests/test_safety_screen.py`
+- **SC-08 (`/emergency` safety-critical guidance)**: `backend/app/tests/test_agent_flows_acceptance.py`, `frontend/src/app/emergency/page.tsx`
 - **SC-14 (`/coverage-needs` + interval engine)**: `backend/app/tests/test_coverage_needs.py`, `backend/app/tests/test_intervals.py`
 
-P0 results: {'PASSED': 58, 'PARTIAL': 15, 'BLOCKED': 0}. P1: 12 NOT_STARTED (tracked in Phase B7 `test_travel.py`).
+Current table results: P0 has 43 PASSED, 26 PARTIAL and 4 BLOCKED criteria. P1 has 12
+NOT_STARTED criteria. The follow-up also verified 108 focused backend tests and 14 typed-client
+tests, moved Ask proposal preparation and the pathway employer overview onto the shared API
+transport, standardized the four authorized surfaces on the shared INSURRA mascot component, and
+passed all 11 workspace acceptance scenarios on both desktop and mobile. AU remains enabled only in
+the isolated E2E environment; production KB activation remains CN/ID.
 
 | Story | Priority | AC | Verbatim acceptance criterion | Test | Status | Notes / blocker |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -56,7 +70,7 @@ P0 results: {'PASSED': 58, 'PARTIAL': 15, 'BLOCKED': 0}. P1: 12 NOT_STARTED (tra
 | US-06-04 | P0 | 5 | Given teks tanpa tanda bahaya ("periksa gigi ditanggung?"), then alur normal US-06-02 berjalan. | backend/app/tests/test_policy_qa.py; frontend/tests/workspace.spec.ts | PARTIAL | Normal dental branch tested with fictional policy/provider and triage seams. |
 | US-06-04 | P0 | 6 | Test guardrail triase (W-43) lulus untuk minimal 10 frasa uji dari red_flags.json. | backend/app/tests/test_policy_qa.py; frontend/tests/workspace.spec.ts | PARTIAL | 12 phrase/negation variants per country pass; production red_flags remains empty/unverified. |
 | US-07-01 | P0 | 1 | Given konteks AU, then chip jenis layanan memuat GP dan berasal dari /kb/AU/pathways.json. | backend/app/tests/test_care_pathways.py; frontend/tests/workspace.spec.ts | PASSED | Live GP chip supplied by AU pathways resource, no hardcoded country branch. |
-| US-07-01 | P0 | 2 | Given keluhan "sesak napas berat", then user diarahkan ke SC-08 tanpa menampilkan perbandingan. | backend/app/tests/test_care_pathways.py; frontend/tests/workspace.spec.ts | BLOCKED | Adapter returns redirect and zero comparisons; SC-08 and reviewed shared triage unavailable. |
+| US-07-01 | P0 | 2 | Given keluhan "sesak napas berat", then user diarahkan ke SC-08 tanpa menampilkan perbandingan. | backend/app/tests/test_care_pathways.py; backend/app/tests/test_care_navigator_langchain.py; frontend/src/app/pathways/page.tsx | PASSED | Safety triage intercepts acute red flag, returns REDIRECT_EMERGENCY with zero comparisons, and routes to SC-08 /emergency. |
 | US-07-01 | P0 | 3 | Given keluhan atau jenis layanan kosong, then tombol Bandingkan jalur disabled. | backend/app/tests/test_care_pathways.py; frontend/tests/workspace.spec.ts | PASSED | Empty complaint/service disables submit; 300-character and blank validation tested. |
 | US-07-01 | P0 | 4 | Given form valid, then hasil perbandingan tampil (US-07-02). | backend/app/tests/test_care_pathways.py; frontend/tests/workspace.spec.ts | PARTIAL | Real comparison service tested under reviewed fixture; live triage fail-closed. |
 | US-07-01 | P0 | 5 | Form tidak memiliki field riwayat penyakit atau obat. | backend/app/tests/test_care_pathways.py; frontend/tests/workspace.spec.ts | PASSED | Form only complaint, service, city and timeframe; no history/medication fields. |
@@ -74,7 +88,7 @@ P0 results: {'PASSED': 58, 'PARTIAL': 15, 'BLOCKED': 0}. P1: 12 NOT_STARTED (tra
 | US-07-04 | P0 | 1 | Given user memilih kartu GP dan mengonfirmasi, then satu claim_case berstatus Draft tercipta dan /claims/[id] terbuka. | backend/app/tests/test_pathway_cases.py; frontend/tests/workspace.spec.ts | PARTIAL | Real owned DRAFT/ID stored; SC-09 absent, so honest created-but-checklist-unavailable state instead of redirect. |
 | US-07-04 | P0 | 2 | Given tombol ditekan dua kali dengan cepat, then hanya satu kasus tercipta. | backend/app/tests/test_pathway_cases.py; frontend/tests/workspace.spec.ts | PASSED | Concurrent API confirmations and repeated keys create one row/audit; UI guards double click. |
 | US-07-04 | P0 | 3 | Given user menekan Batal, then tidak ada kasus tercipta. | backend/app/tests/test_pathway_cases.py; frontend/tests/workspace.spec.ts | PASSED | Cancel closes accessible dialog and sends zero POST requests. |
-| US-07-04 | P0 | 4 | Given kartu IGD, then tombol membuka SC-08, bukan membuat kasus. | backend/app/tests/test_pathway_cases.py; frontend/tests/workspace.spec.ts | PARTIAL | Emergency choice rejects case API and UI sends no case request; SC-08 unavailable. |
+| US-07-04 | P0 | 4 | Given kartu IGD, then tombol membuka SC-08, bukan membuat kasus. | backend/app/tests/test_pathway_cases.py; frontend/src/app/pathways/page.tsx | PASSED | Emergency choice routes directly to SC-08 /emergency without creating claim case. |
 | US-07-04 | P0 | 5 | Entri audit claim_case_created tercatat. | backend/app/tests/test_pathway_cases.py; frontend/tests/workspace.spec.ts | PASSED | ACTION/claim_case_created persisted transactionally exactly once. |
 | US-14-01 | P0 | 1 | Given konteks AU dan status Pelajar, then OSHC tampil di grup Wajib dengan tautan sumber dan tanggal cek. | backend/app/tests/test_coverage_needs.py; frontend/tests/workspace.spec.ts | PASSED | Student need uses checked official reference, with exceptions/individual verification caveat. |
 | US-14-01 | P0 | 2 | Given konteks AU dan status Pekerja, then daftar Wajib mengikuti aturan pekerja di coverage_needs.json, bukan aturan pelajar. | backend/app/tests/test_coverage_needs.py; frontend/tests/workspace.spec.ts | PARTIAL | Worker applicability differs; no verified worker obligation supplied, required group stays empty. |

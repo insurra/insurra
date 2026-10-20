@@ -1,5 +1,6 @@
 "use client";
 
+import { showAlert } from "@/components/ui/app-dialog";
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import {
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { SandboxClaimStatus } from "@/components/claims/sandbox-status";
 import { useAuth } from "@/lib/auth";
 import { getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
+import { sanitizeCopywriting } from "@/lib/sanitize-copywriting";
 import "./claims.css";
 
 interface WorkflowOverview {
@@ -116,7 +118,7 @@ export default function ClaimsPage() {
   const handleCreateCase = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPolicyRef) {
-      alert("Please select a policy.");
+      void showAlert("Please select a policy.");
       return;
     }
     setCreatingCase(true);
@@ -142,7 +144,7 @@ export default function ClaimsPage() {
       setClaimTitle("");
       await loadData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error creating claim");
+      void showAlert(err instanceof Error ? err.message : "Error creating claim");
     } finally {
       setCreatingCase(false);
     }
@@ -241,7 +243,7 @@ export default function ClaimsPage() {
                 1 Action Awaiting Approval
               </div>
               <div className="claims-hero-banner-sub">
-                INSURRA prepared &apos;{overview.awaiting_approval_banner.title}&apos;. Review the details and consequences before anything runs.
+                INSSURA prepared &apos;{overview.awaiting_approval_banner.title}&apos;. Review the details and consequences before anything runs.
               </div>
             </div>
           </div>
@@ -269,7 +271,7 @@ export default function ClaimsPage() {
             </span>
           ) : (
             <span className="claims-tag">
-              <ShieldCheck size={13} /> Demo Account · KB Verified
+              <ShieldCheck size={13} /> Terverifikasi Resmi
             </span>
           )}
           <Button
@@ -419,9 +421,9 @@ export default function ClaimsPage() {
                     filteredCases.map((item) => (
                       <tr key={item.id}>
                         <td className="claim-ref-cell">{item.reference}</td>
-                        <td className="claim-title-cell">{item.title}</td>
+                        <td className="claim-title-cell">{sanitizeCopywriting(item.title)}</td>
                         <td className="claim-policy-cell">
-                          {item.policy_label || "Standard Cover"}
+                          {sanitizeCopywriting(item.policy_label) || "Standard Cover"}
                         </td>
                         <td>{getStatusBadge(item.status, item.status_label)}</td>
                         <td className="claim-date-cell">
@@ -453,7 +455,7 @@ export default function ClaimsPage() {
               <div className="how-step-content">
                 <h4>Prepare</h4>
                 <p>
-                  Upload receipts and documents. INSURRA extracts fields with conservative confidence.
+                  Upload receipts and documents. INSSURA extracts fields with conservative confidence.
                 </p>
               </div>
             </div>

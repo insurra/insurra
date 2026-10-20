@@ -19,7 +19,9 @@ def upgrade():
         sa.Column("birth_date", sa.String(10), nullable=True),
         sa.Column("consent_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.ForeignKeyConstraint(["account_id"], ["accounts.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["account_id"], ["accounts.id"], name="fk_family_members_account_id", ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index("ix_family_members_account_id", "family_members", ["account_id"])

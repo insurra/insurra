@@ -75,7 +75,7 @@ async function pathwayFixture(page: import("@playwright/test").Page) {
   const comparison: Comparison = {
     comparison_id: crypto.randomUUID(),
     context_country_code: "AU",
-    paths: ["Dokter umum (GP)", "Klinik urgent care"].map((name, i) => ({
+    paths: ["General practitioner (GP)", "Urgent care clinic"].map((name, i) => ({
       pathway_code: i ? "URGENT_CARE" : "GP",
       name,
       coverage_id: fixture.coverage_id,
@@ -85,12 +85,12 @@ async function pathwayFixture(page: import("@playwright/test").Page) {
       emergency: false,
       best_for_priority: false,
       steps: [
-        "Periksa kepesertaan",
-        "Konfirmasi prosedur",
-        "Cek jadwal atau booking online",
+        "Check membership",
+        "Confirm the procedure",
+        "Check the schedule or book online",
       ],
-      requirements: ["Konfirmasi provider dalam jaringan"],
-      docs: ["Ringkasan polis bila diminta"],
+      requirements: ["Confirm that the provider is in network"],
+      docs: ["Policy summary if requested"],
       uncertainties: [],
       sources: [],
       est_out_of_pocket: null,
@@ -98,11 +98,11 @@ async function pathwayFixture(page: import("@playwright/test").Page) {
     uncertainties: [
       {
         code: "provider_network",
-        label: "Apakah provider dalam jaringan?",
-        steps: ["Tanya fasilitas tentang jaringan dan pembayaran."],
+        label: "Is the provider in network?",
+        steps: ["Ask the facility about its network and payment process."],
       },
     ],
-    warnings: ["Tarif belum tersedia; bukan jaminan pembayaran."],
+    warnings: ["Tariffs are not available; this is not a payment guarantee."],
   };
   await page.route("**/api/v1/pathways/compare", (route) =>
     route.fulfill({ json: comparison }),
@@ -116,21 +116,21 @@ test("SC-07 live screen fails closed while triage data is unreviewed", async ({
   await accountWorkspace(page);
   await page.goto("/pathways");
   await expect(
-    page.getByRole("heading", { name: "Mau berobat ke mana?" }),
+    page.getByRole("heading", { name: "Care Pathways" }),
   ).toBeVisible();
   await expect(
-    page.getByText("Basis tanda bahaya negara ini belum terverifikasi.", {
+    page.getByText("safety guidance for this country is still under review", {
       exact: false,
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("textbox", { name: "Ceritakan keluhanmu" }),
+    page.getByRole("textbox", { name: "Describe what care you need" }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "Compare care options", exact: true }),
   ).toBeDisabled();
   await expect(
-    page.getByRole("button", { name: "Bandingkan jalur", exact: true }),
-  ).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: "Dokter umum (GP)", exact: true }),
+    page.getByRole("button", { name: /General practitioner \(GP\)/ }),
   ).toBeVisible();
 });
 
@@ -159,29 +159,26 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
   });
   await page.goto("/pathways");
   await page
-    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
-    .fill("Kebutuhan layanan non-darurat");
+    .getByRole("textbox", { name: "Describe what care you need" })
+    .fill("I need non-emergency care");
   await page
-    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
+    .getByRole("button", { name: "Compare care options", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Bandingkan jalur", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Pilih jalur ini", exact: true })
+    .getByRole("button", { name: "Select this pathway", exact: true })
     .first()
     .click();
-  const dialog = page.getByRole("dialog", { name: "Konfirmasi jalur" });
-  await expect(dialog).toContainText("Kamu mungkin tidak perlu klaim sendiri");
-  await dialog.getByRole("button", { name: "Batal", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Confirm Care Pathway" });
+  await expect(dialog).toContainText("You may not need to file a claim yourself");
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(dialog).not.toBeVisible();
   expect(requests).toHaveLength(0);
   await page
-    .getByRole("button", { name: "Pilih jalur ini", exact: true })
+    .getByRole("button", { name: "Select this pathway", exact: true })
     .first()
     .click();
   await dialog
-    .getByRole("button", { name: "Buat kasus klaim", exact: true })
+    .getByRole("button", { name: "Create Claim Case", exact: true })
     .evaluate((button: HTMLButtonElement) => {
       button.click();
       button.click();
@@ -189,10 +186,10 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
   await expect(dialog.getByRole("alert")).toContainText("Coba kembali");
   expect(requests).toHaveLength(1);
   await dialog
-    .getByRole("button", { name: "Buat kasus klaim", exact: true })
+    .getByRole("button", { name: "Create Claim Case", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Kasus klaim dibuat", exact: true }),
+    page.getByRole("heading", { name: "Claim case created", exact: true }),
   ).toBeVisible();
   expect(requests).toHaveLength(2);
   expect(requests[0].key).toBeTruthy();
@@ -202,10 +199,10 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
     coverage_id: fixture.coverage_id,
     comparison_id: fixture.comparison.comparison_id,
   });
-  await expect(page.getByText(`Status Draft · ID ${caseId}`)).toBeVisible();
+  await expect(page.getByText(`Draft Status · ID ${caseId}`)).toBeVisible();
   await expect(
     page.getByText(
-      "Kasus tersimpan. Kesiapan klaim SC-09 belum tersedia; checklist belum dapat dibuka.",
+      "Case saved. Claim readiness checklist is not yet available for this provider.",
     ),
   ).toBeVisible();
 });
@@ -221,19 +218,16 @@ test("SC-07 emergency card never sends case creation", async ({ page }) => {
   });
   await page.goto("/pathways");
   await page
-    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
-    .fill("Kebutuhan layanan non-darurat");
+    .getByRole("textbox", { name: "Describe what care you need" })
+    .fill("I need non-emergency care");
   await page
-    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
+    .getByRole("button", { name: "Compare care options", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Bandingkan jalur", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Bantuan darurat", exact: true })
+    .getByRole("button", { name: "Emergency Assistance", exact: true })
     .click();
   await expect(page.locator(".vn").getByRole("alert")).toContainText(
-    "Perbandingan dihentikan",
+    "Comparison has been stopped",
   );
   expect(calls).toBe(0);
 });
@@ -246,19 +240,16 @@ test("SC-07 comparison form, unknown costs and copy questions work with a synthe
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/pathways");
   const submit = page.getByRole("button", {
-    name: "Bandingkan jalur",
+    name: "Compare care options",
     exact: true,
   });
   await expect(submit).toBeDisabled();
   await page
-    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
-    .fill("Kebutuhan layanan non-darurat");
-  await expect(submit).toBeDisabled();
-  await page
-    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
-    .click();
+    .getByRole("textbox", { name: "Describe what care you need" })
+    .fill("I need non-emergency care");
+  await expect(submit).toBeEnabled();
   await expect(
-    page.getByRole("textbox", { name: "Kota", exact: true }),
+    page.getByRole("textbox", { name: "City", exact: true }),
   ).toHaveValue("Melbourne");
   const sent = page.waitForRequest((r) =>
     r.url().endsWith("/pathways/compare"),
@@ -266,22 +257,22 @@ test("SC-07 comparison form, unknown costs and copy questions work with a synthe
   await submit.click();
   expect((await sent).postDataJSON().timeframe).toBe("unknown");
   const cards = page
-    .getByRole("region", { name: "Perbandingan jalur" })
+    .getByRole("region", { name: "Care pathway comparison" })
     .getByRole("article");
   await expect(cards).toHaveCount(2);
-  await expect(cards.first()).toContainText("Belum diketahui");
+  await expect(cards.first()).toContainText("Cost not available");
   await expect(
-    page.getByRole("textbox", { name: "Ceritakan keluhanmu" }),
+    page.getByRole("textbox", { name: "Describe what care you need" }),
   ).toHaveValue("");
   await page
-    .getByRole("button", { name: "Salin pertanyaan untuk klinik" })
+    .getByRole("button", { name: "Copy questions for clinic" })
     .click();
-  await expect(page.getByText("Pertanyaan tersalin.")).toBeVisible();
+  await expect(page.getByText("Questions copied to clipboard.")).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-    "Apakah provider dalam jaringan?",
+    "Is the provider in network?",
   );
   await expect(
-    page.getByRole("button", { name: "Buat pengingat cek" }),
+    page.getByRole("button", { name: "Create check reminder" }),
   ).toBeDisabled();
   expect(
     await page.evaluate(

@@ -4,21 +4,27 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
   AlertTriangle,
+  ArrowLeft,
   Check,
   CheckCircle2,
   Clock,
+  Compass,
   Copy,
   Edit3,
   ExternalLink,
   FileCheck2,
+  FileText,
+  Home,
   KeyRound,
   Play,
+  Send,
   ShieldCheck,
   User,
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConsentPrompt } from "@/components/workspace/consent-prompt";
+import { InsurraMascot } from "@/components/brand/insurra-mascot";
 import { useAuth } from "@/lib/auth";
 import {
   getWorkflowHeaders,
@@ -27,6 +33,7 @@ import {
   type WorkflowActionView,
   type WorkflowExecutionReceipt,
 } from "@/lib/api/workflow-client";
+import { sanitizeCopywriting } from "@/lib/sanitize-copywriting";
 import "./actions.css";
 
 export default function ActionsPage() {
@@ -348,12 +355,29 @@ export default function ActionsPage() {
 
   return (
     <div className="actions-workspace">
+      {/* Top Navigation / Back to Menu */}
+      <div className="actions-nav-bar">
+        <Link href="/claims" className="actions-back-btn">
+          <ArrowLeft size={15} />
+          <span>Kembali ke Claims Center</span>
+        </Link>
+        <span className="actions-nav-sep">•</span>
+        <Link href="/home" className="actions-nav-home">
+          <Home size={14} />
+          <span>Dashboard Menu</span>
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="actions-heading">
         <div>
+          <div className="actions-pre-badge">
+            <ShieldCheck size={13} />
+            <span>Persetujuan Kriptografis Tindakan</span>
+          </div>
           <h1>Action Approval Boundary</h1>
           <p>
-            Review and approve actions prepared by INSURRA. No external action or sandbox submission occurs without explicit cryptographic consent.
+            Tinjau dan setujui tindakan yang disiapkan oleh INSSURA. Tidak ada tindakan eksternal atau pengiriman ke lingkungan asuransi yang dilakukan tanpa persetujuan eksplisit Anda.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -405,13 +429,19 @@ export default function ActionsPage() {
         </div>
       )}
 
-      {/* Security Banner */}
-      <div className="actions-banner">
-        <ShieldCheck size={24} />
-        <div>
-          <strong>Cryptographic Approval Security Boundary</strong>
-          <p>
-            Your approval is cryptographically bound to the SHA-256 hash and version of the exact reviewed payload. If the server or evidence changes, the approval is instantly invalidated.
+      {/* Security Mascot Banner */}
+      <div className="actions-security-mascot-card">
+        <div className="actions-mascot-img-wrap">
+          <InsurraMascot variant="shield" size={68} priority />
+        </div>
+        <div className="actions-mascot-card-body">
+          <div className="actions-mascot-card-badge">
+            <ShieldCheck size={13} />
+            <span>Cryptographic Approval Security Boundary</span>
+          </div>
+          <h3 className="actions-mascot-card-title">Batas Keamanan &amp; Izin Kriptografis</h3>
+          <p className="actions-mascot-card-text">
+            Persetujuan Anda terikat secara kriptografis dengan SHA-256 hash dan versi muatan server yang ditinjau. Jika data atau bukti medis di server berubah, persetujuan akan otomatis dibatalkan seketika demi keamanan Anda.
           </p>
         </div>
       </div>
@@ -452,13 +482,15 @@ export default function ActionsPage() {
           </div>
 
           <div className="actions-list">
-            {loading && <p className="text-center py-10 text-slate-400 text-sm">Loading actions...</p>}
+            {loading && <p className="text-center py-10 text-slate-400 text-sm">Memuat daftar tindakan...</p>}
             {!loading && visibleActions.length === 0 && (
-              <div className="text-center py-12 text-slate-400">
-                <FileCheck2 size={32} className="mx-auto mb-2 opacity-40" />
-                <p className="text-sm font-semibold text-slate-600">No actions in this queue</p>
-                <p className="text-xs text-slate-400 mt-1">
-                  Actions appear when claim forms or inquiries are prepared for review.
+              <div className="text-center py-12 px-4 text-slate-400">
+                <div className="mb-3 flex justify-center">
+                  <InsurraMascot variant="checklist" size={64} decorative />
+                </div>
+                <p className="text-sm font-bold text-slate-700">Tidak ada tindakan di antrean ini</p>
+                <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                  Tindakan akan otomatis muncul ketika formulir klaim, pengingat, atau surat ke pihak asuransi disiapkan untuk ditinjau.
                 </p>
               </div>
             )}
@@ -474,10 +506,12 @@ export default function ActionsPage() {
                   }}
                   className={`actions-row ${selectedId === act.id ? "selected" : ""}`}
                 >
-                  <div>
-                    <div className="actions-row-title">{act.title}</div>
+                  <div className="actions-row-main">
+                    <div className="actions-row-title">{sanitizeCopywriting(act.title)}</div>
                     <div className="actions-row-meta">
-                      {act.reference} • {act.environment_label}
+                      <span className="actions-row-ref">{act.reference}</span>
+                      <span className="actions-row-dot">•</span>
+                      <span className="actions-row-env">{act.environment_label}</span>
                     </div>
                   </div>
                   <span
@@ -486,6 +520,8 @@ export default function ActionsPage() {
                         ? "status-chip-awaiting"
                         : act.status === "COMPLETED" || act.status === "HANDOFF_READY"
                         ? "status-chip-ready"
+                        : act.status === "REJECTED" || act.status === "CANCELLED" || act.status === "FAILED"
+                        ? "status-chip-rejected"
                         : "status-chip-draft"
                     }`}
                   >
@@ -502,22 +538,59 @@ export default function ActionsPage() {
             <div>
               {/* Review Header */}
               <div className="actions-review-header">
-                <div>
-                  <h2 className="actions-review-title">{selectedAction.title}</h2>
+                <div className="actions-review-title-group">
+                  <h2 className="actions-review-title">{sanitizeCopywriting(selectedAction.title)}</h2>
                   <p className="actions-review-sub">
                     Action Reference: <strong className="text-slate-800">{selectedAction.reference}</strong> • Created:{" "}
                     {new Date(String(selectedAction.created_at)).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <span className="status-chip status-chip-awaiting" data-testid="action-status-badge">
-                    {selectedAction.status}
+                <div className="actions-review-header-badges">
+                  <span
+                    className={`status-chip ${
+                      selectedAction.status === "AWAITING_APPROVAL"
+                        ? "status-chip-awaiting"
+                        : selectedAction.status === "COMPLETED" || selectedAction.status === "HANDOFF_READY"
+                        ? "status-chip-ready"
+                        : selectedAction.status === "REJECTED" || selectedAction.status === "FAILED"
+                        ? "status-chip-rejected"
+                        : "status-chip-draft"
+                    }`}
+                    data-testid="action-status-badge"
+                  >
+                    {selectedAction.status.replace(/_/g, " ")}
                   </span>
                   <span className="status-chip status-chip-draft">
                     {selectedAction.environment_label}
                   </span>
                 </div>
               </div>
+
+              {/* Proactive Anti-Lapse Agent Banner */}
+              {selectedAction.action_type === "renewal_inquiry" && (
+                <div className="mb-4 p-3.5 rounded-xl bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/40 text-white shadow-sm">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 grid place-items-center text-xs">
+                        🤖
+                      </span>
+                      <strong className="text-xs font-bold text-emerald-300 uppercase tracking-wider">
+                        Autonomous Output: Proactive Renewal &amp; Anti-Lapse Agent
+                      </strong>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                      H-30 Horizon Check
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed mb-2">
+                    The agent autonomously detected an upcoming policy expiry or continuity risk and drafted this renewal inquiry using verified policy data.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3 text-[11px] text-emerald-200/90 pt-1 border-t border-white/10">
+                    <span>🔒 <strong>Rule #8 Guardrail:</strong> Zero automatic purchase or payment.</span>
+                    <span>✍️ <strong>User Control:</strong> Inquiry dispatched only upon your explicit approval.</span>
+                  </div>
+                </div>
+              )}
 
               {/* 3-Step Visual Approval Boundary Guide */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5 p-3 bg-slate-50 rounded-xl border border-slate-200">
@@ -567,15 +640,21 @@ export default function ActionsPage() {
               {/* Action Details Grid */}
               <div className="actions-info-grid">
                 <div className="actions-info-item">
-                  <span>Action Purpose</span>
+                  <span>
+                    <Compass size={13} className="text-teal-700" /> Action Purpose
+                  </span>
                   <strong>{selectedAction.purpose}</strong>
                 </div>
                 <div className="actions-info-item">
-                  <span>Target Destination</span>
+                  <span>
+                    <Send size={13} className="text-teal-700" /> Target Destination
+                  </span>
                   <strong>{selectedAction.destination}</strong>
                 </div>
                 <div className="actions-info-item">
-                  <span>Linked Claim Case</span>
+                  <span>
+                    <FileText size={13} className="text-teal-700" /> Linked Claim Case
+                  </span>
                   <strong>
                     {selectedAction.claim_reference ? (
                       <Link
@@ -590,9 +669,11 @@ export default function ActionsPage() {
                   </strong>
                 </div>
                 <div className="actions-info-item">
-                  <span>Payload Version</span>
+                  <span>
+                    <ShieldCheck size={13} className="text-teal-700" /> Payload Version
+                  </span>
                   <strong data-testid="action-payload-version">
-                    Version {selectedAction.payload_version}
+                    Version {String(selectedAction.payload_version ?? "1")}
                     {selectedAction.approved ? " (Approved)" : " (Unapproved)"}
                   </strong>
                 </div>
@@ -618,7 +699,7 @@ export default function ActionsPage() {
                   {selectedAction.payload_sha256}
                 </div>
                 <div className="actions-hash-caption">
-                  {selectedAction.consequence} {selectedAction.privacy_note}
+                  {String(selectedAction.consequence ?? "")} {String(selectedAction.privacy_note ?? "")}
                 </div>
               </div>
 
@@ -630,56 +711,116 @@ export default function ActionsPage() {
                     What happens when you approve and execute this action?
                   </div>
                   <ul className="actions-consequences-list">
-                    <li>Cryptographic authorization is bound to payload version {selectedAction.payload_version} and SHA-256 digest.</li>
+                    <li>Cryptographic authorization is bound to payload version {String(selectedAction.payload_version ?? "1")} and SHA-256 digest.</li>
                     <li>
                       {selectedAction.environment === "MANUAL_HANDOFF"
-                        ? "Draft prepared. Not sent. INSURRA never sends messages to external insurers automatically."
+                        ? "Draft prepared. Not sent. INSSURA never sends messages to external insurers automatically."
                         : selectedAction.environment === "SANDBOX"
-                        ? "Accepted by the INSURRA test sandbox. No insurer received this."
-                        : "Reminder scheduled in INSURRA."}
+                        ? "Accepted by the INSSURA test sandbox. No insurer received this."
+                        : "Reminder scheduled in INSSURA."}
                     </li>
                     <li>Any edit to the payload increments the version and invalidates prior approval.</li>
                   </ul>
                 </div>
               )}
 
-              {/* Execution Receipt Box (If already executed) */}
+              {/* Execution in Progress Modal / Stepper (Screenshot 2 Step 8) */}
+              {deciding && (
+                <div className="executing-overlay">
+                  <div className="executing-header">
+                    <div className="executing-spinner" />
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-sm">Submitting claim to insurer sandbox...</h4>
+                      <p className="text-xs text-slate-500">This may take a few moments. We are executing your approved action.</p>
+                    </div>
+                  </div>
+
+                  <div className="exec-step-list">
+                    <div className="exec-step-item done">
+                      <div className="exec-step-dot">✓</div>
+                      <span>Approval confirmed</span>
+                    </div>
+                    <div className="exec-step-item done">
+                      <div className="exec-step-dot">✓</div>
+                      <span>Validating payload and permissions</span>
+                    </div>
+                    <div className="exec-step-item active">
+                      <div className="exec-step-dot">●</div>
+                      <span>Calling Allianz sandbox API</span>
+                    </div>
+                    <div className="exec-step-item">
+                      <div className="exec-step-dot">○</div>
+                      <span>Waiting for response</span>
+                    </div>
+                    <div className="exec-step-item">
+                      <div className="exec-step-dot">○</div>
+                      <span>Processing result &amp; issuing receipt</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Adapter: <strong>Allianz Sandbox API (v1)</strong></span>
+                    <span>Operation key: <strong className="font-mono">op_{selectedAction.payload_sha256?.slice(0, 10)}</strong></span>
+                  </div>
+                </div>
+              )}
+
+              {/* Execution Receipt Box (If already executed - Screenshot 2 Step 9) */}
               {receipt && (
-                <div className="execution-receipt-card" data-testid="execution-receipt-card">
-                  <div className="execution-receipt-header">
-                    <div className="execution-receipt-title">
-                      <CheckCircle2 size={18} /> Signed Execution Receipt
+                <div className="space-y-4 mb-6">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                        <InsurraMascot variant="checklist" size={48} decorative />
+                      </div>
+                      <div>
+                        <div className="font-bold text-emerald-950 text-sm">Tindakan Berhasil Disetujui &amp; Dieksekusi!</div>
+                        <div className="text-xs text-emerald-800">
+                          Tindakan telah dikirim ke sandbox asuransi dan tanda terima digital bertanda tangan kriptografis telah diterbitkan.
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold uppercase tracking-wider bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded">
-                      {receipt.status}
-                    </span>
+                    <Button variant="outline" size="sm" className="bg-white text-xs font-semibold text-emerald-900 border-emerald-300 flex-shrink-0">
+                      View Receipt (PDF)
+                    </Button>
                   </div>
-                  <p className="text-xs text-emerald-950 font-semibold mb-3" data-testid="execution-receipt-notice">
-                    {receipt.notice}
-                  </p>
-                  <div className="execution-receipt-details">
-                    <div>
-                      <dt>Receipt Reference</dt>
-                      <dd>{receipt.receipt_reference}</dd>
+
+                  <div className="execution-receipt-card" data-testid="execution-receipt-card">
+                    <div className="execution-receipt-header">
+                      <div className="execution-receipt-title">
+                        <CheckCircle2 size={18} /> Signed Execution Receipt
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded">
+                        {receipt.status}
+                      </span>
                     </div>
-                    <div>
-                      <dt>Execution Time</dt>
-                      <dd>{new Date(String(receipt.submitted_at)).toLocaleString()}</dd>
-                    </div>
-                    <div>
-                      <dt>Claim Reference</dt>
-                      <dd>{receipt.claim_reference || "None"}</dd>
-                    </div>
-                    <div>
-                      <dt>Payload Digest</dt>
-                      <dd className="font-mono text-xs">{receipt.payload_digest.slice(0, 20)}...</dd>
-                    </div>
-                  </div>
-                  {receipt.next_action && (
-                    <p className="text-xs text-emerald-900 mt-3">
-                      Next step: {receipt.next_action}
+                    <p className="text-xs text-emerald-950 font-semibold mb-3" data-testid="execution-receipt-notice">
+                      {receipt.notice}
                     </p>
-                  )}
+                    <div className="execution-receipt-details">
+                      <div>
+                        <dt>Receipt Reference</dt>
+                        <dd>{receipt.receipt_reference}</dd>
+                      </div>
+                      <div>
+                        <dt>Execution Time</dt>
+                        <dd>{new Date(String(receipt.submitted_at)).toLocaleString()}</dd>
+                      </div>
+                      <div>
+                        <dt>Claim Reference</dt>
+                        <dd>{receipt.claim_reference || "None"}</dd>
+                      </div>
+                      <div>
+                        <dt>Payload Digest</dt>
+                        <dd className="font-mono text-xs">{receipt.payload_digest.slice(0, 20)}...</dd>
+                      </div>
+                    </div>
+                    {receipt.next_action && (
+                      <p className="text-xs text-emerald-900 mt-3 font-medium">
+                        Next step: {receipt.next_action}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -753,6 +894,24 @@ export default function ActionsPage() {
                     )}
                   </div>
                 )}
+
+              {/* Draft Inquiry Preview for renewal_inquiry */}
+              {selectedAction.action_type === "renewal_inquiry" && Boolean(selectedAction.payload?.body) && (
+                <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-200">
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <FileCheck2 size={14} className="text-teal-700" />
+                      Drafted Letter for Insurer Hand-off
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-mono">
+                      Target: {String(selectedAction.payload.provider || "Insurer")}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-800 whitespace-pre-line font-sans leading-relaxed bg-white p-3.5 rounded-lg border border-slate-200/80">
+                    {String(selectedAction.payload.body)}
+                  </div>
+                </div>
+              )}
 
               {/* Human-Readable Payload Summary + JSON Inspector */}
               <h3 className="actions-section-title">Submitted Payload Content</h3>
@@ -878,10 +1037,14 @@ export default function ActionsPage() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-24 text-slate-400">
-              <FileCheck2 size={40} className="mx-auto mb-3 opacity-30" />
-              <h3 className="font-bold text-slate-700 text-lg">No Action Selected</h3>
-              <p className="text-sm">Select an action from the queue on the left to review its cryptographic payload.</p>
+            <div className="text-center py-24 px-6 text-slate-400">
+              <div className="mb-4 flex justify-center">
+                <InsurraMascot variant="document" size={76} decorative />
+              </div>
+              <h3 className="font-bold text-slate-800 text-lg mb-1">Pilih Tindakan untuk Ditinjau</h3>
+              <p className="text-sm text-slate-500 max-w-md mx-auto">
+                Pilih salah satu tindakan dari daftar antrean di sebelah kiri untuk melihat rincian muatan data, verifikasi digest SHA-256, dan memberikan persetujuan Anda.
+              </p>
             </div>
           )}
         </div>
