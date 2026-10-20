@@ -46,7 +46,7 @@ const DEFAULT_CLEAN_BENEFITS: BenefitItemInput[] = [
     used_numeric: null,
     available_balance: "Unknown",
     available_numeric: null,
-    details: "Rawat inap dan tindakan bedah",
+    details: "Inpatient care and surgical procedures",
     utilization_status: "UNKNOWN",
   },
   {
@@ -877,7 +877,7 @@ export function ManageEmployerBenefitsModal({
               {/* Supported Claim Procedures */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">
-                  Metode Pengajuan Klaim yang Didukung
+                  Supported Claim Submission Methods
                 </label>
                 <div className="flex flex-wrap gap-5 text-xs text-slate-700">
                   <label className="flex items-center gap-2 cursor-pointer">

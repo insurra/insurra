@@ -46,10 +46,9 @@ export default function HomePage() {
   // Time-aware greeting
   const greetingTime = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 11) return "Selamat pagi";
-    if (hour < 15) return "Selamat siang";
-    if (hour < 18) return "Selamat sore";
-    return "Selamat malam";
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
   }, []);
 
   const handleReassess = async () => {

@@ -197,7 +197,7 @@ export default function FamilyPage() {
       setShowEditMemberModal(false);
       await fetchOverview();
     } catch (err: unknown) {
-      void showAlert(err instanceof Error ? err.message : "Gagal memperbarui detail anggota.");
+      void showAlert(err instanceof Error ? err.message : "Failed to update member details.");
     } finally {
       setModalBusy(false);
     }
@@ -261,7 +261,7 @@ export default function FamilyPage() {
   // Handle Unlink Policy
   async function handleUnlinkPolicy(linkId: string) {
     if (!headers || !selectedMember) return;
-    if (!(await showConfirm("Unlink this policy from family member?", { tone: "error", confirmLabel: "Ya, lepas tautan" }))) return;
+    if (!(await showConfirm("Unlink this policy from family member?", { tone: "error", confirmLabel: "Yes, unlink policy" }))) return;
     try {
       await api.request("delete", "/api/v1/family/members/{member_id}/policies/{link_id}", {
         headers,
@@ -269,7 +269,7 @@ export default function FamilyPage() {
       });
       await fetchOverview();
     } catch (err: unknown) {
-      void showAlert(err instanceof Error ? err.message : "Gagal melepas tautan polis.");
+      void showAlert(err instanceof Error ? err.message : "Failed to unlink policy.");
     }
   }
 
@@ -290,7 +290,7 @@ export default function FamilyPage() {
       setShowConsentModal(false);
       await fetchOverview();
     } catch (err: unknown) {
-      void showAlert(err instanceof Error ? err.message : "Gagal memperbarui izin persetujuan.");
+      void showAlert(err instanceof Error ? err.message : "Failed to update consent permissions.");
     } finally {
       setModalBusy(false);
     }
@@ -307,7 +307,7 @@ export default function FamilyPage() {
       });
       setOverview(res.overview);
     } catch (err: unknown) {
-      void showAlert(err instanceof Error ? err.message : "Gagal menjalankan analisis AI.");
+      void showAlert(err instanceof Error ? err.message : "Failed to run AI analysis.");
     } finally {
       setAnalyzing(false);
     }
