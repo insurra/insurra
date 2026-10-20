@@ -5,8 +5,8 @@
   "policies": [
     {
       "id": "966fd9c9-aae1-5c2a-862d-e7173b37c670",
-      "provider_name": "Synthetic provider (demo)",
-      "policy_name": "BPJS (synthetic data)",
+      "provider_name": "BPJS Kesehatan",
+      "policy_name": "BPJS Kesehatan (JKN-KIS)",
       "policy_type": "BPJS",
       "policy_number_masked": "DEMO-****",
       "coverage_start_date": "2026-10-01",
@@ -29,8 +29,8 @@
     },
     {
       "id": "bc2f7c2d-08b2-5368-8673-eddf255b9a48",
-      "provider_name": "Synthetic provider (demo)",
-      "policy_name": "EMPLOYER (synthetic data)",
+      "provider_name": "PT Asuransi Allianz Life Indonesia",
+      "policy_name": "Asuransi Kumpulan Perusahaan (Corporate Plan)",
       "policy_type": "EMPLOYER",
       "policy_number_masked": "DEMO-****",
       "coverage_start_date": "2026-10-01",

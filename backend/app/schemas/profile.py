@@ -85,6 +85,59 @@ class DecisionPreference(StrEnum):
     FLEXIBILITY = "FLEXIBILITY"
 
 
+class EducationLevel(StrEnum):
+    SECONDARY = "SECONDARY"
+    DIPLOMA = "DIPLOMA"
+    BACHELOR = "BACHELOR"
+    MASTER = "MASTER"
+    DOCTORATE = "DOCTORATE"
+    OTHER = "OTHER"
+
+
+class EnrollmentStatus(StrEnum):
+    APPLICANT = "APPLICANT"
+    ENROLLED = "ENROLLED"
+    COMPLETED = "COMPLETED"
+    DEFERRED = "DEFERRED"
+
+
+class HealthSharingPreference(StrEnum):
+    SHARE_RELEVANT = "SHARE_RELEVANT"
+    NO_CURRENT_NEEDS = "NO_CURRENT_NEEDS"
+    PREFER_NOT_TO_ANSWER = "PREFER_NOT_TO_ANSWER"
+
+
+class TravelFrequency(StrEnum):
+    RARELY = "RARELY"
+    OCCASIONAL = "OCCASIONAL"
+    FREQUENT = "FREQUENT"
+
+
+class IncomeRange(StrEnum):
+    BELOW_5M = "BELOW_5M"
+    BETWEEN_5M_15M = "BETWEEN_5M_15M"
+    BETWEEN_15M_30M = "BETWEEN_15M_30M"
+    ABOVE_30M = "ABOVE_30M"
+    PREFER_NOT_TO_ANSWER = "PREFER_NOT_TO_ANSWER"
+
+
+class EmergencySavingsRange(StrEnum):
+    LESS_THAN_1_MONTH = "LESS_THAN_1_MONTH"
+    ONE_TO_THREE_MONTHS = "ONE_TO_THREE_MONTHS"
+    THREE_TO_SIX_MONTHS = "THREE_TO_SIX_MONTHS"
+    MORE_THAN_SIX_MONTHS = "MORE_THAN_SIX_MONTHS"
+    UNKNOWN = "UNKNOWN"
+
+
+HEALTH_PROFILE_FIELDS = (
+    "ongoing_healthcare_needs",
+    "important_treatments",
+    "medication_access_needs",
+    "provider_preferences",
+    "pre_existing_review_requested",
+)
+
+
 SITUATION_OCCUPATION = {
     Situation.STUDENT: Occupation.STUDENT,
     Situation.EMPLOYEE: Occupation.EMPLOYEE,
@@ -104,6 +157,7 @@ COUNTRY_BOUND_FIELDS = (
     "permit_end_date",
     "study_start_date",
     "study_end_date",
+    "expected_study_end_date",
 )
 
 
@@ -130,6 +184,7 @@ class ProfileData(Contract):
     currency: CurrencyCode | None = None
     arrival_date: date | None = None
     visa_expiry_date: date | None = None
+    birth_date: date | None = None
     nationality: CountryCode | None = None
     situation: Situation | None = None
     study_start_date: date | None = None
@@ -156,6 +211,23 @@ class ProfileData(Contract):
     primary_concern: str | None = Field(default=None, max_length=100)
     willing_additional_coverage: AdditionalCoverageIntent | None = None
     decision_preference: DecisionPreference | None = None
+    education_level: EducationLevel | None = None
+    enrollment_status: EnrollmentStatus | None = None
+    expected_study_end_date: date | None = None
+    student_insurance_requirement_known: AnswerState | None = None
+    work_exposures: list[str] = Field(default_factory=list, max_length=8)
+    health_sharing_preference: HealthSharingPreference | None = None
+    ongoing_healthcare_needs: list[str] = Field(default_factory=list, max_length=6)
+    important_treatments: str | None = Field(default=None, max_length=300)
+    medication_access_needs: str | None = Field(default=None, max_length=300)
+    provider_preferences: str | None = Field(default=None, max_length=200)
+    pre_existing_review_requested: bool | None = None
+    lifestyle_exposures: list[str] = Field(default_factory=list, max_length=8)
+    travel_frequency: TravelFrequency | None = None
+    income_range: IncomeRange | None = None
+    emergency_savings_range: EmergencySavingsRange | None = None
+    public_insurance_status: AnswerState | None = None
+    employer_benefits_available: AnswerState | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -178,7 +250,13 @@ class ProfileData(Contract):
                 data["has_existing_insurance"] = ExistingInsuranceState.YES.value
         return data
 
-    @field_validator("goals", "protection_scope")
+    @field_validator(
+        "goals",
+        "protection_scope",
+        "work_exposures",
+        "ongoing_healthcare_needs",
+        "lifestyle_exposures",
+    )
     @classmethod
     def unique_values(cls, value):
         if len(set(value)) != len(value):
@@ -207,6 +285,21 @@ class ProfileData(Contract):
             raise ValueError("policy_expiry_date requires policy_expiry_known")
         if self.has_dependents is not True and (self.dependents or self.dependent_age_groups):
             raise ValueError("dependent details require has_dependents")
+        has_health_details = any(getattr(self, field) for field in HEALTH_PROFILE_FIELDS)
+        if (
+            has_health_details
+            and self.health_sharing_preference != HealthSharingPreference.SHARE_RELEVANT
+        ):
+            raise ValueError("health details require health_sharing_preference SHARE_RELEVANT")
+        if self.situation != Situation.STUDENT and any(
+            (
+                self.education_level,
+                self.enrollment_status,
+                self.expected_study_end_date,
+                self.student_insurance_requirement_known,
+            )
+        ):
+            raise ValueError("education details require student situation")
         return self
 
 

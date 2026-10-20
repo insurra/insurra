@@ -109,3 +109,30 @@ def run_demo_guardrail_scenario(db: DB, session: ActiveSession):
         )
         for row in db.scalars(query)
     ]
+
+
+@router.get("/events")
+def list_audit_events(
+    db: DB,
+    session: ActiveSession,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+):
+    query = (
+        select(AuditRow)
+        .where(AuditRow.session_id == session.id)
+        .order_by(AuditRow.created_at.desc(), AuditRow.id)
+        .limit(limit)
+        .offset(offset)
+    )
+    return [
+        enrich_audit_event(
+            id=row.id,
+            session_id=row.session_id,
+            event_type=row.event_type,
+            outcome=row.outcome,
+            metadata=row.event_metadata,
+            created_at=row.created_at,
+        )
+        for row in db.scalars(query)
+    ]

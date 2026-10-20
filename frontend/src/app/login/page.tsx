@@ -54,7 +54,7 @@ function LoginContent() {
             src="/Inssura%20Kangaroo%20Shield%20Logo.png"
             width={150}
             height={75}
-            alt="Insurra"
+            alt="Inssura"
             className="brand-image"
           />
         </Link>
@@ -64,7 +64,7 @@ function LoginContent() {
           <p>Understand your coverage, preserve progress, and return at any time.</p>
           <Image
             src="/Winking%20Kangaroo%20Hugging%20a%20Heart.png"
-            alt="Insurra Kangaroo Mascot Hugging a Heart"
+            alt="Inssura Kangaroo Mascot Hugging a Heart"
             width={245}
             height={217}
             className="auth-mascot"
@@ -90,7 +90,7 @@ function LoginContent() {
           <span className="auth-lock">
             <LockKeyhole />
           </span>
-          <h2>Welcome to Insurra.</h2>
+          <h2>Welcome to Inssura.</h2>
           <p>Sign in with Google or your credentials to access your private workspace.</p>
           {failed && (
             <div className="alert error" role="alert">
@@ -117,7 +117,7 @@ function LoginContent() {
             <Link href="/#demo">Continue with Demo Persona</Link>
           </Button>
           <p className="auth-terms">
-            By continuing, you agree to Insurra Terms of Use and Privacy Policy.
+            By continuing, you agree to Inssura Terms of Use and Privacy Policy.
           </p>
         </div>
       </section>

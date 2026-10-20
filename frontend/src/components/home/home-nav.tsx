@@ -20,10 +20,10 @@ export function HomeNav({ onSelectPersona }: HomeNavProps) {
 
   return (
     <header className="shell nav" id="top">
-      <Link href="#top" className="brand" aria-label="INSURRA home">
+      <Link href="#top" className="brand" aria-label="INSSURA home">
         <Image
           src="/mascot-logo.png"
-          alt="Insurra · Your AI Insurance Companion"
+          alt="Inssura · Your AI Insurance Companion"
           width={1774}
           height={887}
           className="brand-lockup"

@@ -70,17 +70,21 @@ def retained_page(db, actor, document_id, page_no):
             )
         )
     if actor.session_id:
-        if page_no != 1 or not grants(db, actor).get("process_documents"):
+        if not grants(db, actor).get("process_documents"):
             return None
         session, doc = _demo_document_meta(db, actor.session_id, document_id)
         if session is None or doc is None:
             return None
         path = ROOT / "fixtures" / session.persona_id / doc.original_filename
         if not path.is_file():
-            return None
+            sample = ROOT / "frontend" / "public" / "sample-documents" / doc.original_filename
+            if sample.is_file():
+                path = sample
+            else:
+                return None
         return SimpleNamespace(
             document_id=doc.id,
-            page_no=1,
+            page_no=page_no,
             text=path.read_text(encoding="utf-8"),
             ocr_used=False,
         )

@@ -146,9 +146,7 @@ def build_action_payload(
             "stated_rejection_reason": review["stated_rejection_reason"],
             "cited_clause": review["cited_clause"],
             "clarifiable_issues": [i["title"] for i in review["clarifiable_issues"]],
-            "evidence_checklist": [
-                e["label"] for e in review["appeal_evidence_checklist"]
-            ],
+            "evidence_checklist": [e["label"] for e in review["appeal_evidence_checklist"]],
             "review_posture": "CLARIFICATION_ONLY",
             "insurer_at_fault_concluded": False,
             "acceptance_guaranteed": False,

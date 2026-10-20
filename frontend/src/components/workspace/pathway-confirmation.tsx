@@ -46,7 +46,7 @@ export function PathwayConfirmation({
       setError(
         cause instanceof Error
           ? cause.message
-          : "Claim draft could not be created. Retry with this confirmation.",
+          : "Claim case could not be created. Please try again.",
       );
     } finally {
       sending.current = false;
@@ -74,12 +74,13 @@ export function PathwayConfirmation({
         </ul>
         {path.direct_billing === true && (
           <p>
-            Direct billing may apply under your policy, but keep all receipts and medical records.
+            You may not need to file a claim yourself if direct billing applies. Please still keep
+            all original receipts and medical records.
           </p>
         )}
         <p>
-          A Draft claim case records your selected pathway and a redacted summary for checklist
-          preparation. It does not submit a claim or book an appointment.
+          Creating a Draft claim case saves your selected pathway and filtered guidance.
+          It does not submit any claims or book appointments.
         </p>
         {error && (
           <p role="alert" className="vn-error">
@@ -88,7 +89,7 @@ export function PathwayConfirmation({
         )}
         <div className="vn-actions">
           <button className="vn-primary" disabled={busy} onClick={confirm}>
-            {busy ? "Creating draft..." : "Create claim draft"}
+            {busy ? "Creating case..." : "Create Claim Case"}
           </button>
           <button disabled={busy} onClick={onClose}>
             Cancel

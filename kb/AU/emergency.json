@@ -5,10 +5,10 @@
   "checked_at": "2026-10-20",
   "verification_status": "UNVERIFIED",
   "data": {
-    "label": "Informasi darurat lokal harus diverifikasi sebelum aktivasi navigasi.",
-    "phone_number": "000",
-    "source_url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/calling-triple-zero",
-    "checked_at": "2026-10-20",
+    "label": "Local emergency information must be verified before navigation is enabled.",
+    "phone_number": null,
+    "source_url": null,
+    "checked_at": null,
     "verification_status": "UNVERIFIED"
   }
 }

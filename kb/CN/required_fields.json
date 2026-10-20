@@ -8,6 +8,41 @@
   "provenance_note": "Hand-written by a developer. Not retrieved or machine-verified.",
   "data": [
     {
+      "task_code": "coverage_continuity",
+      "field_key": "arrival_date",
+      "label": "Declared arrival date",
+      "suggested_doc": "residence_permit",
+      "applicable": true
+    },
+    {
+      "task_code": "coverage_continuity",
+      "field_key": "coverage_start_date",
+      "label": "Policy coverage start date",
+      "suggested_doc": "insurance_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "coverage_continuity",
+      "field_key": "coverage_end_date",
+      "label": "Policy coverage end date",
+      "suggested_doc": "insurance_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "coverage_continuity",
+      "field_key": "policy_number",
+      "label": "Policy certificate number",
+      "suggested_doc": "insurance_certificate",
+      "applicable": true
+    },
+    {
+      "task_code": "coverage_continuity",
+      "field_key": "visa_expiry_date",
+      "label": "Declared visa end date",
+      "suggested_doc": "residence_permit",
+      "applicable": true
+    },
+    {
       "task_code": "student_outpatient_claim",
       "field_key": "insured_name",
       "label": "Insured person name",

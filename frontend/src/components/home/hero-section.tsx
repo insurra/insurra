@@ -25,7 +25,7 @@ export function HeroSection({
       <div className="hero-panorama-bg" aria-hidden="true">
         <Image
           src="/hero-panorama-natural.jpg"
-          alt="Insurra Travel and Coverage Panorama"
+          alt="Inssura Travel and Coverage Panorama"
           fill
           priority
           sizes="100vw"
@@ -47,7 +47,7 @@ export function HeroSection({
 
           <p className="subtitle">
             From overseas visa compliance to corporate benefits and personal
-            policies, Insurra unifies your coverage, uncovers hidden gaps, and
+            policies, Inssura unifies your coverage, uncovers hidden gaps, and
             guides your claims.
           </p>
 

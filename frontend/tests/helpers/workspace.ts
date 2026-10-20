@@ -10,7 +10,7 @@ const workspaceDatabaseUrl =
 
 export async function accountWorkspace(
   page: Page,
-  country: "CN" | "ID" = "CN",
+  country: "AU" | "CN" | "ID" = "AU",
 ) {
   const root = path.resolve(__dirname, "../../..");
   const raw = execFileSync(
@@ -22,7 +22,8 @@ export async function accountWorkspace(
       env: {
         ...process.env,
         UV_CACHE_DIR: path.join(root, ".cache/uv"),
-        DATABASE_URL: workspaceDatabaseUrl,
+        DATABASE_URL: `sqlite:///${root}/.cache/e2e.db`,
+        ACTIVE_KB_COUNTRIES: "AU,CN,ID",
         INSURRA_TEST_SEED: "1",
         TEST_COUNTRY: country,
       },

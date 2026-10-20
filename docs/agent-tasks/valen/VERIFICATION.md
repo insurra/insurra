@@ -1,5 +1,24 @@
 # P0 implementation verification — 19 October 2026
 
+## Follow-up — 20 October 2026
+
+The integrated worktree now keeps production KB activation at `CN,ID`; the historical AU
+acceptance persona is enabled only inside Playwright's isolated E2E server and seed subprocess.
+The four authorized surfaces were reconciled with the current shell and shared mascot assets:
+Home again exposes the canonical situation shortcuts and empty state, Ask uses the shared typed
+transport and source-page deep links, Pathways retains fail-closed triage plus idempotent Draft case
+creation, and Coverage Needs reads the canonical evidence-backed endpoint alongside the existing
+assessment presentation.
+
+Verification in this follow-up: 475 backend tests passed; 108 focused workspace tests passed; 14
+typed-client/SSE tests passed; all 11 SC-05/06/07/14 browser scenarios passed on mobile and the same
+11 desktop scenarios passed (nine together plus the two corrected regressions rerun individually).
+Strict TypeScript, production build, contract generation comparison, Ruff check and Ruff format
+passed. ESLint has no errors and retains five pre-existing warnings outside these changes. The five
+local immutable PRD CSVs were absent, so `make check-prd-source` could not be rerun; the tracked PRD
+manifest check passed. No claim submission, insurer execution, purchase, payment, renewal, or
+unverified emergency/medical fact was introduced.
+
 Branch: feat/valen-p0-command-policy-pathways. Started from clean, refreshed master 3fa80ce. Resume fetch still resolves origin/master to 3fa80ce; its KB has AU and ID only, no CN changes. No merge, push, deployment or Travel implementation was performed.
 
 P0 is **not acceptance-complete**: 41 criteria PASSED, 27 PARTIAL, 5 BLOCKED. All 85 verbatim criteria, including 12 gated P1 criteria, have individual results in [VALEN_TRACEABILITY.md](../../prd/VALEN_TRACEABILITY.md). Synthetic dependency fixtures establish code behavior, never real medical, regulatory, policy or tariff facts.

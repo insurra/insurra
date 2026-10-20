@@ -607,16 +607,17 @@ def _release_claim(db: Session, owner: Owner, action: WfActionRow, source: str):
             )
 
 
-def reject(db: Session, owner: Owner, action: WfActionRow) -> WfActionRow:
+def reject(db: Session, owner: Owner, action: WfActionRow, reason: str | None = None) -> WfActionRow:
     if action.status not in ("AWAITING_APPROVAL", "APPROVED", "DRAFT"):
         raise AppError(409, "ACTION_NOT_PENDING", "This action can no longer be rejected.")
     action.status = "REJECTED"
     action.updated_at = _now()
+    inv_reason = reason or "REJECTED"
     for approval in db.scalars(
         select(WfActionApprovalRow).where(WfActionApprovalRow.action_id == action.id)
     ):
         if approval.invalidated_at is None:
-            approval.invalidated_at, approval.invalidation_reason = _now(), "REJECTED"
+            approval.invalidated_at, approval.invalidation_reason = _now(), inv_reason
     db.add(
         WfActionApprovalRow(
             action_id=action.id,
@@ -630,7 +631,7 @@ def reject(db: Session, owner: Owner, action: WfActionRow) -> WfActionRow:
             permissions=[],
             created_at=_now(),
             invalidated_at=_now(),
-            invalidation_reason="REJECTED",
+            invalidation_reason=inv_reason,
         )
     )
     _release_claim(db, owner, action, "USER")
@@ -640,11 +641,16 @@ def reject(db: Session, owner: Owner, action: WfActionRow) -> WfActionRow:
         "ACTION_REJECTED",
         "ACTIONS",
         "Action rejected",
-        summary=f"You rejected '{action.title}'. Nothing was executed.",
+        summary=f"You rejected '{action.title}'. Nothing was executed."
+        + (f" Reason: {reason}" if reason else ""),
         actor_type="USER",
         action_id=action.id,
         claim_id=action.claim_id,
-        details={"action_type": action.action_type, "action_reference": action.reference},
+        details={
+            "action_type": action.action_type,
+            "action_reference": action.reference,
+            "reason": reason,
+        },
     )
     return action
 

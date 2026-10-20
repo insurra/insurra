@@ -18,7 +18,7 @@ Legacy Scope: Australia (AU) disabled and preserved without modification.
   machine-verified. Some are illustrative synthetic fixtures. Treat all of them as UNVERIFIED.
 - Insurer logo files are generated placeholders, not official logos. Their license status is
   NOT_VERIFIED.
-- Database rows written to catalog tables in this run: 175.
+- Database rows written to catalog tables in this run: 181.
 
 ## 2. Pipeline stages: what actually happened
 
@@ -41,7 +41,7 @@ mean the page was fetched or reviewed.
 | Evidence class | Records |
 | --- | --- |
 | RETRIEVED_OFFICIAL | 0 |
-| MANUALLY_CURATED | 99 |
+| MANUALLY_CURATED | 102 |
 | SYNTHETIC_FIXTURE | 35 |
 | PLACEHOLDER | 12 |
 
@@ -56,7 +56,7 @@ mean the page was fetched or reviewed.
 | --- | --- | --- | --- |
 | Source registry entries | 28 | MANUALLY_CURATED 28 | DISCOVERED 28 |
 | Insurer entities | 12 | MANUALLY_CURATED 12 | UNVERIFIED 12 |
-| Insurance products | 17 | MANUALLY_CURATED 17 | UNVERIFIED 17 |
+| Insurance products | 20 | MANUALLY_CURATED 20 | UNVERIFIED 20 |
 | Regulations | 8 | MANUALLY_CURATED 8 | UNVERIFIED 8 |
 | Public schemes | 2 | MANUALLY_CURATED 2 | UNVERIFIED 2 |
 | University requirements | 4 | SYNTHETIC_FIXTURE 4 | UNVERIFIED 4 |

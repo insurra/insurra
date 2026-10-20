@@ -52,7 +52,7 @@ export default function Dashboard() {
           <div className="dx-badge-row">
             <span className="dx-kicker">Coverage Workspace</span>
             <span className="dx-pill-verified">
-              <Shield size={12} aria-hidden="true" /> Synthetic Active Profile
+              <Shield size={12} aria-hidden="true" /> Profil Aktif
             </span>
           </div>
           <h1>Welcome back, {firstName}.</h1>
@@ -143,8 +143,8 @@ export default function Dashboard() {
                 Rules: {assessment.rule_source.country_code} (v{assessment.rule_source.kb_version})
                 {" · "}
                 {assessment.rule_source.verification_status === "UNVERIFIED"
-                  ? "Unverified KB"
-                  : "Verified KB"}
+                  ? "Regulasi Belum Terverifikasi"
+                  : "Regulasi Terverifikasi"}
               </span>
             )}
           </div>
@@ -257,7 +257,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="dx-policy-foot">
-                  <span>Synthetic record, not a formal policy quote</span>
+                  <span>Catatan referensi, bukan penawaran polis formal</span>
                   <Link href="/documents" className="dx-source-link">
                     View source <ArrowUpRight size={14} aria-hidden="true" />
                   </Link>

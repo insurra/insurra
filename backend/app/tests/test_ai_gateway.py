@@ -16,7 +16,7 @@ from app.services.account_documents import (
     _ocr_languages,
     extract_to_schema,
 )
-from app.services.ai_gateway import GEMINI_BASE_URL, GeminiGateway
+from app.services.ai_gateway import GEMINI_BASE_URL, GeminiGateway, ResponsesGateway
 from app.services.kb_loader import CountryKBLoader
 from app.services.policy_qa import ModelAnswer
 
@@ -31,9 +31,15 @@ def test_gateway_requires_gemini_key_without_a_network_call():
     assert exc.value.code == "AI_NOT_CONFIGURED"
 
 
+def test_responses_gateway_requires_key_without_a_network_call():
+    with pytest.raises(AppError) as exc:
+        ResponsesGateway(Settings(openai_api_key="", gemini_api_key=""))
+    assert exc.value.code == "AI_NOT_CONFIGURED"
+
+
 def test_settings_rejects_unimplemented_provider():
     with pytest.raises(ValidationError):
-        Settings(ai_provider="openai")
+        Settings(ai_provider="claude")
 
 
 def test_default_models_use_the_live_verified_gemini_model(monkeypatch):
@@ -229,3 +235,43 @@ def test_versioned_policy_templates_allow_only_source_backed_summary_fields(
         "coverage_end_date",
     }
     assert country.resources.extraction_templates.verification_status == "UNVERIFIED"
+
+
+def test_gateway_uses_gemini_structured_output(monkeypatch):
+    import io
+    import json
+
+    captured = {}
+    parsed_json = {
+        "answer": "Jawaban dari Gemini",
+        "certainty": "FROM_DOCUMENT",
+        "citations": [],
+        "requires_human_confirmation": False,
+        "warnings": [],
+    }
+    mock_resp = io.BytesIO(
+        json.dumps(
+            {"candidates": [{"content": {"parts": [{"text": json.dumps(parsed_json)}]}}]}
+        ).encode("utf-8")
+    )
+
+    class MockUrlopen:
+        def __init__(self, request, *args, **kwargs):
+            captured["payload"] = json.loads(request.data)
+
+        def __enter__(self):
+            return mock_resp
+
+        def __exit__(self, *args):
+            pass
+
+    monkeypatch.setattr("urllib.request.urlopen", MockUrlopen)
+    settings = Settings(openai_api_key="", gemini_api_key="synthetic-gemini-key")
+    gateway = ResponsesGateway(settings)
+    result = gateway.parse(instructions="Test", text="Input data", output_type=PolicyAnswer)
+    assert result.answer == "Jawaban dari Gemini"
+    assert result.certainty == "FROM_DOCUMENT"
+    response_format = captured["payload"]["generationConfig"]["responseFormat"]
+    assert response_format["text"]["mimeType"] == "APPLICATION_JSON"
+    assert response_format["text"]["schema"] == PolicyAnswer.model_json_schema()
+    assert captured["payload"]["generationConfig"]["thinkingConfig"] == {"thinkingLevel": "low"}

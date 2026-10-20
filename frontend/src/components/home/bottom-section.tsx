@@ -14,7 +14,7 @@ export function BottomSection() {
                 <br />
                 travel, study, work, or home.
               </h2>
-              <p>INSURRA helps you stay protected across borders and benefits.</p>
+              <p>INSSURA helps you stay protected across borders and benefits.</p>
             </div>
             <div className="pillrow">
               <div className="stat">

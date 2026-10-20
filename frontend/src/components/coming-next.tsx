@@ -12,26 +12,25 @@ export function ComingNext({
     <>
       <div className="page-heading">
         <div>
-          <div className="eyebrow">KENALI LANGKAH BERIKUTNYA</div>
+          <div className="eyebrow">DISCOVER NEXT STEPS</div>
           <h1>{title}</h1>
         </div>
-        <span className="badge neutral">FASE 2</span>
+        <span className="badge neutral">PHASE 2</span>
       </div>
       <div className="empty-state card">
         <div className="empty-icon">
           <Construction size={28} />
         </div>
-        <h2>Sedang disiapkan.</h2>
+        <h2>In Preparation</h2>
         <p>{description}</p>
         <div className="placeholder-note">
           <ShieldCheck size={18} />
-          Fitur ini belum aktif. Tidak ada pemrosesan AI atau tindakan yang
-          dijalankan.
+          This feature is not yet active. No AI processing or actions have been executed.
         </div>
         <Button variant="outline" asChild>
-          <Link href="/dashboard">
+          <Link href="/home">
             <ArrowLeft size={16} />
-            Kembali ke ringkasan
+            Back to Home
           </Link>
         </Button>
       </div>

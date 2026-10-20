@@ -31,6 +31,7 @@
     ],
     "effective_from": "2024-01-01",
     "effective_to": "2025-12-31",
+    "checked_at": null,
     "product_version": "2024.1",
     "benefits": [
       {
@@ -199,6 +200,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2025-12-31",
+    "checked_at": null,
     "product_version": "2023.2",
     "benefits": [
       {
@@ -276,6 +278,7 @@
     ],
     "effective_from": "2024-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2024.1",
     "benefits": [
       {
@@ -376,6 +379,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -480,6 +484,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -558,6 +563,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -637,6 +643,7 @@
     ],
     "effective_from": "2024-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2024.1",
     "benefits": [
       {
@@ -742,6 +749,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2023.2",
     "benefits": [
       {

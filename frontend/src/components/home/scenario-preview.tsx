@@ -35,7 +35,7 @@ const personaData = {
     orangeWidth: "22%",
     timeNote: "● 31 days potentially uncovered",
     insightTitle: "Your insurance could end before your visa.",
-    insightDetail: "Insurra helps you spot timing gaps early and understand what to do next.",
+    insightDetail: "Inssura helps you spot timing gaps early and understand what to do next.",
   },
   corporate: {
     question: "Should I use company insurance or BPJS for outpatient care?",

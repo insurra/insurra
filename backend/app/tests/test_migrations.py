@@ -386,3 +386,38 @@ def test_0014_upgrade_from_0013_with_data_and_clean_downgrade(tmp_path, monkeypa
     command.upgrade(cfg, "head")
     engine.dispose()
     get_settings.cache_clear()
+
+
+def test_0019_upgrade_from_0018_and_clean_downgrade(tmp_path, monkeypatch):
+    url = f"sqlite:///{tmp_path / 'populated-0019.db'}"
+    monkeypatch.setenv("DATABASE_URL", url)
+    get_settings.cache_clear()
+    cfg = Config(str(ROOT / "backend/alembic.ini"))
+    command.upgrade(cfg, "0018")
+    engine = make_engine(url)
+    command.upgrade(cfg, "0019")
+    tables = inspect(engine)
+    assert "account_protection_assessments" in tables.get_table_names()
+    cols = {c["name"] for c in tables.get_columns("account_protection_assessments")}
+    assert {
+        "id",
+        "account_id",
+        "session_id",
+        "assessment_version",
+        "status",
+        "covered_count",
+        "attention_count",
+        "unknown_count",
+        "documents_needed_count",
+        "overall_status",
+        "overall_headline",
+        "input_hash",
+        "payload",
+        "refresh_reason",
+    } <= cols
+    command.downgrade(cfg, "0018")
+    tables_after = inspect(engine)
+    assert "account_protection_assessments" not in tables_after.get_table_names()
+    command.upgrade(cfg, "head")
+    engine.dispose()
+    get_settings.cache_clear()

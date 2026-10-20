@@ -233,6 +233,96 @@ class Recommendation(Contract):
     dismissible: bool = True
     handled: bool = False
     visa_related: bool = False
+    action_type: str | None = None
+
+
+class PrioritizedAction(Contract):
+    id: str
+    index: int = 1
+    title: str
+    description: str
+    priority: Literal["HIGH", "MEDIUM", "LOW", "UPCOMING"] = "HIGH"
+    priority_label: str = "High Priority"
+    category: str = "general"
+    icon: str = "shield"
+    tags: list[str] = Field(default_factory=list)
+    deep_link: str = "/protection"
+    action_label: str = "View Details"
+    action_type: str | None = None
+    source_finding_id: str | None = None
+    dismissible: bool = True
+    handled: bool = False
+
+
+class HomeAssessmentSummary(Contract):
+    overall_status: Literal["ON_TRACK", "ATTENTION_NEEDED", "NEEDS_VERIFICATION"] = "ON_TRACK"
+    headline: str = "You're on track!"
+    description: str = "You're covered in most key areas. A few areas may need attention based on your current situation."
+    last_assessed_at: str | None = None
+    score_ratio: str = "3/6"
+    score_label: str = "Needs attention"
+    covered_count: int = 3
+    partially_covered_count: int = 1
+    not_covered_count: int = 1
+    unknown_count: int = 1
+    not_applicable_count: int = 0
+
+
+class HomeProtectionAreaItem(Contract):
+    code: str
+    title: str
+    icon: str
+    status: Literal["COVERED", "PARTIALLY_COVERED", "NOT_COVERED", "UNKNOWN", "NOT_APPLICABLE"]
+    status_label: str
+
+
+class ContinuityGapItem(Contract):
+    id: str
+    gap_type: Literal["BETWEEN_POLICIES", "STAY_UNCOVERED", "SUCCESSOR_MISSING"]
+    category: str
+    start_date: str
+    end_date: str
+    days: int
+    severity: Literal["HIGH", "MEDIUM", "LOW"]
+    description: str
+
+
+class MonitoredPolicyItem(Contract):
+    policy_ref: str
+    provider: str
+    category: str
+    end_date: str | None = None
+    days_left: int | None = None
+    status: Literal[
+        "ACTIVE_GOOD_STANDING",
+        "UPCOMING_EXPIRY",
+        "CONFIRMED_CURRENT_LAPSE",
+        "HISTORICAL_DOCUMENT_EXPIRED",
+        "UNDATED",
+    ]
+    status_label: str
+    is_historical: bool = False
+    action_prepared: bool = False
+
+
+class AntiLapseAgentStatus(Contract):
+    agent_id: str = "anti_lapse_sentinel"
+    agent_name: str = "Proactive Renewal & Anti-Lapse Agent"
+    status: Literal["ACTIVE_MONITORING", "ACTION_PREPARED", "ATTENTION_REQUIRED", "IDLE"]
+    headline: str
+    description: str
+    last_scanned_at: str
+    timezone: str
+    scan_offsets: list[int] = Field(default_factory=lambda: [30, 7, 1])
+    policies_scanned: int = 0
+    active_monitored_policies: list[MonitoredPolicyItem] = Field(default_factory=list)
+    continuity_gaps: list[ContinuityGapItem] = Field(default_factory=list)
+    prepared_actions_count: int = 0
+    reminders_count: int = 0
+    reasoning_trail: list[str] = Field(default_factory=list)
+    active_action_id: str | None = None
+    active_action_ref: str | None = None
+    active_action_title: str | None = None
 
 
 class HomeSummary(Contract):
@@ -251,6 +341,10 @@ class HomeSummary(Contract):
     service_types: list[ServiceChoice] = Field(default_factory=list)
     triage_available: bool = False
     pathway_help: str = "Describe your non-emergency care needs."
+    prioritized_actions: list[PrioritizedAction] = Field(default_factory=list, max_length=3)
+    assessment_summary: HomeAssessmentSummary | None = None
+    protection_areas: list[HomeProtectionAreaItem] = Field(default_factory=list)
+    anti_lapse_agent: AntiLapseAgentStatus | None = None
 
 
 class AskRequest(Contract):
@@ -299,6 +393,45 @@ class PreparedProposalAction(Contract):
     action_type: str
 
 
+class CoverageDetailItem(Contract):
+    status: Literal["COVERED", "NOT_COVERED", "LIMIT", "CONDITION", "INFO"]
+    text: str
+
+
+class PolicyUsedItem(Contract):
+    policy_id: str | None = None
+    provider: str
+    plan_name: str
+    status: str = "Active"
+    verification_status: str = "Verified"
+    date_range: str | None = None
+    logo_key: str | None = None
+
+
+class ReferencedSourceItem(Contract):
+    doc_id: str | None = None
+    document_name: str
+    organization: str | None = None
+    location: str
+    page: int = 1
+    quote: str | None = None
+
+
+class SuggestedNextStepItem(Contract):
+    title: str
+    description: str
+    action_type: str = "navigate"
+    action_url: str
+    icon_type: str = "shield"
+
+
+class RelatedSituationLink(Contract):
+    title: str
+    url: str
+    icon_type: str = "shield"
+    badge: str | None = None
+
+
 class AnswerCitation(Contract):
     document_name: str | None = None
     doc: UUID
@@ -332,6 +465,14 @@ class AskAnswer(Contract):
     intent: AskIntent = "POLICY_QUESTION"
     tool_steps: list[ToolStep] = Field(default_factory=list)
     proposals: list[ActionProposal] = Field(default_factory=list)
+    answer_markdown: str | None = None
+    key_coverage_details: list[CoverageDetailItem] = Field(default_factory=list)
+    policies_used: list[PolicyUsedItem] = Field(default_factory=list)
+    sources_referenced: list[ReferencedSourceItem] = Field(default_factory=list)
+    suggested_next_steps: list[SuggestedNextStepItem] = Field(default_factory=list)
+    related_links: list[RelatedSituationLink] = Field(default_factory=list)
+    follow_up_questions: list[str] = Field(default_factory=list)
+    evidence_verification_banner: str | None = None
 
 
 class ChatTurn(Contract):
@@ -390,16 +531,16 @@ AskStreamEvent = Annotated[
 
 class PathwayComparisonRequest(Contract):
     complaint: str = Field(min_length=1, max_length=300)
-    service_type: ShortCode
+    service_type: ShortCode | None = Field(default=None)
     city: str | None = Field(default=None, max_length=100)
     timeframe: Literal["today", "this_week", "unknown"] = "unknown"
 
     @field_validator("complaint", "service_type")
     @classmethod
     def not_blank(cls, value):
-        if not value.strip():
+        if value is not None and not value.strip():
             raise ValueError("Must not be blank")
-        return value.strip()
+        return value.strip() if value is not None else None
 
 
 class MoneyEstimate(Contract):

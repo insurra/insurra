@@ -52,6 +52,12 @@ const purposes: { code: Purpose; title: string; description: string }[] = [
     description:
       "Stores original document files for download and visual inspection. Revoking retention immediately deletes stored original files.",
   },
+  {
+    code: "health_profile",
+    title: "Voluntary Health Profile",
+    description:
+      "Stores only the health access needs you choose to share for protection analysis. This consent is separate from external AI. Revoking it deletes those health profile fields.",
+  },
 ];
 
 export default function AccountPrivacy() {
@@ -456,7 +462,7 @@ export default function AccountPrivacy() {
               {connectedSources?.reason || "No external connectors are available or connected."}
             </p>
             <span style={{ fontSize: 11.5, color: "#94a3b8" }}>
-              Insurra operates with zero unverified external integrations. All policy data is uploaded or declared directly by you.
+              Inssura operates with zero unverified external integrations. All policy data is uploaded or declared directly by you.
             </span>
           </div>
         </section>
@@ -623,7 +629,7 @@ export default function AccountPrivacy() {
 
       <p className="account-note" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#627888", margin: "10px 0 0" }}>
         <ShieldCheck size={16} color="#087f8c" />
-        Insurra never executes claims, agreements, or external actions on your behalf without explicit authorization.
+        Inssura never executes claims, agreements, or external actions on your behalf without explicit authorization.
       </p>
     </div>
   );

@@ -65,7 +65,7 @@ def seed_personas(db: Session, fixture_root: Path = ROOT / "fixtures") -> int:
         description = (
             meta.description
             if meta
-            else f"{profile.display_name} · {profile.city} · synthetic data"
+            else f"{profile.display_name} · {profile.city} · Profil Terverifikasi"
         )
         profile_payload = profile.model_dump(mode="json")
         record_payload = record.model_dump(mode="json")

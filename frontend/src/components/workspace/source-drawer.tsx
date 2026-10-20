@@ -35,7 +35,7 @@ export function SourceDrawer({
         if (!controller.signal.aborted) {
           if (!value.text.includes(citation.quote))
             setError(
-              "Quote has changed or no longer matches the source page. Start a new question.",
+              "Kutipan berubah atau tidak lagi cocok dengan halaman sumber. Mulai pertanyaan baru.",
             );
           else setText(value.text);
         }
@@ -43,7 +43,7 @@ export function SourceDrawer({
       .catch((cause: unknown) => {
         if (!controller.signal.aborted)
           setError(
-            cause instanceof Error ? cause.message : "Source page is not available.",
+            cause instanceof Error ? cause.message : "Halaman sumber tidak tersedia.",
           );
       });
     return () => controller.abort();
@@ -66,7 +66,7 @@ export function SourceDrawer({
         ) : text ? (
           <>
             <span className="vn-badge">
-              Exact substring verified against retained source page
+              Citation verified against source page
             </span>
             {citation.language && (
               <span className="vn-badge" data-testid="citation-language">
@@ -80,7 +80,7 @@ export function SourceDrawer({
             )}
             <blockquote lang={citation.language ?? ""}>{citation.quote}</blockquote>
             <details>
-              <summary>Original page text</summary>
+              <summary>Teks halaman asli</summary>
               <pre>
                 {text.slice(0, position)}
                 <mark>{citation.quote}</mark>
@@ -90,11 +90,11 @@ export function SourceDrawer({
             <Link
               href={`/documents/${encodeURIComponent(citation.doc)}#page-${citation.page}`}
             >
-              Open document · page {citation.page}
+              Buka dokumen · halaman {citation.page}
             </Link>
           </>
         ) : (
-          <p role="status">Verifying source page and retention permissions…</p>
+          <p role="status">Memeriksa halaman sumber dan izin retensi…</p>
         )}
       </div>
     </dialog>

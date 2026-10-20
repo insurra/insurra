@@ -31,6 +31,7 @@ from app.models import (
 from app.schemas.common import Contract as StrictModel
 from app.services.actor_scope import actor_for, owner_for
 from app.services.kb_loader import CountryKBLoader
+from app.services.user_context import CanonicalUserContext, get_authorized_user_context
 from app.workflow.models import WfActionRow, WfClaimCaseRow, WfReminderRow
 from app.workflow.owner import DEMO
 
@@ -77,6 +78,12 @@ class CoverageFact(StrictModel):
 
 
 class UserContext(StrictModel):
+    subject_id: str = ""
+    residence_city: str | None = None
+    institution: str | None = None
+    dependents_count: int = 0
+    profile_version: int | str = 1
+    verification_status: str = "SELF_REPORTED"
     actor_kind: Literal["AUTHENTICATED_ACCOUNT", "DEMO_SESSION"]
     synthetic: bool
     persona_id: str | None = None
@@ -103,9 +110,27 @@ class UserContext(StrictModel):
     kb_version: str | None = None
     kb_active: bool = False
 
+    def to_canonical_context(self) -> CanonicalUserContext:
+        return CanonicalUserContext(
+            subject_id=self.subject_id,
+            nationality=self.nationality,
+            residence_country=self.residence_country,
+            residence_city=self.residence_city or self.city,
+            situation=self.situation,
+            institution=self.institution or self.institution_name,
+            dependents_count=self.dependents_count,
+            profile_version=self.profile_version,
+            verification_status=self.verification_status,
+        )
+
 
 def _load_consents(db: Session, is_demo: bool, owner_id: UUID) -> dict[str, bool]:
-    base = {"process_documents": False, "external_ai": False, "retention": False}
+    base = {
+        "process_documents": False,
+        "external_ai": False,
+        "retention": False,
+        "health_profile": False,
+    }
     if is_demo:
         rows = db.scalars(
             select(PurposeConsentRow).where(PurposeConsentRow.session_id == owner_id)
@@ -179,13 +204,21 @@ def _load_account_coverages(db: Session, account_id: UUID) -> list[CoverageFact]
     ):
         if row.document_id and row.document_id not in docs:
             continue
-        cov_fields = [f for f in fields if f.coverage_id == row.id]
+        doc = docs.get(row.document_id)
+        cov_fields = [
+            f
+            for f in fields
+            if (f.coverage_id == row.id or (row.document_id and f.document_id == row.document_id))
+        ]
         has_confirmed = any(f.confirmed_by_user and f.status == "FOUND" for f in cov_fields)
-        has_extracted = bool(row.document_id or cov_fields)
-        if has_confirmed:
+        doc_verified = doc is not None and doc.status == "VERIFIED"
+        if doc_verified:
+            origin = "DOCUMENT_EXTRACTED"
+            ver = "VERIFIED"
+        elif has_confirmed:
             origin: ProvenanceOrigin = "USER_CONFIRMED"
             ver: VerificationStatusType = "USER_CONFIRMED"
-        elif has_extracted:
+        elif bool(row.document_id or cov_fields):
             origin = "DOCUMENT_EXTRACTED"
             ver = "NEEDS_REVIEW"
         else:
@@ -334,16 +367,51 @@ def get_user_context(
         or 0
     )
 
+    subject_id = (
+        f"demo_{persona_id}"
+        if (is_demo and persona_id)
+        else (f"demo_{owner.id}" if is_demo else f"account_{owner.id}")
+    )
+    city_val = payload.get("city") or owner.city
+    inst_val = payload.get("institution_name") or setup.get("institution_name")
+    raw_deps = payload.get("dependents")
+    deps_count = len(raw_deps) if isinstance(raw_deps, list) else 0
+    raw_ver = payload.get("profile_version") or payload.get("version")
+    if raw_ver is not None:
+        try:
+            p_ver = int(raw_ver)
+        except (ValueError, TypeError):
+            p_ver = str(raw_ver)
+    else:
+        p_ver = 4 if persona_id == "raka" else 1
+
+    ver_status = "SELF_REPORTED"
+    if not is_demo:
+        has_verified_doc = db.scalar(
+            select(AccountDocumentRow).where(
+                AccountDocumentRow.account_id == owner.id,
+                AccountDocumentRow.status == "VERIFIED",
+            )
+        )
+        if has_verified_doc:
+            ver_status = "VERIFIED"
+
     return UserContext(
+        subject_id=subject_id,
+        residence_city=city_val,
+        institution=inst_val,
+        dependents_count=deps_count,
+        profile_version=p_ver,
+        verification_status=ver_status,
         actor_kind="DEMO_SESSION" if is_demo else "AUTHENTICATED_ACCOUNT",
         synthetic=is_demo,
         persona_id=persona_id,
         residence_country=country_code,
-        city=payload.get("city") or owner.city,
+        city=city_val,
         nationality=payload.get("nationality") or setup.get("nationality"),
         occupation=payload.get("occupation") or owner.occupation,
         situation=payload.get("residence_context") or setup.get("current_situation"),
-        institution_name=payload.get("institution_name") or setup.get("institution_name"),
+        institution_name=inst_val,
         employer_name=payload.get("employer_name") or setup.get("employer_name"),
         study_start_date=str(study_start) if study_start else None,
         study_end_date=str(study_end) if study_end else None,
@@ -364,3 +432,13 @@ def get_user_context(
 
 
 build_user_context = get_user_context
+
+__all__ = [
+    "CanonicalUserContext",
+    "CoverageFact",
+    "FactProvenance",
+    "UserContext",
+    "build_user_context",
+    "get_authorized_user_context",
+    "get_user_context",
+]

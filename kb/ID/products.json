@@ -30,6 +30,7 @@
     ],
     "effective_from": "2014-01-01",
     "effective_to": null,
+    "checked_at": null,
     "product_version": "2024.1",
     "benefits": [
       {
@@ -186,6 +187,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2025-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -292,6 +294,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2025-12-31",
+    "checked_at": null,
     "product_version": "2023.2",
     "benefits": [
       {
@@ -371,6 +374,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2025-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -475,6 +479,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -580,6 +585,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -658,6 +664,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -737,6 +744,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -843,6 +851,7 @@
     ],
     "effective_from": "2023-01-01",
     "effective_to": "2026-12-31",
+    "checked_at": null,
     "product_version": "2023.1",
     "benefits": [
       {
@@ -889,6 +898,162 @@
         "source_page": 8
       }
     ],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Summarized from official Allianz product page checked 2026-10-20. No policy artifact is retained; current terms, waiting periods, limits, and underwriting must be reconfirmed with Allianz.",
+    "product_id": "id-prod-allianz-preferred-medical",
+    "insurer_id": "id-insurer-allianz",
+    "original_product_name": "Allianz Preferred Medical",
+    "english_name": "Allianz Preferred Medical",
+    "product_category": "private_medical",
+    "target_users": [
+      "Individuals seeking health protection in Indonesia"
+    ],
+    "eligibility_conditions": [
+      "Entry age from 1 month through 75 years",
+      "Subject to full underwriting by the insurer"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Asia and Australia according to the selected plan and current policy terms",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": null,
+    "published_pricing_conditions": "Premium depends on age, plan, deductible, underwriting, and insurer quotation.",
+    "product_url": "https://www.allianz.co.id/produk/asuransi-individu/asuransi-kesehatan/allianz-preferred-medical.html",
+    "policy_document_references": [],
+    "effective_from": "2026-04-16",
+    "effective_to": null,
+    "checked_at": "2026-10-20",
+    "product_version": "2026.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-apm-inpatient",
+        "benefit_category": "Inpatient Medical",
+        "benefit_name": "Inpatient and surgical care",
+        "original_name": "Rawat inap dan pembedahan",
+        "covered_event": "Inpatient hospitalization due to illness or accidental injury",
+        "covered_service": "Inpatient and surgical treatment according to the selected plan",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": null,
+        "sublimits": {},
+        "currency": "IDR",
+        "period": "Policy Year",
+        "eligibility_conditions": [],
+        "network_requirements": null,
+        "reimbursement_rate": null,
+        "preauthorization_required": false,
+        "evidence_references": []
+      }
+    ],
+    "exclusions": [],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Summarized from official Prudential PRUSehat page checked 2026-10-20. No policy artifact is retained; current territory, waiting periods, limits, and underwriting must be reconfirmed with Prudential.",
+    "product_id": "id-prod-prudential-prusehat",
+    "insurer_id": "id-insurer-prudential",
+    "original_product_name": "PRUSehat",
+    "english_name": "PRUSehat",
+    "product_category": "private_medical",
+    "target_users": [
+      "Individuals and families seeking health protection in Indonesia"
+    ],
+    "eligibility_conditions": [
+      "Insured entry age from 30 days through 75 years",
+      "Subject to insurer eligibility and underwriting"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Asia excluding Singapore, Japan, and Hong Kong according to current product terms",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": null,
+    "published_pricing_conditions": "Premium depends on age, plan, deductible, underwriting, and insurer quotation.",
+    "product_url": "https://www.prudential.co.id/id/products/asuransi-kesehatan/prusehat/",
+    "policy_document_references": [],
+    "effective_from": "2026-01-01",
+    "effective_to": null,
+    "checked_at": "2026-10-20",
+    "product_version": "2026.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-prusehat-inpatient",
+        "benefit_category": "Inpatient Medical",
+        "benefit_name": "Inpatient, pre-hospital, and post-hospital care",
+        "original_name": "Rawat inap, pra rawat inap, dan pasca rawat inap",
+        "covered_event": "Hospital admission or covered medical treatment",
+        "covered_service": "Hospital care and certain outpatient services according to current policy terms",
+        "inpatient_applicable": true,
+        "outpatient_applicable": true,
+        "benefit_limit": null,
+        "sublimits": {},
+        "currency": "IDR",
+        "period": "Policy Year",
+        "eligibility_conditions": [],
+        "network_requirements": "Cashless access is subject to the insurer hospital network and authorization.",
+        "reimbursement_rate": null,
+        "preauthorization_required": false,
+        "evidence_references": []
+      }
+    ],
+    "exclusions": [],
+    "verification_status": "UNVERIFIED"
+  },
+  {
+    "evidence_class": "MANUALLY_CURATED",
+    "retrieval_artifact_sha256": null,
+    "provenance_note": "Summarized from official Manulife MiUltimate HealthCare page checked 2026-10-20. No policy artifact is retained; current benefits, limits, student conditions, and underwriting must be reconfirmed with Manulife.",
+    "product_id": "id-prod-manulife-miultimate",
+    "insurer_id": "id-insurer-manulife",
+    "original_product_name": "MiUltimate HealthCare",
+    "english_name": "MiUltimate HealthCare",
+    "product_category": "private_medical",
+    "target_users": [
+      "Individuals and families seeking health protection in Indonesia",
+      "Eligible students studying overseas subject to current terms"
+    ],
+    "eligibility_conditions": [
+      "Eligibility and underwriting are determined by Manulife under current product terms"
+    ],
+    "coverage_country": "ID",
+    "coverage_territory": "Subject to selected plan and current Manulife policy terms",
+    "product_status": "ACTIVE",
+    "currency": "IDR",
+    "published_pricing": null,
+    "published_pricing_conditions": "Premium depends on age, plan, optional benefits, underwriting, and insurer quotation.",
+    "product_url": "https://www.manulife.co.id/id/produk/kesehatan/asuransi-kesehatan/miultimate-healthcare.html",
+    "policy_document_references": [],
+    "effective_from": "2026-01-01",
+    "effective_to": null,
+    "checked_at": "2026-10-20",
+    "product_version": "2026.1",
+    "benefits": [
+      {
+        "benefit_id": "id-ben-miultimate-inpatient",
+        "benefit_category": "Inpatient Medical",
+        "benefit_name": "Inpatient medical care",
+        "original_name": "Manfaat rawat inap",
+        "covered_event": "Hospital hospitalization due to illness or injury",
+        "covered_service": "Inpatient care with cashless or reimbursement access subject to current terms",
+        "inpatient_applicable": true,
+        "outpatient_applicable": false,
+        "benefit_limit": null,
+        "sublimits": {},
+        "currency": "IDR",
+        "period": "Policy Year",
+        "eligibility_conditions": [],
+        "network_requirements": "Cashless and reimbursement availability depends on provider and current terms.",
+        "reimbursement_rate": null,
+        "preauthorization_required": false,
+        "evidence_references": []
+      }
+    ],
+    "exclusions": [],
     "verification_status": "UNVERIFIED"
   }
 ]
