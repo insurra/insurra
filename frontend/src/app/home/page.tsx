@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import { useWorkspace } from "@/lib/workspace";
+import { useAuth } from "@/lib/auth";
+import { getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
 import { WorkspaceState } from "@/components/workspace/workspace";
 import "./home-dashboard.css";
 
@@ -49,6 +51,36 @@ export default function HomePage() {
   const workspace = useWorkspace();
   const [askQuery, setAskQuery] = useState("");
   const [workflowData, setWorkflowData] = useState<WorkflowOverview | null>(null);
+  const { token: accountToken } = useAuth();
+  const [preparingActionId, setPreparingActionId] = useState<string | null>(null);
+
+  const handleInsightAction = async (action: any) => {
+    if (action?.kind === "PREPARE_ACTION" && action?.action_type) {
+      setPreparingActionId(action.action_type);
+      try {
+        const headers = getWorkflowHeaders(accountToken);
+        const res = await fetch(getWorkflowUrl("/api/v1/workflow/actions"), {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            action_type: action.action_type,
+            entity_type: action.entity_type,
+            entity_id: action.entity_id,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          router.push(`/actions?action=${data.id}`);
+          return;
+        }
+      } catch {
+        // Fallback to deep link
+      } finally {
+        setPreparingActionId(null);
+      }
+    }
+    router.push(action?.deep_link || "/actions");
+  };
 
   // Fetch live workflow data (claims, pending actions, audit activity)
   useEffect(() => {
@@ -404,13 +436,29 @@ export default function HomePage() {
                       </div>
                       <p>{ins.explanation}</p>
                     </div>
-                    <Link
-                      href={primaryAction?.deep_link || "/coverage-needs"}
-                      className="home-smallbtn"
-                    >
-                      <span>{primaryAction?.label || "Review Now"}</span>
-                      <ArrowRight size={12} />
-                    </Link>
+                    {primaryAction?.kind === "PREPARE_ACTION" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleInsightAction(primaryAction)}
+                        disabled={preparingActionId === primaryAction.action_type}
+                        className="home-smallbtn cursor-pointer"
+                      >
+                        <span>
+                          {preparingActionId === primaryAction.action_type
+                            ? "Preparing..."
+                            : primaryAction?.label || "Prepare Action"}
+                        </span>
+                        <ArrowRight size={12} />
+                      </button>
+                    ) : (
+                      <Link
+                        href={primaryAction?.deep_link || "/coverage-needs"}
+                        className="home-smallbtn"
+                      >
+                        <span>{primaryAction?.label || "Review Now"}</span>
+                        <ArrowRight size={12} />
+                      </Link>
+                    )}
                   </div>
                 );
               })

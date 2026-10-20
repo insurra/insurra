@@ -357,7 +357,7 @@ def prepare_proactive_renewal_actions(
     owner: Owner,
     *,
     today: date | None = None,
-    window_days: int = 30,
+    window_days: int = 180,
 ) -> list:
     """Flow A: Detect policies expiring within window_days (or recently lapsed) and idempotently prepare renewal actions."""
     today = today or date.today()

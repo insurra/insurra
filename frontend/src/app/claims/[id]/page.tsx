@@ -12,6 +12,7 @@ import {
   Clock,
   FileSpreadsheet,
   FileText,
+  Info,
   Plus,
   RefreshCw,
   Send,
@@ -91,6 +92,7 @@ interface ClaimCaseDetailResponse {
     policy_end?: string | null;
     status: string;
     review_confirmed: boolean;
+    sandbox_reference?: string | null;
     sandbox_status?: string | null;
     created_at: string;
     updated_at: string;
@@ -111,6 +113,54 @@ interface ClaimCaseDetailResponse {
     missing_required: string[];
     version: number;
     status: string;
+  } | null;
+  dispute_review?: {
+    claim_id: string;
+    claim_reference: string;
+    has_rejection_letter: boolean;
+    rejection_evidence_id?: string | null;
+    rejection_filename?: string | null;
+    stated_rejection_reason: string;
+    cited_clause: string;
+    rejection_date?: string | null;
+    insurer_reference?: string | null;
+    review_posture: string;
+    insurer_at_fault_concluded: boolean;
+    acceptance_guaranteed: boolean;
+    disclaimer: string;
+    matched_policy_clauses: Array<{
+      clause_area: string;
+      policy_context: string;
+      comparison_status: string;
+    }>;
+    clarifiable_issues: Array<{
+      code: string;
+      title: string;
+      detail: string;
+      suggested_evidence: string;
+    }>;
+    appeal_evidence_checklist: Array<{
+      code: string;
+      label: string;
+      present: boolean;
+      status: string;
+      note: string;
+    }>;
+    regulatory_escalation_info?: {
+      authority_name?: string;
+      channel_name?: string;
+      contact_phone?: string;
+      online_portal?: string;
+      procedure_summary?: string;
+      published_deadlines?: string;
+    } | null;
+    appeal_draft?: {
+      subject: string;
+      body: string;
+      recipient_note?: string;
+    };
+    appeal_action_id?: string | null;
+    appeal_action_status?: string | null;
   } | null;
   timeline?: Array<{
     id: string;
@@ -1042,6 +1092,178 @@ export default function ClaimDetailPage() {
               </Button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB: DISPUTE & APPEAL (Flow C: Claim Dispute Agent) */}
+      {activeTab === "Dispute & Appeal" && (
+        <div className="space-y-6">
+          {/* Honest Uncertainty & Non-Conclusive Disclaimer (Criterion 6) */}
+          <div className="p-4.5 bg-sky-50/80 border border-sky-200 rounded-2xl flex items-start gap-3.5">
+            <Info size={22} className="text-sky-700 mt-0.5 flex-none" />
+            <div className="text-xs leading-relaxed text-sky-900">
+              <span className="font-bold block text-sm mb-1 text-sky-950">
+                Dispute Review &amp; Appeal Preparation (Non-Conclusive Clarification)
+              </span>
+              {claim.dispute_review?.disclaimer ||
+                "This review compares the stated rejection reason against recorded policy context and evidence to highlight points that may be clarified. It does not conclude that the insurer is at fault and does not guarantee that an appeal or claim will be accepted."}
+            </div>
+          </div>
+
+          {/* Rejection Letter Context Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">1. Stated Rejection Basis</h3>
+                <p className="text-xs text-slate-500">
+                  Information extracted from your insurer denial letter or recorded claim outcome.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={uploading}
+                  onClick={() =>
+                    handleUploadSimulatedEvidence(
+                      "REJECTION_LETTER",
+                      "Insurer Denial Notice - Clause Clarification.pdf"
+                    )
+                  }
+                  className="text-xs text-slate-700 border-slate-300"
+                >
+                  <FileText size={14} className="mr-1" /> Attach Rejection Notice
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+                <span className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
+                  Stated Rejection Reason
+                </span>
+                <p className="text-sm font-semibold text-slate-900">
+                  {claim.dispute_review?.stated_rejection_reason || "No rejection reason on record."}
+                </p>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+                <span className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
+                  Cited Policy Clause / Exclusion
+                </span>
+                <p className="text-sm font-semibold text-slate-900">
+                  {claim.dispute_review?.cited_clause || "Not specified by insurer."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Matched Policy Clauses & Comparison */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-1">2. Policy Clause Comparison</h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Comparing stated denial grounds against your contract facts and recorded policy dates.
+            </p>
+
+            <div className="divide-y divide-slate-100">
+              {(claim.dispute_review?.matched_policy_clauses || []).map((clause, idx) => (
+                <div key={idx} className="py-3.5 flex items-start justify-between gap-4">
+                  <div>
+                    <span className="font-bold text-sm text-slate-800 block">
+                      {clause.clause_area}
+                    </span>
+                    <p className="text-xs text-slate-600 mt-0.5">{clause.policy_context}</p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                    {clause.comparison_status.replace(/_/g, " ")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Clarifiable Issues */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-1">
+              3. Factual Points for Clarification
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Specific issues identified for written clarification with the claims review team.
+            </p>
+
+            <div className="space-y-3">
+              {(claim.dispute_review?.clarifiable_issues || []).map((issue) => (
+                <div
+                  key={issue.code}
+                  className="p-4 rounded-xl border border-teal-100 bg-teal-50/40"
+                >
+                  <div className="font-bold text-sm text-teal-950 mb-1 flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-teal-700" />
+                    {issue.title}
+                  </div>
+                  <p className="text-xs text-slate-700 leading-relaxed mb-2">{issue.detail}</p>
+                  <div className="text-[11px] font-semibold text-teal-800 bg-white/80 border border-teal-200 rounded px-2 py-1 inline-block">
+                    Recommended Evidence: {issue.suggested_evidence}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Appeal Evidence Checklist */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-1">
+              4. Appeal Supporting Evidence Checklist
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Documents to compile before submitting your reconsideration request.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {(claim.dispute_review?.appeal_evidence_checklist || []).map((item) => (
+                <div
+                  key={item.code}
+                  className="p-3.5 border border-slate-200 rounded-xl bg-slate-50/50 flex items-start gap-3"
+                >
+                  <div className="mt-0.5">
+                    {item.present ? (
+                      <CheckCircle2 size={18} className="text-emerald-600" />
+                    ) : (
+                      <AlertCircle size={18} className="text-amber-500" />
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-900 text-xs block">{item.label}</span>
+                    <span className="text-[11px] text-slate-500">{item.note}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Review & Approval Handoff (Acceptance Criterion 2) */}
+          <div className="p-6 bg-slate-900 text-white rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
+            <div>
+              <span className="text-xs uppercase tracking-wider text-teal-400 font-bold block mb-1">
+                Step 5: Review &amp; Approval Boundary
+              </span>
+              <h4 className="text-base font-bold mb-1">
+                Ready to review the Reconsideration &amp; Appeal draft?
+              </h4>
+              <p className="text-xs text-slate-300 max-w-xl">
+                Preparing this action creates a draft bound to an exact payload hash in your Action Queue.
+                Nothing is sent to any external party without your explicit approval.
+              </p>
+            </div>
+            <Button
+              size="lg"
+              onClick={() => handlePrepareAppeal()}
+              disabled={preparingAppeal}
+              className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl whitespace-nowrap shadow"
+            >
+              <Send size={15} className="mr-1.5" />
+              {preparingAppeal ? "Preparing Draft..." : "Prepare Appeal Draft for Review"}
+            </Button>
+          </div>
         </div>
       )}
 
