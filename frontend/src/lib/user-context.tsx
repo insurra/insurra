@@ -4,12 +4,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/types.gen";
 import { useAuth } from "@/lib/auth";
+import { useSession } from "@/lib/session";
 
 const GOAL_API_VALUES: Record<string, components["schemas"]["Goal"]> = {
   understand: "UNDERSTAND_COVERAGE",
@@ -156,6 +158,11 @@ const UserContext = createContext<SharedUserContext>(DEFAULT_USER_CONTEXT);
 
 export function UserContextProvider({ children }: { children: React.ReactNode }) {
   const { account, token } = useAuth();
+  const { data: demoSession } = useSession();
+  const [accountProfile, setAccountProfile] = useState<{
+    token: string;
+    countryCode: string;
+  } | null>(null);
 
   const [context, setContext] = useState<SharedUserContext>(() => {
     if (typeof window !== "undefined") {
@@ -259,6 +266,22 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
     [syncToBackend]
   );
 
+  useEffect(() => {
+    if (!token) return;
+    const controller = new AbortController();
+    api
+      .request("get", "/api/v1/account/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
+      })
+      .then((state) => {
+        const countryCode = state.profile?.country_code;
+        if (!controller.signal.aborted && countryCode) setAccountProfile({ token, countryCode });
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [token]);
+
   const resetContext = useCallback(() => {
     setContext(DEFAULT_USER_CONTEXT);
     if (typeof window !== "undefined") {
@@ -267,12 +290,27 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const value = useMemo(
-    () => ({
-      ...context,
-      updateContext,
-      resetContext,
-    }),
-    [context, resetContext, updateContext]
+    () => {
+      const countryCode = token
+        ? accountProfile?.token === token
+          ? accountProfile.countryCode
+          : undefined
+        : demoSession?.profile.country_code;
+      const activeContext = countryCode
+        ? {
+            ...context,
+            countryCode,
+            countryFlag: COUNTRY_FLAGS[countryCode] || "🌐",
+            residenceCountry: COUNTRY_NAMES[countryCode] || context.residenceCountry,
+          }
+        : context;
+      return {
+        ...activeContext,
+        updateContext,
+        resetContext,
+      };
+    },
+    [accountProfile, context, demoSession?.profile.country_code, resetContext, token, updateContext]
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

@@ -10,7 +10,11 @@ export default defineConfig({
   fullyParallel: false,
   retries: 0,
   reporter: "list",
-  use: { baseURL: "http://127.0.0.1:3177", trace: "retain-on-failure" },
+  use: {
+    baseURL: "http://127.0.0.1:3177",
+    trace: "retain-on-failure",
+    reducedMotion: "reduce",
+  },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     {
