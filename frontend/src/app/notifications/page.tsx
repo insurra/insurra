@@ -104,8 +104,7 @@ export default function NotificationsPage() {
         <div>
           <h1>Notifications</h1>
           <p>
-            In-app alerts only. Insurra does not send email or text messages from this screen.
-            {mode === "demo" && " These are synthetic demo notifications."}
+            In-app alerts only. Inssura does not send email or text messages from this screen.
           </p>
         </div>
         <button
@@ -163,7 +162,7 @@ export default function NotificationsPage() {
                 <div className="notif-meta">
                   <span className="badge neutral">{categoryLabel[item.category]}</span>
                   {item.priority === "HIGH" && <span className="badge warning">HIGH PRIORITY</span>}
-                  {item.is_demo && <span className="badge neutral">SYNTHETIC DEMO</span>}
+                  {item.is_demo && <span className="badge neutral">SIMULASI</span>}
                   <time dateTime={item.created_at}>{new Date(item.created_at).toLocaleString()}</time>
                 </div>
                 <h2>

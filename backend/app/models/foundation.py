@@ -31,7 +31,8 @@ class PurposeConsentRow(Base):
     __table_args__ = (
         UniqueConstraint("session_id", "purpose", name="uq_consent_session_purpose"),
         CheckConstraint(
-            "purpose IN ('process_documents','external_ai','retention')", name="ck_consent_purpose"
+            "purpose IN ('process_documents','external_ai','retention','health_profile')",
+            name="ck_consent_purpose",
         ),
     )
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)

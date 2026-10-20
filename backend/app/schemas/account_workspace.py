@@ -56,6 +56,9 @@ class AccountDocumentSummary(Contract):
     original_file_status: Literal["RETAINED", "DELETED"]
     error_code: str | None
     created_at: datetime
+    extracted_preview: str | None = None
+    confidence: str | None = None
+    version_detected: str | None = None
 
 
 class AccountField(Contract):
@@ -75,6 +78,21 @@ class AccountField(Contract):
 class AccountDocumentDetail(AccountDocumentSummary):
     fields: list[AccountField]
     pages: list[dict[str, JsonValue]]
+    benefits: list[dict[str, JsonValue]] = Field(default_factory=list)
+    exclusions: list[str] = Field(default_factory=list)
+    waiting_periods: list[str] = Field(default_factory=list)
+    claim_conditions: list[str] = Field(default_factory=list)
+
+
+class AccountDocumentConfirm(Contract):
+    document_kind: str | None = None
+    status: Literal["VERIFIED", "NEEDS_REVIEW", "UNSUPPORTED"] = "VERIFIED"
+    version_detected: Literal["NEW_POLICY", "UPDATE_TO_EXISTING", "DUPLICATE"] = "NEW_POLICY"
+    fields: dict[str, JsonValue] = Field(default_factory=dict)
+    benefits: list[dict[str, JsonValue]] = Field(default_factory=list)
+    exclusions: list[str] = Field(default_factory=list)
+    waiting_periods: list[str] = Field(default_factory=list)
+    claim_conditions: list[str] = Field(default_factory=list)
 
 
 class AccountUploadResult(Contract):
@@ -102,6 +120,10 @@ class AccountCompletenessItem(Contract):
     document_id: UUID | None = None
     source_page: int | None = None
     suggested_doc: str | None = None
+    category: str | None = None
+    details: str | None = None
+    action_type: str | None = None
+    action_url: str | None = None
 
 
 class AccountVisaGap(Contract):
@@ -122,6 +144,40 @@ class AccountVisaGap(Contract):
     verification_status: VerificationStatus
 
 
+class CompletenessTimelinePeriod(Contract):
+    id: str
+    label: str
+    category: Literal["POLICY", "VISA", "GAP", "OTHER"] = "POLICY"
+    provider: str | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    status: Literal["ACTIVE", "EXPIRING_SOON", "EXPIRED", "UNKNOWN", "GAP", "VALID"] = "VALID"
+    is_verified: bool = True
+    document_id: UUID | None = None
+    source_page: int | None = None
+    color: str = "blue"
+
+
+class CompletenessAttentionItem(Contract):
+    id: str
+    title: str
+    description: str
+    category: Literal["PROFILE", "INSURANCE", "DOCUMENT"] = "PROFILE"
+    severity: Literal["HIGH", "MEDIUM", "LOW"] = "MEDIUM"
+    action_label: str
+    action_url: str
+
+
+class CompletenessMetrics(Contract):
+    overall_pct: int
+    profile_found: int
+    profile_total: int
+    insurance_found: int
+    insurance_total: int
+    documents_found: int
+    documents_total: int
+
+
 class AccountCompleteness(Contract):
     task_code: str
     task_label: str
@@ -133,6 +189,12 @@ class AccountCompleteness(Contract):
     coverage_continuity: AccountVisaGap | None = None
     kb_version: str
     verification_status: VerificationStatus
+    metrics: CompletenessMetrics | None = None
+    profile_items: list[AccountCompletenessItem] = Field(default_factory=list)
+    insurance_items: list[AccountCompletenessItem] = Field(default_factory=list)
+    document_items: list[AccountCompletenessItem] = Field(default_factory=list)
+    timeline_items: list[CompletenessTimelinePeriod] = Field(default_factory=list)
+    attention_items: list[CompletenessAttentionItem] = Field(default_factory=list)
 
 
 class AccountInventory(Contract):
@@ -158,11 +220,17 @@ class AccountPolicySummary(Contract):
     country_code: CountryCode
     kind: str
     provider: str | None = None
+    plan_name: str | None = None
     policy_number_masked: str | None = None
     start_date: str | None = None
     end_date: str | None = None
-    status: Literal["ACTIVE", "EXPIRING_SOON", "EXPIRED", "UNKNOWN"] = "UNKNOWN"
+    coverage_limit: str | None = None
+    deductible: str | None = None
+    currency: str | None = "RMB"
+    summary: str | None = None
+    status: Literal["ACTIVE", "EXPIRING_SOON", "EXPIRED", "NOT_YET_ACTIVE", "UNKNOWN"] = "UNKNOWN"
     evidence_status: Literal["SELF_REPORTED", "NEEDS_REVIEW", "VERIFIED"]
+    source_document_count: int = 0
     created_at: datetime
 
 
@@ -171,7 +239,79 @@ class AccountPolicyDetail(AccountPolicySummary):
     exclusions: list[str] = Field(default_factory=list)
     waiting_periods: list[str] = Field(default_factory=list)
     source_pages: list[int] = Field(default_factory=list)
+    source_documents: list[dict[str, JsonValue]] = Field(default_factory=list)
     bpjs_coordination: str | None = None
+    key_notes: list[str] = Field(default_factory=list)
+    quick_actions: list[dict[str, str]] = Field(default_factory=list)
+    important_dates: dict[str, JsonValue] = Field(default_factory=dict)
+
+
+class AccountPolicyBenefitItem(Contract):
+    name: str = Field(min_length=1, max_length=120)
+    limit: str = Field(min_length=1, max_length=120)
+
+
+class AccountPolicyCreate(Contract):
+    provider: str = Field(min_length=1, max_length=200)
+    plan_name: str = Field(min_length=1, max_length=200)
+    policy_number: str | None = Field(default=None, max_length=100)
+    policy_type: str = Field(min_length=1, max_length=100)
+    start_date: str | None = Field(default=None, max_length=10)
+    end_date: str | None = Field(default=None, max_length=10)
+    status: Literal["ACTIVE", "EXPIRING_SOON", "EXPIRED", "NOT_YET_ACTIVE", "UNKNOWN"] | None = None
+    coverage_limit: str | None = Field(default=None, max_length=100)
+    deductible: str | None = Field(default=None, max_length=100)
+    currency: str = Field(default="RMB", max_length=10)
+    country_code: CountryCode = "CN"
+    summary: str | None = Field(default=None, max_length=1000)
+    benefits: list[AccountPolicyBenefitItem] = Field(default_factory=list)
+    exclusions: list[str] = Field(default_factory=list)
+
+
+class AccountPolicyUpdate(Contract):
+    provider: str | None = Field(default=None, max_length=200)
+    plan_name: str | None = Field(default=None, max_length=200)
+    policy_number: str | None = Field(default=None, max_length=100)
+    policy_type: str | None = Field(default=None, max_length=100)
+    start_date: str | None = Field(default=None, max_length=10)
+    end_date: str | None = Field(default=None, max_length=10)
+    status: Literal["ACTIVE", "EXPIRING_SOON", "EXPIRED", "NOT_YET_ACTIVE", "UNKNOWN"] | None = None
+    coverage_limit: str | None = Field(default=None, max_length=100)
+    deductible: str | None = Field(default=None, max_length=100)
+    currency: str | None = Field(default=None, max_length=10)
+    summary: str | None = Field(default=None, max_length=1000)
+    benefits: list[AccountPolicyBenefitItem] | None = None
+    exclusions: list[str] | None = None
+
+
+class ClauseCitation(Contract):
+    document_id: UUID | None = None
+    filename: str | None = None
+    page: int | None = None
+    section: str | None = None
+    clause_text: str
+    relevance_score: float | None = None
+
+
+class SignificantExclusion(Contract):
+    category: str
+    title: str
+    explanation: str
+    waiting_period_months: int | None = None
+    clause: ClauseCitation | None = None
+    is_verified: bool = False
+
+
+class PolicyIntelligenceAnalysis(Contract):
+    policy_id: UUID
+    provider: str
+    plan_name: str
+    coverage_summary: str
+    significant_exclusions: list[SignificantExclusion] = Field(default_factory=list)
+    waiting_periods: list[dict[str, JsonValue]] = Field(default_factory=list)
+    risk_assessment: list[str] = Field(default_factory=list)
+    continuity_status: str
+    grounded_evidence_count: int = 0
 
 
 class FamilyMemberCreate(Contract):

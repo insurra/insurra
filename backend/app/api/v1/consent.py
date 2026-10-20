@@ -5,7 +5,7 @@ from app.core.dependencies import DB, ActiveSession
 from app.models import ConsentRow, PurposeConsentRow
 from app.schemas.consent import ConsentPurpose, PurposeConsent, PurposeConsentUpdate
 from app.schemas.session import ConsentState, ConsentUpdate
-from app.services.consents import update_purpose
+from app.services.consents import purpose_row, update_purpose
 
 router = APIRouter(tags=["Consent"])
 
@@ -31,6 +31,9 @@ def update_consent(body: ConsentUpdate, db: DB, session: ActiveSession):
 
 @router.get("/consents", response_model=list[PurposeConsent])
 def get_purposes(db: DB, session: ActiveSession):
+    for purpose in ConsentPurpose:
+        purpose_row(db, session.id, purpose)
+    db.commit()
     return list(
         db.scalars(
             select(PurposeConsentRow)

@@ -358,11 +358,7 @@ def register(body: RegisterRequest, db: DB, request: Request):
             if isinstance(supabase_user.get("user"), dict)
             else supabase_user
         )
-        supa_id = (
-            user_obj.get("id")
-            or supabase_user.get("id")
-            or secrets.token_hex(16)
-        )
+        supa_id = user_obj.get("id") or supabase_user.get("id") or secrets.token_hex(16)
         is_confirmed = bool(
             user_obj.get("confirmed_at")
             or user_obj.get("email_confirmed_at")
@@ -473,11 +469,11 @@ def login(body: LoginRequest, db: DB, request: Request):
                             email_clean, body.password.get_secret_value(), settings
                         )
                     except Exception:
-                        raise exc
+                        raise exc from None
                 else:
-                    raise exc
+                    raise exc from None
             else:
-                raise exc
+                raise exc from None
 
         supa_user = session_data.get("user") or {}
         supa_id = supa_user.get("id")

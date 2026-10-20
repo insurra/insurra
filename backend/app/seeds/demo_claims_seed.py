@@ -711,6 +711,43 @@ def seed_demo_claims_for_session(
     # =========================================================================
     audit_events = [
         (
+            "POLICY_DOCUMENT_VERIFIED",
+            "DOCUMENTS",
+            "Policy document verified",
+            "Student Insurance Certificate"
+            if country_code == "CN"
+            else "Health Insurance Certificate",
+            "SYSTEM",
+            "verify_policy_document",
+            "VERIFIED",
+            now - timedelta(days=2),
+            None,
+        ),
+        (
+            "PROTECTION_ASSESSMENT_COMPLETED",
+            "PROTECTION",
+            "AI Protection Assessment completed",
+            "3 covered • 1 needs attention • 1 not covered",
+            "AI_PREPARED",
+            "run_protection_assessment",
+            "COMPLETED",
+            now - timedelta(days=2, hours=3),
+            None,
+        ),
+        (
+            "DOCUMENT_ADDED",
+            "DOCUMENTS",
+            "New document added",
+            "Residence Permit (Pending verification)"
+            if country_code == "CN"
+            else "National ID Card (Pending verification)",
+            "USER",
+            "upload_account_document",
+            "PENDING",
+            now - timedelta(days=3),
+            None,
+        ),
+        (
             "ACTION_SUBMITTED_SANDBOX",
             "ACTIONS",
             "Action submitted to sandbox",
@@ -718,7 +755,7 @@ def seed_demo_claims_for_session(
             "SANDBOX",
             "execute_sandbox_claim",
             "EXECUTED",
-            now - timedelta(hours=1),
+            now - timedelta(days=3, hours=4),
             "CLM-2026-001",
         ),
         (

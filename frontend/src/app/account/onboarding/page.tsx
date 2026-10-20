@@ -460,6 +460,12 @@ type AgeRangeValue = "UNDER_18" | "18_24" | "25_34" | "35_44" | "45_54" | "55_64
 type AnswerStateValue = "YES" | "NO" | "UNKNOWN";
 type CoverageIntentValue = "YES" | "NO" | "UNSURE";
 type DecisionPreferenceValue = "LOWER_PREMIUM" | "WIDER_BENEFITS" | "FLEXIBILITY";
+type HealthSharingValue = "SHARE_RELEVANT" | "NO_CURRENT_NEEDS" | "PREFER_NOT_TO_ANSWER";
+type EducationLevelValue = "SECONDARY" | "DIPLOMA" | "BACHELOR" | "MASTER" | "DOCTORATE" | "OTHER";
+type EnrollmentStatusValue = "APPLICANT" | "ENROLLED" | "COMPLETED" | "DEFERRED";
+type IncomeRangeValue = "BELOW_5M" | "BETWEEN_5M_15M" | "BETWEEN_15M_30M" | "ABOVE_30M" | "PREFER_NOT_TO_ANSWER";
+type EmergencySavingsValue = "LESS_THAN_1_MONTH" | "ONE_TO_THREE_MONTHS" | "THREE_TO_SIX_MONTHS" | "MORE_THAN_SIX_MONTHS" | "UNKNOWN";
+type TravelFrequencyValue = "RARELY" | "OCCASIONAL" | "FREQUENT";
 
 function AccountOnboardingContent() {
   const { account, token } = useAuth();
@@ -512,6 +518,19 @@ function AccountOnboardingContent() {
   const [visaStatus, setVisaStatus] = useState<string>("");
   const [employmentType, setEmploymentType] = useState<string>("");
   const [employerCoverageEligibility, setEmployerCoverageEligibility] = useState<AnswerStateValue>("UNKNOWN");
+  const [educationLevel, setEducationLevel] = useState<EducationLevelValue>("BACHELOR");
+  const [enrollmentStatus, setEnrollmentStatus] = useState<EnrollmentStatusValue>("ENROLLED");
+  const [studentInsuranceRequirement, setStudentInsuranceRequirement] = useState<AnswerStateValue>("UNKNOWN");
+
+  // Step 3: optional, separately consented health and lifestyle context
+  const [healthSharing, setHealthSharing] = useState<HealthSharingValue>("PREFER_NOT_TO_ANSWER");
+  const [healthConsentChecked, setHealthConsentChecked] = useState(false);
+  const [healthNeeds, setHealthNeeds] = useState<string[]>([]);
+  const [medicationAccessNeeds, setMedicationAccessNeeds] = useState("");
+  const [providerPreferences, setProviderPreferences] = useState("");
+  const [preExistingReviewRequested, setPreExistingReviewRequested] = useState(false);
+  const [lifestyleExposures, setLifestyleExposures] = useState<string[]>([]);
+  const [travelFrequency, setTravelFrequency] = useState<TravelFrequencyValue>("RARELY");
 
   // Step 4: Existing Protection (Multi-select)
   const [selectedCoverages, setSelectedCoverages] = useState<DeclaredCoverageItem[]>(
@@ -545,6 +564,8 @@ function AccountOnboardingContent() {
   const [dependentAgeGroups, setDependentAgeGroups] = useState<string[]>([]);
   const [dependentInsuranceStatus, setDependentInsuranceStatus] = useState<AnswerStateValue>("UNKNOWN");
   const [financialResponsibilities, setFinancialResponsibilities] = useState<string[]>([]);
+  const [incomeRange, setIncomeRange] = useState<IncomeRangeValue>("PREFER_NOT_TO_ANSWER");
+  const [emergencySavingsRange, setEmergencySavingsRange] = useState<EmergencySavingsValue>("UNKNOWN");
 
   // Steps 5–6: Goals, then budget and review
   const [selectedGoals, setSelectedGoals] = useState<string[]>(
@@ -642,6 +663,18 @@ function AccountOnboardingContent() {
         if (typeof data.employer_coverage_eligibility === "string") {
           setEmployerCoverageEligibility(data.employer_coverage_eligibility as AnswerStateValue);
         }
+        if (typeof data.education_level === "string") setEducationLevel(data.education_level as EducationLevelValue);
+        if (typeof data.enrollment_status === "string") setEnrollmentStatus(data.enrollment_status as EnrollmentStatusValue);
+        if (typeof data.student_insurance_requirement_known === "string") setStudentInsuranceRequirement(data.student_insurance_requirement_known as AnswerStateValue);
+        if (typeof data.health_sharing_preference === "string") setHealthSharing(data.health_sharing_preference as HealthSharingValue);
+        if (Array.isArray(data.ongoing_healthcare_needs)) setHealthNeeds(data.ongoing_healthcare_needs as string[]);
+        if (typeof data.medication_access_needs === "string") setMedicationAccessNeeds(data.medication_access_needs);
+        if (typeof data.provider_preferences === "string") setProviderPreferences(data.provider_preferences);
+        if (typeof data.pre_existing_review_requested === "boolean") setPreExistingReviewRequested(data.pre_existing_review_requested);
+        if (Array.isArray(data.lifestyle_exposures)) setLifestyleExposures(data.lifestyle_exposures as string[]);
+        if (typeof data.travel_frequency === "string") setTravelFrequency(data.travel_frequency as TravelFrequencyValue);
+        if (typeof data.income_range === "string") setIncomeRange(data.income_range as IncomeRangeValue);
+        if (typeof data.emergency_savings_range === "string") setEmergencySavingsRange(data.emergency_savings_range as EmergencySavingsValue);
         if (Array.isArray(data.insurance_sources)) setInsuranceSources(data.insurance_sources as string[]);
         if (typeof data.policy_expiry_known === "boolean") setPolicyExpiryKnown(data.policy_expiry_known);
         if (typeof data.policy_expiry_date === "string") setPolicyExpiryDate(data.policy_expiry_date);
@@ -798,8 +831,43 @@ function AccountOnboardingContent() {
       employment_type: employmentType || null,
       employer_coverage_eligibility:
         segment === "employee" ? employerCoverageEligibility : null,
+      education_level: segment === "student" ? educationLevel : null,
+      enrollment_status: segment === "student" ? enrollmentStatus : null,
+      expected_study_end_date: segment === "student" ? residencePermitExpiry.trim() || null : null,
+      student_insurance_requirement_known: segment === "student" ? studentInsuranceRequirement : null,
     });
     proceedTo(3);
+  }
+
+  async function handleHealthSubmit() {
+    if (healthSharing === "SHARE_RELEVANT" && !healthConsentChecked) {
+      setError("Please provide the separate health-profile consent, or choose Skip for now.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      if (token && healthSharing === "SHARE_RELEVANT") {
+        await api.request("post", "/api/v1/account/consents", {
+          headers: { Authorization: `Bearer ${token}` },
+          body: { purpose: "health_profile", granted: true, policy_version: "1.5" },
+        });
+      }
+      await persistDraft({
+        health_sharing_preference: healthSharing,
+        ongoing_healthcare_needs: healthSharing === "SHARE_RELEVANT" ? healthNeeds : [],
+        medication_access_needs: healthSharing === "SHARE_RELEVANT" ? medicationAccessNeeds.trim() || null : null,
+        provider_preferences: healthSharing === "SHARE_RELEVANT" ? providerPreferences.trim() || null : null,
+        pre_existing_review_requested: healthSharing === "SHARE_RELEVANT" ? preExistingReviewRequested : null,
+        lifestyle_exposures: lifestyleExposures,
+        travel_frequency: travelFrequency,
+      });
+      proceedTo(4);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Health preferences could not be saved.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   // Handle Step 4 Coverage toggle
@@ -868,7 +936,7 @@ function AccountOnboardingContent() {
       policy_expiry_date: policyExpiryKnown ? policyExpiryDate || null : null,
       policy_documents_available: policyDocumentsAvailable,
     });
-    proceedTo(5);
+    proceedTo(6);
   }
 
   // Handle Step 3 Scope toggle
@@ -890,8 +958,10 @@ function AccountOnboardingContent() {
       dependent_insurance_status:
         householdScope === "family" ? dependentInsuranceStatus : null,
       financial_responsibilities: financialResponsibilities,
+      income_range: incomeRange,
+      emergency_savings_range: emergencySavingsRange,
     });
-    proceedTo(4);
+    proceedTo(5);
   }
 
   function handleStep5Continue() {
@@ -904,7 +974,7 @@ function AccountOnboardingContent() {
       goals: [...new Set(selectedGoals.map((goal) => GOAL_API_VALUES[goal]))],
       primary_concern: selectedGoals[0] || null,
     });
-    proceedTo(6);
+    setError(null);
   }
 
   // Handle Step 6 Budget & Review Submit
@@ -989,11 +1059,17 @@ function AccountOnboardingContent() {
             employment_type: employmentType || null,
             employer_coverage_eligibility:
               segment === "employee" ? employerCoverageEligibility : null,
+            education_level: segment === "student" ? educationLevel : null,
+            enrollment_status: segment === "student" ? enrollmentStatus : null,
+            expected_study_end_date: segment === "student" ? residencePermitExpiry.trim() || null : null,
+            student_insurance_requirement_known: segment === "student" ? studentInsuranceRequirement : null,
             has_dependents: householdScope === "family",
             dependent_age_groups: householdScope === "family" ? dependentAgeGroups : [],
             dependent_insurance_status:
               householdScope === "family" ? dependentInsuranceStatus : null,
             financial_responsibilities: financialResponsibilities,
+            income_range: incomeRange,
+            emergency_savings_range: emergencySavingsRange,
             has_existing_insurance: selectedCoverages.some((c) => c.id === "none")
               ? "NO"
               : selectedCoverages.some((c) => c.id === "not_sure")
@@ -1009,6 +1085,13 @@ function AccountOnboardingContent() {
             decision_preference: skipBudget ? null : decisionPreference,
             budget_range: skipBudget ? null : selectedBudgetRange,
             currency: budgetCurrency,
+            health_sharing_preference: healthSharing,
+            ongoing_healthcare_needs: healthSharing === "SHARE_RELEVANT" ? healthNeeds : [],
+            medication_access_needs: healthSharing === "SHARE_RELEVANT" ? medicationAccessNeeds.trim() || null : null,
+            provider_preferences: healthSharing === "SHARE_RELEVANT" ? providerPreferences.trim() || null : null,
+            pre_existing_review_requested: healthSharing === "SHARE_RELEVANT" ? preExistingReviewRequested : null,
+            lifestyle_exposures: lifestyleExposures,
+            travel_frequency: travelFrequency,
           },
         });
       } catch (cause) {
@@ -1168,12 +1251,12 @@ function AccountOnboardingContent() {
         {/* 6-step progress stepper */}
         <nav aria-label="Onboarding Progress" className="onboarding-stepper">
           {[
-            { num: 1, label: "Location" },
-            { num: 2, label: "Situation" },
-            { num: 3, label: "Family" },
-            { num: 4, label: "Insurance" },
-            { num: 5, label: "Goals" },
-            { num: 6, label: "Review" },
+            { num: 1, label: "Identity" },
+            { num: 2, label: "Life" },
+            { num: 3, label: "Health" },
+            { num: 4, label: "Family" },
+            { num: 5, label: "Protection" },
+            { num: 6, label: "Goals" },
           ].map((s) => {
             const isStepActive = activeStep === s.num;
             const isStepDone = activeStep > s.num || isCompleted;
@@ -1556,6 +1639,19 @@ function AccountOnboardingContent() {
                       </div>
                     )}
 
+                    {segment === "student" && (
+                      <div className="conditional-group-card">
+                        <span className="conditional-tag">Enrollment & eligibility context</span>
+                        <div className="field-grid-2">
+                          <div><label className="field-label">Level of study</label><select className="text-input-field" value={educationLevel} onChange={(event) => setEducationLevel(event.target.value as EducationLevelValue)}><option value="SECONDARY">Secondary</option><option value="DIPLOMA">Diploma</option><option value="BACHELOR">Bachelor</option><option value="MASTER">Master</option><option value="DOCTORATE">Doctorate</option><option value="OTHER">Other</option></select></div>
+                          <div><label className="field-label">Enrollment status</label><select className="text-input-field" value={enrollmentStatus} onChange={(event) => setEnrollmentStatus(event.target.value as EnrollmentStatusValue)}><option value="APPLICANT">Applicant</option><option value="ENROLLED">Enrolled</option><option value="DEFERRED">Deferred</option><option value="COMPLETED">Completed</option></select></div>
+                        </div>
+                        <label className="field-label">Do you know the university insurance requirement?</label>
+                        <select className="text-input-field" value={studentInsuranceRequirement} onChange={(event) => setStudentInsuranceRequirement(event.target.value as AnswerStateValue)}><option value="YES">Yes</option><option value="NO">No</option><option value="UNKNOWN">Not sure yet</option></select>
+                        <small className="field-helper">We do not need school history, transcripts, or unrelated education records.</small>
+                      </div>
+                    )}
+
                     {(segment === "employee" || segment === "self_employed") && (
                       <div className="conditional-group-card">
                         <span className="conditional-tag">
@@ -1692,14 +1788,88 @@ function AccountOnboardingContent() {
               </div>
             )}
 
-            {/* Step 4: What Protection Do You Have? */}
-            {activeStep >= 4 && (
-              <div className="chat-turn" style={{ order: 4 }}>
+            {/* Step 3: Health & Lifestyle */}
+            {activeStep >= 3 && (
+              <div className="chat-turn" style={{ order: 3 }}>
+                <div className="chat-assistant-bubble">
+                  <p>
+                    Any healthcare access or activity needs you want me to consider? This is optional,
+                    uses a separate consent, and is never treated as a diagnosis.
+                  </p>
+                </div>
+                {activeStep === 3 && (
+                  <div className="chat-form-interactive">
+                    <div className="form-group-card">
+                      <label className="field-label">Health information preference</label>
+                      <select className="text-input-field" value={healthSharing} onChange={(event) => setHealthSharing(event.target.value as HealthSharingValue)}>
+                        <option value="PREFER_NOT_TO_ANSWER">Skip / prefer not to answer</option>
+                        <option value="NO_CURRENT_NEEDS">No current healthcare needs to add</option>
+                        <option value="SHARE_RELEVANT">Share relevant needs voluntarily</option>
+                      </select>
+                    </div>
+
+                    {healthSharing === "SHARE_RELEVANT" && (
+                      <div className="conditional-group-card">
+                        <span className="conditional-tag">Sensitive health context</span>
+                        <p className="field-helper">Choose broad needs. Complete medical records are not required.</p>
+                        <div className="family-checkboxes">
+                          {["ONGOING_TREATMENT", "REGULAR_MEDICATION_ACCESS", "PREFERRED_PROVIDER_NETWORK", "PRE_EXISTING_TERMS_REVIEW"].map((item) => (
+                            <label key={item} className="checkbox-row">
+                              <input type="checkbox" checked={healthNeeds.includes(item)} onChange={() => setHealthNeeds((current) => current.includes(item) ? current.filter((value) => value !== item) : [...current, item])} />
+                              <span>{item.replaceAll("_", " ").toLowerCase()}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <label className="field-label">Medication access needs (optional)</label>
+                        <input className="text-input-field" maxLength={300} value={medicationAccessNeeds} onChange={(event) => setMedicationAccessNeeds(event.target.value)} placeholder="Example: access to a recurring prescription" />
+                        <label className="field-label">Provider or network preference (optional)</label>
+                        <input className="text-input-field" maxLength={200} value={providerPreferences} onChange={(event) => setProviderPreferences(event.target.value)} placeholder="Example: nearby hospital or specialist network" />
+                        <label className="checkbox-row">
+                          <input type="checkbox" checked={preExistingReviewRequested} onChange={(event) => setPreExistingReviewRequested(event.target.checked)} />
+                          <span>Help me review how pre-existing condition terms may affect options.</span>
+                        </label>
+                        <label className="checkbox-row">
+                          <input type="checkbox" checked={healthConsentChecked} onChange={(event) => setHealthConsentChecked(event.target.checked)} />
+                          <span>I consent to INSURRA storing and using these voluntary health preferences for protection analysis. This does not grant external AI access.</span>
+                        </label>
+                      </div>
+                    )}
+
+                    <div className="conditional-group-card">
+                      <span className="conditional-tag">Lifestyle & travel</span>
+                      <div className="family-checkboxes">
+                        {["FREQUENT_TRAVEL", "MOTORCYCLING", "HIGH_RISK_SPORT", "PHYSICAL_WORK"].map((item) => (
+                          <label key={item} className="checkbox-row">
+                            <input type="checkbox" checked={lifestyleExposures.includes(item)} onChange={() => setLifestyleExposures((current) => current.includes(item) ? current.filter((value) => value !== item) : [...current, item])} />
+                            <span>{item.replaceAll("_", " ").toLowerCase()}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <label className="field-label">Travel frequency</label>
+                      <select className="text-input-field" value={travelFrequency} onChange={(event) => setTravelFrequency(event.target.value as TravelFrequencyValue)}>
+                        <option value="RARELY">Rarely</option><option value="OCCASIONAL">Occasionally</option><option value="FREQUENT">Frequently</option>
+                      </select>
+                    </div>
+                    {error && <div className="chat-error-message">{error}</div>}
+                    <button type="button" className="chat-primary-btn" disabled={busy} onClick={handleHealthSubmit}>
+                      <span>{busy ? "Saving…" : "Continue to Family & Finances"}</span><ArrowRight size={16} />
+                    </button>
+                  </div>
+                )}
+                {activeStep > 3 && (
+                  <div className="chat-user-bubble"><span>{healthSharing === "SHARE_RELEVANT" ? "Relevant health preferences shared with separate consent" : "Health details skipped"}</span><button type="button" className="edit-answer-btn" onClick={() => editStep(3)} title="Edit health and lifestyle"><Edit2 size={13} /></button></div>
+                )}
+              </div>
+            )}
+
+            {/* Step 5: Existing Protection */}
+            {activeStep >= 5 && (
+              <div className="chat-turn" style={{ order: 5 }}>
                 <div className="chat-assistant-bubble">
                   <p>What types of insurance do you currently have? Select all that apply.</p>
                 </div>
 
-                {activeStep === 4 && (
+                {activeStep === 5 && (
                   <div className="chat-form-interactive">
                     <div className="coverage-multi-list">
                       {COVERAGE_CATEGORIES.map((cat) => {
@@ -1804,13 +1974,13 @@ function AccountOnboardingContent() {
                       className="chat-primary-btn"
                       onClick={handleStep3Submit}
                     >
-                      <span>Continue to Goals</span>
+                      <span>Continue to Goals & Review</span>
                       <ArrowRight size={16} />
                     </button>
                   </div>
                 )}
 
-                {activeStep > 4 && (
+                {activeStep > 5 && (
                   <div className="chat-user-bubble">
                     <span>
                       {selectedCoverages.map((c) => c.category).join(", ")} (Self-Reported)
@@ -1818,7 +1988,7 @@ function AccountOnboardingContent() {
                     <button
                       type="button"
                       className="edit-answer-btn"
-                      onClick={() => editStep(4)}
+                      onClick={() => editStep(5)}
                       title="Edit Coverage"
                     >
                       <Edit2 size={13} />
@@ -1828,14 +1998,14 @@ function AccountOnboardingContent() {
               </div>
             )}
 
-            {/* Step 3: Who Needs Coverage? */}
-            {activeStep >= 3 && (
-              <div className="chat-turn" style={{ order: 3 }}>
+            {/* Step 4: Family & Financial Context */}
+            {activeStep >= 4 && (
+              <div className="chat-turn" style={{ order: 4 }}>
                 <div className="chat-assistant-bubble">
                   <p>Are you managing insurance just for yourself or for others too?</p>
                 </div>
 
-                {activeStep === 3 && (
+                {activeStep === 4 && (
                   <div className="chat-form-interactive">
                     <div className="scope-selection-grid">
                       {[
@@ -1950,6 +2120,10 @@ function AccountOnboardingContent() {
                           </label>
                         ))}
                       </div>
+                      <div className="field-grid-2" style={{ marginTop: 12 }}>
+                        <div><label className="field-label">Monthly income range (optional)</label><select className="text-input-field" value={incomeRange} onChange={(event) => setIncomeRange(event.target.value as IncomeRangeValue)}><option value="PREFER_NOT_TO_ANSWER">Prefer not to answer</option><option value="BELOW_5M">Below Rp 5m equivalent</option><option value="BETWEEN_5M_15M">Rp 5m–15m equivalent</option><option value="BETWEEN_15M_30M">Rp 15m–30m equivalent</option><option value="ABOVE_30M">Above Rp 30m equivalent</option></select></div>
+                        <div><label className="field-label">Emergency savings</label><select className="text-input-field" value={emergencySavingsRange} onChange={(event) => setEmergencySavingsRange(event.target.value as EmergencySavingsValue)}><option value="UNKNOWN">Not sure / skip</option><option value="LESS_THAN_1_MONTH">Less than 1 month</option><option value="ONE_TO_THREE_MONTHS">1–3 months</option><option value="THREE_TO_SIX_MONTHS">3–6 months</option><option value="MORE_THAN_SIX_MONTHS">More than 6 months</option></select></div>
+                      </div>
                     </div>
 
                     <button
@@ -1963,7 +2137,7 @@ function AccountOnboardingContent() {
                   </div>
                 )}
 
-                {activeStep > 3 && (
+                {activeStep > 4 && (
                   <div className="chat-user-bubble">
                     <span>
                       {householdScope === "self"
@@ -1975,7 +2149,7 @@ function AccountOnboardingContent() {
                     <button
                       type="button"
                       className="edit-answer-btn"
-                      onClick={() => editStep(3)}
+                      onClick={() => editStep(4)}
                       title="Edit Scope"
                     >
                       <Edit2 size={13} />
@@ -1985,14 +2159,14 @@ function AccountOnboardingContent() {
               </div>
             )}
 
-            {/* Step 5: What Can We Help You With? */}
-            {activeStep >= 5 && (
-              <div className="chat-turn" style={{ order: 5 }}>
+            {/* Step 6: Goals & Review */}
+            {activeStep >= 6 && (
+              <div className="chat-turn" style={{ order: 6 }}>
                 <div className="chat-assistant-bubble">
                   <p>What would you like INSURRA to help you with? Select your key priorities.</p>
                 </div>
 
-                {activeStep === 5 && (
+                {activeStep === 6 && (
                   <div className="chat-form-interactive">
                     <div className="goals-multi-list">
                       {GOAL_OPTIONS.map((g) => {
@@ -2028,13 +2202,13 @@ function AccountOnboardingContent() {
                     {error && <div className="chat-error-message">{error}</div>}
 
                     <button type="button" className="chat-primary-btn" onClick={handleStep5Continue}>
-                      <span>Continue to Budget & Review</span>
+                      <span>Save priorities and review below</span>
                       <ArrowRight size={16} />
                     </button>
                   </div>
                 )}
 
-                {activeStep > 5 && (
+                {activeStep > 6 && (
                   <div className="chat-user-bubble">
                     <span>
                       {selectedGoals.length} priorities selected
@@ -2042,7 +2216,7 @@ function AccountOnboardingContent() {
                     <button
                       type="button"
                       className="edit-answer-btn"
-                      onClick={() => editStep(5)}
+                      onClick={() => editStep(6)}
                       title="Edit Goals"
                     >
                       <Edit2 size={13} />

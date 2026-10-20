@@ -3,12 +3,13 @@ import { AppShell } from "@/components/layout/app-shell";
 import { SessionProvider } from "@/lib/session";
 import { AuthProvider } from "@/lib/auth";
 import { UserContextProvider } from "@/lib/user-context";
+import { AppDialogHost } from "@/components/ui/app-dialog";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Insurra · AI Insurance Companion",
+  title: "Inssura · AI Insurance Companion",
   description: "Your context-aware AI insurance decision and action companion.",
 };
 export default function RootLayout({
@@ -21,6 +22,7 @@ export default function RootLayout({
           <SessionProvider>
             <UserContextProvider>
               <AppShell>{children}</AppShell>
+              <AppDialogHost />
             </UserContextProvider>
           </SessionProvider>
         </AuthProvider>

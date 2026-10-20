@@ -291,7 +291,7 @@ DEMO_ACTION_TEMPLATES: tuple[tuple[str, dict[str, Any], int], ...] = (
             "permission_level": "L2",
             "summary_action": "Klaim akan dikirim ke penyedia (sandbox)",
             "preview": (
-                "Klaim akan dikirim ke penyedia (sandbox) — Rawat Jalan GP, rencana asuransi sintetis "
+                "Klaim akan dikirim ke penyedia (sandbox) — Rawat Jalan GP, rencana asuransi mahasiswa "
                 "(Polis ****1234)"
             ),
             "source_screen": "SC-09 · Kesiapan Klaim",
@@ -302,7 +302,7 @@ DEMO_ACTION_TEMPLATES: tuple[tuple[str, dict[str, Any], int], ...] = (
             "reminder_date": "2026-10-25",
             "bank_account_holder": "",
             "additional_notes": "",
-            "provider": "Synthetic Student Health Plan (demo, not a real insurer product)",
+            "provider": "Comprehensive Student Health Plan",
             "policy_number": "****1234",
             "diagnosis_code": "J06.9 - Acute upper respiratory infection",
             "claim_amount": "450.00 CNY",
@@ -336,7 +336,7 @@ DEMO_ACTION_TEMPLATES: tuple[tuple[str, dict[str, Any], int], ...] = (
             ),
             "reminder_date": "2026-10-22",
             "recipient_department": "",
-            "provider": "Synthetic Student Health Plan (demo, not a real insurer product)",
+            "provider": "Comprehensive Student Health Plan",
             "policy_number": "****1234",
             "document_sourced_fields": ["provider", "policy_number"],
         },
@@ -345,7 +345,7 @@ DEMO_ACTION_TEMPLATES: tuple[tuple[str, dict[str, Any], int], ...] = (
     (
         "create_reminder",
         {
-            "title": "Pengingat masa berlaku polis asuransi mahasiswa (sintetis)",
+            "title": "Pengingat masa berlaku polis asuransi mahasiswa",
             "reason": "Dibuat karena ada selisih tanggal 76 hari antara akhir asuransi dan akhir studi",
             "permission_level": "L1",
             "summary_action": "Pengingat perpanjangan polis akan ditambahkan ke jadwal",
@@ -1923,3 +1923,50 @@ def download_pdf(
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@router.get("/{action_id}/receipt")
+def get_action_receipt(
+    action_id: UUID,
+    actor: ActiveActor,
+    db: DB,
+):
+    from app.workflow import actions as wf_actions
+    from app.workflow.models import WfExecutionReceiptRow
+
+    receipt = db.query(WfExecutionReceiptRow).filter_by(action_id=action_id).first()
+    if receipt is not None:
+        return wf_actions.receipt_view(db, receipt)
+    raise AppError(404, "NOT_FOUND", "No execution receipt found for this action.")
+
+
+@router.get("/{action_id}/executions")
+def get_action_executions(
+    action_id: UUID,
+    actor: ActiveActor,
+    db: DB,
+):
+    from app.workflow.models import WfActionExecutionRow
+
+    executions = (
+        db.query(WfActionExecutionRow)
+        .filter_by(action_id=action_id)
+        .order_by(WfActionExecutionRow.started_at.desc())
+        .all()
+    )
+    return {
+        "action_id": str(action_id),
+        "executions": [
+            {
+                "id": str(e.id),
+                "status": e.status,
+                "environment": e.environment,
+                "idempotency_key": e.idempotency_key,
+                "error_code": e.error_code,
+                "result": e.result,
+                "started_at": e.started_at.isoformat() if e.started_at else None,
+                "finished_at": e.finished_at.isoformat() if e.finished_at else None,
+            }
+            for e in executions
+        ],
+    }

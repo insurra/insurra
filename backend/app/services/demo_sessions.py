@@ -152,11 +152,18 @@ def create_demo_session(db: Session, persona_id: str, ttl_hours: int) -> Session
 
     # Seed realistic demo claim cases, actions and audit events from KB for demo session
     from app.seeds.demo_claims_seed import seed_demo_claims_for_session
+    from app.seeds.demo_family_seed import seed_demo_family_for_session
 
     seed_demo_claims_for_session(
         db,
         session.id,
         country_code=profile.country_code,
+        persona_name=profile.display_name or "Demo User",
+    )
+    seed_demo_family_for_session(
+        db,
+        session.id,
+        persona_id=persona_id,
         persona_name=profile.display_name or "Demo User",
     )
 

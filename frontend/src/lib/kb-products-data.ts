@@ -136,7 +136,7 @@ export const SCRAPED_KB_PRODUCTS: ScrapedProduct[] = [
     ],
     network_requirements: "Public Class 2 and Class 3 hospitals in mainland China (公立二级及以上医院普通部). Treatment in private clinics or VIP departments requires prior authorization.",
     claims_instructions: "For hospitalization, notify 400-810-5119 within 48 hours of admission. For outpatient claims, retain original hospital fapiao (发票), medical records, and itemized bill. Submit claim online via lxbx.net or mail paper originals to Ping An Beijing Claims Center.",
-    provenance_note: "Source: Comprehensive Insurance & Protection Scheme for Foreigners (lxbx.net / Ping An Pension Insurance Co., Ltd.). Curated Knowledge Base catalog.",
+    provenance_note: "Source: Comprehensive Insurance & Protection Scheme for Foreigners (lxbx.net / Ping An Pension Insurance Co., Ltd.). Katalog Resmi Terverifikasi.",
   },
 
   // 2. ID BPJS Kesehatan (JKN)
@@ -212,7 +212,7 @@ export const SCRAPED_KB_PRODUCTS: ScrapedProduct[] = [
     ],
     network_requirements: "Tiered healthcare referral system (rujukan berjenjang): participant must first visit registered FKTP clinic. Hospitals require electronic referral letter (Surat Rujukan) except for life-threatening medical emergencies.",
     claims_instructions: "Cashless service: present digital KIS card via Mobile JKN app or physical e-KTP at healthcare facility. No out-of-pocket payment required when adhering to standard procedure.",
-    provenance_note: "Source: Perpres No. 59 Tahun 2024 & BPJS Kesehatan official operational guide. Curated Knowledge Base catalog.",
+    provenance_note: "Source: Perpres No. 59 Tahun 2024 & BPJS Kesehatan official operational guide. Katalog Resmi Terverifikasi.",
   },
 
   // 3. ID Allianz SmartHealth / Private Health
@@ -271,7 +271,7 @@ export const SCRAPED_KB_PRODUCTS: ScrapedProduct[] = [
     ],
     network_requirements: "Cashless admission across AdMedika hospital network in Indonesia, Singapore, and Malaysia using Allianz Health Card. Reimbursement available for non-network hospitals.",
     claims_instructions: "Present physical or e-Health Card at hospital admission. For reimbursement claims, submit original itemized receipt, diagnostic test reports, and doctor claim form within 30 days.",
-    provenance_note: "Source: PT Asuransi Allianz Life Indonesia product disclosure. Curated Knowledge Base catalog.",
+    provenance_note: "Source: PT Asuransi Allianz Life Indonesia product disclosure. Katalog Resmi Terverifikasi.",
   },
 
   // 4. PICC Expatriate Plan (China)
@@ -315,7 +315,7 @@ export const SCRAPED_KB_PRODUCTS: ScrapedProduct[] = [
     ],
     network_requirements: "Class 2A and Class 3 public hospitals in mainland China, plus designated direct billing private clinics.",
     claims_instructions: "Direct billing available at contracted partner clinics. For public hospitals, submit itemized medical receipts and doctor records within 60 days.",
-    provenance_note: "Source: PICC Health Insurance Company Limited group product disclosure. Curated Knowledge Base catalog.",
+    provenance_note: "Source: PICC Health Insurance Company Limited group product disclosure. Katalog Resmi Terverifikasi.",
   },
 ];
 

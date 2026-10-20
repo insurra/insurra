@@ -12,10 +12,13 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=ROOT / ".env", extra="ignore")
     database_url: str = "sqlite:///./dev.db"
     frontend_origin: str = "http://localhost:3000"
-    ai_provider: Literal["gemini"] = "gemini"
+    ai_provider: Literal["gemini", "openai"] = "gemini"
     gemini_api_key: SecretStr = SecretStr("")
     gemini_model: str = "gemini-3.5-flash-lite"
     gemini_fast_model: str = "gemini-3.5-flash-lite"
+    openai_api_key: SecretStr = SecretStr("")
+    openai_model: str = "gpt-6.1-sol"
+    openai_fast_model: str = "gpt-6-luna"
     environment: str = "development"
     session_ttl_hours: int = 24
     kb_root: Path = ROOT / "kb"

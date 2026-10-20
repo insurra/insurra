@@ -1,0 +1,249 @@
+.coverage-snapshot-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.coverage-snapshot-card:hover {
+  box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
+}
+
+.css-snaphead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.css-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.css-sample-badge {
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  font-size: 10px;
+  font-weight: 800;
+  border-radius: 9999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: #f8fafc;
+}
+
+.css-sample-badge.live {
+  color: #047857;
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+}
+
+.css-metricrow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.css-metric {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.css-metric + .css-metric {
+  border-left: 1px solid #e2e8f0;
+  padding-left: 16px;
+}
+
+.css-metricicon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #e6f7f4;
+  color: #008b78;
+}
+
+.css-metriclabel {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+
+.css-metricval {
+  font-size: 1.25rem;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.css-timeline-track {
+  height: 16px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: #dfe9ed;
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+
+.css-timeline-track .css-bar-green {
+  background: linear-gradient(90deg, #00b18f, #09a98e);
+  transition: width 0.4s ease;
+  height: 100%;
+}
+
+.css-timeline-track .css-bar-orange {
+  background: repeating-linear-gradient(
+    135deg,
+    #ffe6a6 0 8px,
+    #f9ad58 8px 16px
+  );
+  transition: width 0.4s ease;
+  height: 100%;
+}
+
+.css-timelabel {
+  text-align: right;
+  color: #b45309;
+  font-weight: 800;
+  font-size: 13px;
+  margin: 10px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.css-timelabel-dot {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.css-insight-card {
+  border: 1px solid #fed7aa;
+  background: #fffbeb;
+  border-radius: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.css-insight-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.12);
+  border-color: #f59e0b;
+}
+
+.css-insight-warn {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: #fef3c7;
+  color: #d97706;
+  border-radius: 12px;
+}
+
+.css-insight-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.css-insight-content strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.css-insight-content small {
+  display: block;
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.css-insight-arrow {
+  margin-left: auto;
+  color: #0f172a;
+  flex: none;
+  transition: transform 0.15s ease;
+}
+
+.css-insight-card:hover .css-insight-arrow {
+  transform: translateX(3px);
+}
+
+.css-foot-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 640px) {
+  .css-foot-actions {
+    grid-template-columns: 1fr;
+  }
+  .css-metricrow {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .css-metric + .css-metric {
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+    padding-left: 0;
+    padding-top: 12px;
+  }
+}
+
+.css-action-pill {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e293b;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.css-action-pill:hover {
+  background: #e6f7f4;
+  border-color: #a7f3d0;
+  color: #008b78;
+}
+
+.css-action-icon {
+  flex: none;
+  color: #008b78;
+}

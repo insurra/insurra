@@ -14,6 +14,15 @@ from app.core.errors import AppError
 from app.services.ai_gateway import GeminiGateway
 from app.services.policy_qa import ModelAnswer
 
+BACKEND_ROOT = Path(__file__).resolve().parents[1] / "backend"
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
+
+from app.core.config import Settings  # noqa: E402
+from app.core.errors import AppError  # noqa: E402
+from app.services.ai_gateway import ResponsesGateway  # noqa: E402
+from app.services.policy_qa import ModelAnswer  # noqa: E402
+
 
 def main():
     parser = argparse.ArgumentParser()

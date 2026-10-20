@@ -25,6 +25,8 @@ EVENT_TYPES = (
     "document.field.confirmed",
     "coverage.updated",
     "coverage.assessment.completed",
+    "policy.changed",
+    "policy.renewal.check",
     "claim.created",
     "claim.status.changed",
     "action.prepared",

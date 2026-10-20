@@ -27,6 +27,7 @@ def app(tmp_path, monkeypatch, kb_countries):
     application = create_app(
         Settings(
             database_url=url,
+            openai_api_key="",
             gemini_api_key="",
             frontend_origin="http://localhost:3000",
             frontend_url="http://127.0.0.1:3000",

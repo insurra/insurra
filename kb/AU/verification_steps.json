@@ -7,74 +7,74 @@
   "data": [
     {
       "code": "policy_no_match",
-      "label": "Periksa manfaat yang belum ditemukan",
+      "label": "Check benefits that were not found",
       "steps": [
-        "Periksa bagian manfaat dan pengecualian pada dokumen terbaru.",
-        "Tanyakan kepada penyedia atau HR apakah manfaat dan syarat yang dimaksud tercantum."
+        "Review the benefits and exclusions in the latest document.",
+        "Ask the provider or HR whether the relevant benefit and conditions are included."
       ]
     },
     {
       "code": "provider_network",
-      "label": "Apakah provider dalam jaringan?",
+      "label": "Is the provider in network?",
       "field_key": "provider_network_status",
       "known_values": [
         "in_network",
         "out_of_network"
       ],
-      "impact": "Status jaringan dapat mengubah prosedur dan biaya.",
+      "impact": "Network status can change the process and cost.",
       "steps": [
-        "Tanyakan kepada fasilitas apakah berada dalam jaringan polis Anda.",
-        "Konfirmasi status jaringan dan cara pembayaran kepada penyedia."
+        "Ask the facility whether it is in your policy network.",
+        "Confirm network status and the payment method with the provider."
       ]
     },
     {
       "code": "referral",
-      "label": "Apakah rujukan diperlukan dan tersedia?",
+      "label": "Is a referral required and available?",
       "field_key": "referral_status",
       "known_values": [
         "not_required",
         "available"
       ],
-      "impact": "Syarat rujukan belum pasti.",
+      "impact": "Referral requirements are not confirmed yet.",
       "steps": [
-        "Tanyakan apakah layanan membutuhkan rujukan dan apakah rujukan yang ada diterima."
+        "Ask whether the service requires a referral and whether your referral is accepted."
       ]
     },
     {
       "code": "claim_mode",
-      "label": "Bagaimana cara pembayaran dan klaim?",
+      "label": "How do payment and claims work?",
       "field_key": "benefit_{category}_claim_mode",
       "known_values": [
         "DIRECT_BILLING",
         "REIMBURSEMENT"
       ],
-      "impact": "Direct billing belum menjadi jaminan pembayaran.",
+      "impact": "Direct billing is not a payment guarantee.",
       "steps": [
-        "Tanyakan apakah fasilitas dapat direct billing atau perlu membayar dahulu dan mengajukan reimbursement."
+        "Ask whether the facility supports direct billing or requires upfront payment and reimbursement."
       ]
     },
     {
       "code": "benefit",
-      "label": "Apakah manfaat dan batas layanan sudah dikonfirmasi?",
+      "label": "Have the benefit and service limits been confirmed?",
       "field_key": "benefit_{category}_coverage_status",
       "known_values": [
         "COVERED"
       ],
-      "impact": "Manfaat belum dapat dipastikan dari dokumen.",
+      "impact": "The benefit cannot be confirmed from the available documents yet.",
       "steps": [
-        "Tanyakan bagian manfaat, batas pemakaian, excess, serta syarat yang berlaku untuk layanan ini."
+        "Ask about the benefit, usage limits, excess, and conditions that apply to this service."
       ]
     },
     {
       "code": "cost",
-      "label": "Berapa perkiraan biaya pribadi?",
+      "label": "What is the estimated out-of-pocket cost?",
       "field_key": "pathway_cost_confirmed",
       "known_values": [
         "confirmed"
       ],
-      "impact": "Tarif atau manfaat belum cukup untuk menghitung biaya.",
+      "impact": "Tariff or benefit evidence is insufficient to calculate the cost.",
       "steps": [
-        "Minta rincian tarif tertulis dari fasilitas dan konfirmasi manfaat, pemakaian, periode, serta excess kepada penyedia."
+        "Request written tariff details from the facility and confirm benefits, usage, period, and excess with the provider."
       ]
     }
   ]

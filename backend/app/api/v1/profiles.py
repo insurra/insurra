@@ -8,9 +8,16 @@ from app.core.dependencies import DB, KB, ActiveSession
 from app.repositories.session_data import profile_row
 from app.schemas.actor import Actor, ActorType
 from app.schemas.common import VerificationStatus
-from app.schemas.profile import COUNTRY_BOUND_FIELDS, ProfileUpdate, UserProfile
+from app.schemas.consent import ConsentPurpose
+from app.schemas.profile import (
+    COUNTRY_BOUND_FIELDS,
+    HEALTH_PROFILE_FIELDS,
+    ProfileUpdate,
+    UserProfile,
+)
 from app.schemas.profile_response import ProfileResponse
 from app.services.audit_logger import log_event
+from app.services.consents import require_purposes
 from app.services.events import dispatch
 from app.services.policy_guard import PolicyGuard
 
@@ -26,6 +33,8 @@ def profile(db: DB, session: ActiveSession):
 def update_profile(body: ProfileUpdate, db: DB, session: ActiveSession, kb: KB):
     row = profile_row(db, session.id)
     changes = body.model_dump(mode="json", exclude_unset=True)
+    if any(changes.get(field) for field in HEALTH_PROFILE_FIELDS):
+        require_purposes(db, session.id, (ConsentPurpose.HEALTH_PROFILE,))
     if changes.get("country_code", row.payload["country_code"]) != row.payload["country_code"]:
         # A new residence cannot implicitly reuse the previous country's location/visa/budget.
         # Explicit values in this update are re-confirmed by the caller; records stay untouched.
@@ -56,6 +65,18 @@ def update_profile(body: ProfileUpdate, db: DB, session: ActiveSession, kb: KB):
             "dedupe_part": str(row.payload.get("updated_at") or ""),
         },
     )
+    try:
+        from app.agent.protection_review import run_protection_review
+        from app.workflow.owner import DEMO, Owner
+
+        run_protection_review(
+            db,
+            Owner(kind=DEMO, id=session.id),
+            trigger_reason="profile.context.changed",
+            force=True,
+        )
+    except Exception:
+        pass
     db.commit()
     return ProfileResponse(
         profile=validated,

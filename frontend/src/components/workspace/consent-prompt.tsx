@@ -68,7 +68,7 @@ export function ConsentPrompt({
             Explicit Purpose Consent Required
           </h3>
           <p className="text-xs text-amber-900 mb-3">
-            INSURRA never silently grants privacy permissions. To continue with this step, please
+            INSSURA never silently grants privacy permissions. To continue with this step, please
             explicitly grant the required purpose permission below or manage your preferences in
             Privacy Settings:
           </p>

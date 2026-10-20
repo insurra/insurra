@@ -214,6 +214,29 @@ def summary(db, actor, kb, now=None) -> HomeSummary:
 
     owner = owner_for(actor)
     try:
+        from app.agent.protection_review import get_authorized_protection_assessment
+
+        assessment = get_authorized_protection_assessment(db, owner)
+        for f in assessment.findings:
+            if f.coverage_status == "UNKNOWN" and "VERIFY_BENEFIT_SCHEDULE" in f.next_actions:
+                rec_id = f"{p.country_code}_VERIFY_{f.need_type}"
+                if not any(r.rule_id == rec_id for r in recommendations):
+                    recommendations.append(
+                        Recommendation(
+                            rule_id=rec_id,
+                            title=f"Verifikasi Ketentuan Manfaat: {f.need_type.replace('_', ' ').title()}",
+                            explanation=f.reason
+                            or "Ketentuan manfaat belum diverifikasi. Tinjau dokumen polis.",
+                            priority=2,
+                            subject="assessment_finding",
+                            action_url="/documents",
+                            dismissible=True,
+                            action_type="VERIFY_BENEFIT_SCHEDULE",
+                        )
+                    )
+    except Exception:  # noqa: BLE001
+        pass
+    try:
         open_insights = refresh_owner_insights(db, owner, kb_loader=kb, today=today)
     except Exception:  # noqa: BLE001
         open_insights = []
@@ -279,6 +302,31 @@ def summary(db, actor, kb, now=None) -> HomeSummary:
         for a in audit_rows
     ]
 
+    from app.services.action_prioritization import prioritize_home_actions
+    from app.services.anti_lapse_agent import run_anti_lapse_agent
+
+    anti_lapse_agent_status = run_anti_lapse_agent(
+        db=db,
+        owner=owner,
+        actor=actor,
+        profile_data=p,
+        today=today,
+    )
+
+    prioritized_actions, assessment_summary, protection_areas, prioritized_activity = (
+        prioritize_home_actions(
+            db=db,
+            actor=actor,
+            owner=owner,
+            profile_data=p,
+            cards=cards,
+            today=today,
+            now=now,
+            kb=kb,
+            anti_lapse_agent=anti_lapse_agent_status,
+        )
+    )
+
     return HomeSummary(
         active=sum(c.active for c in cards),
         expiring_30d=expiring_count,
@@ -291,7 +339,7 @@ def summary(db, actor, kb, now=None) -> HomeSummary:
             pending_approvals=pending_approvals,
             expiring_policies=expiring_count,
         ),
-        recent_activity=recent_activity,
+        recent_activity=(prioritized_activity or recent_activity)[:3],
         context=WorkspaceContext(
             first_name=p.display_name.split()[0],
             country_code=p.country_code,
@@ -319,6 +367,10 @@ def summary(db, actor, kb, now=None) -> HomeSummary:
             ServiceChoice(code=s.code, label=s.label) for s in country.pathways.service_types
         ],
         pathway_help=country.pathways.help_text,
+        prioritized_actions=prioritized_actions,
+        assessment_summary=assessment_summary,
+        protection_areas=protection_areas,
+        anti_lapse_agent=anti_lapse_agent_status,
     )
 
 

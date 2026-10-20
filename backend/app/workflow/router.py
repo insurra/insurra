@@ -9,6 +9,7 @@ from fastapi import APIRouter, File, Header, Query, UploadFile
 from pydantic import BaseModel, Field
 
 from app.core.errors import AppError
+from app.schemas.employer_benefits import EmployerBenefitSaveRequest
 from app.workflow import (
     actions,
     audit,
@@ -393,6 +394,70 @@ def sync_claim_sandbox_status(claim_id: UUID, db: DB, owner: CurrentOwner):
     }
 
 
+@router.post("/claims/cases/{claim_id}/readiness")
+def get_claim_readiness(claim_id: UUID, db: DB, owner: CurrentOwner):
+    from app.services import claim_preparation_agent
+
+    return claim_preparation_agent.evaluate_claim_readiness(db, owner, claim_id)
+
+
+@router.get("/claims/cases/{claim_id}/requirements")
+def get_claim_requirements(claim_id: UUID, db: DB, owner: CurrentOwner):
+    case = claims.get_case(db, owner, claim_id)
+    evaluation = claims.recompute(db, owner, case)
+    return {
+        "claim_id": str(case.id),
+        "claim_type": case.claim_type,
+        "country_code": case.country_code,
+        "requirements": evaluation.get("items", []),
+    }
+
+
+@router.post("/claims/cases/{claim_id}/prepare")
+def prepare_claim_with_agent(claim_id: UUID, db: DB, owner: CurrentOwner):
+    from app.services import claim_preparation_agent
+
+    res = claim_preparation_agent.prepare_claim_draft(db, owner, claim_id)
+    db.commit()
+    return res
+
+
+@router.get("/claims/cases/{claim_id}/drafts")
+def list_claim_drafts(claim_id: UUID, db: DB, owner: CurrentOwner):
+    case = claims.get_case(db, owner, claim_id)
+    draft = claims.case_draft(db, case)
+    return {
+        "claim_id": str(case.id),
+        "active_draft": {
+            "id": str(draft.id),
+            "version": draft.version,
+            "status": draft.status,
+            "form": draft.form,
+            "missing_required": draft.missing_required,
+            "updated_at": draft.updated_at.isoformat(),
+        }
+        if draft
+        else None,
+    }
+
+
+@router.post("/claims/cases/{claim_id}/drafts/{draft_id}/confirm")
+def confirm_claim_draft_with_action(claim_id: UUID, draft_id: UUID, db: DB, owner: CurrentOwner):
+    from app.services import claim_preparation_agent
+
+    draft, action = claim_preparation_agent.confirm_and_create_action(db, owner, claim_id)
+    db.commit()
+    return {
+        "draft": {
+            "id": str(draft.id),
+            "version": draft.version,
+            "status": draft.status,
+            "form": draft.form,
+        },
+        "action": actions.action_view(db, action),
+    }
+
+
 @router.post("/claims/cases/{claim_id}/acknowledge-check")
 def acknowledge_consistency_check(
     claim_id: UUID,
@@ -484,6 +549,10 @@ class CreateActionRequest(BaseModel):
     draft_inputs: dict[str, str] = Field(default_factory=dict)
     title: str | None = None
     purpose: str | None = None
+
+
+class RejectActionRequest(BaseModel):
+    reason: str | None = None
 
 
 class ApproveActionRequest(BaseModel):
@@ -654,9 +723,14 @@ def approve_action(
 
 
 @router.post("/actions/{action_id}/reject", response_model=WorkflowActionView)
-def reject_action(action_id: UUID, db: DB, owner: CurrentOwner):
+def reject_action(
+    action_id: UUID,
+    db: DB,
+    owner: CurrentOwner,
+    body: RejectActionRequest | None = None,
+):
     action = actions.get_action(db, owner, action_id)
-    actions.reject(db, owner, action)
+    actions.reject(db, owner, action, reason=body.reason if body else None)
     db.commit()
     return actions.action_view(db, action)
 
@@ -701,6 +775,94 @@ def get_action_receipt(action_id: UUID, db: DB, owner: CurrentOwner):
     if receipt is None:
         raise AppError(404, "NOT_FOUND", "No execution receipt for this action yet.")
     return actions.receipt_view(db, receipt)
+
+
+@router.get("/actions/{action_id}/executions")
+def get_action_executions(action_id: UUID, db: DB, owner: CurrentOwner):
+    action = actions.get_action(db, owner, action_id)
+    executions = (
+        db.query(actions.WfActionExecutionRow)
+        .filter_by(action_id=action.id)
+        .order_by(actions.WfActionExecutionRow.started_at.desc())
+        .all()
+    )
+    return {
+        "action_id": str(action.id),
+        "executions": [
+            {
+                "id": str(e.id),
+                "status": e.status,
+                "environment": e.environment,
+                "idempotency_key": e.idempotency_key,
+                "error_code": e.error_code,
+                "result": e.result,
+                "started_at": e.started_at.isoformat() if e.started_at else None,
+                "finished_at": e.finished_at.isoformat() if e.finished_at else None,
+            }
+            for e in executions
+        ],
+    }
+
+
+@router.post("/internal/actions/{action_id}/execute", response_model=WorkflowExecuteResponse)
+def execute_internal_action(action_id: UUID, db: DB, owner: CurrentOwner):
+    action = actions.get_action(db, owner, action_id)
+    receipt, replayed = actions.execute(db, owner, action)
+    db.commit()
+    return {
+        "receipt": receipt,
+        "replayed": replayed,
+        "action": actions.action_view(db, action),
+    }
+
+
+@router.get("/audit/events")
+def list_audit_events_endpoint(
+    db: DB,
+    owner: CurrentOwner,
+    category: str | None = None,
+    q: str | None = None,
+    status: str | None = None,
+    claim_id: UUID | None = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    events, total = audit.query_events(
+        db,
+        owner,
+        category=category,
+        q=q,
+        status=status,
+        claim_id=claim_id,
+        limit=limit,
+        offset=offset,
+    )
+    return {
+        "total": total,
+        "events": [
+            {
+                "id": str(e.id),
+                "event_type": e.event_type,
+                "category": e.category,
+                "title": e.title,
+                "summary": e.summary,
+                "actor_type": e.actor_type,
+                "tool": e.tool,
+                "result_status": e.result_status,
+                "reason": e.reason,
+                "claim_id": str(e.claim_id) if e.claim_id else None,
+                "action_id": str(e.action_id) if e.action_id else None,
+                "receipt_ref": e.receipt_ref,
+                "details": e.details or {},
+                "created_at": (
+                    e.created_at.isoformat()
+                    if hasattr(e.created_at, "isoformat")
+                    else str(e.created_at)
+                ),
+            }
+            for e in events
+        ],
+    }
 
 
 @router.get("/reminders")
@@ -892,7 +1054,155 @@ def get_employer_benefits(
     target_country = (
         owner.country_code if owner and owner.country_code in ("CN", "ID") else country_code
     ) or "CN"
-    return catalog_views.get_employer_benefits_overview(target_country, owner, policies)
+    base_catalog = catalog_views.get_employer_benefits_overview(target_country, owner, policies)
+
+    from app.services.employer_benefits_service import get_employer_benefits_intelligence
+
+    intel = get_employer_benefits_intelligence(db, owner, target_country)
+    intel_dict = intel.model_dump(mode="json")
+    # Merge intelligence fields additively while preserving catalog fields
+    base_catalog.update(intel_dict)
+    base_catalog["intelligence"] = intel_dict
+    return base_catalog
+
+
+@router.post("/employer-benefits")
+def save_employer_benefits_endpoint(
+    body: EmployerBenefitSaveRequest,
+    db: DB,
+    owner: CurrentOwner,
+):
+    from app.services.employer_benefits_service import (
+        get_employer_benefits_intelligence,
+        save_employer_benefits,
+    )
+
+    save_employer_benefits(db, owner, body)
+    target_country = (
+        owner.country_code if owner and owner.country_code in ("CN", "ID") else "ID"
+    ) or "ID"
+    return get_employer_benefits_intelligence(db, owner, target_country)
+
+
+@router.post("/employer-benefits/extract-document")
+async def extract_employer_document_endpoint(
+    file: UploadFile = File(...),
+    company_name_hint: str = Query(default=""),
+):
+    """Extract employer benefit details from uploaded booklet, card or HR schedule."""
+    content = await file.read()
+    filename = file.filename or "benefit_document.pdf"
+    lower_fn = filename.lower()
+
+    # Rule-based / synthetic extraction from file content or demo pattern
+    text_sample = ""
+    try:
+        text_sample = content.decode("utf-8", "ignore")
+    except Exception:
+        text_sample = ""
+
+    if "ptm" in lower_fn or "maju" in lower_fn or "maju" in text_sample.lower():
+        company = "PT Teknologi Maju"
+        plan = "Group Health Insurance"
+        insurer = "Allianz Indonesia"
+        policy_num = "TM-EMP-2024-001"
+    else:
+        detected_insurer = None
+        for ins in [
+            "Allianz",
+            "Prudential",
+            "Manulife",
+            "AIA",
+            "Sinarmas",
+            "AXA Mandiri",
+            "Chubb",
+            "Sequis",
+        ]:
+            if ins.lower() in lower_fn or ins.lower() in text_sample.lower():
+                detected_insurer = f"{ins} Indonesia" if not ins.endswith("Indonesia") else ins
+                break
+
+        company = company_name_hint or (
+            "Perusahaan Karyawan"
+            if not text_sample.strip()
+            else filename.split(".")[0].replace("_", " ").title()
+        )
+        plan = "Group Corporate Health Plan"
+        insurer = detected_insurer or "Asuransi Korporat"
+        policy_num = "GRP-" + str(abs(hash(filename)) % 1000000).zfill(6)
+
+    extracted_benefits = [
+        {
+            "benefit_category": "inpatient",
+            "coverage_status": "Covered",
+            "limit_amount": "IDR 500,000,000 / year",
+            "limit_numeric": 500000000.0,
+            "used_amount": "Unknown",
+            "used_numeric": None,
+            "available_balance": "Unknown",
+            "available_numeric": None,
+            "details": "Hospital room & board, surgical",
+            "utilization_status": "UNKNOWN",
+        },
+        {
+            "benefit_category": "outpatient",
+            "coverage_status": "Covered",
+            "limit_amount": "IDR 10,000,000 / year",
+            "limit_numeric": 10000000.0,
+            "used_amount": "Unknown",
+            "used_numeric": None,
+            "available_balance": "Unknown",
+            "available_numeric": None,
+            "details": "Doctor consultation, prescribed medications",
+            "utilization_status": "UNKNOWN",
+        },
+        {
+            "benefit_category": "dental",
+            "coverage_status": "Partial",
+            "limit_amount": "IDR 2,000,000 / year",
+            "limit_numeric": 2000000.0,
+            "used_amount": "Unknown",
+            "used_numeric": None,
+            "available_balance": "Unknown",
+            "available_numeric": None,
+            "details": "Routine cleaning and basic dental care",
+            "utilization_status": "UNKNOWN",
+        },
+        {
+            "benefit_category": "optical",
+            "coverage_status": "Not covered",
+            "limit_amount": "-",
+            "limit_numeric": None,
+            "used_amount": "-",
+            "used_numeric": None,
+            "available_balance": "-",
+            "available_numeric": None,
+            "details": "Not covered",
+            "utilization_status": "UNKNOWN",
+        },
+        {
+            "benefit_category": "maternity",
+            "coverage_status": "Covered",
+            "limit_amount": "IDR 50,000,000 / event",
+            "limit_numeric": 50000000.0,
+            "used_amount": "Unknown",
+            "used_numeric": None,
+            "available_balance": "Unknown",
+            "available_numeric": None,
+            "details": "Normal and C-section delivery",
+            "utilization_status": "UNKNOWN",
+        },
+    ]
+
+    return {
+        "company_name": company,
+        "plan_name": plan,
+        "insurer_name": insurer,
+        "policy_number": policy_num,
+        "employment_period": "1 Jan 2024 – Present",
+        "eligibility": "Full-time employees, spouse, children (as per plan)",
+        "benefits": extracted_benefits,
+    }
 
 
 # =============================================================================

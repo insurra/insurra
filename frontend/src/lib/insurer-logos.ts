@@ -8,6 +8,7 @@ export interface InsurerBrand {
   name: string;
   shortName: string;
   logoUrl: string;
+  markUrl: string;
   primaryColor: string;
   initials: string;
 }
@@ -18,6 +19,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "Ping An Insurance (中国平安)",
     shortName: "Ping An",
     logoUrl: "/assets/insurers/cn-insurer-pingan/pingan_logo_official.svg",
+    markUrl: "/assets/insurers/marks/pingan.svg",
     primaryColor: "#EA5414",
     initials: "PA",
   },
@@ -26,6 +28,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "Comprehensive Student Insurance Scheme (来华留学生保险)",
     shortName: "LXBX Scheme",
     logoUrl: "/assets/insurers/cn-platform-lxbx/lxbx_scheme_logo.svg",
+    markUrl: "/assets/insurers/marks/lxbx.svg",
     primaryColor: "#1890FF",
     initials: "LX",
   },
@@ -34,6 +37,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "BPJS Kesehatan (JKN)",
     shortName: "BPJS Kesehatan",
     logoUrl: "/assets/insurers/id-public-bpjs-kesehatan/bpjs_kesehatan_logo.svg",
+    markUrl: "/assets/insurers/marks/bpjs.svg",
     primaryColor: "#008C44",
     initials: "BPJS",
   },
@@ -42,6 +46,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "Allianz Indonesia",
     shortName: "Allianz",
     logoUrl: "/assets/insurers/id-insurer-allianz/allianz_indonesia_logo.svg",
+    markUrl: "/assets/insurers/marks/allianz.svg",
     primaryColor: "#003781",
     initials: "ALZ",
   },
@@ -50,6 +55,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "Prudential Indonesia",
     shortName: "Prudential",
     logoUrl: "/assets/insurers/id-insurer-prudential/prudential_indonesia_logo.svg",
+    markUrl: "/assets/insurers/marks/prudential.svg",
     primaryColor: "#ED1B2D",
     initials: "PRU",
   },
@@ -58,6 +64,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "AIA Indonesia",
     shortName: "AIA",
     logoUrl: "/assets/insurers/id-insurer-aia/aia_indonesia_logo.svg",
+    markUrl: "/assets/insurers/marks/aia.svg",
     primaryColor: "#D31145",
     initials: "AIA",
   },
@@ -66,6 +73,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "Manulife Indonesia",
     shortName: "Manulife",
     logoUrl: "/assets/insurers/id-insurer-manulife/manulife_indonesia_logo.svg",
+    markUrl: "/assets/insurers/marks/manulife.svg",
     primaryColor: "#00A758",
     initials: "MFC",
   },
@@ -74,6 +82,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "AXA Mandiri",
     shortName: "AXA Mandiri",
     logoUrl: "/assets/insurers/id-insurer-axa-mandiri/axa_mandiri_logo.svg",
+    markUrl: "/assets/insurers/marks/axa.svg",
     primaryColor: "#00008F",
     initials: "AXA",
   },
@@ -82,6 +91,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "BRI Life",
     shortName: "BRI Life",
     logoUrl: "/assets/insurers/id-insurer-bri-life/bri_life_logo.svg",
+    markUrl: "/assets/insurers/marks/brilife.svg",
     primaryColor: "#00529C",
     initials: "BRI",
   },
@@ -90,6 +100,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "PICC (中国人保)",
     shortName: "PICC",
     logoUrl: "/assets/insurers/cn-insurer-picc/picc_logo_official.svg",
+    markUrl: "/assets/insurers/marks/picc.svg",
     primaryColor: "#D81E06",
     initials: "PICC",
   },
@@ -98,6 +109,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "China Life (中国人寿)",
     shortName: "China Life",
     logoUrl: "/assets/insurers/cn-insurer-chinalife/chinalife_logo_official.svg",
+    markUrl: "/assets/insurers/marks/chinalife.svg",
     primaryColor: "#008837",
     initials: "CL",
   },
@@ -106,6 +118,7 @@ export const KNOWN_INSURERS: InsurerBrand[] = [
     name: "CPIC (中国太保)",
     shortName: "CPIC",
     logoUrl: "/assets/insurers/cn-insurer-cpic/cpic_logo_official.svg",
+    markUrl: "/assets/insurers/marks/cpic.svg",
     primaryColor: "#005BAC",
     initials: "CPIC",
   },
@@ -142,14 +155,47 @@ export function getInsurerBrand(
     return KNOWN_INSURERS[2];
   }
 
-  // 4. Allianz
-  if (text.includes("allianz") || text.includes("smarthealth")) {
+  // 4. Allianz (underwriter for corporate plans & PT Teknologi Maju)
+  if (
+    text.includes("allianz") ||
+    text.includes("smarthealth") ||
+    text.includes("teknologi maju") ||
+    text.includes("pt teknologi maju") ||
+    text.includes("ptm") ||
+    (text.includes("employer") && !text.includes("tencent"))
+  ) {
     return KNOWN_INSURERS[3];
   }
 
   // 5. Prudential
   if (text.includes("prudential") || text.includes("pruwell") || text.includes("prucritical") || text.includes("pru")) {
     return KNOWN_INSURERS[4];
+  }
+
+  // Chubb
+  if (text.includes("chubb")) {
+    return {
+      id: "insurer-chubb",
+      name: "Chubb Insurance",
+      shortName: "Chubb",
+      logoUrl: "/assets/insurers/marks/chubb.svg",
+      markUrl: "/assets/insurers/marks/chubb.svg",
+      primaryColor: "#0b1528",
+      initials: "CHUBB",
+    };
+  }
+
+  // Tencent Health
+  if (text.includes("tencent") || text.includes("tce-")) {
+    return {
+      id: "employer-tencent",
+      name: "Tencent Health",
+      shortName: "Tencent",
+      logoUrl: "/assets/insurers/marks/tencent.svg",
+      markUrl: "/assets/insurers/marks/tencent.svg",
+      primaryColor: "#0052d9",
+      initials: "TH",
+    };
   }
 
   // 6. AIA
@@ -200,6 +246,7 @@ export function getInsurerBrand(
     name: cleanName,
     shortName: cleanName,
     logoUrl: "",
+    markUrl: "/assets/insurers/marks/generic.svg",
     primaryColor: "#0ea58a",
     initials,
   };

@@ -87,6 +87,16 @@ def get_case(db: Session, owner: Owner, claim_id: UUID) -> WfClaimCaseRow:
 
 def _evidence_kind(item: dict) -> str:
     text = f"{item.get('evidence_id', '')} {item.get('evidence_item_name', '')}".casefold()
+    if "rejection" in text or "penolakan" in text:
+        return "REJECTION_LETTER"
+    if "renewal" in text or "perpanjangan" in text:
+        return "RENEWAL_NOTICE"
+    if "claim_form" in text or "formulir" in text:
+        return "CLAIM_FORM"
+    if "certificate" in text or "surat" in text:
+        return "MEDICAL_CERTIFICATE"
+    if "report" in text or "laporan" in text:
+        return "MEDICAL_REPORT"
     if "fapiao" in text:
         return "FAPIAO"
     if "kuitansi" in text or "invoice" in text:
@@ -1092,7 +1102,20 @@ def review_claim_rejection(
     clarifiable_issues: list[dict] = []
 
     # 1. Policy period & waiting period matching
-    if any(k in reason_lower for k in ("date", "period", "waiting", "expired", "lapse", "masa", "tanggal", "等待期", "期限")):
+    if any(
+        k in reason_lower
+        for k in (
+            "date",
+            "period",
+            "waiting",
+            "expired",
+            "lapse",
+            "masa",
+            "tanggal",
+            "等待期",
+            "期限",
+        )
+    ):
         date_check = next((c for c in checks if c["code"] == "SERVICE_DATE_IN_POLICY"), None)
         matched_clauses.append(
             {
@@ -1165,7 +1188,18 @@ def review_claim_rejection(
     # 3. Invoice / receipt / itemized breakdown matching
     if any(
         k in reason_lower
-        for k in ("invoice", "receipt", "fapiao", "itemized", "document", "missing", "kuitansi", "dokumen", "发票", "清单")
+        for k in (
+            "invoice",
+            "receipt",
+            "fapiao",
+            "itemized",
+            "document",
+            "missing",
+            "kuitansi",
+            "dokumen",
+            "发票",
+            "清单",
+        )
     ):
         matched_clauses.append(
             {
@@ -1224,13 +1258,17 @@ def review_claim_rejection(
             "label": "Insurer rejection letter / denial notice",
             "present": bool(rejection_rows),
             "status": "ATTACHED" if rejection_rows else "MISSING",
-            "note": latest_rej.filename if latest_rej else "Upload the insurer's rejection letter (REJECTION_LETTER).",
+            "note": latest_rej.filename
+            if latest_rej
+            else "Upload the insurer's rejection letter (REJECTION_LETTER).",
         },
         {
             "code": "POLICY_SCHEDULE",
             "label": "Active policy reference & coverage period",
             "present": bool(case.coverage_ref and case.policy_start and case.policy_end),
-            "status": "ATTACHED" if (case.coverage_ref and case.policy_start and case.policy_end) else "NEEDS_REVIEW",
+            "status": "ATTACHED"
+            if (case.coverage_ref and case.policy_start and case.policy_end)
+            else "NEEDS_REVIEW",
             "note": f"{case.coverage_label or 'Policy'} ({case.policy_start or '?'} to {case.policy_end or '?'})",
         },
         {
@@ -1238,18 +1276,25 @@ def review_claim_rejection(
             "label": "Official medical invoice / fapiao & itemized bill",
             "present": has_invoice,
             "status": "ATTACHED" if has_invoice else "MISSING",
-            "note": "Confirmed billing evidence attached to this claim." if has_invoice else "Attach medical invoice or itemized bill.",
+            "note": "Confirmed billing evidence attached to this claim."
+            if has_invoice
+            else "Attach medical invoice or itemized bill.",
         },
         {
             "code": "CLINICAL_PROOF",
             "label": "Medical record or physician diagnosis summary",
             "present": has_record,
             "status": "ATTACHED" if has_record else "MISSING",
-            "note": "Clinical record attached to support medical context." if has_record else "Attach medical record or doctor's note.",
+            "note": "Clinical record attached to support medical context."
+            if has_record
+            else "Attach medical record or doctor's note.",
         },
     ]
 
-    contact = procedure.get("customer_support_contact") or "Insurer Claims Reconsideration / Customer Service Channel"
+    contact = (
+        procedure.get("customer_support_contact")
+        or "Insurer Claims Reconsideration / Customer Service Channel"
+    )
     dispute_ref = dispute_channels[0] if dispute_channels else None
     ref_display = extracted_ref or case.sandbox_ref or case.reference
     issue_bullets = "\n".join(f"- {item['title']}: {item['detail']}" for item in clarifiable_issues)
@@ -1257,7 +1302,9 @@ def review_claim_rejection(
         f"- [{item['status']}] {item['label']}" for item in appeal_checklist
     )
 
-    subject = f"Request for Claim Clarification & Reconsideration – {ref_display} ({case.reference})"
+    subject = (
+        f"Request for Claim Clarification & Reconsideration – {ref_display} ({case.reference})"
+    )
     body = (
         f"Dear Claims Review Team,\n\n"
         f"I am writing to request a written clarification and reconsideration regarding claim {ref_display} "
@@ -1565,6 +1612,19 @@ def case_detail(db: Session, owner: Owner, case: WfClaimCaseRow) -> dict:
         "readiness": {
             "state": case.status,
             "label": states.LABELS.get(case.status, case.status),
+            "score_pct": int(
+                round((tally.get("complete", 0) / max(1, tally.get("required_total", 1))) * 100)
+            ),
+            "readiness_status": (
+                "NEEDS_INFORMATION"
+                if tally.get("missing", 0) > 0
+                else (
+                    "NEEDS_REVIEW"
+                    if tally.get("needs_review", 0) > 0
+                    or any(c.get("status") == "FAIL" and not c.get("acknowledged") for c in checks)
+                    else "READY_TO_DRAFT"
+                )
+            ),
             **tally,
         },
         "checklist": evaluated,

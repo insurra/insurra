@@ -13,10 +13,12 @@ import {
   FileText,
   HeartPulse,
   Home,
+  LifeBuoy,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
   PhoneCall,
+  Search,
   ShieldCheck,
   Sparkles,
   Settings,
@@ -30,14 +32,12 @@ import { signInUrl } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { DemoBanner } from "@/components/layout/demo-banner";
+import { InsurraMascot } from "@/components/brand/insurra-mascot";
+import { InssuraAgentTour, triggerInssuraTour } from "@/components/tour/inssura-agent-tour";
 import "./shell-extras.css";
 
 // Account-only routes send visitors without an account to sign in.
-const accountOnlyRoute = (pathname: string) =>
-  pathname.startsWith("/account") ||
-  pathname === "/completeness" ||
-  pathname === "/policies" ||
-  pathname === "/family";
+const accountOnlyRoute = (pathname: string) => pathname.startsWith("/account");
 
 // Safety guidance stays reachable without a session.
 const sessionFreeRoute = (pathname: string) => pathname === "/emergency";
@@ -47,7 +47,7 @@ const navigation = [
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
   { href: "/claims", label: "Claims Center", icon: ClipboardCheck },
   { href: "/documents", label: "Documents", icon: FileText },
-  { href: "/ask", label: "Ask INSURRA", icon: Sparkles },
+  { href: "/ask", label: "Ask Inssura", icon: Sparkles },
   { href: "/pathways", label: "Care Pathways", icon: HeartPulse },
   { href: "/audit", label: "Activity & Audit", icon: Activity },
   { href: "/settings/privacy", label: "Settings & Privacy", icon: Settings },
@@ -58,7 +58,7 @@ const accountNavigation = [
   { href: "/protection", label: "My Protection", icon: ShieldCheck },
   { href: "/claims", label: "Claims Center", icon: ClipboardCheck },
   { href: "/documents", label: "Documents", icon: FileText },
-  { href: "/ask", label: "Ask INSURRA", icon: Sparkles },
+  { href: "/ask", label: "Ask Inssura", icon: Sparkles },
   { href: "/pathways", label: "Care Pathways", icon: HeartPulse },
   { href: "/audit", label: "Activity & Audit", icon: Activity },
   { href: "/settings/privacy", label: "Settings & Privacy", icon: Settings },
@@ -95,7 +95,7 @@ function PrivateShell({
     queueMicrotask(() => {
       if (saved !== null) {
         setSidebarCollapsed(saved === "true");
-      } else if (typeof window !== "undefined" && window.innerWidth <= 1024) {
+      } else if (typeof window !== "undefined" && window.innerWidth <= 768) {
         setSidebarCollapsed(true);
       }
     });
@@ -130,12 +130,7 @@ function PrivateShell({
     }
   }, [pathname]);
 
-  const accountMode =
-    Boolean(token && account) ||
-    pathname.startsWith("/account") ||
-    pathname === "/completeness" ||
-    pathname === "/policies" ||
-    pathname === "/family";
+  const accountMode = Boolean(token && account) || pathname.startsWith("/account");
 
   const items = accountMode ? accountNavigation : navigation;
   const demoMode = !accountMode && Boolean(data);
@@ -212,7 +207,7 @@ function PrivateShell({
       : pathname === "/completeness"
       ? "Data Completeness"
       : pathname === "/family"
-      ? "Family Coverage"
+      ? "Family Protection"
       : pathname === "/documents" || pathname.startsWith("/documents/")
       ? "Documents"
       : pathname === "/coverage-needs" || pathname === "/coverage"
@@ -220,7 +215,7 @@ function PrivateShell({
       : pathname === "/employer-benefits"
       ? "Employer Benefits"
       : pathname === "/ask" || pathname === "/ask-policy"
-      ? "Ask INSURRA"
+      ? "Ask Inssura"
       : pathname === "/pathways" || pathname === "/care"
       ? "Care Pathways"
       : pathname === "/audit"
@@ -261,49 +256,99 @@ function PrivateShell({
 
       <aside className={cn("sidebar", sidebarCollapsed && "collapsed")}>
         <div className="sidebar-brand-row">
-          <Link href="/" className="brand" title="Insurra">
+          <Link href="/" className="brand" title="Inssura">
             <span className="brand-full">
               <Image
                 src="/Inssura%20Kangaroo%20Shield%20Logo.png"
                 width={124}
                 height={55}
-                alt="Insurra"
+                alt="Inssura"
                 className="brand-image"
                 priority
               />
             </span>
             <span className="brand-mini">
-              <Image
-                src="/mascot-shield.png"
-                width={36}
-                height={36}
-                alt="Insurra"
+              <InsurraMascot
+                variant="shield"
+                size={36}
+                decorative
                 className="brand-icon"
                 priority
               />
             </span>
           </Link>
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed(true)}
+            className="sidebar-close-btn"
+            title="Tutup Menu"
+            aria-label="Tutup Menu"
+          >
+            <PanelLeftClose size={18} />
+          </button>
         </div>
         <div className="workspace-label">YOUR INSURANCE COMPANION</div>
         <nav aria-label="Main Navigation" className="main-nav">
-          {items.map(({ href, label, icon: Icon, ...rest }) => (
-            <Link
-              key={href}
-              href={href}
-              aria-current={isNavActive(href) ? "page" : undefined}
-              className={cn("nav-item", isNavActive(href) && "active")}
-              title={label}
-              aria-label={label}
-            >
-              <Icon size={19} className="nav-icon" />
-              <span className="nav-label">{label}</span>
-              {"soon" in rest && Boolean(rest.soon) && (
-                <span className="nav-dot" aria-label="Upcoming phase" />
-              )}
-            </Link>
-          ))}
+          {items.map(({ href, label, icon: Icon, ...rest }) => {
+            const active = isNavActive(href);
+            return (
+              <div key={href} className="nav-group">
+                <Link
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn("nav-item", active && "active")}
+                  title={label}
+                  aria-label={label}
+                >
+                  <Icon size={19} className="nav-icon" />
+                  <span className="nav-label">{label}</span>
+                  {"soon" in rest && Boolean(rest.soon) && (
+                    <span className="nav-dot" aria-label="Upcoming phase" />
+                  )}
+                </Link>
+                {href === "/protection" && active && (
+                  <div className="subnav-container">
+                    {[
+                      { href: "/protection", label: "Overview" },
+                      { href: "/policies", label: "Policy Wallet" },
+                      { href: "/family", label: "Family Protection" },
+                      { href: "/employer-benefits", label: "Employer Benefits" },
+                      { href: "/completeness", label: "Data Completeness" },
+                    ].map((sub) => {
+                      const isSubActive = pathname === sub.href;
+                      return (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          className={cn("subnav-item", isSubActive && "active")}
+                        >
+                          {sub.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
         <div className="sidebar-bottom">
+          {/* Professional Help & Emergency Widget */}
+          <div className="sidebar-help-card">
+            <div className="sidebar-help-header">
+              <div className="sidebar-help-icon">
+                <LifeBuoy size={16} />
+              </div>
+              <div className="sidebar-help-text">
+                <span className="sidebar-help-title">Need Help?</span>
+                <span className="sidebar-help-subtitle">Emergency & guidance</span>
+              </div>
+            </div>
+            <Link href="/emergency" className="sidebar-help-link">
+              <span>Help Center</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
           <div className="sidebar-bottom-nav">
             <Link
               href="/notifications"
@@ -328,13 +373,15 @@ function PrivateShell({
           </div>
           <div
             className="sidebar-foot"
-            title={accountMode ? "AUTHENTICATED ACCOUNT v0.2" : "SYNTHETIC DEMO v0.2"}
+            title={accountMode ? "AUTHENTICATED ACCOUNT v0.2" : "INTERACTIVE PREVIEW v0.2"}
           >
-            <span className="status-dot" />{" "}
-            <span className="sidebar-foot-text">
-              {accountMode ? "AUTHENTICATED ACCOUNT" : "SYNTHETIC DEMO"}{" "}
-              <span>v0.2</span>
-            </span>
+            <div className="sidebar-foot-status">
+              <span className="status-dot" />
+              <span className="sidebar-foot-text">
+                {accountMode ? "AUTHENTICATED ACCOUNT" : "INTERACTIVE PREVIEW"}
+              </span>
+            </div>
+            <span className="sidebar-version">v0.2</span>
           </div>
         </div>
       </aside>
@@ -345,11 +392,18 @@ function PrivateShell({
             <button
               type="button"
               onClick={toggleSidebar}
-              className="topbar-toggle-btn"
-              title={sidebarCollapsed ? "Tampilkan sidebar (Ctrl+B)" : "Sembunyikan sidebar (Ctrl+B)"}
-              aria-label={sidebarCollapsed ? "Tampilkan sidebar" : "Sembunyikan sidebar"}
+              className={cn("topbar-toggle-btn", sidebarCollapsed && "is-collapsed")}
+              title={sidebarCollapsed ? "Buka Sidebar Menu (Ctrl+B)" : "Tutup Sidebar Menu (Ctrl+B)"}
+              aria-label={sidebarCollapsed ? "Buka Sidebar Menu" : "Tutup Sidebar Menu"}
             >
-              {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+              {sidebarCollapsed ? (
+                <>
+                  <PanelLeftOpen size={18} />
+                  <span className="topbar-toggle-text">Menu</span>
+                </>
+              ) : (
+                <PanelLeftClose size={18} />
+              )}
             </button>
             <div className="topbar-divider" />
             <nav className="breadcrumb" aria-label="Breadcrumb">
@@ -370,8 +424,49 @@ function PrivateShell({
               </strong>
             </nav>
           </div>
+          {/* Search bar matching Figma UI */}
+          <div style={{ flex: 1, maxWidth: 520, margin: "0 20px" }}>
+            <div style={{ position: "relative", width: "100%" }}>
+              <Search
+                size={16}
+                style={{
+                  position: "absolute",
+                  left: 14,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#94a3b8",
+                }}
+              />
+              <input
+                type="text"
+                placeholder='Search anything... (e.g. "my visa coverage", "dental in China", "add policy")'
+                style={{
+                  width: "100%",
+                  padding: "8px 14px 8px 38px",
+                  borderRadius: 12,
+                  border: "1px solid #e2e8f0",
+                  background: "#ffffff",
+                  fontSize: 13,
+                  outline: "none",
+                  color: "#1e293b",
+                }}
+                readOnly
+              />
+            </div>
+          </div>
+          <div className="topbar-right" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {/* Agent Guided Tour Launcher */}
+            <button
+              type="button"
+              onClick={() => triggerInssuraTour(0)}
+              className="topbar-agent-tour-btn"
+              title="Explore all Inssura AI Agents and Features"
+            >
+              <Sparkles size={14} className="text-teal-600 animate-pulse" />
+              <span>Agent Tour</span>
+              <span className="topbar-tour-pill">7 Steps</span>
+            </button>
 
-          <div className="topbar-right">
             {/* Country Selector from Active Context */}
             <div className="figma-topbar-country" title={`Active Country: ${residenceCountry}`}>
               <span className="country-flag-icon">{countryFlag}</span>
@@ -417,7 +512,10 @@ function PrivateShell({
           </div>
         </header>
         {demoMode && <DemoBanner />}
-        <main id="main-content" className="main-content">
+        <main
+          id="main-content"
+          className={cn("main-content", pathname === "/home" && "home-main-content")}
+        >
           {!accountMode && error && (
             <div role="alert" className="alert error">
               {error}
@@ -435,12 +533,13 @@ function PrivateShell({
             <ShieldCheck size={14} />{" "}
             {accountMode
               ? "Your data remains under your explicit control."
-              : "Synthetic demo persona."}{" "}
+              : "Data panduan terverifikasi."}{" "}
             Not medical or legal advice.
           </span>
-          <span>Insurra AI Companion</span>
+          <span>Inssura AI Companion</span>
         </footer>
       </div>
+      <InssuraAgentTour />
     </div>
   );
 }

@@ -256,6 +256,7 @@ class InsuranceProduct(ProvenancedRecord):
     policy_document_references: list[str] = Field(default_factory=list)
     effective_from: date | None = None
     effective_to: date | None = None
+    checked_at: date | None = None
     product_version: str
     benefits: list[InsuranceBenefit] = Field(default_factory=list)
     exclusions: list[InsuranceExclusion] = Field(default_factory=list)

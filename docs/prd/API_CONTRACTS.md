@@ -80,3 +80,11 @@ All 21 expanded HTTP operations were reviewed against the API CSV and relevant s
 - Single-file multipart contracts are preserved; a future multi-file UI must issue individual requests or explicitly revise the contract. Size/MIME/batch constraints, review algorithms, retention cleanup, real authentication, detailed claim histories and feature-specific workflows remain deferred. Stronger consent/session checks described above are intentional security boundaries. No verified medical/regulatory facts or external integrations were added.
 
 Country-context integration follow-up: country switches clear omitted residence/visa/budget fields, while same-country updates preserve omitted values and explicitly supplied destination values remain accepted. Original insurance/document countries are immutable under profile updates. Country mismatches produce NEEDS_VERIFICATION with no gap; full rationale and KB prerequisites are in [COUNTRY_INTEGRATION.md](COUNTRY_INTEGRATION.md). API request/response shapes remain unchanged.
+
+## Adaptive protection plan (maintainer-authorized additive contract)
+
+| Method | Path | Status | Request | Response |
+| --- | --- | --- | --- | --- |
+| GET | `/api/v1/protection-plan` | live | Actor bearer or demo session | `PersonalProtectionPlan {country_code, health_profile_used, document_evidence_used, findings[], product_candidates[], overall_summary, limitations[]}` |
+
+The endpoint does not require document or health consent. It omits those data sources when their current purpose grant is false. Product candidates always carry an official source URL, verification state, eligibility state, pricing availability and limitations. `UNKNOWN` eligibility and missing pricing must stay explicit.
