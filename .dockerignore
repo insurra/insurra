@@ -1,0 +1,15 @@
+.git
+.github
+frontend
+.venv
+backend/.venv
+backend/__pycache__
+backend/*/__pycache__
+backend/*/*/__pycache__
+backend/data
+backend/dev.db
+*.pyc
+*.pyo
+.pytest_cache
+.ruff_cache
+
