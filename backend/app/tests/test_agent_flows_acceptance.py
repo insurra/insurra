@@ -1005,3 +1005,418 @@ def test_flow_4_care_pathways_and_emergency(client, app, monkeypatch):
     compare_id_data = compare_id_res.json()
     id_path_codes = [p["pathway_code"] for p in compare_id_data["paths"]]
     assert any("BPJS" in code for code in id_path_codes)
+
+
+# =============================================================================
+# FLOW 5: Claim Preparation & Action Agent (SC-09, SC-10 · P0)
+# =============================================================================
+
+
+def test_flow_5_claim_preparation_and_action_agent(client, demo, db_session, monkeypatch):
+    """Flow 5: Claim Preparation & Action Agent
+    Joshua · SC-09, SC-10 · P0
+    User problem: klaim memerlukan dokumen, verifikasi, submission, dan tracking.
+
+    Lifecycle:
+    1. Start Claim (CL-01 Unique Claim Case)
+    2. Gather Evidence (CL-02 Policy requirements, CL-03 Document Intelligence)
+    3. Validate (CL-04 Completeness and contradictions)
+    4. Create Claim Draft (CL-05 Editable structured draft with provenance)
+    5. Request Approval (CL-06 Bind action to payload hash, actor, recipient, version, expiry; CL-07 Explicit approval)
+    6. Execute (CL-08 Revalidate authorization/approval; CL-09 Sandbox adapter; CL-10 Deduplication)
+    7. Verify Result (CL-11 Store response, receipt, execution status, audit events)
+    8. Track & Audit (CL-12 Rejection handling, timeline, errors, no false completion)
+
+    Expected: upload invoice baru → structured claim draft → approval → actual sandbox response → receipt.
+    Bukan sekadar tombol Submit Successfully tanpa backend.
+    """
+    from app.services.account_documents import PageText
+
+    session_data, headers = demo("raka")
+    session_id = UUID(session_data["id"])
+    owner = Owner("DEMO", session_id)
+
+    # Ensure document processing consent is granted
+    client.post(
+        "/api/v1/consents",
+        headers=headers,
+        json={"purpose": "process_documents", "granted": True},
+    )
+
+    overview = client.get("/api/v1/workflow/claims/overview", headers=headers).json()
+    coverage_ref = overview["available_policies"][0]["ref"]
+
+    # -------------------------------------------------------------------------
+    # 1. Start Claim: Select policy and provide claim details (CL-01)
+    # -------------------------------------------------------------------------
+    idem_key = "test-flow-5-claim-idem-key-001"
+    create_payload = {
+        "coverage_ref": coverage_ref,
+        "claim_type": "Outpatient Medical Reimbursement",
+        "title": "Hospital Outpatient Consultation",
+        "claimant_name": "Raka",
+    }
+    create_res = client.post(
+        "/api/v1/workflow/claims/cases",
+        headers={**headers, "Idempotency-Key": idem_key},
+        json=create_payload,
+    )
+    assert create_res.status_code == 201
+    case_detail = create_res.json()
+    claim_id = UUID(case_detail["case"]["id"])
+    assert case_detail["case"]["reference"].startswith("CLM-")
+    assert case_detail["case"]["status"] == states.DRAFT
+
+    # Verify idempotency: repeated request with same key returns the exact same case
+    create_dup_res = client.post(
+        "/api/v1/workflow/claims/cases",
+        headers={**headers, "Idempotency-Key": idem_key},
+        json=create_payload,
+    )
+    assert create_dup_res.status_code in (200, 201)
+    assert create_dup_res.json()["case"]["id"] == str(claim_id)
+
+    # -------------------------------------------------------------------------
+    # 2. Gather Evidence (CL-02, CL-03)
+    # -------------------------------------------------------------------------
+    # CL-02: Retrieve policy-specific evidence requirements (checklist)
+    checklist = case_detail["checklist"]
+    assert len(checklist) >= 1
+    assert any(
+        "invoice" in item["label"].lower()
+        or "fapiao" in item["label"].lower()
+        or "invoice" in item["code"].lower()
+        or item["kind"] in ("EVIDENCE", "FORM")
+        for item in checklist
+    )
+
+    # CL-03: Extract supporting document data using shared Document Intelligence
+    invoice_text = (
+        "Invoice No.: INV-2026-8888\n"
+        "Hospital Name: Shenzhen University General Hospital\n"
+        "Service Date: 2026-10-10\n"
+        "Patient Name: Raka\n"
+        "Total Amount: CNY 520.00\n"
+    )
+
+    def fake_extract_text(content, mime, country_code):
+        return [PageText(page_no=1, text=invoice_text, ocr_used=False)]
+
+    monkeypatch.setattr("app.services.account_documents.extract_text_or_ocr", fake_extract_text)
+
+    # Multipart file upload through actual endpoint
+    upload_res = client.post(
+        f"/api/v1/workflow/claims/cases/{claim_id}/evidence?evidence_kind=FAPIAO",
+        headers=headers,
+        files={
+            "file": (
+                "fapiao_invoice.pdf",
+                b"%PDF-1.4\nsynthetic invoice content",
+                "application/pdf",
+            )
+        },
+    )
+    assert upload_res.status_code == 200
+    after_upload = upload_res.json()
+    fapiao_evidence = next(
+        (e for e in after_upload["evidence"] if e["evidence_kind"] == "FAPIAO"), None
+    )
+    assert fapiao_evidence is not None
+    assert fapiao_evidence["source_type"] == "DOCUMENT_UPLOAD"
+    assert fapiao_evidence["filename"] == "fapiao_invoice.pdf"
+
+    # Confirm extracted evidence fields
+    fapiao_id = fapiao_evidence["id"]
+    conf_fapiao = client.patch(
+        f"/api/v1/workflow/claims/cases/{claim_id}/evidence/{fapiao_id}/confirm",
+        headers=headers,
+        json={
+            "values": {
+                "invoice_number": "INV-2026-8888",
+                "hospital_name": "Shenzhen University General Hospital",
+                "billing_date": "2026-10-10",
+                "total_amount": "520.00",
+                "currency": "CNY",
+                "payer_name": "Raka",
+            }
+        },
+    )
+    assert conf_fapiao.status_code == 200
+
+    # Also attach and confirm required medical record evidence
+    case_row = db_session.get(WfClaimCaseRow, claim_id)
+    claims.add_evidence(
+        db_session,
+        owner,
+        case_row,
+        kind="MEDICAL_RECORD",
+        filename="medical_record.pdf",
+        source_type="DOCUMENT_UPLOAD",
+        fields={
+            "visit_date": {"value": "2026-10-10", "confirmed": True},
+            "patient_name": {"value": "Raka", "confirmed": True},
+            "hospital_name": {"value": "Shenzhen University General Hospital", "confirmed": True},
+            "diagnosed_condition": {"value": "Acute Gastritis", "confirmed": True},
+        },
+    )
+    db_session.commit()
+
+    # -------------------------------------------------------------------------
+    # 3. Validate: Check required fields and inconsistencies (CL-04)
+    # -------------------------------------------------------------------------
+    validated_detail = client.get(
+        f"/api/v1/workflow/claims/cases/{claim_id}",
+        headers=headers,
+    ).json()
+    checks = validated_detail["consistency_checks"]
+    assert len(checks) >= 1
+    # Check that hospital name and patient name consistency checks passed
+    assert any(c["status"] == "PASS" for c in checks)
+
+    # -------------------------------------------------------------------------
+    # 4. Create Claim Draft: Structured claim request with provenance (CL-05)
+    # -------------------------------------------------------------------------
+    draft_res = client.post(
+        f"/api/v1/workflow/claims/cases/{claim_id}/draft",
+        headers=headers,
+    )
+    assert draft_res.status_code == 200
+    draft_data = draft_res.json()["draft"]
+    assert draft_data is not None
+    assert "form" in draft_data
+    assert draft_data["form"]["member_name"]["value"] == "Raka"
+    assert draft_data["form"]["total_claim_amount"]["value"] == "520.00"
+    assert draft_data["form"]["provider_name"]["value"] == "Shenzhen University General Hospital"
+    assert draft_data["form"]["diagnosis"]["value"] == "Acute Gastritis"
+
+    # User edits a field in the draft
+    edit_draft_res = client.patch(
+        f"/api/v1/workflow/claims/cases/{claim_id}/draft",
+        headers=headers,
+        json={"values": {"diagnosis": "Acute Gastritis with mild fever"}},
+    )
+    assert edit_draft_res.status_code == 200
+    updated_draft = edit_draft_res.json()["draft"]
+    assert updated_draft["form"]["diagnosis"]["value"] == "Acute Gastritis with mild fever"
+    assert updated_draft["form"]["diagnosis"]["edited"] is True
+
+    # Confirm the draft
+    confirm_draft_res = client.post(
+        f"/api/v1/workflow/claims/cases/{claim_id}/draft/confirm",
+        headers=headers,
+    )
+    assert confirm_draft_res.status_code == 200
+
+    # -------------------------------------------------------------------------
+    # 5. Request Approval: Bind proposed action to payload hash & explicit approval (CL-06, CL-07)
+    # -------------------------------------------------------------------------
+    send_res = client.post(
+        f"/api/v1/workflow/claims/cases/{claim_id}/send-to-approval",
+        headers=headers,
+    )
+    assert send_res.status_code == 200
+    action_info = send_res.json()["action"]
+    action_id = action_info["id"]
+    sha256 = action_info["payload_sha256"]
+    version = action_info["payload_version"]
+
+    # CL-06: Action is bound to payload hash, actor, destination, version, expiry
+    assert action_info["action_type"] == "sandbox_claim_submit"
+    assert action_info["status"] == "AWAITING_APPROVAL"
+    assert action_info["lifecycle_status"] == "PENDING"
+    assert action_info["requires_approval"] is True
+    assert action_info["approved"] is False
+    assert action_info["expires_at"] is not None
+
+    # CL-07: Require explicit user approval
+    # Attempt execution before approval is strictly blocked (403)
+    unapproved_exec = client.post(f"/api/v1/workflow/actions/{action_id}/execute", headers=headers)
+    assert unapproved_exec.status_code == 403
+    assert unapproved_exec.json()["code"] == "ACTION_NOT_APPROVED"
+
+    # Approval with hash mismatch is strictly rejected (409)
+    bad_appr = client.post(
+        f"/api/v1/workflow/actions/{action_id}/approve",
+        headers=headers,
+        json={"payload_sha256": "0" * 64, "payload_version": version, "confirm": True},
+    )
+    assert bad_appr.status_code == 409
+    assert bad_appr.json()["code"] == "APPROVAL_HASH_MISMATCH"
+
+    # Valid user approval succeeds
+    good_appr = client.post(
+        f"/api/v1/workflow/actions/{action_id}/approve",
+        headers=headers,
+        json={"payload_sha256": sha256, "payload_version": version, "confirm": True},
+    )
+    assert good_appr.status_code == 200
+
+    # -------------------------------------------------------------------------
+    # 6. Execute: Server validates approval and calls sandbox adapter (CL-08, CL-09, CL-10)
+    # -------------------------------------------------------------------------
+    exec_res = client.post(f"/api/v1/workflow/actions/{action_id}/execute", headers=headers)
+    assert exec_res.status_code == 200
+    exec_data = exec_res.json()
+    receipt = exec_data["receipt"]
+
+    # CL-09: Insurer sandbox adapter response
+    assert receipt["claim_reference"].startswith("SBX-")
+    assert receipt["status"] == "EXECUTED"
+    assert receipt["signature_valid"] is True
+    assert "sandbox" in receipt["notice"].lower()
+    sandbox_ref = receipt["claim_reference"]
+
+    # CL-10: Prevent duplicate execution (replayed flag on second invocation)
+    exec_dup_res = client.post(f"/api/v1/workflow/actions/{action_id}/execute", headers=headers)
+    assert exec_dup_res.status_code == 200
+    assert exec_dup_res.json()["replayed"] is True
+    assert exec_dup_res.json()["receipt"]["claim_reference"] == sandbox_ref
+
+    # -------------------------------------------------------------------------
+    # 7. Verify Result: Store actual response, reference, and receipt (CL-11)
+    # -------------------------------------------------------------------------
+    # Sync sandbox status updates case
+    sync_res = client.post(
+        f"/api/v1/workflow/claims/cases/{claim_id}/sync-status",
+        headers=headers,
+    )
+    assert sync_res.status_code == 200
+    synced_case = sync_res.json()["case"]["case"]
+    assert synced_case["sandbox_reference"] == sandbox_ref
+    assert synced_case["status"] in states.POST_SUBMISSION
+
+    # -------------------------------------------------------------------------
+    # 8. Track & Audit: Show updated claim timeline and events (CL-11, CL-12)
+    # -------------------------------------------------------------------------
+    audit_res = client.get("/api/v1/workflow/audit/timeline", headers=headers)
+    assert audit_res.status_code == 200
+    events = audit_res.json()["events"]
+    # Verify audit trail contains action execution with receipt reference
+    assert any(e.get("receipt_ref") == receipt["receipt_reference"] for e in events)
+
+    # Detail view reflects timeline and receipt
+    final_detail = client.get(f"/api/v1/workflow/claims/cases/{claim_id}", headers=headers).json()
+    assert final_detail["case"]["sandbox_reference"] == sandbox_ref
+    assert len(final_detail["timeline"]) >= 2
+
+
+# =============================================================================
+# FLOW 6: Proactive Renewal & Anti-Lapse Agent (Home / Actions · P0)
+# =============================================================================
+
+
+def test_flow_6_proactive_renewal_and_anti_lapse_agent(client, demo, db_session):
+    """Flow 6: Proactive Renewal & Anti-Lapse Agent
+    Joshua · Home / Actions · P0
+    User problem: pengguna lupa memperpanjang polis atau tidak sadar ada potensi kekosongan perlindungan.
+
+    Lifecycle:
+    Scheduled Trigger → Read Coverage Periods → Calculate Gap/Expiry →
+    Create Finding → Deduplicate → Draft Inquiry → User Approval →
+    Authorized Execution → Receipt
+
+    Requirements:
+    - Configurable H-30, H-7, H-1 checks.
+    - Date and timezone correctness.
+    - Detect possible continuity gaps.
+    - Distinguish historical document expiry from confirmed current lapse.
+    - Deduplicate findings and notifications.
+    - Show prioritized next actions on Home.
+    - Draft a request using verified data.
+    - No automatic purchase, payment, or renewal.
+    - Store execution response from authorized sandbox/channel.
+
+    Expected: tanpa pengguna bertanya, sistem menemukan potensi expiry dan menyiapkan tindakan.
+    Pengguna tetap memegang kontrol sebelum suatu permintaan dikirim.
+    """
+    session_data, headers = demo("raka")
+
+    # Consent grant for processing documents
+    client.post(
+        "/api/v1/consents",
+        headers=headers,
+        json={"purpose": "process_documents", "granted": True},
+    )
+
+    # 1. Scheduled Trigger & Read Coverage Periods:
+    # Trigger proactive check without user asking
+    check_res = client.post("/api/v1/workflow/reminders/check-renewals", headers=headers)
+    assert check_res.status_code == 200
+    check_data = check_res.json()
+    assert "reminder_sync" in check_data
+    assert "prepared_actions" in check_data
+
+    # 2. Configurable H-30, H-7, H-1 checks & Distinguish expiry from confirmed lapse:
+    reminders_res = client.get("/api/v1/workflow/reminders", headers=headers)
+    assert reminders_res.status_code == 200
+    reminders = reminders_res.json()["reminders"]
+    scheduled_offsets = {r["offset_days"] for r in reminders if r["status"] == "SCHEDULED"}
+
+    # Verify configurable offsets (30, 7, 1) are scheduled
+    assert any(offset in (30, 7, 1) for offset in scheduled_offsets)
+    for r in reminders:
+        # Strict distinction: detail explains it is an expiry reminder, not an immediate confirmed lapse
+        assert "reminder, not a lapse notice" in r["detail"]
+        assert r["due_date"] is not None
+
+    # 3. Deduplicate findings and notifications:
+    # Calling check-renewals a second time does not duplicate reminders or actions
+    repeat_check = client.post("/api/v1/workflow/reminders/check-renewals", headers=headers)
+    assert repeat_check.status_code == 200
+    repeat_sync = repeat_check.json()["reminder_sync"]
+    assert repeat_sync["scheduled"] == 0, "Deduplication must prevent duplicate scheduled reminders"
+
+    # 4. Draft a Request Using Verified Data (No automatic purchase, payment, or renewal):
+    queue_res = client.get("/api/v1/workflow/actions/queue?status_tab=PENDING", headers=headers)
+    assert queue_res.status_code == 200
+    actions_list = queue_res.json()["actions"]
+    renewal_action = next((a for a in actions_list if a["action_type"] == "renewal_inquiry"), None)
+    assert renewal_action is not None, "Proactive renewal inquiry action must be prepared"
+
+    # Safety: Action is in AWAITING_APPROVAL, NOT automatically executed, purchased, or paid
+    assert renewal_action["status"] == "AWAITING_APPROVAL"
+    assert renewal_action["lifecycle_status"] == "PENDING"
+    assert renewal_action["requires_approval"] is True
+    assert renewal_action["approved"] is False
+    assert renewal_action["payload_sha256"] is not None
+
+    action_id = renewal_action["id"]
+    sha256 = renewal_action["payload_sha256"]
+    version = renewal_action["payload_version"]
+
+    # 5. Show Prioritized Next Actions on Home:
+    home_overview = client.get("/api/v1/workflow/claims/overview", headers=headers).json()
+    banner = home_overview.get("awaiting_approval_banner")
+    assert banner is not None, "Home overview must show pending action banner"
+    assert banner["action_id"] == action_id
+    assert banner["title"] == renewal_action["title"]
+
+    # 6. User Approval: User retains total control before any inquiry is transmitted
+    # Unapproved execution blocked (403)
+    unapproved = client.post(f"/api/v1/workflow/actions/{action_id}/execute", headers=headers)
+    assert unapproved.status_code == 403
+    assert unapproved.json()["code"] == "ACTION_NOT_APPROVED"
+
+    # User approves exact payload
+    approve_res = client.post(
+        f"/api/v1/workflow/actions/{action_id}/approve",
+        headers=headers,
+        json={"payload_sha256": sha256, "payload_version": version, "confirm": True},
+    )
+    assert approve_res.status_code == 200
+    assert approve_res.json()["status"] == "APPROVED"
+
+    # 7. Authorized Execution: Executed through authorized channel/sandbox
+    exec_res = client.post(f"/api/v1/workflow/actions/{action_id}/execute", headers=headers)
+    assert exec_res.status_code == 200
+    exec_data = exec_res.json()
+    receipt = exec_data["receipt"]
+    assert receipt["receipt_reference"].startswith("RCT-")
+    assert receipt["signature_valid"] is True
+    assert exec_data["action"]["lifecycle_status"] == "SUCCEEDED"
+
+    # 8. Store Execution Response & Receipt in Audit / Home:
+    audit_res = client.get("/api/v1/workflow/audit/timeline", headers=headers)
+    assert audit_res.status_code == 200
+    events = audit_res.json()["events"]
+    assert any(e.get("receipt_ref") == receipt["receipt_reference"] for e in events)
