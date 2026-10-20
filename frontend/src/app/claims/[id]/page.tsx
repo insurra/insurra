@@ -285,6 +285,12 @@ export default function ClaimDetailPage() {
           method: "POST",
           headers,
         });
+        if (fallbackRes.status === 403) {
+          const err = await fallbackRes.json().catch(() => ({}));
+          setRequiredConsents(err?.details?.required_purposes || ["process_documents"]);
+          setIsPreparingDraft(false);
+          return;
+        }
         if (!fallbackRes.ok) {
           const err = await fallbackRes.json().catch(() => ({}));
           throw new Error(err.message || "Could not prepare draft");
@@ -326,6 +332,12 @@ export default function ClaimDetailPage() {
         method: "POST",
         headers,
       });
+      if (sendRes.status === 403) {
+        const err = await sendRes.json().catch(() => ({}));
+        setRequiredConsents(err?.details?.required_purposes || ["process_documents"]);
+        setIsSendingToQueue(false);
+        return;
+      }
       if (!sendRes.ok) {
         const err = await sendRes.json().catch(() => ({}));
         throw new Error(err.message || "Failed to create proposed action");
@@ -1163,14 +1175,21 @@ export default function ClaimDetailPage() {
         </div>
       )}
 
-      {/* Consents Prompt */}
+      {/* Consents Prompt Modal */}
       {requiredConsents && (
-        <ConsentPrompt
-          purposes={requiredConsents}
-          accountToken={accountToken}
-          onGranted={() => setRequiredConsents(null)}
-          onCancel={() => setRequiredConsents(null)}
-        />
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="max-w-lg w-full">
+            <ConsentPrompt
+              purposes={requiredConsents}
+              accountToken={accountToken}
+              onGranted={async () => {
+                setRequiredConsents(null);
+                await loadCaseDetail();
+              }}
+              onCancel={() => setRequiredConsents(null)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
