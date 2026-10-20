@@ -143,8 +143,8 @@ export default function Dashboard() {
                 Rules: {assessment.rule_source.country_code} (v{assessment.rule_source.kb_version})
                 {" · "}
                 {assessment.rule_source.verification_status === "UNVERIFIED"
-                  ? "Regulasi Belum Terverifikasi"
-                  : "Regulasi Terverifikasi"}
+                  ? "Unverified Regulations"
+                  : "Verified Regulations"}
               </span>
             )}
           </div>
@@ -257,7 +257,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="dx-policy-foot">
-                  <span>Catatan referensi, bukan penawaran polis formal</span>
+                  <span>Reference note, not a formal policy offering</span>
                   <Link href="/documents" className="dx-source-link">
                     View source <ArrowUpRight size={14} aria-hidden="true" />
                   </Link>

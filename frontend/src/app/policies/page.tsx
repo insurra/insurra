@@ -835,22 +835,22 @@ export default function PolicyWalletPage() {
             <div className="pw-empty-feature-item">
               <ShieldCheck size={20} color="#0284c7" />
               <div>
-                <strong>Ekstraksi Terverifikasi AI</strong>
-                <span>Limit manfaat, tanggal efektif, dan klausul penting terpetakan dari dokumen asli.</span>
+                <strong>AI Verified Extraction</strong>
+                <span>Benefit limits, effective dates, and key clauses mapped from original documents.</span>
               </div>
             </div>
             <div className="pw-empty-feature-item">
               <Sparkles size={20} color="#0284c7" />
               <div>
-                <strong>Analisis Klausul & Pengecualian</strong>
-                <span>Ketahui masa tunggu (waiting period) dan risiko celah perlindungan tanpa menebak.</span>
+                <strong>Clause &amp; Exclusion Analysis</strong>
+                <span>Understand waiting periods and coverage gap risks without guessing.</span>
               </div>
             </div>
             <div className="pw-empty-feature-item">
               <FileText size={20} color="#0284c7" />
               <div>
-                <strong>Pratinjau Dokumen Asli</strong>
-                <span>Buka dokumen PDF asli dan verifikasi langsung nomor halaman dan teks klausul.</span>
+                <strong>Original Document Preview</strong>
+                <span>Open original PDF documents and directly verify page numbers and clause text.</span>
               </div>
             </div>
           </div>

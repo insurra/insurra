@@ -42,7 +42,7 @@ export function DemoBanner() {
   return (
     <div className="demo-banner" role="region" aria-label="Demo mode" data-testid="demo-banner">
       <p>
-        <strong>Simulasi</strong> Mode simulasi interaktif. Tidak ada data yang terhubung ke akun riil atau catatan resmi perusahaan asuransi.
+        <strong>Demo</strong> Interactive demo mode. No data is connected to a real account or official insurance records.
       </p>
       <div className="demo-banner-actions">
         <button type="button" onClick={() => void reset()} disabled={busy}>

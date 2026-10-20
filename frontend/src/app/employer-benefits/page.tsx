@@ -298,9 +298,9 @@ export default function EmployerBenefitsPage() {
               <span className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs">
                 03
               </span>
-              <h4 className="text-sm font-bold text-slate-900">Audit Saldo Tanpa Rekayasa</h4>
+              <h4 className="text-sm font-bold text-slate-900">Non-Fabricated Balance Audit</h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Kepatuhan ketat INSSURA: utilisasi pemakaian dan sisa saldo hanya ditampilkan jika terbukti dari data klaim aktual.
+                Strict INSURRA compliance: utilization and remaining balance are only displayed when verified from actual claim data.
               </p>
             </div>
           </div>
@@ -594,9 +594,9 @@ export default function EmployerBenefitsPage() {
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 flex items-start gap-2">
                   <Info className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
                   <span>
-                    <strong>Utilization Verification Rule:</strong> Sesuai regulasi sistem INSSURA,
-                    utilisasi dan sisa limit saldo hanya dihitung jika data pemakaian aktual terverifikasi
-                    dari kuitansi klaim. Jika tidak ada bukti riil, status tetap <em>Unknown</em>.
+                    <strong>Utilization Verification Rule:</strong> In compliance with INSURRA regulations,
+                    utilization and remaining limits are only computed when actual usage is verified
+                    from claim receipts. Without real evidence, the status remains <em>Unknown</em>.
                   </span>
                 </div>
               </div>

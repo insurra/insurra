@@ -35,7 +35,7 @@ export function SourceDrawer({
         if (!controller.signal.aborted) {
           if (!value.text.includes(citation.quote))
             setError(
-              "Kutipan berubah atau tidak lagi cocok dengan halaman sumber. Mulai pertanyaan baru.",
+              "Citation changed or no longer matches the source page. Start a new question.",
             );
           else setText(value.text);
         }
@@ -43,7 +43,7 @@ export function SourceDrawer({
       .catch((cause: unknown) => {
         if (!controller.signal.aborted)
           setError(
-            cause instanceof Error ? cause.message : "Halaman sumber tidak tersedia.",
+            cause instanceof Error ? cause.message : "Source page unavailable.",
           );
       });
     return () => controller.abort();
@@ -80,7 +80,7 @@ export function SourceDrawer({
             )}
             <blockquote lang={citation.language ?? ""}>{citation.quote}</blockquote>
             <details>
-              <summary>Teks halaman asli</summary>
+              <summary>Original page text</summary>
               <pre>
                 {text.slice(0, position)}
                 <mark>{citation.quote}</mark>
@@ -90,11 +90,11 @@ export function SourceDrawer({
             <Link
               href={`/documents/${encodeURIComponent(citation.doc)}#page-${citation.page}`}
             >
-              Buka dokumen · halaman {citation.page}
+              Open document · page {citation.page}
             </Link>
           </>
         ) : (
-          <p role="status">Memeriksa halaman sumber dan izin retensi…</p>
+          <p role="status">Verifying source page and retention consent…</p>
         )}
       </div>
     </dialog>
