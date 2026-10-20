@@ -999,7 +999,7 @@ export default function AskPage() {
               <input
                 ref={inputRef}
                 type="text"
-                aria-label="Pertanyaan Anda"
+                aria-label="Your question"
                 className="ask-text-input"
                 placeholder="Ask a follow up question…"
                 value={question}

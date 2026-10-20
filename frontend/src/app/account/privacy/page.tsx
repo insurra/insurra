@@ -595,13 +595,13 @@ export default function AccountPrivacy() {
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 360 }}>
               <label style={{ fontSize: 12.5, fontWeight: 600, color: "#991b1b" }}>
-                Type HAPUS or DELETE to confirm:
+                Type DELETE to confirm:
                 <input
                   type="text"
                   value={confirmation}
                   onChange={(e) => setConfirmation(e.target.value.toUpperCase())}
                   autoComplete="off"
-                  placeholder="HAPUS"
+                  placeholder="DELETE"
                   style={{
                     display: "block",
                     width: "100%",

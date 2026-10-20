@@ -178,13 +178,13 @@ export default function CoverageNeedsPage() {
                 </div>
                 <p className="finding-reason">{need.explanation}</p>
                 {typeof gapDays === "number" && gapDays > 0 && (
-                  <p><strong>Ada jeda {gapDays} hari</strong></p>
+                  <p><strong>There is a {gapDays}-day gap</strong></p>
                 )}
                 <div className="finding-footer">
                   <span>
                     {need.requirement_confirmed
-                      ? "Kebutuhan didukung sumber yang telah diverifikasi."
-                      : "Penerapan kebutuhan masih perlu diverifikasi."}
+                      ? "Need is supported by verified sources."
+                      : "Application of this need requires verification."}
                   </span>
                   <Link
                     href={
@@ -194,8 +194,8 @@ export default function CoverageNeedsPage() {
                     }
                   >
                     {typeof gapDays === "number" && gapDays > 0
-                      ? "Periksa jeda"
-                      : "Periksa bukti"}
+                      ? "Review gap"
+                      : "Review evidence"}
                   </Link>
                 </div>
               </article>

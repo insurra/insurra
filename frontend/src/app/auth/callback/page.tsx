@@ -45,10 +45,10 @@ export default function AuthCallbackPage() {
     if (token) {
       void acceptToken(token).then((success) => {
         if (success) router.replace("/auth");
-        else setMessage("Sesi tidak dapat diverifikasi. Silakan masuk kembali.");
+        else setMessage("Session could not be verified. Please sign in again.");
       });
     }
   }, [acceptToken, loginWithSupabase, router]);
 
-  return <main className="callback-page"><div className="callback-mark"><ShieldCheck /></div><h1>Hampir selesai.</h1><p>{message}</p></main>;
+  return <main className="callback-page"><div className="callback-mark"><ShieldCheck /></div><h1>Almost done.</h1><p>{message}</p></main>;
 }

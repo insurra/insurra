@@ -359,7 +359,7 @@ export default function ActionsPage() {
       <div className="actions-nav-bar">
         <Link href="/claims" className="actions-back-btn">
           <ArrowLeft size={15} />
-          <span>Kembali ke Claims Center</span>
+          <span>Back to Claims Center</span>
         </Link>
         <span className="actions-nav-sep">•</span>
         <Link href="/home" className="actions-nav-home">
@@ -373,11 +373,11 @@ export default function ActionsPage() {
         <div>
           <div className="actions-pre-badge">
             <ShieldCheck size={13} />
-            <span>Persetujuan Kriptografis Tindakan</span>
+            <span>Cryptographic Action Approval</span>
           </div>
           <h1>Action Approval Boundary</h1>
           <p>
-            Tinjau dan setujui tindakan yang disiapkan oleh INSSURA. Tidak ada tindakan eksternal atau pengiriman ke lingkungan asuransi yang dilakukan tanpa persetujuan eksplisit Anda.
+            Review and approve actions prepared by INSSURA. No external action or dispatch to insurance environments is conducted without your explicit approval.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -439,9 +439,9 @@ export default function ActionsPage() {
             <ShieldCheck size={13} />
             <span>Cryptographic Approval Security Boundary</span>
           </div>
-          <h3 className="actions-mascot-card-title">Batas Keamanan &amp; Izin Kriptografis</h3>
+          <h3 className="actions-mascot-card-title">Cryptographic Security &amp; Approval Boundary</h3>
           <p className="actions-mascot-card-text">
-            Persetujuan Anda terikat secara kriptografis dengan SHA-256 hash dan versi muatan server yang ditinjau. Jika data atau bukti medis di server berubah, persetujuan akan otomatis dibatalkan seketika demi keamanan Anda.
+            Your approval is cryptographically bound to the SHA-256 hash and server payload version reviewed. If server data or medical evidence changes, the approval will be immediately invalidated for your security.
           </p>
         </div>
       </div>
@@ -482,15 +482,15 @@ export default function ActionsPage() {
           </div>
 
           <div className="actions-list">
-            {loading && <p className="text-center py-10 text-slate-400 text-sm">Memuat daftar tindakan...</p>}
+            {loading && <p className="text-center py-10 text-slate-400 text-sm">Loading action queue...</p>}
             {!loading && visibleActions.length === 0 && (
               <div className="text-center py-12 px-4 text-slate-400">
                 <div className="mb-3 flex justify-center">
                   <InsurraMascot variant="checklist" size={64} decorative />
                 </div>
-                <p className="text-sm font-bold text-slate-700">Tidak ada tindakan di antrean ini</p>
+                <p className="text-sm font-bold text-slate-700">No actions in this queue</p>
                 <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                  Tindakan akan otomatis muncul ketika formulir klaim, pengingat, atau surat ke pihak asuransi disiapkan untuk ditinjau.
+                  Actions will automatically appear when claim forms, reminders, or letters to insurers are prepared for review.
                 </p>
               </div>
             )}
@@ -774,9 +774,9 @@ export default function ActionsPage() {
                         <InsurraMascot variant="checklist" size={48} decorative />
                       </div>
                       <div>
-                        <div className="font-bold text-emerald-950 text-sm">Tindakan Berhasil Disetujui &amp; Dieksekusi!</div>
+                        <div className="font-bold text-emerald-950 text-sm">Action Successfully Approved &amp; Executed!</div>
                         <div className="text-xs text-emerald-800">
-                          Tindakan telah dikirim ke sandbox asuransi dan tanda terima digital bertanda tangan kriptografis telah diterbitkan.
+                          The action has been dispatched to the insurer sandbox and a cryptographically signed digital receipt has been issued.
                         </div>
                       </div>
                     </div>
@@ -1041,9 +1041,9 @@ export default function ActionsPage() {
               <div className="mb-4 flex justify-center">
                 <InsurraMascot variant="document" size={76} decorative />
               </div>
-              <h3 className="font-bold text-slate-800 text-lg mb-1">Pilih Tindakan untuk Ditinjau</h3>
+              <h3 className="font-bold text-slate-800 text-lg mb-1">Select an Action to Review</h3>
               <p className="text-sm text-slate-500 max-w-md mx-auto">
-                Pilih salah satu tindakan dari daftar antrean di sebelah kiri untuk melihat rincian muatan data, verifikasi digest SHA-256, dan memberikan persetujuan Anda.
+                Select an action from the queue on the left to inspect payload details, verify the SHA-256 digest, and grant your approval.
               </p>
             </div>
           )}
