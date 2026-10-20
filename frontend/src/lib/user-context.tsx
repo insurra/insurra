@@ -203,7 +203,7 @@ export function UserContextProvider({ children }: { children: React.ReactNode })
             ? "EMPLOYEE"
             : "OTHER";
         const cCode = (state.countryCode.toUpperCase() as "CN" | "ID") || "CN";
-        const resContext = state.countryCode === state.nationalityCode ? "DOMESTIC" : "ABROAD";
+        const resContext = cCode === "ID" ? "DOMESTIC" : "ABROAD";
 
         const endpoint = state.profileSetupComplete
           ? "/api/v1/account/profile"

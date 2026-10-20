@@ -785,7 +785,7 @@ function AccountOnboardingContent() {
       country_code: residenceCountry,
       city: finalCity,
       nationality: nationalityCode === "CN" ? "CN" : "ID",
-      residence_context: residenceCountry === nationalityCode ? "DOMESTIC" : "ABROAD",
+      residence_context: residenceCountry === "ID" ? "DOMESTIC" : "ABROAD",
       life_context: lifeContext,
     });
     proceedTo(2);
@@ -1033,7 +1033,7 @@ function AccountOnboardingContent() {
         const sit =
           segment === "student" ? "STUDENT" : segment === "employee" ? "EMPLOYEE" : segment === "self_employed" ? "SELF_EMPLOYED" : "OTHER";
         const cCode = (residenceCountry.toUpperCase() as "CN" | "ID") || "CN";
-        const resContext = residenceCountry === nationalityCode ? "DOMESTIC" : "ABROAD";
+        const resContext = residenceCountry === "ID" ? "DOMESTIC" : "ABROAD";
 
         await api.request("put", "/api/v1/account/profile", {
           headers: { Authorization: `Bearer ${token}` },

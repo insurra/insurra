@@ -169,7 +169,7 @@ export default function EmployerBenefitsPage() {
                 <span className="text-[10px] text-slate-400 block">Employment period</span>
                 <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-teal-600" />
-                  {data.employment_period || "Aktif"}
+                  {data.employment_period || "Active"}
                 </span>
               </div>
               <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">

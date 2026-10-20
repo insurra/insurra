@@ -137,8 +137,8 @@ export default function EmergencyPage() {
                     { service_code: "police", label: "Police", phone_number: "110", jurisdiction: "CN", verified: true },
                   ]
                 : [
-                    { service_code: "medical", label: "Pelayanan Medis Darurat (PSC 119)", phone_number: "119", jurisdiction: "ID", verified: true },
-                    { service_code: "police", label: "Kepolisian (Polri)", phone_number: "110", jurisdiction: "ID", verified: true },
+                    { service_code: "medical", label: "Emergency Medical Service (PSC 119)", phone_number: "119", jurisdiction: "ID", verified: true },
+                    { service_code: "police", label: "National Police (Polri)", phone_number: "110", jurisdiction: "ID", verified: true },
                   ],
           });
         }
@@ -450,7 +450,7 @@ export default function EmergencyPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-black text-rose-600 tracking-tight">{primaryNumber}</span>
                       <span className="text-xs font-bold text-slate-800">
-                        {country === "CN" ? "Emergency Medical Service" : "PSC Medis Darurat"}
+                        {country === "CN" ? "Emergency Medical Service" : "Emergency Medical Service (PSC 119)"}
                       </span>
                     </div>
                     <span className="text-[11px] text-slate-500 block">Ambulance and emergency care</span>

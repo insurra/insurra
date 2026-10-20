@@ -500,7 +500,7 @@ export default function PolicyWalletPage() {
 
   // Delete / Archive policy handler
   const handleDeletePolicy = async (policyId: string) => {
-    if (await showConfirm("Are you sure you want to remove this policy from your wallet?", { tone: "error", confirmLabel: "Ya, hapus" })) {
+    if (await showConfirm("Are you sure you want to remove this policy from your wallet?", { tone: "error", confirmLabel: "Yes, remove" })) {
       if (mode === "account" && headers && !policyId.startsWith("demo-")) {
         try {
           await api.request("delete", "/api/v1/account/policies/{policy_id}", {

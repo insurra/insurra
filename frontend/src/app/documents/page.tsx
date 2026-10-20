@@ -164,7 +164,7 @@ const SINTA_SAMPLE_DOCUMENTS: DashboardDocumentItem[] = [
     name: "BPJS_Kesehatan_Card.pdf",
     size: "825 KB",
     type: "Insurance certificate",
-    extractedInfo: "BPJS Kesehatan · JKN\nKepesertaan Aktif",
+    extractedInfo: "BPJS Kesehatan · JKN\nActive Membership",
     extractedDetail: {
       issuer: "BPJS Kesehatan",
       planName: "BPJS Kesehatan (JKN)",
@@ -173,7 +173,7 @@ const SINTA_SAMPLE_DOCUMENTS: DashboardDocumentItem[] = [
       insuredPerson: "Sinta Dewi",
       dob: "15 Apr 1995",
       coverageStart: "1 Jan 2021",
-      coverageEnd: "31 Des 2099",
+      coverageEnd: "31 Dec 2099",
       planType: "Jaminan Kesehatan Nasional (Kelas 1)",
     },
     status: "Verified",
