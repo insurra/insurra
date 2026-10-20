@@ -18,7 +18,7 @@ def main():
         raise RuntimeError(
             "Synthetic fixture requires the isolated E2E database and explicit opt-in"
         )
-    app = create_app(Settings(database_url=expected, openai_api_key=""))
+    app = create_app(Settings(database_url=expected, gemini_api_key=""))
     with TestClient(app) as client:
         headers, account, coverage, doc = workspace(
             app, client, os.environ.get("TEST_COUNTRY", "AU")

@@ -1,14 +1,14 @@
 {
   "schema_version": "1.5",
-  "version": "0.3.0",
-  "source_url": null,
-  "checked_at": null,
+  "version": "0.3.1",
+  "source_url": "https://kemkes.go.id/id/layanan/psc-119",
+  "checked_at": "2026-10-20",
   "verification_status": "UNVERIFIED",
   "data": {
     "label": "Informasi darurat lokal harus diverifikasi sebelum aktivasi navigasi.",
-    "phone_number": null,
-    "source_url": null,
-    "checked_at": null,
+    "phone_number": "119",
+    "source_url": "https://kemkes.go.id/id/layanan/psc-119",
+    "checked_at": "2026-10-20",
     "verification_status": "UNVERIFIED"
   }
 }

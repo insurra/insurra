@@ -162,7 +162,7 @@ export default function AccountDocuments() {
           <ArrowRight size={16} />
         </Button>
         <small>
-          Requires document processing and external AI consent. Original files are retained only if retention consent is active.
+          Requires document processing and external AI consent. Source pages for Policy Q&amp;A and original files are retained only with retention consent.
         </small>
       </section>
 

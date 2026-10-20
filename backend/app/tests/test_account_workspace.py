@@ -75,6 +75,18 @@ def test_account_profile_and_consent_are_separate_from_demo(app, client, demo):
     assert client.get("/api/v1/profile", headers=mine).status_code == 401
 
 
+def test_account_setup_returns_versioned_kb_vocabulary_shapes(app, client):
+    headers = account_headers(app, "setup-contract")
+    for country in ("AU", "ID"):
+        response = client.get(f"/api/v1/account/setup/{country}", headers=headers)
+        assert response.status_code == 200
+        body = response.json()
+        assert body["country_code"] == country
+        assert body["coverage_types"]
+        assert all(isinstance(item["aliases"], list) for item in body["coverage_types"])
+        assert all(isinstance(item["aliases"], list) for item in body["document_types"])
+
+
 def test_document_scope_consent_review_and_retention_revocation(app, client, monkeypatch):
     mine = account_headers(app, "uploader")
     other = account_headers(app, "outsider")

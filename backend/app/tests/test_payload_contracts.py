@@ -215,7 +215,7 @@ def test_profile_suggestions_only_project_checked_country_kb(client, app, demo, 
     loader = app.state.kb_loader
     original = loader.load
     country = copy.deepcopy(original("AU"))
-    # Synthetic in-memory fixture; repository KB facts remain empty and unverified.
+    # Synthetic in-memory fixture; production triage drafts remain unverified and unavailable.
     from app.schemas.kb import SuggestedDocument
 
     country.resources.suggested_docs.data = [

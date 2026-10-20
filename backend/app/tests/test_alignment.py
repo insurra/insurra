@@ -256,13 +256,25 @@ def test_actor_interface_does_not_authenticate_an_account(client):
 
 def test_country_resources_metadata_and_bad_config(tmp_path):
     loader = CountryKBLoader(ROOT / "kb")
+    expected_templates = {
+        "AU": {"policy_booklet", "oshc_certificate", "insurance_card"},
+        "ID": {"policy_booklet", "insurance_card"},
+    }
     for code in ("AU", "ID"):
         kb = loader.load(code)
         for name in type(kb.resources).model_fields:
             resource = getattr(kb.resources, name)
             assert resource.schema_version == "1.5" and resource.version == kb.manifest.version
-            assert resource.verification_status == "UNVERIFIED" and resource.source_url is None
-        assert kb.resources.red_flags.data == kb.resources.extraction_templates.data == []
+            assert resource.verification_status == "UNVERIFIED"
+            if name in {"red_flags", "emergency"}:
+                assert resource.source_url and resource.source_url.startswith("https://")
+                assert resource.checked_at is not None
+            else:
+                assert resource.source_url is None
+        assert kb.resources.red_flags.data
+        assert {item.document_type for item in kb.resources.extraction_templates.data} == (
+            expected_templates[code]
+        )
     assert loader.load_injection_patterns().data == []
     shutil.copytree(ROOT / "kb/AU", tmp_path / "AU")
     path = tmp_path / "AU/tasks.json"

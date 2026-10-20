@@ -1,7 +1,7 @@
 {
   "country_code": "ID",
   "label": "Indonesia",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "checked_at": null,
   "sources": [],
   "supported_features": [
@@ -21,6 +21,7 @@
     "bpjs-kesehatan.go.id",
     "www.bpjs-kesehatan.go.id",
     "kemkes.go.id",
+    "jdih.kemkes.go.id",
     "www.kemkes.go.id"
   ]
 }

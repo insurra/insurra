@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { workspaceApiBase } from "./helpers/workspace";
 
 test("persona, consent, dashboard, audit, revocation, and isolated switch", async ({
   page,
@@ -101,7 +102,7 @@ test("country changes retain origin labels and do not revive a stale gap", async
   await expect(page.locator(".gap-value strong")).toHaveText("76");
   const token = await page.evaluate(() => sessionStorage.getItem("insurra.demo-session"));
   if (!token) throw new Error("Expected an isolated synthetic demo session");
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+  const base = workspaceApiBase;
   for (const [country_code, residence_context] of [["ID", "DOMESTIC"], ["AU", "ABROAD"]]) {
     const updated = await page.request.put(`${base}/api/v1/profile`, {
       headers: { "X-Demo-Session": token },

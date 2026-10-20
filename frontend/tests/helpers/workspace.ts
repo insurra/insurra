@@ -2,13 +2,16 @@ import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { expect, type Page } from "@playwright/test";
 
+export const workspaceApiBase =
+  process.env.INSURRA_E2E_API_URL ?? "http://localhost:8000";
+
 export async function accountWorkspace(
   page: Page,
   country: "AU" | "ID" = "AU",
 ) {
   const root = path.resolve(__dirname, "../../..");
   const raw = execFileSync(
-    path.join(root, ".tools/bin/uv"),
+    process.env.UV ?? "uv",
     ["run", "python", "-m", "app.tests.seed_workspace_e2e"],
     {
       cwd: path.join(root, "backend"),
@@ -30,7 +33,7 @@ export async function accountWorkspace(
     headers: Record<string, string>;
   } = JSON.parse(raw.trim());
   const response = await page.request.post(
-    "http://localhost:8000/api/v1/account/auth/login",
+    `${workspaceApiBase}/api/v1/account/auth/login`,
     { data: { email: fixture.email, password: fixture.password } },
   );
   if (response.status() !== 200)

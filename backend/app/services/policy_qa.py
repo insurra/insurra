@@ -14,7 +14,7 @@ from app.models import AccountDocumentRow, AskLimitRow, ChatSessionRow
 from app.schemas.chat import AnswerCertainty
 from app.schemas.common import Contract
 from app.schemas.foundation import AnswerCitation, AnswerPoint, AskAnswer, EmergencyRedirect
-from app.services.ai_gateway import ResponsesGateway
+from app.services.ai_gateway import GeminiGateway
 from app.services.audit_logger import log_actor_event
 from app.services.benefits import financial_facts
 from app.services.command_center import local_day
@@ -336,7 +336,7 @@ def answer(db, actor, kb, body, settings, gateway_factory=None, cancelled=None):
         "atau menyebut angka uang, tanggal, persentase, identitas, diagnosis atau resep. "
         "Jangan menjanjikan pembayaran. Tanpa bukti, jangan menyatakan tidak ditanggung."
     )
-    gateway = (gateway_factory or ResponsesGateway)(settings)
+    gateway = (gateway_factory or GeminiGateway)(settings)
     for attempt in range(2):
         require_grants(db, actor, ai=True)
         current = profile(db, actor)
