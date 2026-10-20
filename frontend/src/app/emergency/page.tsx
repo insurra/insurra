@@ -355,7 +355,7 @@ export default function EmergencyPage() {
                       : "bg-emerald-50 border-emerald-200 text-emerald-900"
                   }`}>
                     <p className="font-bold">
-                      {triageResult.has_red_flag ? "Tanda bahaya terdeteksi" : "Tidak ada tanda bahaya darurat langsung"}
+                      {triageResult.has_red_flag ? "Critical red flag detected" : "No immediate emergency red flags detected"}
                     </p>
                     {triageResult.matched_flags.map((flag) => (
                       <p key={flag.flag_id} className="text-[11px] mt-0.5">{flag.guidance}</p>

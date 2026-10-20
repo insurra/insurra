@@ -38,14 +38,14 @@ function open(kind: DialogRequest["kind"], message: string, opts: Options = {}) 
       title:
         opts.title ??
         (kind === "confirm"
-          ? "Konfirmasi tindakan"
+          ? "Confirm Action"
           : tone === "success"
-            ? "Berhasil"
+            ? "Success"
             : tone === "info"
-              ? "Informasi"
-              : "Tindakan belum bisa dilanjutkan"),
-      confirmLabel: opts.confirmLabel ?? (kind === "confirm" ? "Ya, lanjutkan" : "Mengerti"),
-      cancelLabel: opts.cancelLabel ?? "Batal",
+              ? "Information"
+              : "Action Cannot Proceed"),
+      confirmLabel: opts.confirmLabel ?? (kind === "confirm" ? "Yes, continue" : "Understand"),
+      cancelLabel: opts.cancelLabel ?? "Cancel",
       resolve,
     };
     if (enqueue) enqueue(req);

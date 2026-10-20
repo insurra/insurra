@@ -281,8 +281,8 @@ function PrivateShell({
             type="button"
             onClick={() => setSidebarCollapsed(true)}
             className="sidebar-close-btn"
-            title="Tutup Menu"
-            aria-label="Tutup Menu"
+            title="Close Menu"
+            aria-label="Close Menu"
           >
             <PanelLeftClose size={18} />
           </button>
@@ -393,8 +393,8 @@ function PrivateShell({
               type="button"
               onClick={toggleSidebar}
               className={cn("topbar-toggle-btn", sidebarCollapsed && "is-collapsed")}
-              title={sidebarCollapsed ? "Buka Sidebar Menu (Ctrl+B)" : "Tutup Sidebar Menu (Ctrl+B)"}
-              aria-label={sidebarCollapsed ? "Buka Sidebar Menu" : "Tutup Sidebar Menu"}
+              title={sidebarCollapsed ? "Open Sidebar Menu (Ctrl+B)" : "Close Sidebar Menu (Ctrl+B)"}
+              aria-label={sidebarCollapsed ? "Open Sidebar Menu" : "Close Sidebar Menu"}
             >
               {sidebarCollapsed ? (
                 <>
