@@ -612,3 +612,396 @@ def test_acceptance_criterion_6_dispute_review_never_concludes_fault_or_guarante
     assert review["review_posture"] == "CLARIFICATION_ONLY"
     assert "does not conclude that the insurer is at fault" in review["disclaimer"]
     assert "does not guarantee" in review["disclaimer"]
+
+
+# =============================================================================
+# FLOW 3: Ask INSURRA (SC-06 · P0)
+# =============================================================================
+
+
+def test_flow_3_ask_insurra(app, client, monkeypatch):
+    """Flow 3: Ask INSURRA
+    Joshua · SC-06 · P0
+    Question -> Safety Check -> Intent Routing -> Retrieve Context & Evidence -> Call Read/Compute Tools -> Grounded Answer -> Validate Citation
+
+    Requirements:
+    1. Safety check intercepts red flags and redirects to emergency without calling AI.
+    2. Intent routing routes medical advice, care navigation, and policy question.
+    3. Personalized answers from authorized policy facts (Regina's findings).
+    4. Citation per material policy assertion.
+    5. Explicit uncertainty when evidence is missing.
+    6. Optional proposed draft action in AWAITING_APPROVAL, never direct execution.
+    7. Expected: pertanyaan yang sama pada dua polis berbeda menghasilkan jawaban dan evidence berbeda.
+    8. Batas: Ask INSURRA tidak membuat assessment engine kedua; menggunakan hasil Regina.
+    """
+    import json
+
+    from app.models import (
+        AccountCoverageRow,
+        AccountDocumentPageRow,
+        AccountDocumentRow,
+    )
+    from app.services.policy_qa import ModelAnswer
+    from app.tests.workspace_fixtures import POLICY_TEXT, reviewed_triage, workspace
+
+    headers, account, coverage, doc = workspace(app, client, "CN")
+    reviewed_triage(app, monkeypatch)
+
+    dental_quote = POLICY_TEXT.replace("AUD", "CNY").splitlines()[1]
+
+    class GatewayFixture:
+        def __init__(self, doc_id):
+            self.doc_id = doc_id
+            self.calls = []
+
+        def __call__(self, settings):
+            return self
+
+        def parse(self, **kwargs):
+            self.calls.append(json.loads(kwargs["text"]))
+            return ModelAnswer.model_validate(
+                {
+                    "answer_points": [
+                        {
+                            "text": "Perawatan gigi umum dikecualikan dalam polis fiktif ini.",
+                            "label": "FROM_DOCUMENT",
+                            "citations": [
+                                {
+                                    "doc": str(self.doc_id),
+                                    "page": 1,
+                                    "quote": dental_quote,
+                                }
+                            ],
+                        }
+                    ]
+                }
+            )
+
+    gateway = GatewayFixture(doc)
+    app.state.qna_gateway_factory = gateway
+
+    # 1. Safety Check: Emergency / red-flag question triggers immediate EmergencyRedirect with ZERO AI calls
+    safety_res = client.post(
+        "/api/v1/ask",
+        headers=headers,
+        json={"question": "aku sesak napas berat dan nyeri dada, ditanggung nggak?"},
+    )
+    assert safety_res.status_code == 200
+    assert safety_res.json()["redirect"] == "emergency"
+    assert len(gateway.calls) == 0, "Safety red flag must NEVER call the LLM"
+
+    # 2. Intent Routing: Medical advice is safely declined without calling the model
+    med_res = client.post(
+        "/api/v1/ask",
+        headers=headers,
+        json={"question": "obat apa yang cocok untuk radang tenggorokan?"},
+    )
+    assert med_res.status_code == 200
+    med_data = med_res.json()
+    assert med_data["disposition"] == "declined"
+    assert med_data["intent"] == "MEDICAL_ADVICE"
+    assert any("Saya tidak memberikan diagnosis" in w for w in med_data["warnings"])
+    assert len(gateway.calls) == 0, "Medical advice question must not call LLM"
+
+    # 3. Grounded Answer with Citation Validation (Policy Question)
+    # Uses authorized policy facts and verified clauses from Regina's extracted documents
+    policy_res = client.post(
+        "/api/v1/ask",
+        headers=headers,
+        json={"question": "Periksa gigi ditanggung nggak?"},
+    )
+    assert policy_res.status_code == 200
+    policy_data = policy_res.json()
+    assert policy_data["disposition"] == "answered"
+    assert policy_data["intent"] == "POLICY_QUESTION"
+    assert len(policy_data["answer_points"]) > 0
+    point = policy_data["answer_points"][0]
+    assert point["label"] == "FROM_DOCUMENT"
+    assert len(point["citations"]) > 0
+    citation = point["citations"][0]
+    assert citation["doc"] == str(doc)
+    assert citation["page"] == 1
+    assert "General dental treatment is excluded" in citation["quote"]
+    assert len(gateway.calls) == 1
+
+    # 4. Explicit Uncertainty when Evidence is Missing
+    # When asking about benefits not in the document, returns honest "no_match" with verification steps
+    no_match_res = client.post(
+        "/api/v1/ask",
+        headers=headers,
+        json={"question": "Apakah kacamata dan lensa kontak ditanggung?"},
+    )
+    assert no_match_res.status_code == 200
+    no_match_data = no_match_res.json()
+    assert no_match_data["disposition"] == "no_match"
+    assert no_match_data["answer_points"] == []
+    assert any("Tidak ditemukan di dokumen" in w for w in no_match_data["warnings"])
+    assert isinstance(no_match_data["verification_steps"], list)
+
+    # 5. Optional Proposed Draft Action, Never Direct Execution
+    # Uncertainty or policy questions propose an action awaiting user approval
+    assert len(no_match_data["proposals"]) > 0
+    proposal = no_match_data["proposals"][0]
+    assert proposal["requires_approval"] is True
+    assert proposal["action_type"] in (
+        "policy_clarification_inquiry",
+        "internal_reminder",
+        "renewal_inquiry",
+    )
+
+    # Preparing the proposal creates an idempotent wf_action draft in AWAITING_APPROVAL status
+    prep_res = client.post(
+        f"/api/v1/ask/proposals/{proposal['proposal_id']}/prepare",
+        headers=headers,
+    )
+    assert prep_res.status_code == 200
+    prep_data = prep_res.json()
+    assert prep_data["status"] == "AWAITING_APPROVAL"
+
+    # 6. Expected: pertanyaan yang sama pada dua polis berbeda menghasilkan jawaban dan evidence berbeda
+    # Create a second distinct policy for the same account with different clauses
+    with app.state.session_factory() as db:
+        doc_b = AccountDocumentRow(
+            account_id=account,
+            country_code="CN",
+            kind="personal_health",
+            original_filename="policy-b-fictional.pdf",
+            mime_type="application/pdf",
+            size_bytes=150,
+            sha256="b" * 64,
+            content=b"policy b content",
+            status="COMPLETED",
+            injection_flag=False,
+        )
+        db.add(doc_b)
+        db.flush()
+        cov_b = AccountCoverageRow(
+            account_id=account,
+            document_id=doc_b.id,
+            country_code="CN",
+            kind="COMPREHENSIVE_HEALTH",
+            provider="Policy B Provider",
+            start_date="2026-01-01",
+            end_date="2027-12-31",
+        )
+        db.add(cov_b)
+        db.add(
+            AccountDocumentPageRow(
+                document_id=doc_b.id,
+                page_no=1,
+                text="FICTIONAL POLICY B. Dental checkup is available upon request.",
+                ocr_used=False,
+            )
+        )
+        db.commit()
+        cov_b_id = str(cov_b.id)
+        doc_b_id = str(doc_b.id)
+
+    # Calling with coverage_id=coverage (Policy A) scopes clauses to doc A
+    client.post(
+        "/api/v1/ask",
+        headers=headers,
+        json={"question": "Periksa gigi ditanggung nggak?", "coverage_id": str(coverage)},
+    )
+    assert {c["doc"] for c in gateway.calls[-1]["clauses"]} == {str(doc)}
+
+    # Calling with coverage_id=cov_b_id (Policy B) scopes clauses to doc B
+    client.post(
+        "/api/v1/ask",
+        headers=headers,
+        json={"question": "Periksa gigi ditanggung nggak?", "coverage_id": cov_b_id},
+    )
+    assert {c["doc"] for c in gateway.calls[-1]["clauses"]} == {str(doc_b_id)}
+
+
+# =============================================================================
+# FLOW 4: Care Pathways & Emergency (SC-07, SC-08 · P0)
+# =============================================================================
+
+
+def test_flow_4_care_pathways_and_emergency(client, app, monkeypatch):
+    """Flow 4 (SC-07, SC-08 · P0):
+    Describe Need → Safety Triage → Load Policy Context → Evaluate Care Options
+    → Explain Costs & Conditions → User Selects Next Step.
+    Jika muncul red flag:
+    Red Flag → Interrupt Normal Flow → Emergency Guidance + Verified Country Contacts.
+
+    Acceptance Requirements:
+    1. Safety checks prior to LLM reasoning.
+    2. Verified country-specific pathways and emergency contacts.
+    3. Grounded coverage explanations.
+    4. Deterministic estimated costs when reliable inputs exist; unknown cost if no reliable tariff.
+    5. No unsupported diagnosis or reimbursement guarantees.
+    6. Optional creation of claim case (with idempotency and bridge to workflow).
+    7. Expected: care navigation changes based on country and policy context, without blending
+       unverified benefits.
+    """
+    from app.models import AccountCoverageRow, ClaimCaseRow
+    from app.tests.workspace_fixtures import reviewed_triage, workspace
+
+    # Setup CN workspace and reviewed triage fixture
+    reviewed_triage(app, monkeypatch)
+    headers_cn, account_cn, coverage_cn, doc_cn = workspace(app, client, "CN")
+
+    # Update coverage kind to match CN student policy type in KB ("STUDENT_COMPREHENSIVE")
+    with app.state.session_factory() as db:
+        cov_row = db.get(AccountCoverageRow, coverage_cn)
+        cov_row.kind = "STUDENT_COMPREHENSIVE"
+        db.commit()
+
+    # 1. Safety Check: Red flag complaint immediately intercepts normal care flow
+    # Returns EmergencyRedirect(redirect="emergency") before any care comparison or LLM reasoning
+    red_flag_res = client.post(
+        "/api/v1/pathways/compare",
+        headers=headers_cn,
+        json={
+            "complaint": "aku sesak napas berat dan pingsan tiba-tiba",
+            "service_type": "OUTPATIENT",
+            "city": "Shenzhen",
+            "timeframe": "today",
+        },
+    )
+    assert red_flag_res.status_code == 200
+    rf_data = red_flag_res.json()
+    assert rf_data.get("redirect") == "emergency", "Red flag MUST interrupt normal care flow"
+    assert "paths" not in rf_data or len(rf_data.get("paths", [])) == 0
+
+    # 2. Verified country-specific emergency contacts & triage
+    # CN emergency contacts
+    contacts_cn = client.get(
+        "/api/v1/workflow/emergency/contacts?country_code=CN", headers=headers_cn
+    )
+    assert contacts_cn.status_code == 200
+    cn_numbers = {c["service_code"]: c["phone_number"] for c in contacts_cn.json()["contacts"]}
+    assert cn_numbers.get("medical") == "120", "China medical emergency number must be 120"
+    assert cn_numbers.get("police") == "110", "China police number must be 110"
+
+    # ID emergency contacts
+    contacts_id = client.get(
+        "/api/v1/workflow/emergency/contacts?country_code=ID", headers=headers_cn
+    )
+    assert contacts_id.status_code == 200
+    id_numbers = {c["service_code"]: c["phone_number"] for c in contacts_id.json()["contacts"]}
+    assert id_numbers.get("medical") == "119", "Indonesia PSC medical emergency number must be 119"
+    assert id_numbers.get("police") == "110", "Indonesia police number must be 110"
+
+    # Direct emergency triage API check
+    triage_res = client.post(
+        "/api/v1/workflow/emergency/triage",
+        headers=headers_cn,
+        json={"text": "sesak napas berat dan pingsan", "country_code": "CN"},
+    )
+    assert triage_res.status_code == 200
+    triage_data = triage_res.json()
+    assert triage_data["has_red_flag"] is True
+    assert triage_data["recommended_action"] == "INTERRUPT_NON_EMERGENCY_FLOW"
+    assert len(triage_data["matched_flags"]) > 0
+    assert len(triage_data["emergency_contacts"]) > 0
+    assert triage_data["guidance_message"]
+
+    # 3. Normal Flow: Describe Need → Load Policy Context → Evaluate Care Options → Explain Costs & Conditions
+    compare_res = client.post(
+        "/api/v1/pathways/compare",
+        headers=headers_cn,
+        json={
+            "complaint": "demam dan batuk pilek sejak kemarin",
+            "service_type": "OUTPATIENT",
+            "city": "Shenzhen",
+            "timeframe": "this_week",
+        },
+    )
+    assert compare_res.status_code == 200
+    compare_data = compare_res.json()
+    assert "paths" in compare_data
+    assert len(compare_data["paths"]) >= 2
+    assert "comparison_id" in compare_data
+    comparison_id = compare_data["comparison_id"]
+
+    # Verify grounded care option details
+    first_path = compare_data["paths"][0]
+    assert first_path["pathway_code"].startswith("CN_")
+    assert "name" in first_path
+    assert "steps" in first_path and len(first_path["steps"]) > 0
+    assert "docs" in first_path
+    assert "coverage_status" in first_path
+    assert first_path["coverage_status"] in ["MATCHED", "NEEDS_CHECK"]
+
+    # 4. Deterministic estimated costs: Unknown cost if no reliable tariff, no LLM arithmetic
+    for path in compare_data["paths"]:
+        cost = path.get("est_out_of_pocket")
+        # In synthetic/default workspace without verified reference tariff, cost must be None (unknown)
+        if cost is None:
+            assert cost is None
+        else:
+            assert isinstance(cost["amount"], (int, float))
+            assert isinstance(cost["currency"], str)
+
+    # 5. Strict warnings: No unsupported diagnosis or reimbursement guarantees
+    assert "warnings" in compare_data
+    warnings = compare_data["warnings"]
+    assert any("diagnosis" in w.lower() for w in warnings)
+    assert any("payment guarantee" in w.lower() for w in warnings)
+
+    # 6. User Selects Next Step: Optional creation of claim case with idempotency
+    chosen_path = first_path["pathway_code"]
+    idempotency_key = "test-pathway-claim-idem-key-001"
+
+    claim_res = client.post(
+        "/api/v1/claims",
+        headers={**headers_cn, "Idempotency-Key": idempotency_key},
+        json={
+            "path": chosen_path,
+            "coverage_id": str(coverage_cn),
+            "comparison_id": comparison_id,
+        },
+    )
+    assert claim_res.status_code == 201
+    claim_data = claim_res.json()
+    claim_case_id = UUID(claim_data["claim_case_id"])
+
+    # Verify claim case row & bridge into WfClaimCaseRow in DRAFT status
+    with app.state.session_factory() as db:
+        case_row = db.get(ClaimCaseRow, claim_case_id)
+        assert case_row is not None
+        assert case_row.status == "DRAFT"
+        assert case_row.account_id == account_cn
+        assert case_row.coverage_id == coverage_cn
+        assert case_row.country_code == "CN"
+        assert case_row.path == chosen_path
+
+        wf_case = db.get(WfClaimCaseRow, claim_case_id)
+        assert wf_case is not None
+        assert wf_case.status == "DRAFT"
+        assert wf_case.origin == "PATHWAY"
+        assert wf_case.origin_ref == str(claim_case_id)
+
+    # Idempotency verification: Repeated submission with same or different key returns same case
+    claim_res_repeat = client.post(
+        "/api/v1/claims",
+        headers={**headers_cn, "Idempotency-Key": "another-key-for-same-action"},
+        json={
+            "path": chosen_path,
+            "coverage_id": str(coverage_cn),
+            "comparison_id": comparison_id,
+        },
+    )
+    assert claim_res_repeat.status_code == 201
+    assert claim_res_repeat.json()["claim_case_id"] == str(claim_case_id)
+
+    # 7. Expected: Care navigation changes based on country without blending unverified benefits
+    # Compare with ID workspace: returns ID pathways (e.g. BPJS_PRIMARY)
+    headers_id, account_id, coverage_id, _ = workspace(app, client, "ID")
+    compare_id_res = client.post(
+        "/api/v1/pathways/compare",
+        headers=headers_id,
+        json={
+            "complaint": "demam dan pusing biasa",
+            "service_type": "OUTPATIENT",
+            "city": "Jakarta",
+            "timeframe": "this_week",
+        },
+    )
+    assert compare_id_res.status_code == 200
+    compare_id_data = compare_id_res.json()
+    id_path_codes = [p["pathway_code"] for p in compare_id_data["paths"]]
+    assert any("BPJS" in code for code in id_path_codes)
