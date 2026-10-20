@@ -36,7 +36,7 @@ export default function AuthCallbackPage() {
         if (result.success) {
           router.replace("/auth");
         } else {
-          setMessage(result.error || "Sesi Supabase tidak dapat diverifikasi.");
+          setMessage(result.error || "Unable to verify Supabase session.");
         }
       });
       return;

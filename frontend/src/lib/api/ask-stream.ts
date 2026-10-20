@@ -69,7 +69,7 @@ export async function* readAskEvents(
       const chunk = await reader.read();
       buffer += decoder.decode(chunk.value, { stream: !chunk.done });
       buffer = buffer.replace(/\r\n/g, "\n");
-      if (buffer.length > 1_000_000) throw new Error("Respons terlalu besar.");
+      if (buffer.length > 1_000_000) throw new Error("Response too large.");
       let index;
       while ((index = buffer.indexOf("\n\n")) >= 0) {
         const frame = buffer.slice(0, index);
@@ -80,28 +80,28 @@ export async function* readAskEvents(
           .map((line) => line.slice(5).trimStart())
           .join("\n");
         if (!data) continue;
-        if (terminal) throw new Error("Respons berlanjut setelah selesai.");
+        if (terminal) throw new Error("Response continued after completion.");
         const parsed: unknown = JSON.parse(data);
-        if (!event(parsed)) throw new Error("Format respons tidak valid.");
+        if (!event(parsed)) throw new Error("Invalid response format.");
         const named = lines
           .find((line) => line.startsWith("event:"))
           ?.slice(6)
           .trim();
         if (named !== parsed.event)
-          throw new Error("Nama event respons tidak cocok.");
+          throw new Error("Response event name mismatch.");
         if (parsed.event === "answer_point" && ++points > 5)
-          throw new Error("Terlalu banyak poin jawaban.");
+          throw new Error("Too many answer points.");
         if (
           parsed.event === "complete" &&
           parsed.data.answer_points.length !== points
         )
-          throw new Error("Jawaban akhir tidak cocok dengan aliran respons.");
+          throw new Error("Final answer does not match streamed response.");
         if (parsed.event === "answer_point") received.push(parsed.data);
         if (
           parsed.event === "complete" &&
           JSON.stringify(parsed.data.answer_points) !== JSON.stringify(received)
         )
-          throw new Error("Isi jawaban akhir berubah dalam aliran respons.");
+          throw new Error("Final answer content changed during stream.");
         terminal = ["complete", "error", "redirect"].includes(parsed.event);
         yield parsed;
       }
@@ -109,7 +109,7 @@ export async function* readAskEvents(
     }
     if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
     if (!terminal || buffer.trim())
-      throw new Error("Respons terputus sebelum selesai. Coba ulangi.");
+      throw new Error("Response interrupted before completion. Please try again.");
   } finally {
     signal?.removeEventListener("abort", abort);
     await reader.cancel().catch(() => undefined);

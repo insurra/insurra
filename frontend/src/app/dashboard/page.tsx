@@ -52,7 +52,7 @@ export default function Dashboard() {
           <div className="dx-badge-row">
             <span className="dx-kicker">Coverage Workspace</span>
             <span className="dx-pill-verified">
-              <Shield size={12} aria-hidden="true" /> Profil Aktif
+              <Shield size={12} aria-hidden="true" /> Active Profile
             </span>
           </div>
           <h1>Welcome back, {firstName}.</h1>
@@ -217,7 +217,7 @@ export default function Dashboard() {
                       <span className="dx-policy-type-badge">{policy.policy_type}</span>
                       <span className="dx-country-tag">
                         Record country: {record.country_code}
-                        <span className="sr-only">Negara catatan: {record.country_code}</span>
+                        <span className="sr-only">Record country: {record.country_code}</span>
                       </span>
                     </div>
                     <h3>{policy.provider_name ?? "Provider not specified"}</h3>

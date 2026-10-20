@@ -82,7 +82,7 @@ export function createApiClient(
       throw new ApiClientError(0, {
         code: "BACKEND_NOT_CONFIGURED",
         message:
-          "Backend belum dikonfigurasi untuk deployment ini. Hubungi pengelola aplikasi.",
+          "Backend is not configured for this deployment. Please contact the administrator.",
         details: null,
         request_id: "local",
       });
@@ -132,7 +132,7 @@ export function createApiClient(
       if (options.signal?.aborted) throw error;
       throw new ApiClientError(0, {
         code: "NETWORK_ERROR",
-        message: "Backend belum terhubung. Periksa koneksi atau coba kembali.",
+        message: "Backend is not connected. Check your connection or try again.",
         details: null,
         request_id: "local",
       });
@@ -151,7 +151,7 @@ export function createApiClient(
           ? (payload as components["schemas"]["ApiError"])
           : {
               code: "INVALID_RESPONSE",
-              message: "Respons server tidak dapat dibaca.",
+              message: "Server response could not be parsed.",
               details: null,
               request_id: response.headers.get("X-Request-ID") ?? "unknown",
             },
@@ -233,7 +233,7 @@ export function createApiClient(
       ) {
         throw new ApiClientError(response.status, {
           code: "INVALID_STREAM",
-          message: "Respons aliran belum tersedia.",
+          message: "Streaming response is not available.",
           details: null,
           request_id: response.headers.get("X-Request-ID") ?? "unknown",
         });
