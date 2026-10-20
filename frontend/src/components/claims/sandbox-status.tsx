@@ -52,7 +52,7 @@ export function SandboxClaimStatus({ accountToken }: { accountToken: string | nu
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `insurra-sandbox-logs.${format}`;
+      link.download = `inssura-sandbox-logs.${format}`;
       link.click();
       URL.revokeObjectURL(url);
     } catch {

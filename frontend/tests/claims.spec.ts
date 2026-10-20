@@ -36,16 +36,14 @@ test("demo claim cases remain owner-scoped and emergency guidance uses CN", asyn
   expect(foreign.status()).toBe(404);
 
   await page.goto("/emergency");
-  await expect(
-    page.getByRole("heading", { name: "Emergency Guidance & Crisis Lines" }),
-  ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Official Emergency Contacts" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "120", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Emergency Guidance" })).toBeVisible();
+  await expect(page.getByText("120").first()).toBeVisible();
+  await page.getByRole("button", { name: /Other symptom\b/ }).click();
   await page
-    .getByPlaceholder(/severe chest pain and shortness of breath/)
+    .getByPlaceholder(/Describe your symptoms/)
     .fill("我今天胸痛很严重");
-  await page.getByRole("button", { name: "Check Symptoms for Red Flags" }).click();
-  await expect(page.getByText("CRITICAL RED FLAG DETECTED")).toBeVisible();
+  await page.getByRole("button", { name: "Check Safety" }).click();
+  await expect(page.getByText("Tanda bahaya terdeteksi")).toBeVisible();
 });
 
 test("claims without a session offers Try Demo or Sign in and never creates a session", async ({

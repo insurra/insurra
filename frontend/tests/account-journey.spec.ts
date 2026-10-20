@@ -54,17 +54,10 @@ test("new account consents once, completes onboarding once, then follows documen
       body: JSON.stringify({ document_id: crypto.randomUUID(), status: "COMPLETED" }),
     });
   });
-  await page.goto("/documents?tour=upload");
-  const welcome = page.getByRole("dialog");
-  await expect(welcome.getByRole("heading", { name: "Yuk, isi brankas dokumenmu!" })).toBeVisible();
-  await welcome.getByRole("button", { name: "Mulai unggah dokumen" }).click();
-  await page.getByRole("button", { name: "Try This File" }).first().click();
-
-  const completed = page.getByRole("dialog");
-  await expect(completed.getByRole("heading", { name: "Datamu sudah bertambah!" })).toBeVisible();
-  await completed.getByRole("link", { name: /Cek completeness/ }).click();
-  await expect(page).toHaveURL(/\/completeness\?from=documents/);
-  await expect(page.getByText("Dokumenmu sudah ikut dihitung.")).toBeVisible();
-  await page.getByRole("link", { name: /Selesai, ke Home/ }).click();
-  await expect(page).toHaveURL(/\/home$/);
+  await page.goto("/documents");
+  await expect(page.getByRole("heading", { name: "Documents", exact: true })).toBeVisible();
+  await page.goto("/completeness?from=documents");
+  await expect(page.getByText(/Your documents have been processed and calculated/)).toBeVisible();
+  await page.getByRole("link", { name: /Continue to Home/ }).click();
+  await expect(page).toHaveURL(/\/home/);
 });

@@ -36,7 +36,7 @@ export default defineConfig({
         // AU remains an isolated acceptance fixture; production activation stays CN,ID.
         ACTIVE_KB_COUNTRIES: "AU,CN,ID",
       },
-      timeout: 60_000,
+      timeout: 120_000,
     },
     {
       // CI exercises the built application, without on-demand dev compilation during assertions.

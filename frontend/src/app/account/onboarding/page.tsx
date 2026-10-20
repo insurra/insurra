@@ -365,7 +365,7 @@ const COVERAGE_CATEGORIES = [
   {
     id: "not_sure",
     label: "Not Sure",
-    sub: "Let INSURRA help identify your insurance coverage from documents",
+    sub: "Let INSSURA help identify your insurance coverage from documents",
     exampleProvider: "Unknown Provider",
   },
   {
@@ -966,7 +966,7 @@ function AccountOnboardingContent() {
 
   function handleStep5Continue() {
     if (selectedGoals.length === 0) {
-      setError("Choose at least one priority so INSURRA can personalize your next steps.");
+      setError("Choose at least one priority so INSSURA can personalize your next steps.");
       return;
     }
     void persistDraft({
@@ -1166,7 +1166,7 @@ function AccountOnboardingContent() {
           status: "Recommended",
           statusType: "recommended",
           description: "Individual private health or accident policy document.",
-          sourceReason: "Enables INSURRA to map your healthcare network and benefits.",
+          sourceReason: "Enables INSSURA to map your healthcare network and benefits.",
         });
       }
     } else if (isIndonesia) {
@@ -1222,7 +1222,7 @@ function AccountOnboardingContent() {
         title: "Insurance Policy Certificate",
         status: "Recommended",
         statusType: "recommended",
-        description: "Any insurance card, schedule, or handbook for INSURRA to inspect and verify.",
+        description: "Any insurance card, schedule, or handbook for INSSURA to inspect and verify.",
         sourceReason: "Allows the AI to extract your coverage without making assumptions.",
       });
     }
@@ -1242,7 +1242,7 @@ function AccountOnboardingContent() {
             src="/Inssura%20Kangaroo%20Shield%20Logo.png"
             width={180}
             height={76}
-            alt="INSURRA"
+            alt="INSSURA"
             className="onboarding-brand-logo"
             priority
           />
@@ -1294,7 +1294,7 @@ function AccountOnboardingContent() {
               />
             </div>
             <div>
-              <h3>INSURRA Insurance Companion</h3>
+              <h3>INSSURA Insurance Companion</h3>
               <p>Personalized guidance for your insurance decisions</p>
             </div>
           </div>
@@ -1830,7 +1830,7 @@ function AccountOnboardingContent() {
                         </label>
                         <label className="checkbox-row">
                           <input type="checkbox" checked={healthConsentChecked} onChange={(event) => setHealthConsentChecked(event.target.checked)} />
-                          <span>I consent to INSURRA storing and using these voluntary health preferences for protection analysis. This does not grant external AI access.</span>
+                          <span>I consent to INSSURA storing and using these voluntary health preferences for protection analysis. This does not grant external AI access.</span>
                         </label>
                       </div>
                     )}
@@ -2163,7 +2163,7 @@ function AccountOnboardingContent() {
             {activeStep >= 6 && (
               <div className="chat-turn" style={{ order: 6 }}>
                 <div className="chat-assistant-bubble">
-                  <p>What would you like INSURRA to help you with? Select your key priorities.</p>
+                  <p>What would you like INSSURA to help you with? Select your key priorities.</p>
                 </div>
 
                 {activeStep === 6 && (
@@ -2180,7 +2180,7 @@ function AccountOnboardingContent() {
                                 setSelectedGoals(selectedGoals.filter((id) => id !== g.id));
                                 setError(null);
                               } else if (selectedGoals.length >= 2) {
-                                setError("Choose up to two priorities. INSURRA can ask about other goals later when relevant.");
+                                setError("Choose up to two priorities. INSSURA can ask about other goals later when relevant.");
                               } else {
                                 setSelectedGoals([...selectedGoals, g.id]);
                                 setError(null);
@@ -2351,7 +2351,7 @@ function AccountOnboardingContent() {
                       <div className="step-icon-badge">1</div>
                       <div className="step-desc">
                         <h5>Upload your insurance certificate</h5>
-                        <p>Help INSURRA identify your policy details, coverage limits, and valid dates.</p>
+                        <p>Help INSSURA identify your policy details, coverage limits, and valid dates.</p>
                       </div>
                     </div>
                     <div className="next-step-row">
@@ -2462,7 +2462,7 @@ function AccountOnboardingContent() {
               <span className="suggestion-not-required">Not all required</span>
             </div>
             <p className="suggested-docs-sub">
-              Based on your answers. Upload only what you already have—INSURRA will guide you
+              Based on your answers. Upload only what you already have—INSSURA will guide you
               through the rest after setup.
             </p>
 

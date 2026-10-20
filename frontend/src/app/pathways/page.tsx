@@ -451,14 +451,14 @@ export default function PathwaysPage() {
                   aria-label="Describe what care you need"
                   value={complaint}
                   onChange={(e) => setComplaint(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || !hasSafetyReview}
                   maxLength={300}
                   placeholder="e.g. I have a toothache, I want a skin consultation, I need a general check-up..."
                   className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-600 transition"
                 />
                 <button
                   type="submit"
-                  disabled={busy || !complaint.trim()}
+                  disabled={busy || !complaint.trim() || !hasSafetyReview}
                   aria-label="Submit care search"
                   className="absolute right-2 w-8 h-8 rounded-full bg-slate-200 hover:bg-emerald-600 text-slate-600 hover:text-white disabled:opacity-40 disabled:hover:bg-slate-200 disabled:hover:text-slate-600 grid place-items-center transition shadow-2xs cursor-pointer"
                 >
@@ -475,6 +475,18 @@ export default function PathwaysPage() {
                 className="sr-only"
                 tabIndex={-1}
               />
+
+              {/* Notice if safety review is unverified */}
+              {!hasSafetyReview && (
+                <div className="rounded-xl border border-rose-200 bg-rose-50/90 p-3 text-xs text-rose-950 shadow-2xs" role="note">
+                  <strong className="block font-bold text-rose-900">
+                    Safety guidance for this country is still under review
+                  </strong>
+                  <p className="mt-0.5 text-rose-800 text-[11px]">
+                    Basis tanda bahaya negara ini belum terverifikasi. Care comparison is paused until emergency triage is reviewed.
+                  </p>
+                </div>
+              )}
 
               {/* Quick Action Chips Row */}
               <div className="flex flex-wrap items-center gap-2 pt-1">

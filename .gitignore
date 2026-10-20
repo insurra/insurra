@@ -44,3 +44,7 @@ test-results/
 
 # Local task instructions; reviewed mappings and manifest remain tracked.
 /docs/prd/PROMPT_FOR_CODEX.md
+
+# Demo files
+demo/
+

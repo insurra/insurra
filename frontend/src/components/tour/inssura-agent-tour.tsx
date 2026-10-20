@@ -24,7 +24,7 @@ export const INSSURA_AGENT_STEPS: TourStep[] = [
     agentName: "Command Center",
     title: "Welcome to Your Insurance Companion",
     description:
-      "Meet INSURRA, your personal insurance companion. Let's see how your protection works together.",
+      "Meet INSSURA, your personal insurance companion. Let's see how your protection works together.",
     mascot: "/Winking Kangaroo Shield Mascot.png",
   },
   {
@@ -51,10 +51,10 @@ export const INSSURA_AGENT_STEPS: TourStep[] = [
     id: "ask",
     route: "/ask",
     targets: ['a.nav-item[href="/ask"]'],
-    agentName: "Ask INSURRA",
+    agentName: "Ask INSSURA",
     title: "Ask questions about your actual policies",
     description:
-      "Answers come with citations from your policy documents. If a benefit is unverified, INSURRA says so. Pick a sample question.",
+      "Answers come with citations from your policy documents. If a benefit is unverified, INSSURA says so. Pick a sample question.",
     mascot: "/mascot-bubble.png",
   },
   {
@@ -64,7 +64,7 @@ export const INSSURA_AGENT_STEPS: TourStep[] = [
     agentName: "Care Navigator",
     title: "Find the right care path",
     description:
-      "INSURRA evaluates service options, coverage terms, and next steps before you visit a care facility.",
+      "INSSURA evaluates service options, coverage terms, and next steps before you visit a care facility.",
     mascot: "/mascot-care-doctor-trans.png",
   },
   {
@@ -72,7 +72,7 @@ export const INSSURA_AGENT_STEPS: TourStep[] = [
     route: "/claims",
     targets: ['a.nav-item[href="/claims"]'],
     agentName: "Claim Preparation Agent",
-    title: "Let INSURRA prepare your claim",
+    title: "Let INSSURA prepare your claim",
     description:
       "The flow: Claim Readiness → AI Claim Draft → Review → Approval. Nothing is sent without your approval.",
     mascot: "/Cute Mascot with Checklist Clipboard.png",
@@ -293,7 +293,7 @@ function StepDemo({ id }: { id: string }) {
       return (
         <ChipDemo
           items={[
-            { q: "Is outpatient covered?", a: "INSURRA answers from your policy clauses and says when something is unverified.", cite: "Citation: policy document, relevant page" },
+            { q: "Is outpatient covered?", a: "INSSURA answers from your policy clauses and says when something is unverified.", cite: "Citation: policy document, relevant page" },
             { q: "What is the inpatient limit?", a: "Limits are shown exactly as in the document, never guessed.", cite: "Citation: benefit table, relevant page" },
           ]}
         />

@@ -696,49 +696,87 @@ export default function HomePage() {
             </div>
 
             <div className="home-quick-grid">
-              <Link href="/ask" className="home-quick-card">
+              <Link href="/ask" className="home-quick-card" aria-label="Ask INSSURA">
                 <div className="home-quick-top">
                   <MessageSquare size={18} className="home-quick-icon" />
-                  <span className="home-quick-title">
-                    Ask INSSURA <ArrowRight size={12} />
-                  </span>
+                  <span className="home-quick-title">Ask INSSURA</span>
                 </div>
                 <span className="home-quick-sub">Get answers about your insurance</span>
               </Link>
 
-              <Link href="/pathways" className="home-quick-card">
+              <Link href="/coverage-needs" className="home-quick-card" aria-label="Review Coverage Needs">
+                <div className="home-quick-top">
+                  <Shield size={18} className="home-quick-icon" />
+                  <span className="home-quick-title">Review Coverage Needs</span>
+                </div>
+                <span className="home-quick-sub">Coverage gap analysis</span>
+              </Link>
+
+              <Link href="/pathways" className="home-quick-card" aria-label="Care Pathways">
                 <div className="home-quick-top">
                   <Stethoscope size={18} className="home-quick-icon" />
-                  <span className="home-quick-title">
-                    Care Pathways <ArrowRight size={12} />
-                  </span>
+                  <span className="home-quick-title">Care Pathways</span>
                 </div>
                 <span className="home-quick-sub">Find the right care options</span>
               </Link>
 
-              <Link href="/documents" className="home-quick-card">
-                <div className="home-quick-top">
-                  <UploadCloud size={18} className="home-quick-icon" />
-                  <span className="home-quick-title">
-                    Upload Document <ArrowRight size={12} />
-                  </span>
-                </div>
-                <span className="home-quick-sub">
-                  Add new insurance or supporting document
-                </span>
-              </Link>
-
-              <Link href="/claims" className="home-quick-card">
+              <Link href="/claims" className="home-quick-card" aria-label="Continue Claim →">
                 <div className="home-quick-top">
                   <CreditCard size={18} className="home-quick-icon" />
-                  <span className="home-quick-title">
-                    Claims Center <ArrowRight size={12} />
-                  </span>
+                  <span className="home-quick-title">Continue Claim →</span>
                 </div>
                 <span className="home-quick-sub">Start or track a claim</span>
               </Link>
             </div>
           </section>
+
+          {/* Emergency Guidance & Crisis Hotline Footer */}
+          <footer
+            className="home-emergency"
+            role="complementary"
+            aria-label="Bantuan darurat"
+            style={{
+              marginTop: 20,
+              padding: "16px 20px",
+              borderRadius: 16,
+              background: "#fff1f2",
+              border: "1px solid #ffe4e6",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <AlertTriangle size={18} style={{ color: "#e11d48", flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: "#9f1239" }}>
+                For urgent medical situations, contact emergency services immediately:
+              </span>
+              <span
+                className="home-emergency-contact"
+                data-testid="home-emergency-contact"
+                style={{ fontWeight: 800, color: "#e11d48", fontSize: 13 }}
+              >
+                Local Emergency ({context?.country_label || "China"}): {s.emergency?.phone_number || "120"}
+              </span>
+            </div>
+            <Link
+              href="/emergency"
+              aria-label="Emergency Guidance →"
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#e11d48",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              Emergency Guidance →
+            </Link>
+          </footer>
         </div>
       </div>
     </div>

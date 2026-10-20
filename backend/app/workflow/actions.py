@@ -607,7 +607,9 @@ def _release_claim(db: Session, owner: Owner, action: WfActionRow, source: str):
             )
 
 
-def reject(db: Session, owner: Owner, action: WfActionRow, reason: str | None = None) -> WfActionRow:
+def reject(
+    db: Session, owner: Owner, action: WfActionRow, reason: str | None = None
+) -> WfActionRow:
     if action.status not in ("AWAITING_APPROVAL", "APPROVED", "DRAFT"):
         raise AppError(409, "ACTION_NOT_PENDING", "This action can no longer be rejected.")
     action.status = "REJECTED"

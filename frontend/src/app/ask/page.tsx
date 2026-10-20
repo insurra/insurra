@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
-  AlertTriangle,
   ArrowRight,
   CheckCircle2,
   ChevronRight,
@@ -29,7 +28,6 @@ import type { components } from "@/lib/api/types.gen";
 import { useWorkspace } from "@/lib/workspace";
 import { useActor } from "@/lib/actor";
 import {
-  ConsentNotice,
   WorkspaceState,
 } from "@/components/workspace/workspace";
 import { SourceDrawer } from "@/components/workspace/source-drawer";
@@ -102,7 +100,7 @@ function formatCleanProvider(provider?: string | null, kind?: string | null): st
   return provider.replace(/\s*\([^)]*demo[^)]*\)/gi, "").trim() || "Allianz Indonesia";
 }
 
-function formatCleanPlan(kind?: string | null, provider?: string | null): string {
+function formatCleanPlan(kind?: string | null): string {
   if (!kind) return "Comprehensive Health Plan";
   const k = kind.toLowerCase();
   if (k.includes("synthetic") || k.includes("demo")) {
@@ -253,9 +251,7 @@ export default function AskPage() {
   const { demo } = useActor();
 
   const isSinta =
-    demo?.profile?.country_code === "ID" ||
-    Boolean(demo?.profile?.display_name?.toLowerCase().includes("sinta")) ||
-    !demo?.profile;
+    Boolean(demo?.profile?.display_name?.toLowerCase().includes("sinta"));
 
   const [question, setQuestion] = useState(() => {
     if (typeof window !== "undefined") {
@@ -279,10 +275,17 @@ export default function AskPage() {
   const [source, setSource] = useState<Citation | null>(null);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const lastQuestionRef = useRef("");
   const controller = useRef<AbortController | null>(null);
   const identity = workspace.identityKey;
   const context = workspace.summary?.context;
   const storageKey = identity ? `insurra.policy-chat.${identity}` : null;
+
+  useEffect(() => {
+    return () => {
+      controller.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     const abort = new AbortController();
@@ -320,7 +323,6 @@ export default function AskPage() {
 
     return () => {
       abort.abort();
-      controller.current?.abort();
     };
   }, [
     storageKey,
@@ -335,10 +337,16 @@ export default function AskPage() {
   const s = workspace.summary;
   const allowed = Boolean(context?.process_documents && context?.external_ai);
   const hasPolicies = Boolean(s.coverages?.length);
-  const canAsk = hasPolicies && !pending;
+  const triageAvailable = s.triage_available !== false;
+  const canAsk = hasPolicies && allowed && triageAvailable && !pending;
 
   // Grab the latest active turn's answer for the right sidebar
   const latestAnswer = turns.length > 0 ? turns[turns.length - 1].answer : null;
+
+  function askAnother() {
+    setQuestion("");
+    inputRef.current?.focus();
+  }
 
   async function grantAllConsent() {
     setGrantingConsent(true);
@@ -381,10 +389,11 @@ export default function AskPage() {
     }
   }
 
-  async function send(value = question) {
-    if (!value.trim() || pending) return;
+  async function send(overrideValue?: string) {
+    const value = ((overrideValue ?? question) || lastQuestionRef.current).trim();
+    if (!value || pending) return;
+    lastQuestionRef.current = value;
 
-    // Auto-grant consent in demo mode so user can test seamlessly
     if (!allowed) {
       const demoToken =
         typeof window !== "undefined"
@@ -402,7 +411,6 @@ export default function AskPage() {
             granted: true,
             policy_version: "1.5",
           });
-          workspace.refresh();
         } catch {
           // ignore if already granted
         }
@@ -420,14 +428,16 @@ export default function AskPage() {
     setPending(true);
     setError(null);
     setStatus("Analyzing policy documents…");
-    setQuestion("");
 
     const nowFormatted = new Date().toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
 
-    const base = [...turns, { question: value, answer: null, timestamp: nowFormatted }].slice(-10);
+    const base = [
+      ...turns,
+      { question: value, answer: null, timestamp: nowFormatted },
+    ].slice(-10);
     setTurns(base);
     const points: Point[] = [];
 
@@ -474,10 +484,12 @@ export default function AskPage() {
           if (storageKey && event.data.chat_session_id)
             sessionStorage.setItem(storageKey, event.data.chat_session_id);
           setStatus("");
+          setQuestion("");
         }
         if (event.event === "redirect") {
           setTurns(base.slice(0, -1));
           setStatus("");
+          setQuestion("");
           setError(
             "Red flag or urgent symptoms detected. Policy Q&A is paused. Please review emergency guidance."
           );
@@ -490,7 +502,7 @@ export default function AskPage() {
       setStatus("");
       setError(
         abort.signal.aborted
-          ? "Request canceled; no answer recorded."
+          ? "Request cancelled; no answer recorded."
           : cause instanceof Error
           ? cause.message
           : "Could not retrieve answer. Please try again."
@@ -547,7 +559,7 @@ export default function AskPage() {
   }
 
   return (
-    <div className="ask-dashboard-container" lang="en">
+    <div className="vn ask-dashboard-container" lang="en">
       {/* ====================================================================
           Top Hero Banner with Mascot & Cityscape
           ==================================================================== */}
@@ -569,6 +581,7 @@ export default function AskPage() {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-slate-700">Scope:</span>
                   <select
+                    aria-label="Filter policy scope"
                     className="bg-white/80 border border-slate-200 rounded-md px-2 py-0.5 text-xs text-slate-700 font-medium outline-none focus:border-teal-500"
                     value={policy}
                     onChange={(e) => setPolicy(e.target.value)}
@@ -688,14 +701,20 @@ export default function AskPage() {
         </div>
       )}
 
+      {!triageAvailable && (
+        <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl mx-4 mb-3" role="alert">
+          Pemeriksaan tanda bahaya belum tersedia untuk wilayah ini. Tanya jawab dinonaktifkan demi keselamatan.
+        </div>
+      )}
+
       {/* ====================================================================
           Main Grid Layout: Chat Stream (Left) + Intelligence Panels (Right)
           ==================================================================== */}
       <div className="ask-content-grid">
         {/* Chat Conversation Column */}
-        <div className="ask-chat-column">
+        <div className="ask-chat-column" role="log" aria-live="polite">
           {turns.map((turn, tIdx) => (
-            <div key={tIdx} className="ask-turn-wrapper">
+            <article key={tIdx} className="ask-turn-wrapper">
               {/* User Message Bubble */}
               <div className="ask-user-row">
                 <div className="ask-user-bubble">
@@ -725,6 +744,11 @@ export default function AskPage() {
                   <div className="ask-bot-card">
                     {/* Main Formatted Text */}
                     <div className="ask-answer-text">
+                      {turn.answer.disposition === "no_match" && (
+                        <h3 className="text-sm font-bold text-slate-800 mb-2">
+                          Not found in your documents
+                        </h3>
+                      )}
                       {turn.answer.answer_markdown ? (
                         turn.answer.answer_markdown
                           .split("\n\n")
@@ -816,12 +840,17 @@ export default function AskPage() {
                           {turn.answer.answer_points
                             .flatMap((pt) => pt.citations || [])
                             .map((c, cIdx) => (
-                              <div
+                              <button
+                                type="button"
                                 key={cIdx}
-                                className="ask-citation-card"
+                                className="ask-citation-card text-left cursor-pointer"
                                 onClick={() => setSource(c)}
+                                aria-label={`${c.document_name || "Dokumen"} · p. ${c.page}`}
                                 title="Click to view full page source"
                               >
+                                <span className="sr-only">
+                                  {c.document_name || "Dokumen"} · p. {c.page}
+                                </span>
                                 <div className="ask-citation-top">
                                   <div className="flex items-center gap-2">
                                     <span className="ask-citation-num-badge">
@@ -849,7 +878,7 @@ export default function AskPage() {
                                 <blockquote className="ask-citation-quote">
                                   &ldquo;{c.quote}&rdquo;
                                 </blockquote>
-                              </div>
+                              </button>
                             ))}
                         </div>
                       </div>
@@ -947,7 +976,7 @@ export default function AskPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </article>
           ))}
 
           {/* Status / Pending Indicator */}
@@ -966,20 +995,40 @@ export default function AskPage() {
           )}
 
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center justify-between">
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center justify-between" role="alert">
               <span>{error}</span>
               <button
                 type="button"
                 className="underline font-bold"
-                onClick={() => void send()}
+                aria-label="Coba lagi"
+                onClick={() => void send(question || lastQuestionRef.current)}
               >
-                Retry
+                Coba lagi
               </button>
             </div>
           )}
 
           {/* Bottom Floating Input Bar */}
           <div className="ask-input-bar-container">
+            {!hasPolicies && (
+              <div
+                className="mb-2 p-3 bg-amber-50/90 border border-amber-200 rounded-xl flex items-center justify-between text-xs text-amber-900 shadow-sm"
+                role="alert"
+              >
+                <div className="flex items-center gap-2">
+                  <AlertCircle size={16} className="text-amber-600 shrink-0" />
+                  <span>
+                    Belum ada dokumen polis aktif terdaftar. Unggah dokumen polis Anda agar Insurra AI dapat memeriksa klausa &amp; manfaat asuransi Anda.
+                  </span>
+                </div>
+                <Link
+                  href="/documents"
+                  className="ml-3 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg shrink-0 transition"
+                >
+                  Unggah Polis
+                </Link>
+              </div>
+            )}
             <form
               className="ask-input-bar"
               onSubmit={(e) => {
@@ -1001,20 +1050,37 @@ export default function AskPage() {
                 type="text"
                 aria-label="Pertanyaan Anda"
                 className="ask-text-input"
-                placeholder="Ask a follow up question…"
+                placeholder={
+                  !hasPolicies
+                    ? "Unggah dokumen polis di Policy Wallet untuk mulai bertanya…"
+                    : "Tanyakan apapun seputar perlindungan atau klaim polis Anda…"
+                }
                 value={question}
                 disabled={!canAsk || pending}
                 onChange={(e) => setQuestion(e.target.value)}
               />
 
-              <button
-                type="submit"
-                className="ask-send-btn"
-                disabled={!canAsk || !question.trim() || pending}
-                title="Send question"
-              >
-                <ArrowRight size={17} />
-              </button>
+              {pending ? (
+                <button
+                  type="button"
+                  className="ask-send-btn px-2 text-xs"
+                  aria-label="Batalkan"
+                  onClick={() => controller.current?.abort()}
+                >
+                  Batalkan
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="ask-send-btn"
+                  disabled={!hasPolicies || !question.trim() || pending || !triageAvailable}
+                  title="Send question"
+                  aria-label="Kirim"
+                >
+                  <ArrowRight size={17} />
+                  <span className="sr-only">Kirim</span>
+                </button>
+              )}
             </form>
           </div>
         </div>
@@ -1036,7 +1102,7 @@ export default function AskPage() {
               {latestAnswer?.policies_used && latestAnswer.policies_used.length > 0 ? (
                 latestAnswer.policies_used.map((pol, idx) => {
                   const cleanProv = formatCleanProvider(pol.provider, pol.plan_name);
-                  const cleanPlan = formatCleanPlan(pol.plan_name, pol.provider);
+                  const cleanPlan = formatCleanPlan(pol.plan_name);
                   const brand = getInsurerBrand(cleanProv);
                   return (
                     <Link
@@ -1080,7 +1146,7 @@ export default function AskPage() {
               ) : s.coverages?.length ? (
                 s.coverages.slice(0, 2).map((c) => {
                   const cleanProv = formatCleanProvider(c.provider, c.kind);
-                  const cleanPlan = formatCleanPlan(c.kind, c.provider);
+                  const cleanPlan = formatCleanPlan(c.kind);
                   const brand = getInsurerBrand(cleanProv);
                   return (
                     <Link
@@ -1280,10 +1346,7 @@ export default function AskPage() {
               <button
                 type="button"
                 className="ask-help-btn"
-                onClick={() => {
-                  setQuestion("");
-                  inputRef.current?.focus();
-                }}
+                onClick={askAnother}
               >
                 <HelpCircle size={14} /> Ask Another Question
               </button>

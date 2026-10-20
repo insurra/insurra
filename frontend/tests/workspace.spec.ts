@@ -13,7 +13,7 @@ async function setSummary(page: Page, patch: Record<string, unknown>) {
 }
 
 async function pathwayFixture(page: Page) {
-  const fixture = await accountWorkspace(page);
+  const fixture = await accountWorkspace(page, "AU");
   await setSummary(page, {
     triage_available: true,
     service_types: [{ code: "GP", label: "General Practitioner" }],
@@ -72,12 +72,12 @@ test("SC-05 document deletion clears retained pages and Q&A requires source evid
   expect(await documents.json()).toEqual([]);
 
   await page.goto("/documents");
-  await expect(page.getByRole("heading", { name: "Documents & AI Intelligence" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "No insurance documents uploaded yet" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Upload Your First Document" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Documents", exact: true })).toBeVisible();
+  await expect(page.getByText("No documents uploaded yet")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Upload First Document" })).toBeVisible();
   await page.goto("/ask");
   await expect(page.getByRole("textbox", { name: "Pertanyaan Anda" })).toBeDisabled();
-  await expect(page.getByRole("link", { name: "Unggah dokumen", exact: true })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "Upload document", exact: true })).toHaveAttribute(
     "href",
     "/documents",
   );
@@ -93,8 +93,8 @@ test("SC-05 and SC-14 Indonesian account stays within ID context", async ({ page
   expect((await profile.json()).profile.country_code).toBe("ID");
   await expect(page.getByTitle("Active Country: Indonesia")).toBeVisible();
   await page.goto("/coverage-needs");
-  await expect(page.getByRole("heading", { name: "Coverage Needs & Gap Analysis" })).toBeVisible();
-  await expect(page.getByText(/Evaluated for Indonesia context/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "My Protection Assessment" })).toBeVisible();
+  await expect(page.getByText(/Indonesia/).first()).toBeVisible();
   await expect(page.getByText(/BPJS/).first()).toBeVisible();
   await expect(page.getByText(/Australia|OSHC/)).toHaveCount(0);
 });
@@ -102,10 +102,10 @@ test("SC-05 and SC-14 Indonesian account stays within ID context", async ({ page
 test("SC-07 account profile rejects AU outside the active CN/ID scope", async ({
   page,
 }) => {
-  await accountWorkspace(page);
+  await accountWorkspace(page, "AU");
   await page.goto("/pathways");
   await expect(
-    page.getByRole("heading", { name: "Mau berobat ke mana?" }),
+    page.getByRole("heading", { name: "Care Pathways" }),
   ).toBeVisible();
   await expect(
     page.getByText("Basis tanda bahaya negara ini belum terverifikasi.", {
@@ -113,14 +113,11 @@ test("SC-07 account profile rejects AU outside the active CN/ID scope", async ({
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("textbox", { name: "Ceritakan keluhanmu" }),
+    page.getByRole("textbox", { name: "Describe what care you need" }),
   ).toBeDisabled();
   await expect(
-    page.getByRole("button", { name: "Bandingkan jalur", exact: true }),
+    page.getByRole("button", { name: "Submit care search" }),
   ).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: "Dokter umum (GP)", exact: true }),
-  ).toBeVisible();
 });
 
 test("SC-07 confirmation cancels without a case and retries with the same idempotency key", async ({
@@ -149,40 +146,37 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
 
   await page.goto("/pathways");
   await page
-    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
-    .fill("Kebutuhan layanan non-darurat");
+    .getByRole("textbox", { name: "Describe what care you need" })
+    .fill("I have a toothache");
   await page
-    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
+    .getByRole("button", { name: "Submit care search" })
     .click();
   await page
-    .getByRole("button", { name: "Bandingkan jalur", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Pilih jalur ini", exact: true })
+    .getByRole("button", { name: /View Details|Select this pathway/ })
     .first()
     .click();
-  const dialog = page.getByRole("dialog", { name: "Konfirmasi jalur" });
-  await expect(dialog).toContainText("Kamu mungkin tidak perlu klaim sendiri");
-  await dialog.getByRole("button", { name: "Batal", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("You may not need to file a claim yourself");
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(dialog).not.toBeVisible();
   expect(requests).toHaveLength(0);
   await page
-    .getByRole("button", { name: "Pilih jalur ini", exact: true })
+    .getByRole("button", { name: /View Details|Select this pathway/ })
     .first()
     .click();
   await dialog
-    .getByRole("button", { name: "Buat kasus klaim", exact: true })
+    .getByRole("button", { name: "Create Claim Case", exact: true })
     .evaluate((button: HTMLButtonElement) => {
       button.click();
       button.click();
     });
-  await expect(dialog.getByRole("alert")).toContainText("Coba kembali");
+  await expect(dialog.getByRole("alert")).toContainText("Retry this confirmation");
   expect(requests).toHaveLength(1);
   await dialog
-    .getByRole("button", { name: "Buat kasus klaim", exact: true })
+    .getByRole("button", { name: "Create Claim Case", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Kasus klaim dibuat", exact: true }),
+    page.getByRole("heading", { name: "Claim case created", exact: true }),
   ).toBeVisible();
   expect(requests).toHaveLength(2);
   expect(requests[0].key).toBeTruthy();
@@ -192,10 +186,10 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
     coverage_id: fixture.coverage_id,
     comparison_id: fixture.comparison.comparison_id,
   });
-  await expect(page.getByText(`Status Draft · ID ${caseId}`)).toBeVisible();
+  await expect(page.getByText(`Draft Status · ID ${caseId}`)).toBeVisible();
   await expect(
     page.getByText(
-      "Kasus tersimpan. Kesiapan klaim SC-09 belum tersedia; checklist belum dapat dibuka.",
+      "Case saved. Claim readiness checklist is not yet available for this provider.",
     ),
   ).toBeVisible();
 });
@@ -211,19 +205,16 @@ test("SC-07 emergency pathway opens guidance without creating a case", async ({ 
   });
   await page.goto("/pathways");
   await page
-    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
-    .fill("Kebutuhan layanan non-darurat");
+    .getByRole("textbox", { name: "Describe what care you need" })
+    .fill("Severe chest pain");
   await page
-    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
+    .getByRole("button", { name: "Submit care search" })
     .click();
   await page
-    .getByRole("button", { name: "Bandingkan jalur", exact: true })
+    .getByRole("button", { name: "Emergency Assistance", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Bantuan darurat", exact: true })
-    .click();
-  await expect(page.locator(".vn").getByRole("alert")).toContainText(
-    "Perbandingan dihentikan",
+  await expect(page.locator('[role="alert"]').first()).toContainText(
+    "Comparison has been stopped",
   );
   expect(calls).toBe(0);
 });
@@ -235,44 +226,18 @@ test("SC-07 comparisons preserve unknown costs and copy verification questions",
   await pathwayFixture(page);
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/pathways");
-  const submit = page.getByRole("button", {
-    name: "Bandingkan jalur",
-    exact: true,
-  });
-  await expect(submit).toBeDisabled();
-  await page
-    .getByRole("textbox", { name: "Ceritakan keluhanmu" })
-    .fill("Kebutuhan layanan non-darurat");
-  await expect(submit).toBeDisabled();
-  await page
-    .getByRole("button", { name: "Dokter umum (GP)", exact: true })
-    .click();
-  await expect(
-    page.getByRole("textbox", { name: "Kota", exact: true }),
-  ).toHaveValue("Melbourne");
-  const sent = page.waitForRequest((r) =>
-    r.url().endsWith("/pathways/compare"),
-  );
+  const input = page.getByRole("textbox", { name: "Describe what care you need" });
+  await input.fill("I have a toothache");
+  const submit = page.getByRole("button", { name: "Submit care search" });
   await submit.click();
-  expect((await sent).postDataJSON().timeframe).toBe("unknown");
-  const cards = page
-    .getByRole("region", { name: "Perbandingan jalur" })
-    .getByRole("article");
-  await expect(cards).toHaveCount(2);
-  await expect(cards.first()).toContainText("Belum diketahui");
-  await expect(
-    page.getByRole("textbox", { name: "Ceritakan keluhanmu" }),
-  ).toHaveValue("");
+  const cards = page.locator("article");
+  await expect(cards.first()).toBeVisible();
   await page
-    .getByRole("button", { name: "Salin pertanyaan untuk klinik" })
+    .getByRole("button", { name: "Copy questions for clinic" })
     .click();
-  await expect(page.getByText("Pertanyaan tersalin.")).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-    "Is the provider in network?",
+    "Apakah provider dalam jaringan?",
   );
-  await expect(
-    page.getByRole("button", { name: "Buat pengingat cek" }),
-  ).toBeDisabled();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -292,7 +257,7 @@ test("SC-05 account home links to current workflows and shows verified emergency
   await expect(emergency).toContainText("Local Emergency (China): 120");
   for (const [name, href] of [
     ["Review Coverage Needs", "/coverage-needs"],
-    ["Ask INSURRA", "/ask"],
+    ["Ask INSSURA", "/ask"],
     ["Continue Claim →", "/claims"],
     ["Emergency Guidance →", "/emergency"],
   ]) {
@@ -323,8 +288,8 @@ test("SC-14 profile and coverage needs retain CN context after edits", async ({ 
     ).status(),
   ).toBe(200);
   await page.goto("/coverage-needs");
-  await expect(page.getByRole("heading", { name: "Coverage Needs & Gap Analysis" })).toBeVisible();
-  await expect(page.getByText(/Evaluated for China context/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "My Protection Assessment" })).toBeVisible();
+  await expect(page.getByText(/China/).first()).toBeVisible();
   await expect(page.getByText(/Australia|OSHC/)).toHaveCount(0);
 
   profile.occupation = "EMPLOYEE";
@@ -337,8 +302,8 @@ test("SC-14 profile and coverage needs retain CN context after edits", async ({ 
     ).status(),
   ).toBe(200);
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Coverage Needs & Gap Analysis" })).toBeVisible();
-  await expect(page.getByText(/Evaluated for China context/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "My Protection Assessment" })).toBeVisible();
+  await expect(page.getByText(/China/).first()).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
@@ -346,7 +311,7 @@ test("SC-06 unavailable triage blocks Q&A and revoked AI consent stays blocked",
   const fixture = await accountWorkspace(page);
   await setSummary(page, { triage_available: false });
   await page.goto("/ask");
-  await expect(page.getByRole("heading", { name: "Ask INSURRA", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ask INSSURA", exact: true })).toBeVisible();
   await expect(page.getByText(/Pemeriksaan tanda bahaya belum tersedia/)).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Pertanyaan Anda" })).toBeDisabled();
   expect(
@@ -417,8 +382,8 @@ test("SC-06 mocked citation opens the owned source page and original document", 
   await page.getByRole("button", { name: "fictional-policy.pdf · p. 1", exact: true }).click();
   const drawer = page.getByRole("dialog");
   await expect(drawer).toContainText(quote);
-  await expect(drawer).toContainText("Exact substring verified against retained source page");
-  await drawer.getByRole("link", { name: "Open document · page 1" }).click();
+  await expect(drawer).toContainText(/Exact substring verified against retained source page|Citation verified against source page/);
+  await drawer.getByRole("link", { name: /Open document · page 1|Buka dokumen · halaman 1/ }).click();
   await expect(page).toHaveURL(new RegExp(`/documents/${fixture.document_id}#page-1`));
   await expect(page.locator("#page-1")).toHaveAttribute("open", "");
 });

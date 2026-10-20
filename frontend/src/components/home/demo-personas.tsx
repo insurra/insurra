@@ -70,7 +70,7 @@ export function DemoPersonas() {
             {personas.map((persona) => (
               <li key={persona.persona_id} className="demo-card" data-testid="persona-card">
                 <span className="demo-badge">
-                  <FlaskConical size={13} aria-hidden="true" /> Profil Interaktif
+                  <FlaskConical size={13} aria-hidden="true" /> Interactive Profile
                 </span>
                 <h3>{persona.display_name}</h3>
                 <p className="demo-role">{persona.role_label ?? "Demo persona"}</p>

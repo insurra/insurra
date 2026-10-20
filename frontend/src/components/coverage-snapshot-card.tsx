@@ -104,7 +104,7 @@ export function CoverageSnapshotCard({
         </div>
         <div className="css-insight-content">
           <strong>Your insurance could end before your visa.</strong>
-          <small>Insurra helps you spot timing gaps early and understand what to do next.</small>
+          <small>Inssura helps you spot timing gaps early and understand what to do next.</small>
         </div>
         <div className="css-insight-arrow" aria-hidden="true">
           <ArrowRight size={18} />

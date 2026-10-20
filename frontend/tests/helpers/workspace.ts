@@ -10,7 +10,7 @@ const workspaceDatabaseUrl =
 
 export async function accountWorkspace(
   page: Page,
-  country: "AU" | "CN" | "ID" = "AU",
+  country: "AU" | "CN" | "ID" = "CN",
 ) {
   const root = path.resolve(__dirname, "../../..");
   const raw = execFileSync(

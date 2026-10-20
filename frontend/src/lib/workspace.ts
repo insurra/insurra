@@ -33,15 +33,15 @@ export function useWorkspace() {
     return null;
   }, [auth.token, demoId]);
   const refresh = useCallback(() => setRevision((n) => n + 1), []);
+
+  useEffect(() => {
+    setSummary(null);
+    setError(null);
+    setPending(Boolean(headers));
+  }, [auth.token, demoId]);
+
   useEffect(() => {
     const controller = new AbortController();
-    queueMicrotask(() => {
-      if (!controller.signal.aborted) {
-        setSummary(null);
-        setError(null);
-        setPending(Boolean(headers));
-      }
-    });
     if (headers) {
       api
         .request("get", "/api/v1/home/summary", {
@@ -62,6 +62,8 @@ export function useWorkspace() {
         .finally(() => {
           if (!controller.signal.aborted) setPending(false);
         });
+    } else {
+      setPending(false);
     }
     return () => controller.abort();
   }, [headers, revision]);
