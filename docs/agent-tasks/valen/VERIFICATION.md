@@ -53,3 +53,27 @@ A real-browser probe of the current wizard confirmed Raka launch, the original 7
 No live OpenAI call, real provider integration, hosted CI, PostgreSQL migration or deployment was run. PostgreSQL DDL compilation is not a live database check. The opt-in synthetic provider connectivity script is documented in INTEGRATION.md and never runs in CI. Starlette/httpx emits its existing deprecation warning.
 
 The remaining work depends on reviewed shared content and teammate interfaces. Allow roughly 2–4 hours for connecting supplied compatible dependencies and rerunning affected acceptance checks; creating/reviewing those dependencies has a separate, team-dependent schedule. Travel remains gated.
+
+## Gemini resume verification — 20 October 2026
+
+Current worktree branch: `feat/gemini-e2e-smoke`. The inherited Gemini migration and local changes were preserved.
+
+- The live configured model `gemini-3.5-flash-lite` returned valid structured output for the synthetic connectivity check. The former checked-in default `gemini-3.8-flash` returned a masked `AI_UNAVAILABLE`; settings and `.env.example` now default to the working configured model.
+- Limited versioned extraction templates now permit provider and coverage dates for policy booklets and insurance cards (plus AU OSHC certificates). These candidates remain `UNVERIFIED`; no policy benefit, eligibility, or regulatory facts were added.
+- OCR selects installed `eng`/`ind` language packs and falls back to installed `eng`. Poppler was installed locally so the synthetic PDF test could exercise the real PDF parser.
+- `INSURRA_LIVE_GEMINI=1 uv run pytest app/tests/test_live_gemini_workflow.py -q`: **1 passed** using two real Gemini calls. In a temporary migrated database it exercised an authenticated account, all three grants, synthetic PDF upload, persisted extraction candidates/pages, streamed Q&A with a validated page 1 citation, and an unsupported question that returned `no_match` without a third provider call. This test uses a test-only triage fixture and does not change shipped KB data.
+- `INSURRA_LIVE_GEMINI=1 npm run test:e2e -- --config=playwright.live-gemini.config.ts`: **1 passed**. The browser logged in, granted the three separate purposes, uploaded the synthetic PDF through the real UI, received Gemini extraction and Q&A, opened a validated page 1 citation, then displayed `no_match` for an unsupported coverage question. The live browser test made two provider calls; its temporary SQLite database is unique per run.
+- The browser run exposed and fixed `/api/v1/account/setup/{country_code}` returning 500 because `AccountSetup` modeled KB `aliases` arrays as strings. The response now reuses the versioned KB vocabulary/document/task models, and an AU/ID regression test covers the list shape. Generated OpenAPI and TypeScript types were regenerated.
+- `uv run python ../scripts/check_live_ai.py --live`: **passed**, one synthetic structured response, zero answer points.
+- `make test`: **284 passed, 1 skipped** (the live test is opt-in by default). `make test-client`: **11 passed**. `make generate-types`, `make check-contracts`, and `make check`: **passed**.
+- SC-06 Playwright subset on isolated test services: **4 desktop + 4 mobile passed**. Auth, owned source pages and page anchors use the real local backend; the browser answer stream uses the existing explicit synthetic provider mock.
+
+Reproduce the live API checks from `backend/` with `GEMINI_API_KEY` configured in the root `.env`. Reproduce the SC-06 browser checks from `frontend/` with `npx playwright install chromium`; use the exact commands in the README to run on isolated ports 8001/3001 when the normal dev servers occupy 8000/3000.
+
+Production Q&A and care remain blocked by the shipped AU/ID red-flag resources being unverified. The API and frontend correctly fail closed with `TRIAGE_UNAVAILABLE`; no real provider-backed answer was run through the shipped KB. The live backend test proves extraction/retrieval/citation behavior behind an explicitly test-only triage seam, not production medical safety or real-policy accuracy. No deployment, push, or merge was performed.
+
+## Triage review preparation — 20 October 2026
+
+Added source-backed AU/ID red-flag drafts and emergency-number candidates in the existing KB schema. Resource envelopes and nested emergency metadata remain `UNVERIFIED`; the source check date is not approval. Country resources advanced from `0.3.0` to `0.3.1`. `triage_check` still rejects both countries before any Gemini call, and command-center output still hides the candidate numbers. Exact references, draft rules, schema limits and maintainer decisions are listed in [TRIAGE_REVIEW.md](TRIAGE_REVIEW.md).
+
+`cd backend && uv run pytest app/tests/test_triage_adapter.py app/tests/test_policy_qa.py app/tests/test_command_center.py::test_home_is_live_for_accounts_and_preserves_original_countries -q`: **53 passed**. Coverage includes explicitly reviewed synthetic rules, populated-but-unverified production drafts, empty red-flag resources, emergency redirection before AI, and hidden unverified emergency numbers. The earlier real Gemini API/browser results above remain preserved and were not rerun for this content-only milestone.

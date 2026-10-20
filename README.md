@@ -26,14 +26,14 @@ Implemented:
 - KB-driven non-medical pathway cards and verification questions; unknown tariffs stay null. Confirmed choices create one owned DRAFT case with a masked summary and audit event.
 - Generated TypeScript/OpenAPI contracts, contract-drift checks, typed GET/POST/PUT/PATCH/DELETE and multipart/no-content/stream transport, additive migrations, scope/approval primitives, and automated verification.
 
-Live Valen routes and UI are implemented, but Q&A/care fail closed with `TRIAGE_UNAVAILABLE` while shipped red flags are empty/unverified. Emergency numbers remain null. CI exercises reviewed synthetic triage/provider fixtures without promoting them to production facts. Source-backed answers need retained owned pages and reviewed coverage-linked fields; shipped extraction templates are empty. Claim detail/checklist, reminders/actions, triage HTTP endpoint and legacy foundation processing routes remain `501`. Existing account endpoints under `/account` are separate live interfaces.
+Live Valen routes and UI are implemented, but Q&A/care fail closed with `TRIAGE_UNAVAILABLE`: source-backed AU/ID red-flag drafts and emergency-number candidates remain `UNVERIFIED`. The candidate numbers are not exposed. Source-backed answers need retained owned pages and reviewed coverage-linked fields. Versioned extraction templates currently allow only provider and coverage dates for supported policy documents; extracted values remain `UNVERIFIED` until reviewed. CI and the opt-in live workflow check use explicitly synthetic triage fixtures without promoting them to production facts. Claim detail/checklist, reminders/actions, triage HTTP endpoint and legacy foundation processing routes remain `501`. Existing account endpoints under `/account` are separate live interfaces. See the [triage maintainer review checklist](docs/agent-tasks/valen/TRIAGE_REVIEW.md).
 
 ## Tech Stack
 
 - Frontend: Next.js 16 App Router, React 19, TypeScript 5 strict mode, Tailwind CSS 4, initialized shadcn/ui Radix Button, Lucide, native fetch, React Context.
 - Backend: Python 3.11+, uv, FastAPI, Pydantic v2/Settings, SQLAlchemy 2, Alembic, Uvicorn, pytest, httpx, Ruff.
 - Persistence: SQLite locally; PostgreSQL through psycopg and `DATABASE_URL`. Supabase PostgreSQL is a future deployment option; Storage is not integrated.
-- AI seam: OpenAI Python SDK, Responses API and Pydantic Structured Outputs. Models default to `gpt-6.1-sol` and `gpt-6-luna`, both configurable. Q&A uses the existing gateway only after current consent, triage and source checks. Real account/model availability is not tested; CI never calls a provider.
+- AI seam: Google Gemini through the OpenAI Python SDK's Google Chat Completions endpoint and Pydantic structured parsing. The primary and fast models default to `gemini-3.5-flash-lite`, verified with a synthetic live request. Q&A uses the primary model after current consent, triage and source checks; document extraction uses the fast model. CI never calls a provider.
 - Contracts: OpenAPI → openapi-typescript. Browser smoke tests: Playwright/Chromium.
 - Deployment targets only: Vercel frontend and Railway backend. No deployment configuration or deployment is performed.
 
@@ -50,7 +50,7 @@ flowchart LR
   Guard --> Services[Repositories and deterministic services]
   Services --> DB[(SQLite / PostgreSQL)]
   Services --> KB[Versioned country KB]
-  Services -. consent + triage + evidence .-> AI[ResponsesGateway / OpenAI]
+  Services -. consent + triage + evidence .-> AI[GeminiGateway / Google Gemini]
 ```
 
 The backend owns domain contracts, calculations, consent and ownership. The frontend owns presentation and explicitly displays uncertainty. Requests use a shared `ApiError` envelope, request IDs, and `Cache-Control: no-store`.
@@ -88,7 +88,7 @@ The backend owns domain contracts, calculations, consent and ownership. The fron
 
 ## Prerequisites
 
-Python 3.11+, Node.js 20.9+ (verified with Node 24.21.0), npm, and `make`. An installed `uv` is preferred; `make setup` bootstraps a repository-local uv into ignored `.tools/` when absent. Initial package/browser downloads require internet access. Guest/demo and local account tests need no paid credentials. Google sign-in requires configured server-side OAuth credentials and callback URL. SQLite is supported locally.
+Python 3.11+, Node.js 20.9+ (verified with Node 24.21.0), npm, `make`, Poppler (`pdfinfo`, `pdftotext`, `pdftoppm`) and Tesseract. On macOS, install the document tools with `brew install poppler tesseract`. OCR uses installed English and Indonesian language data when available and falls back to installed English data. An installed `uv` is preferred; `make setup` bootstraps a repository-local uv into ignored `.tools/` when absent. Initial package/browser downloads require internet access. Guest/demo and local account tests need no paid credentials. Google sign-in requires configured server-side OAuth credentials and callback URL. SQLite is supported locally.
 
 ## Quick Start
 
@@ -137,19 +137,35 @@ Copy the root `.env.example` to `.env`. Pydantic and Next's configuration read t
 | `DATABASE_URL` | `sqlite:///./dev.db`; resolves in `backend/` with Make commands |
 | `FRONTEND_ORIGIN` | `http://localhost:3000`; one explicit CORS origin, wildcard rejected |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000`; browser-visible backend URL |
-| `OPENAI_API_KEY` | Empty; optional server-only provider credential |
-| `OPENAI_MODEL` | `gpt-6.1-sol`; configurable primary model |
-| `OPENAI_FAST_MODEL` | `gpt-6-luna`; configurable lightweight model |
+| `AI_PROVIDER` | `gemini`; the supported AI provider |
+| `GEMINI_API_KEY` | Empty locally; server-only and required for real Gemini requests |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite`; primary Q&A model |
+| `GEMINI_FAST_MODEL` | `gemini-3.5-flash-lite`; document extraction model |
 | `ENVIRONMENT` | `development` |
 | `SESSION_TTL_HOURS` | Optional, defaults to `24` |
 | `KB_ROOT` | Optional absolute override for the `kb/` folder |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Server-only Google OAuth credentials |
-| `GOOGLE_REDIRECT_URI` | Backend callback; locally `http://localhost:8000/auth/google/callback` |
-| `FRONTEND_URL`, `BACKEND_URL` | Trusted application URLs used by OAuth redirects |
-| `SESSION_SECRET` | Random server-only secret reserved for session hardening |
+| `GOOGLE_REDIRECT_URI` | Backend callback; locally `http://localhost:8000/auth/google/callback`; production path is `/auth/google/callback` |
+| `FRONTEND_URL` | Frontend origin used for OAuth result redirects and also allowed by CORS |
+| `BACKEND_URL` | Present in the example config but not currently read by application code |
+| `SESSION_SECRET` | Present in the example config but not currently used; account tokens are random and stored as hashes |
 | `ACCOUNT_SESSION_TTL_DAYS` | Account session lifetime; defaults to `7` |
 
 Never prefix secrets with `NEXT_PUBLIC_`. In hosted builds, supply the public base URL at frontend build time and backend credentials through server environment configuration. A production frontend without NEXT_PUBLIC_API_BASE_URL displays BACKEND_NOT_CONFIGURED instead of calling localhost. A frontend-only deployment cannot provide these backend features.
+
+## Deployment checklist: Vercel frontend + public API
+
+No deployment has been performed. The repository has a Vercel-ready Next.js app under `frontend/`, but it has no `vercel.json`, backend container/host manifest, or checked-in deployment automation. README's target is a Vercel frontend and a separate Railway/FastAPI backend; the following steps remain manual.
+
+1. **Provision the backend and database.** Use an HTTPS FastAPI host and durable PostgreSQL database. SQLite is for development/tests. Build the backend from `backend/` with `uv sync --locked`; start it without reload using `uv run uvicorn app.main:app --host 0.0.0.0 --port "$PORT"`. Include the repository's `kb/` directory (or set `KB_ROOT`) and OS packages `poppler-utils`, `tesseract-ocr`, and the English/Indonesian Tesseract language data for document text extraction/OCR.
+2. **Migrate and seed before serving.** Back up any existing database, then run `uv run alembic upgrade head` from `backend/` against the hosted `DATABASE_URL`, followed by `uv run python -m app.seeds.demo` to install the synthetic demo personas. Migrations are not run at application startup. Revision 0002 needs online execution for its historical consent backfill; revision 0008 is forward-only. Never use `create_all`, reset, or replace an existing database. A live PostgreSQL upgrade has not yet been verified.
+3. **Set backend runtime configuration.** The hosted app needs `DATABASE_URL` and `FRONTEND_ORIGIN`. Set `FRONTEND_URL` to the public site for account login/OAuth redirects. Set `AI_PROVIDER=gemini` explicitly and provide `GEMINI_API_KEY` for real extraction/Q&A requests. `GEMINI_MODEL` and `GEMINI_FAST_MODEL` default to `gemini-3.5-flash-lite`. Set `KB_ROOT` only if the packaged KB is outside the default repository path. `ENVIRONMENT`, `BACKEND_URL`, and `SESSION_SECRET` do not currently change runtime behavior; do not rely on the latter as a security control.
+4. **Configure account login only if the demo needs it.** Add server-only `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and register `GOOGLE_REDIRECT_URI=https://<api-host>/auth/google/callback` as the exact Google OAuth callback. Set `FRONTEND_URL` to the public frontend origin so successful and failed OAuth flows return to the right site. Demo-session flows do not require Google credentials.
+5. **Create the Vercel frontend project.** Connect the repository and set Root Directory to `frontend/`; use the detected Next.js framework, `npm ci`, and `npm run build`. There is no custom Vercel manifest. Add only `NEXT_PUBLIC_API_BASE_URL=https://<api-host>` to the frontend project. Set it separately for Production/Preview as needed and rebuild after changing it: Next.js embeds `NEXT_PUBLIC_*` values in browser bundles at build time. Never put Gemini, database, Google OAuth, or other privileged credentials in Vercel's public variables.
+6. **Align CORS and deployment domains.** Set backend `FRONTEND_ORIGIN` to the exact public HTTPS Vercel origin; the app allows `FRONTEND_ORIGIN` and `FRONTEND_URL`. Current settings are fixed origins, so preview URLs must be separately allow-listed before browser calls from previews will work. Use the production URL for Google OAuth.
+7. **Smoke-test the hosted pair with synthetic data.** Confirm `GET /health`, start and inspect a seeded demo session, then verify account login if configured. For document upload, explicitly grant `process_documents` and `external_ai`; grant `retention` only if originals/pages should be kept. Use only synthetic documents. Confirm extraction and owned source/citation access, and test consent revocation. Do not use the live Gemini test triage fixture in the deployed KB.
+
+Normal Policy Q&A and care remain blocked with `TRIAGE_UNAVAILABLE` until AU and ID red-flag resources are reviewed and verified. Emergency candidates remain hidden until independently approved. The Gemini live tests prove provider behavior only against synthetic data and a test-only triage seam; they do not establish production safety or real policy accuracy.
 
 ## Demo Personas
 
@@ -220,11 +236,11 @@ Country edits select the new KB without rewriting original insurance/documents. 
 
 ## Country Knowledge Base
 
-AU and ID resources now use schema version `1.5` and country version `0.3.0`. Each resource file has `schema_version`, `version`, `source_url`, `checked_at`, `verification_status`, and typed `data`. Resource versions must match the manifest. The manifest retains its sources list. The loader exposes the existing `.rules`, `.coverage_needs`, `.pathways` and `.glossary` views, plus validated `.resources`. Direct JSON consumers must now unwrap `data` instead of treating files as bare arrays/objects.
+AU and ID resources now use schema version `1.5` and country version `0.3.1`. Each resource file has `schema_version`, `version`, `source_url`, `checked_at`, `verification_status`, and typed `data`. Resource versions must match the manifest. The manifest retains its sources list. The loader exposes the existing `.rules`, `.coverage_needs`, `.pathways` and `.glossary` views, plus validated `.resources`. Direct JSON consumers must now unwrap `data` instead of treating files as bare arrays/objects.
 
 Resources: rules, coverage_needs, pathways, glossary, coverage_types, document_types, extraction_templates, suggested_docs, tasks, required_fields, recommendation_rules, verification_steps, red_flags, emergency, example_questions and retrieval_terms. The root injection_patterns resource is also versioned. Structural references/duplicates and verified-source metadata are validated. Add countries through folders, without country-specific service branches.
 
-Regulatory activation requires checked official sources. The AU student-cover recommendation/need uses a reviewed Ombudsman source with explicit exceptions and uncertainty; descriptive urgent-care/JKN references do not establish policy eligibility or prices. Other needs and proposed verification questions stay explicitly unverified. Emergency/red_flags, extraction templates, task matrices and suggestions still lack reviewed content. Tariffs are null. See [KB sources and limits](docs/agent-tasks/valen/KB_SOURCES.md).
+Regulatory activation requires checked official sources. The AU student-cover recommendation/need uses a reviewed Ombudsman source with explicit exceptions and uncertainty; descriptive urgent-care/JKN references do not establish policy eligibility or prices. Other needs and proposed verification questions stay explicitly unverified. Emergency/red_flags now contain source-backed draft entries but still lack maintainer review and remain unavailable. Extraction templates, task matrices and suggestions also lack reviewed content. Tariffs are null. See [KB sources and limits](docs/agent-tasks/valen/KB_SOURCES.md) and the [triage review checklist](docs/agent-tasks/valen/TRIAGE_REVIEW.md).
 
 The deterministic engine still unions matching policy intervals and counts inclusive uncovered calendar days once. Raka remains 76 potential gap days, never an automatic visa-violation finding. Missing dates/context return NEEDS_VERIFICATION with null counts; invalid ranges fail validation. Money remains a decimal string; no float money arithmetic or currency conversion occurs.
 
@@ -268,7 +284,7 @@ The CI workflow runs checks and browser smoke tests on locked dependencies; it h
 
 ## Testing
 
-Current exact commands/results, fixture boundaries, baseline browser failures and live-service omissions are recorded in [Valen verification](docs/agent-tasks/valen/VERIFICATION.md). Historical foundation reports remain historical. `make test` uses isolated migrated databases; `make test-client` covers HTTP/SSE framing; `make check` runs Ruff, ESLint, TypeScript and production build. PostgreSQL DDL compilation is not a live database migration.
+Current exact commands/results and fixture boundaries are recorded here and in [Valen verification](docs/agent-tasks/valen/VERIFICATION.md). Historical foundation reports remain historical. `make test` uses isolated migrated databases; `make test-client` covers HTTP/SSE framing; `make check` runs Ruff, ESLint, TypeScript and production build. PostgreSQL DDL compilation is not a live database migration.
 
 Run every browser test, including preserved legacy assertions:
 
@@ -278,15 +294,28 @@ npx playwright install chromium
 CI=1 npm run test:e2e
 ```
 
-Playwright starts backend/frontend services against `.cache/e2e.db`. New account fixtures are CLI-only, fictional, and refuse any other database; real account login, ownership and page access remain in browser checks. Provider/triage-dependent UI branches use explicit synthetic mocks. Full legacy demo tests are retained even where baseline UI changes make their selectors fail. No paid key is required. Optional connectivity check only: `cd backend && ../.tools/bin/uv run python ../scripts/check_live_ai.py --live`; this is never run by CI and does not prove real policy accuracy.
+Playwright starts backend/frontend services against `.cache/e2e.db`. New account fixtures are CLI-only, fictional, and refuse any other database; real account login, ownership and page access remain in browser checks. Standard provider/triage-dependent UI branches use explicit synthetic mocks. Full legacy demo tests are retained even where baseline UI changes make their selectors fail. The opt-in live tests below send only fictional policy text to Gemini and use isolated temporary databases plus a test-only triage fixture; they do not unlock Q&A in the shipped KB.
+
+```sh
+cd backend
+INSURRA_LIVE_GEMINI=1 uv run pytest app/tests/test_live_gemini_workflow.py -q
+uv run python ../scripts/check_live_ai.py --live
+
+cd ../frontend
+INSURRA_LIVE_GEMINI=1 npm run test:e2e -- --config=playwright.live-gemini.config.ts
+CI=1 INSURRA_E2E_API_URL=http://127.0.0.1:8001 INSURRA_E2E_WEB_URL=http://127.0.0.1:3001 npm run test:e2e -- --project=desktop --grep SC-06
+CI=1 INSURRA_E2E_API_URL=http://127.0.0.1:8001 INSURRA_E2E_WEB_URL=http://127.0.0.1:3001 npm run test:e2e -- --project=mobile --grep SC-06
+```
+
+The API workflow test exercises PDF upload, Gemini extraction, persisted fields/pages, streamed Q&A citation validation, and an unsupported no-match question. The live browser test also completes account login and the three consent choices, uploads through the UI, displays the real Gemini answer citation in the source drawer, and shows an unsupported no-match response. Each workflow uses two provider calls; the separate connectivity check makes one. These live checks are opt-in, use a fresh isolated SQLite database and test-only triage data, and never run in CI. The live Playwright config builds the frontend and starts isolated services on ports 18001/13001 by default; set `INSURRA_E2E_API_URL` and `INSURRA_E2E_WEB_URL` to choose other free local ports.
 
 ## Known Limitations
 
-- P0 is blocked by empty/unverified triage and emergency resources; chat/care remain locked in the shipped configuration. SC-08, SC-09 detail, SC-10 reminders/actions and account audit display are external dependencies.
-- Normalized benefit/date provenance must be supplied by existing ingestion/review interfaces. Current empty extraction templates and metadata-only demo fixtures cannot establish policy clauses or benefit amounts.
-- GP/employer guidance and tariff/eligibility data remain incomplete. Unknowns stay visible; no invented costs, diagnoses, exclusions or emergency numbers.
+- P0 is blocked by unverified triage and emergency resources; chat/care remain locked in the shipped configuration. SC-08, SC-09 detail, SC-10 reminders/actions and account audit display are external dependencies.
+- The extraction templates collect only provider and coverage dates; benefit amounts and coverage conclusions still require reviewed source-linked fields. Metadata-only demo fixtures cannot establish policy clauses or benefit amounts.
+- GP/employer guidance and tariff/eligibility data remain incomplete. Unknowns stay visible; no invented costs, diagnoses or exclusions.
 - Existing demo browser assertions predate the current landing/onboarding UI. See the exact full-suite result in the verification report; no test was removed or weakened.
-- No live PostgreSQL, Supabase, OpenAI model availability, deployment or real provider integration was tested.
+- No live PostgreSQL, Supabase, hosted deployment, or production-KB Q&A was tested. The opt-in workflow test verifies real Gemini extraction and Q&A against synthetic evidence under a test-only triage fixture; the shipped unverified red-flag drafts still keep chat locked. The separate connectivity check does not prove real-world policy accuracy. External AI and document-processing grants remain required before protected calls.
 - The installed Starlette/FastAPI test client emits a deprecation notice for httpx; tests still pass with the requested httpx dependency.
 - `npm audit` reports five high findings in the development lint chain (`braces` → `micromatch` → `fast-glob` → Next ESLint tooling). No patched compatible `braces` version was available when installed. `npm audit --omit=dev` reports zero findings. Recheck upstream before publishing; do not blindly downgrade Next or use `audit fix --force`.
 
