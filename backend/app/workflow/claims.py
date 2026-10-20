@@ -596,7 +596,7 @@ def add_evidence(
 ) -> WfClaimEvidenceRow:
     if kind not in ev.EVIDENCE_KINDS:
         raise AppError(422, "INVALID_EVIDENCE_KIND", "Unsupported evidence type.")
-    if case.status not in (
+    if kind != "REJECTION_LETTER" and case.status not in (
         *states.PRE_SUBMISSION,
         states.AWAITING_APPROVAL,
         states.ADDITIONAL_INFO,
@@ -628,8 +628,9 @@ def add_evidence(
     db.add(row)
     db.flush()
     states.add_event(db, case, "EVIDENCE_ADDED", source="USER", note=f"{kind} attached")
-    invalidate_pending_actions(db, owner, case, "EVIDENCE_CHANGED")
-    case.review_confirmed = False
+    if kind != "REJECTION_LETTER":
+        invalidate_pending_actions(db, owner, case, "EVIDENCE_CHANGED")
+        case.review_confirmed = False
     audit.record(
         db,
         owner,
@@ -737,9 +738,10 @@ def confirm_fields(
     row.status = (
         "CONFIRMED" if not ev.missing_required(row.evidence_kind, fields) else "NEEDS_REVIEW"
     )
-    case.review_confirmed = False
-    sync_case_from_evidence(db, owner, case)
-    invalidate_pending_actions(db, owner, case, "EVIDENCE_CHANGED")
+    if row.evidence_kind != "REJECTION_LETTER":
+        case.review_confirmed = False
+        sync_case_from_evidence(db, owner, case)
+        invalidate_pending_actions(db, owner, case, "EVIDENCE_CHANGED")
     audit.record(
         db,
         owner,
@@ -1035,6 +1037,309 @@ def confirm_draft(db: Session, owner: Owner, case: WfClaimCaseRow) -> None:
     )
 
 
+# ----- dispute & rejection review (Flow C) --------------------------------------------------
+
+DISPUTE_DISCLAIMER = (
+    "This review compares the stated rejection reason against recorded policy context and "
+    "evidence to highlight points that may be clarified. It does not conclude that the insurer "
+    "is at fault and does not guarantee that an appeal or claim will be accepted."
+)
+
+
+def review_claim_rejection(
+    db: Session,
+    owner: Owner,
+    case: WfClaimCaseRow,
+    *,
+    rejection_reason: str | None = None,
+    cited_clause: str | None = None,
+    record_audit: bool = False,
+) -> dict:
+    """Match rejection letter / reason against policy clauses and evidence without concluding fault."""
+    rows = case_evidence(db, case)
+    rejection_rows = [r for r in rows if r.evidence_kind == "REJECTION_LETTER"]
+    latest_rej = rejection_rows[-1] if rejection_rows else None
+    rej_fields = (latest_rej.fields if latest_rej else {}) or {}
+
+    extracted_reason = ((rej_fields.get("rejection_reason") or {}).get("value") or "").strip()
+    extracted_clause = ((rej_fields.get("cited_clause") or {}).get("value") or "").strip()
+    extracted_date = ((rej_fields.get("rejection_date") or {}).get("value") or "").strip()
+    extracted_ref = ((rej_fields.get("insurer_reference") or {}).get("value") or "").strip()
+
+    effective_reason = (
+        (rejection_reason or "").strip()
+        or extracted_reason
+        or (
+            "Sandbox review requested clarification or declined coverage."
+            if case.status == states.REJECTED_SANDBOX
+            else "Unverified rejection basis — upload or confirm the rejection letter details."
+        )
+    )
+    effective_clause = (
+        (cited_clause or "").strip()
+        or extracted_clause
+        or "Specific policy exclusion/clause reference not yet verified in the rejection letter"
+    )
+
+    product = kbdata.product(case.country_code, case.product_id) or {}
+    procedure = kbdata.procedure_for_product(case.country_code, case.product_id) or {}
+    dispute_channels = kbdata.consumer_disputes(case.country_code)
+    checks = evaluate_checks(db, case, rows)
+
+    reason_lower = f"{effective_reason} {effective_clause}".casefold()
+
+    matched_clauses: list[dict] = []
+    clarifiable_issues: list[dict] = []
+
+    # 1. Policy period & waiting period matching
+    if any(k in reason_lower for k in ("date", "period", "waiting", "expired", "lapse", "masa", "tanggal", "等待期", "期限")):
+        date_check = next((c for c in checks if c["code"] == "SERVICE_DATE_IN_POLICY"), None)
+        matched_clauses.append(
+            {
+                "clause_area": "Policy Coverage Period & Waiting Period",
+                "policy_context": (
+                    f"Recorded policy period: {case.policy_start or 'unverified'} to "
+                    f"{case.policy_end or 'unverified'}; service date: {case.service_date or 'unverified'}."
+                ),
+                "comparison_status": (
+                    "MATCHED_IN_EVIDENCE"
+                    if date_check and date_check["status"] == "PASS"
+                    else "NEEDS_CLARIFICATION"
+                ),
+            }
+        )
+        clarifiable_issues.append(
+            {
+                "code": "COVERAGE_PERIOD_ALIGNMENT",
+                "title": "Clarify service date against active policy period",
+                "detail": (
+                    f"The rejection references timing or coverage period ({effective_clause}). "
+                    f"Your recorded visit date ({case.service_date or 'not set'}) can be cross-referenced "
+                    f"against policy effective dates ({case.policy_start or 'N/A'} – {case.policy_end or 'N/A'})."
+                ),
+                "suggested_evidence": "Active policy certificate and official hospital registration/visit record showing exact treatment date.",
+            }
+        )
+
+    # 2. Medical necessity / diagnosis / pre-existing / exclusion matching
+    if any(
+        k in reason_lower
+        for k in (
+            "medical necessity",
+            "diagnosis",
+            "pre-existing",
+            "exclusion",
+            "outpatient",
+            "inpatient",
+            "medis",
+            "diagnosa",
+            "pengecualian",
+            "既往症",
+            "免责",
+            "必要性",
+        )
+    ):
+        matched_clauses.append(
+            {
+                "clause_area": "Benefit Scope & Medical Necessity Review",
+                "policy_context": (
+                    f"Product category: {product.get('product_category', 'unverified')}; "
+                    f"claim type: {case.claim_type}."
+                ),
+                "comparison_status": "NEEDS_CLARIFICATION",
+            }
+        )
+        clarifiable_issues.append(
+            {
+                "code": "CLINICAL_INDICATION_CLARIFICATION",
+                "title": "Request clause-specific review with attending physician summary",
+                "detail": (
+                    "Where a denial cites medical necessity, benefit scope, or a general exclusion, "
+                    "you can request the exact policy clause wording and submit the attending doctor's "
+                    "clinical diagnosis note explaining symptom onset and treatment rationale."
+                ),
+                "suggested_evidence": "Medical record / discharge summary (Rekam Medis / 病历) and attending physician explanation.",
+            }
+        )
+
+    # 3. Invoice / receipt / itemized breakdown matching
+    if any(
+        k in reason_lower
+        for k in ("invoice", "receipt", "fapiao", "itemized", "document", "missing", "kuitansi", "dokumen", "发票", "清单")
+    ):
+        matched_clauses.append(
+            {
+                "clause_area": "Claim Evidence & Financial Documentation Requirements",
+                "policy_context": (
+                    f"Procedure administrator: {procedure.get('claims_administrator', 'Insurer Claims Dept')}; "
+                    f"required forms: {', '.join(procedure.get('required_forms', [])) or 'standard claim form'}."
+                ),
+                "comparison_status": "NEEDS_CLARIFICATION",
+            }
+        )
+        clarifiable_issues.append(
+            {
+                "code": "DOCUMENTATION_COMPLETENESS_CLARIFICATION",
+                "title": "Provide itemized billing breakdown and verified invoice serials",
+                "detail": (
+                    "The rejection references documentation or billing format. Submitting the official "
+                    "tax invoice/fapiao alongside the detailed fee breakdown allows the adjuster to "
+                    "re-verify each billed line item."
+                ),
+                "suggested_evidence": "Official invoice (Fapiao / Kuitansi Asli) and itemized expense list (Perincian Biaya / 费用清单).",
+            }
+        )
+
+    # Always provide a baseline clause comparison and clarification item if none of the specific keywords matched
+    if not matched_clauses:
+        matched_clauses.append(
+            {
+                "clause_area": "Written Denial Basis & Policy Clause Disclosure",
+                "policy_context": (
+                    f"Policy: {case.coverage_label or 'Recorded policy'} "
+                    f"({case.policy_start or 'N/A'} to {case.policy_end or 'N/A'}) · Claim {case.reference}."
+                ),
+                "comparison_status": "NEEDS_CLARIFICATION",
+            }
+        )
+    if not clarifiable_issues:
+        clarifiable_issues.append(
+            {
+                "code": "WRITTEN_CLAUSE_AND_EVIDENCE_REVIEW",
+                "title": "Request written explanation of the cited policy clause and re-evaluation",
+                "detail": (
+                    f"Stated reason: '{effective_reason}'. You may request the specific policy wording "
+                    "relied upon by the assessor and ask which supplemental medical or billing records "
+                    "are needed for an internal reconsideration."
+                ),
+                "suggested_evidence": "Rejection letter copy, policy schedule, medical invoice, and clinical summary.",
+            }
+        )
+
+    has_invoice = any(r.evidence_kind in ev.INVOICE_KINDS for r in rows)
+    has_record = any(r.evidence_kind in ev.RECORD_KINDS for r in rows)
+    appeal_checklist = [
+        {
+            "code": "REJECTION_NOTICE",
+            "label": "Insurer rejection letter / denial notice",
+            "present": bool(rejection_rows),
+            "status": "ATTACHED" if rejection_rows else "MISSING",
+            "note": latest_rej.filename if latest_rej else "Upload the insurer's rejection letter (REJECTION_LETTER).",
+        },
+        {
+            "code": "POLICY_SCHEDULE",
+            "label": "Active policy reference & coverage period",
+            "present": bool(case.coverage_ref and case.policy_start and case.policy_end),
+            "status": "ATTACHED" if (case.coverage_ref and case.policy_start and case.policy_end) else "NEEDS_REVIEW",
+            "note": f"{case.coverage_label or 'Policy'} ({case.policy_start or '?'} to {case.policy_end or '?'})",
+        },
+        {
+            "code": "BILLING_PROOF",
+            "label": "Official medical invoice / fapiao & itemized bill",
+            "present": has_invoice,
+            "status": "ATTACHED" if has_invoice else "MISSING",
+            "note": "Confirmed billing evidence attached to this claim." if has_invoice else "Attach medical invoice or itemized bill.",
+        },
+        {
+            "code": "CLINICAL_PROOF",
+            "label": "Medical record or physician diagnosis summary",
+            "present": has_record,
+            "status": "ATTACHED" if has_record else "MISSING",
+            "note": "Clinical record attached to support medical context." if has_record else "Attach medical record or doctor's note.",
+        },
+    ]
+
+    contact = procedure.get("customer_support_contact") or "Insurer Claims Reconsideration / Customer Service Channel"
+    dispute_ref = dispute_channels[0] if dispute_channels else None
+    ref_display = extracted_ref or case.sandbox_ref or case.reference
+    issue_bullets = "\n".join(f"- {item['title']}: {item['detail']}" for item in clarifiable_issues)
+    checklist_bullets = "\n".join(
+        f"- [{item['status']}] {item['label']}" for item in appeal_checklist
+    )
+
+    subject = f"Request for Claim Clarification & Reconsideration – {ref_display} ({case.reference})"
+    body = (
+        f"Dear Claims Review Team,\n\n"
+        f"I am writing to request a written clarification and reconsideration regarding claim {ref_display} "
+        f"(INSURRA case {case.reference}) under policy {case.coverage_label or case.coverage_ref or 'N/A'}.\n\n"
+        f"Stated rejection reason on notice{f' ({extracted_date})' if extracted_date else ''}: {effective_reason}\n"
+        f"Referenced clause/basis: {effective_clause}\n\n"
+        f"Points submitted for factual clarification:\n{issue_bullets}\n\n"
+        f"Supporting evidence checklist:\n{checklist_bullets}\n\n"
+        f"Please confirm the specific policy wording applied to this assessment and advise whether "
+        f"any additional clinical or billing documentation is required to complete the internal review.\n\n"
+        f"Sincerely,\n{case.claimant_name or owner.display_name}"
+    )
+
+    existing_appeal_action = db.scalar(
+        select(WfActionRow)
+        .where(
+            WfActionRow.claim_id == case.id,
+            WfActionRow.action_type == "claim_dispute_appeal",
+        )
+        .order_by(WfActionRow.created_at.desc())
+    )
+
+    if record_audit:
+        audit.record(
+            db,
+            owner,
+            "CLAIM_REJECTION_REVIEWED",
+            "CLAIMS",
+            "Claim rejection reviewed for clarification",
+            summary=(
+                f"INSURRA matched the rejection reason on {case.reference} against policy context "
+                "and identified factual points for clarification. No fault or outcome is guaranteed."
+            ),
+            actor_type="AI_PREPARED",
+            tool="review_claim_rejection",
+            claim_id=case.id,
+            details={
+                "claim_reference": case.reference,
+                "clarifiable_count": len(clarifiable_issues),
+                "insurer_at_fault_concluded": False,
+                "acceptance_guaranteed": False,
+            },
+        )
+
+    return {
+        "claim_id": case.id,
+        "claim_reference": case.reference,
+        "has_rejection_letter": bool(rejection_rows),
+        "rejection_evidence_id": latest_rej.id if latest_rej else None,
+        "rejection_filename": latest_rej.filename if latest_rej else None,
+        "stated_rejection_reason": effective_reason,
+        "cited_clause": effective_clause,
+        "rejection_date": extracted_date or None,
+        "insurer_reference": extracted_ref or case.sandbox_ref,
+        "review_posture": "CLARIFICATION_ONLY",
+        "insurer_at_fault_concluded": False,
+        "acceptance_guaranteed": False,
+        "disclaimer": DISPUTE_DISCLAIMER,
+        "matched_policy_clauses": matched_clauses,
+        "clarifiable_issues": clarifiable_issues,
+        "appeal_evidence_checklist": appeal_checklist,
+        "regulatory_escalation_info": None
+        if not dispute_ref
+        else {
+            "authority_name": dispute_ref.get("authority_name"),
+            "channel_name": dispute_ref.get("channel_name"),
+            "contact_phone": dispute_ref.get("contact_phone"),
+            "online_portal": dispute_ref.get("online_portal"),
+            "procedure_summary": dispute_ref.get("procedure_summary"),
+            "published_deadlines": dispute_ref.get("published_deadlines"),
+            "verification_status": dispute_ref.get("verification_status", "UNVERIFIED"),
+        },
+        "appeal_draft": {
+            "subject": subject,
+            "body": body,
+            "recipient_note": contact,
+        },
+        "appeal_action_id": existing_appeal_action.id if existing_appeal_action else None,
+        "appeal_action_status": existing_appeal_action.status if existing_appeal_action else None,
+    }
+
+
 # ----- views --------------------------------------------------------------------------------
 
 STEP_ORDER = [
@@ -1300,6 +1605,7 @@ def case_detail(db: Session, owner: Owner, case: WfClaimCaseRow) -> dict:
             "version": draft.version,
             "status": draft.status,
             "missing_required": draft.missing_required or [],
+            "form": draft.form,
             "fields": [{"key": k, **v} for k, v in draft.form.items()],
             "attachments": [
                 {"evidence_id": r.id, "filename": r.filename, "evidence_kind": r.evidence_kind}
@@ -1307,6 +1613,7 @@ def case_detail(db: Session, owner: Owner, case: WfClaimCaseRow) -> dict:
             ],
             "updated_at": draft.updated_at,
         },
+        "dispute_review": review_claim_rejection(db, owner, case, record_audit=False),
         "procedure": None
         if procedure is None
         else {

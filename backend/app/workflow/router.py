@@ -70,6 +70,13 @@ class AcknowledgeCheckRequest(BaseModel):
     note: str = Field(min_length=3, max_length=300)
 
 
+class DisputeReviewRequest(BaseModel):
+    rejection_reason: str | None = None
+    cited_clause: str | None = None
+    subject: str | None = None
+    body: str | None = None
+
+
 @router.get("/claims/overview")
 def claims_overview(db: DB, owner: CurrentOwner):
     """Provides high-level stats, banner, and recent activity matching screenshot 1."""
@@ -399,6 +406,72 @@ def acknowledge_consistency_check(
     return claims.case_detail(db, owner, case)
 
 
+@router.post("/claims/cases/{claim_id}/dispute-review")
+def review_claim_rejection_endpoint(
+    claim_id: UUID,
+    body: DisputeReviewRequest,
+    db: DB,
+    owner: CurrentOwner,
+):
+    case = claims.get_case(db, owner, claim_id)
+    require_purpose(db, owner, "process_documents")
+    review = claims.review_claim_rejection(
+        db,
+        owner,
+        case,
+        rejection_reason=body.rejection_reason,
+        cited_clause=body.cited_clause,
+        record_audit=True,
+    )
+    db.commit()
+    return review
+
+
+@router.post("/claims/cases/{claim_id}/prepare-appeal")
+def prepare_claim_appeal_endpoint(
+    claim_id: UUID,
+    body: DisputeReviewRequest,
+    db: DB,
+    owner: CurrentOwner,
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
+    case = claims.get_case(db, owner, claim_id)
+    require_purpose(db, owner, "process_documents")
+    draft_inputs = {
+        k: v
+        for k, v in {
+            "rejection_reason": body.rejection_reason,
+            "cited_clause": body.cited_clause,
+            "subject": body.subject,
+            "body": body.body,
+        }.items()
+        if v
+    }
+    action = actions.prepare_user_action(
+        db,
+        owner,
+        "claim_dispute_appeal",
+        entity_type="claim",
+        entity_id=str(case.id),
+        draft_inputs=draft_inputs,
+        dedupe_key=idempotency_key or f"appeal:{case.id}",
+    )
+    review = claims.review_claim_rejection(
+        db,
+        owner,
+        case,
+        rejection_reason=body.rejection_reason,
+        cited_clause=body.cited_clause,
+        record_audit=True,
+    )
+    db.commit()
+    return {
+        "review": review,
+        "action": actions.action_view(db, action),
+        "case": claims.case_detail(db, owner, case),
+    }
+
+
 # =============================================================================
 # SC-10: ACTION APPROVAL & EXECUTION
 # =============================================================================
@@ -430,6 +503,8 @@ class WorkflowActionView(BaseModel):
     title: str
     purpose: str
     status: str
+    lifecycle_status: str = "PENDING"
+    status_detail: dict[str, object] = Field(default_factory=dict)
     destination: str
     environment: str
     environment_label: str
@@ -532,8 +607,14 @@ def list_action_queue(
         tab = status_tab.upper()
         if tab == "PENDING":
             filtered = [a for a in filtered if a.status in actions.PENDING]
-        elif tab == "COMPLETED":
+        elif tab == "APPROVED":
+            filtered = [a for a in filtered if a.status == "APPROVED"]
+        elif tab == "EXECUTING":
+            filtered = [a for a in filtered if a.status == "EXECUTING"]
+        elif tab in ("COMPLETED", "SUCCEEDED"):
             filtered = [a for a in filtered if a.status in actions.COMPLETED]
+        elif tab == "FAILED":
+            filtered = [a for a in filtered if a.status == "FAILED"]
         elif tab == "REJECTED":
             filtered = [a for a in filtered if a.status in actions.REJECTED]
 
@@ -631,6 +712,23 @@ def list_workflow_reminders(db: DB, owner: CurrentOwner):
         .all()
     )
     return {"reminders": [followup.reminder_view(r) for r in rows]}
+
+
+@router.post("/reminders/check-renewals")
+def run_proactive_renewal_check(db: DB, owner: CurrentOwner):
+    rem_summary = followup.sync_policy_reminders(db, owner)
+    prepared_actions = followup.prepare_proactive_renewal_actions(db, owner)
+    try:
+        from app.agent.insights import refresh_owner_insights
+
+        refresh_owner_insights(db, owner)
+    except ImportError:
+        pass
+    db.commit()
+    return {
+        "reminder_sync": rem_summary,
+        "prepared_actions": [actions.action_view(db, a) for a in prepared_actions],
+    }
 
 
 @router.post("/reminders/{reminder_id}/cancel")

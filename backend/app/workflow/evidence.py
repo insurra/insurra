@@ -19,6 +19,7 @@ EVIDENCE_KINDS = (
     "PRESCRIPTION",
     "INSURANCE_CERTIFICATE",
     "REFERRAL_LETTER",
+    "REJECTION_LETTER",
     "OTHER",
 )
 INVOICE_KINDS = ("FAPIAO", "MEDICAL_INVOICE", "ITEMIZED_BILL")
@@ -65,6 +66,12 @@ FIELD_SPECS: dict[str, list[FieldSpec]] = {
     "PRESCRIPTION": [FieldSpec("visit_date", "Prescription date", "date", False)],
     "INSURANCE_CERTIFICATE": [],
     "REFERRAL_LETTER": [FieldSpec("visit_date", "Issue date", "date", False)],
+    "REJECTION_LETTER": [
+        FieldSpec("rejection_reason", "Stated rejection reason", "text"),
+        FieldSpec("cited_clause", "Cited policy clause or exclusion", "text", False),
+        FieldSpec("rejection_date", "Rejection notice date", "date", False),
+        FieldSpec("insurer_reference", "Insurer claim or letter reference", "text", False),
+    ],
     "OTHER": [],
 }
 
@@ -195,6 +202,34 @@ def parse_invoice_text(pages: list[tuple[int, str]]) -> dict[str, dict]:
             r"(?:初步诊断|Clinical Diagnosis|Diagnosis|Diagnosa)" + _LABEL_END + r"(.+)$", text
         )
         put("diagnosed_condition", match.group(1) if match else None, page_no)
+        match = _find(
+            r"(?:拒赔原因|拒赔理由|Rejection Reason|Reason for (?:Denial|Rejection)|Alasan Penolakan)"
+            + _LABEL_END
+            + r"(.+)$",
+            text,
+        )
+        put("rejection_reason", match.group(1) if match else None, page_no)
+        match = _find(
+            r"(?:条款依据|引用条款|Policy Clause|Cited Clause|Exclusion Clause|Klausul Polis|Pasal Polis)"
+            + _LABEL_END
+            + r"(.+)$",
+            text,
+        )
+        put("cited_clause", match.group(1) if match else None, page_no)
+        match = _find(
+            r"(?:拒赔日期|通知日期|Rejection Date|Denial Date|Notice Date|Tanggal Penolakan|Tanggal Surat)"
+            + _LABEL_END
+            + _DATE_VALUE,
+            text,
+        )
+        put("rejection_date", match.group(1) if match else None, page_no)
+        match = _find(
+            r"(?:理赔编号|赔案号|Claim Reference|Denial Reference|Insurer Reference|Nomor Klaim)"
+            + _LABEL_END
+            + r"([A-Za-z0-9][A-Za-z0-9\-/]{3,})",
+            text,
+        )
+        put("insurer_reference", match.group(1) if match else None, page_no)
         if re.search(r"[¥￥]|RMB|CNY", text):
             put("currency", "CNY", page_no)
         elif re.search(r"\bRp\.?\s?\d|IDR", text):

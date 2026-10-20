@@ -34,6 +34,9 @@ def app(tmp_path, monkeypatch, kb_countries):
             google_client_secret="synthetic-secret",
             session_secret="synthetic-session-secret",
             active_kb_countries=kb_countries,
+            email_delivery_enabled=False,
+            smtp_host="",
+            supabase_url="",
         )
     )
     with application.state.session_factory() as db:

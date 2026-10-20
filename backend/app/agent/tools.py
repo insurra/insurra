@@ -307,11 +307,11 @@ def _handle_get_claim_status(db: Session, owner: Owner, inp: ClaimLookupInput) -
     ev_rows = db.scalars(
         select(WfClaimEvidenceRow).where(WfClaimEvidenceRow.claim_id == case.id)
     ).all()
-    readiness = claims.evaluate_readiness(db, case)
+    eval_res = claims.recompute(db, owner, case)
     missing = [
-        item["kind"]
-        for item in readiness.get("checklist", [])
-        if item.get("mandatory") and not item.get("present")
+        item["code"]
+        for item in eval_res.get("items", [])
+        if item.get("mandatory") and item.get("status") == "MISSING"
     ]
     return ClaimStatusOutput(
         claim_id=case.id,
@@ -329,12 +329,13 @@ def _handle_get_execution_receipt(
     rec = db.scalar(select(WfExecutionReceiptRow).where(WfExecutionReceiptRow.action_id == act.id))
     if rec is None:
         raise AppError(404, "RESOURCE_NOT_FOUND", "Execution receipt not found.")
+    view = actions.receipt_view(db, rec)
     return ExecutionReceiptOutput(
         action_id=act.id,
         receipt_ref=rec.receipt_ref,
         environment=rec.environment,
         status=rec.status,
-        summary=rec.summary,
+        summary=str(view.get("notice") or rec.next_action or ""),
     )
 
 
@@ -433,21 +434,19 @@ def _handle_execute_approved_sandbox_action(
     db: Session, owner: Owner, inp: ExecuteActionInput
 ) -> ExecutionReceiptOutput:
     act = _ensure_owned_action(db, owner, inp.action_id)
-    result = actions.execute_action(
-        db,
-        owner,
-        act.id,
-        payload_sha256=inp.payload_sha256,
-        payload_version=inp.payload_version,
-        idempotency_key=inp.idempotency_key,
-    )
-    receipt = result["receipt"]
+    if act.payload_sha256 != inp.payload_sha256 or act.payload_version != inp.payload_version:
+        raise AppError(
+            403,
+            "APPROVAL_HASH_MISMATCH",
+            "The payload differs from what was approved.",
+        )
+    receipt, _ = actions.execute(db, owner, act)
     return ExecutionReceiptOutput(
         action_id=act.id,
-        receipt_ref=receipt["receipt_ref"],
-        environment=receipt["environment"],
-        status=receipt["status"],
-        summary=receipt["summary"],
+        receipt_ref=str(receipt["receipt_reference"]),
+        environment=str(receipt["environment"]),
+        status=str(receipt["status"]),
+        summary=str(receipt.get("notice") or receipt.get("next_action") or ""),
     )
 
 

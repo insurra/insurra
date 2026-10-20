@@ -88,6 +88,13 @@ ACTION_TYPES: dict[str, dict] = {
         "approval": True,
         "editable": ["subject", "body"],
     },
+    "claim_dispute_appeal": {
+        "label": "Claim clarification & appeal draft",
+        "destination": "manual_handoff",
+        "environment": "MANUAL_HANDOFF",
+        "approval": True,
+        "editable": ["subject", "body"],
+    },
     "calendar_reminder_file": {
         "label": "Calendar reminder file (.ics)",
         "destination": "manual_handoff",
@@ -347,12 +354,60 @@ def send_claim_to_approval(db: Session, owner: Owner, case: WfClaimCaseRow) -> W
     return action
 
 
+def _lifecycle_status(
+    action: WfActionRow,
+    latest_exec: WfActionExecutionRow | None,
+) -> tuple[str, dict]:
+    """Map internal action + execution state to canonical PENDING/APPROVED/EXECUTING/SUCCEEDED/FAILED."""
+    exec_status = latest_exec.status if latest_exec else None
+    error_code = latest_exec.error_code if latest_exec else None
+    if exec_status == "RUNNING" or action.status == "EXECUTING":
+        canonical = "EXECUTING"
+        summary = "Execution is currently in progress."
+    elif action.status == "FAILED" or exec_status == "FAILED":
+        canonical = "FAILED"
+        summary = (
+            f"Execution failed ({error_code}). No external submission was completed."
+            if error_code
+            else "Execution failed. No external submission was completed."
+        )
+    elif action.status in COMPLETED or exec_status == "SUCCEEDED":
+        canonical = "SUCCEEDED"
+        summary = (
+            "Approved draft prepared for manual handoff."
+            if action.environment == "MANUAL_HANDOFF"
+            else "Execution succeeded and receipt was recorded."
+        )
+    elif action.status == "APPROVED":
+        canonical = "APPROVED"
+        summary = "Approved and bound to payload SHA-256. Ready to execute."
+    elif action.status in ("AWAITING_APPROVAL", "DRAFT", "PENDING"):
+        canonical = "PENDING"
+        summary = "Waiting for user review and approval."
+    else:
+        canonical = "REJECTED"
+        summary = f"Action ended with status {action.status}."
+    return canonical, {
+        "lifecycle_status": canonical,
+        "raw_status": action.status,
+        "execution_status": exec_status,
+        "error_code": error_code,
+        "summary": summary,
+    }
+
+
 def action_view(db: Session, action: WfActionRow) -> dict:
     case = db.get(WfClaimCaseRow, action.claim_id) if action.claim_id else None
     approval = latest_valid_approval(db, action)
     receipt = db.scalar(
         select(WfExecutionReceiptRow).where(WfExecutionReceiptRow.action_id == action.id)
     )
+    latest_exec = db.scalar(
+        select(WfActionExecutionRow)
+        .where(WfActionExecutionRow.action_id == action.id)
+        .order_by(WfActionExecutionRow.started_at.desc())
+    )
+    lifecycle, status_detail = _lifecycle_status(action, latest_exec)
     expires = _aware(action.expires_at)
     return {
         "id": action.id,
@@ -361,6 +416,8 @@ def action_view(db: Session, action: WfActionRow) -> dict:
         "title": action.title,
         "purpose": action.purpose,
         "status": action.status,
+        "lifecycle_status": lifecycle,
+        "status_detail": status_detail,
         "destination": action.destination,
         "environment": action.environment,
         "environment_label": {
@@ -985,20 +1042,25 @@ def _internal_approval(db: Session, owner: Owner, action: WfActionRow) -> WfActi
 def _execute_sandbox(db: Session, owner: Owner, action: WfActionRow) -> tuple[str, str]:
     case = db.get(WfClaimCaseRow, action.claim_id)
     row = sandbox.submit(db, owner, action.payload, f"action:{action.id}:{action.payload_sha256}")
-    case.sandbox_ref, case.sandbox_status = row.claim_ref, row.status
-    case.monitoring_state = "ACTIVE" if case.monitoring_enabled else "DISABLED"
-    case.last_checked_at = _now()
-    case.next_poll_at = _now() + timedelta(seconds=max(1, get_settings().sandbox_step_seconds))
-    if case.status == states.AWAITING_APPROVAL:
-        states.transition(
-            db,
-            case,
-            states.SUBMITTED,
-            source="SYSTEM",
-            event_type="SANDBOX_SUBMITTED",
-            note=f"Sandbox reference {row.claim_ref}",
-            dedupe_key=f"submit:{row.claim_ref}:{row.payload_digest[:8]}",
+    if row is None or not getattr(row, "claim_ref", None):
+        raise sandbox.SandboxError(
+            [{"field": "sandbox_ref", "code": "MISSING_PROOF_OF_SUBMISSION"}]
         )
+    if case is not None:
+        case.sandbox_ref, case.sandbox_status = row.claim_ref, row.status
+        case.monitoring_state = "ACTIVE" if case.monitoring_enabled else "DISABLED"
+        case.last_checked_at = _now()
+        case.next_poll_at = _now() + timedelta(seconds=max(1, get_settings().sandbox_step_seconds))
+        if case.status == states.AWAITING_APPROVAL:
+            states.transition(
+                db,
+                case,
+                states.SUBMITTED,
+                source="SYSTEM",
+                event_type="SANDBOX_SUBMITTED",
+                note=f"Sandbox reference {row.claim_ref}",
+                dedupe_key=f"submit:{row.claim_ref}:{row.payload_digest[:8]}",
+            )
     return row.claim_ref, "Track the sandbox status in the Claims Center."
 
 

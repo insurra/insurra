@@ -63,8 +63,9 @@ export default function EmergencyPage() {
 
   useEffect(() => {
     // Default country from user profile if available
-    if (demoData?.profile?.country_code === "ID") {
-      void Promise.resolve().then(() => setCountry("ID"));
+    const profileCountry = demoData?.profile?.country_code;
+    if (profileCountry === "ID" || profileCountry === "AU" || profileCountry === "CN") {
+      void Promise.resolve().then(() => setCountry(profileCountry));
     }
   }, [demoData]);
 
@@ -126,16 +127,16 @@ export default function EmergencyPage() {
       </section>
 
       {/* Country Switcher */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
             Select Country / Territory:
           </span>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => { setCountry("CN"); setTriageResult(null); }}
-              className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
+              className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 country === "CN" ? "bg-teal-700 text-white shadow" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
@@ -144,15 +145,25 @@ export default function EmergencyPage() {
             <button
               type="button"
               onClick={() => { setCountry("ID"); setTriageResult(null); }}
-              className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
+              className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 country === "ID" ? "bg-teal-700 text-white shadow" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
               Indonesia (ID)
             </button>
+            <button
+              type="button"
+              onClick={() => { setCountry("AU"); setTriageResult(null); }}
+              className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                country === "AU" ? "bg-teal-700 text-white shadow" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              Australia (AU)
+            </button>
           </div>
         </div>
-        <span className="text-xs text-slate-400">
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+          <CheckCircle2 size={13} className="text-emerald-600" />
           Source verified against national communications authorities
         </span>
       </div>
@@ -160,8 +171,13 @@ export default function EmergencyPage() {
       <div className="emergency-grid">
         {/* Card 1: Verified Direct Emergency Numbers */}
         <section className="emergency-card">
-          <div className="emergency-icon">
-            <PhoneCall size={26} aria-hidden="true" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="emergency-icon">
+              <PhoneCall size={24} aria-hidden="true" />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+              Step 1 · Immediate Dispatch
+            </span>
           </div>
           <h2>Official Emergency Contacts</h2>
           <p className="text-sm text-slate-500 mb-4">
@@ -226,13 +242,36 @@ export default function EmergencyPage() {
 
         {/* Card 2: Multilingual Red-Flag Triage */}
         <section className="emergency-card">
-          <div className="emergency-icon">
-            <HeartPulse size={26} aria-hidden="true" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="emergency-icon">
+              <HeartPulse size={24} aria-hidden="true" />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
+              Step 2 · Symptom Triage
+            </span>
           </div>
           <h2>Immediate Red-Flag Symptom Check</h2>
           <p className="text-sm text-slate-500 mb-3">
-            Type symptoms in English, Bahasa Indonesia, or 中文 to check for critical safety red flags.
+            Type or select symptoms in English, Bahasa Indonesia, or 中文 to check for critical safety red flags.
           </p>
+
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {[
+              "Severe chest pain & shortness of breath",
+              "Sesak napas mendadak & nyeri dada",
+              "胸口剧痛 / 呼吸困难",
+              "High fever with confusion",
+            ].map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => setSymptomText(chip)}
+                className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 border border-slate-200 transition-colors cursor-pointer"
+              >
+                + {chip}
+              </button>
+            ))}
+          </div>
 
           <form onSubmit={handleTriageSubmit} className="space-y-3 mb-4">
             <textarea
@@ -283,23 +322,50 @@ export default function EmergencyPage() {
 
         {/* Card 3: Post-Stabilization Guidance */}
         <section className="emergency-card emergency-after">
-          <div className="emergency-icon">
-            <FileText size={26} aria-hidden="true" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="emergency-icon">
+              <FileText size={24} aria-hidden="true" />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+              Step 3 · Post-Care Claim Handoff
+            </span>
           </div>
-          <h2>After You Are Safe</h2>
+          <h2>After You Are Safe: Hospital Documents to Collect</h2>
           <p className="text-sm text-slate-600 leading-relaxed mb-4">
-            Once you have received emergency care and your condition is stable:
+            Once you have received emergency care and your condition is stable, ask the hospital billing desk for these 3 documents so INSURRA can prepare your claim:
           </p>
-          <ul className="text-xs text-slate-600 space-y-2 mb-4 list-disc pl-5">
-            <li>Request official stamped hospital invoices or electronic medical Fapiao (电子发票).</li>
-            <li>Obtain doctor outpatient diagnosis records or emergency room discharge notes.</li>
-            <li>Keep prescription pharmacy receipts and payment payment slips.</li>
-          </ul>
-          <Button asChild variant="outline" size="sm" className="w-full">
-            <Link href="/claims">
-              Return to Claims Center <ArrowLeft size={14} className="ml-1 rotate-180" />
-            </Link>
-          </Button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-xs font-bold text-slate-900 mb-1">1. Official Invoice / Fapiao</div>
+              <p className="text-xs text-slate-600 m-0">
+                Request official stamped hospital invoices or electronic medical Fapiao (电子发票).
+              </p>
+            </div>
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-xs font-bold text-slate-900 mb-1">2. Medical &amp; ER Discharge Notes</div>
+              <p className="text-xs text-slate-600 m-0">
+                Obtain doctor outpatient diagnosis records or emergency room discharge summaries.
+              </p>
+            </div>
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-xs font-bold text-slate-900 mb-1">3. Itemized Pharmacy Receipts</div>
+              <p className="text-xs text-slate-600 m-0">
+                Keep itemized breakdown lists, prescription pharmacy receipts, and payment slips.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/claims">
+                Return to Claims Center <ArrowLeft size={14} className="ml-1 rotate-180" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/pathways">
+                Compare Non-Emergency Pathways
+              </Link>
+            </Button>
+          </div>
         </section>
       </div>
     </main>

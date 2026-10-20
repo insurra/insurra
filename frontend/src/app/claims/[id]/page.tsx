@@ -12,6 +12,7 @@ import {
   Clock,
   FileSpreadsheet,
   FileText,
+  Info,
   Plus,
   RefreshCw,
   Send,
@@ -91,6 +92,7 @@ interface ClaimCaseDetailResponse {
     policy_end?: string | null;
     status: string;
     review_confirmed: boolean;
+    sandbox_reference?: string | null;
     sandbox_status?: string | null;
     created_at: string;
     updated_at: string;
@@ -111,6 +113,54 @@ interface ClaimCaseDetailResponse {
     missing_required: string[];
     version: number;
     status: string;
+  } | null;
+  dispute_review?: {
+    claim_id: string;
+    claim_reference: string;
+    has_rejection_letter: boolean;
+    rejection_evidence_id?: string | null;
+    rejection_filename?: string | null;
+    stated_rejection_reason: string;
+    cited_clause: string;
+    rejection_date?: string | null;
+    insurer_reference?: string | null;
+    review_posture: string;
+    insurer_at_fault_concluded: boolean;
+    acceptance_guaranteed: boolean;
+    disclaimer: string;
+    matched_policy_clauses: Array<{
+      clause_area: string;
+      policy_context: string;
+      comparison_status: string;
+    }>;
+    clarifiable_issues: Array<{
+      code: string;
+      title: string;
+      detail: string;
+      suggested_evidence: string;
+    }>;
+    appeal_evidence_checklist: Array<{
+      code: string;
+      label: string;
+      present: boolean;
+      status: string;
+      note: string;
+    }>;
+    regulatory_escalation_info?: {
+      authority_name?: string;
+      channel_name?: string;
+      contact_phone?: string;
+      online_portal?: string;
+      procedure_summary?: string;
+      published_deadlines?: string;
+    } | null;
+    appeal_draft?: {
+      subject: string;
+      body: string;
+      recipient_note?: string;
+    };
+    appeal_action_id?: string | null;
+    appeal_action_status?: string | null;
   } | null;
   timeline?: Array<{
     id: string;
@@ -134,6 +184,7 @@ type TabType =
   | "Documents"
   | "Consistency Check"
   | "Claim Draft"
+  | "Dispute & Appeal"
   | "History";
 
 export default function ClaimDetailPage() {
@@ -151,8 +202,97 @@ export default function ClaimDetailPage() {
   const [generatingDraft, setGeneratingDraft] = useState(false);
   const [sendingApproval, setSendingApproval] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [syncingStatus, setSyncingStatus] = useState(false);
+  const [confirmingEvidenceId, setConfirmingEvidenceId] = useState<string | null>(null);
+  const [preparingAppeal, setPreparingAppeal] = useState(false);
+  const [customRejectionReason, setCustomRejectionReason] = useState("");
+  const [customCitedClause, setCustomCitedClause] = useState("");
   const [requiredConsents, setRequiredConsents] = useState<string[] | null>(null);
   const [pendingActionAfterConsent, setPendingActionAfterConsent] = useState<(() => Promise<void>) | null>(null);
+
+  const handleSyncSandboxStatus = async () => {
+    setSyncingStatus(true);
+    try {
+      const headers = getWorkflowHeaders(accountToken);
+      const res = await fetch(getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}/sync-status`), {
+        method: "POST",
+        headers,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to sync sandbox status");
+      }
+      await loadCaseDetail();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error syncing sandbox status");
+    } finally {
+      setSyncingStatus(false);
+    }
+  };
+
+  const handleConfirmEvidence = async (evidenceId: string, currentFields: EvidenceFile["fields"]) => {
+    setConfirmingEvidenceId(evidenceId);
+    try {
+      const headers = getWorkflowHeaders(accountToken);
+      const values: Record<string, string> = {};
+      for (const f of currentFields || []) {
+        if (f.value) values[f.key] = f.value;
+      }
+      const res = await fetch(
+        getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}/evidence/${evidenceId}/confirm`),
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ values }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to confirm evidence fields");
+      }
+      await loadCaseDetail();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error confirming evidence fields");
+    } finally {
+      setConfirmingEvidenceId(null);
+    }
+  };
+
+  const handlePrepareAppeal = async (rejectionReason?: string, citedClause?: string) => {
+    setPreparingAppeal(true);
+    try {
+      const headers = getWorkflowHeaders(accountToken);
+      const res = await fetch(
+        getWorkflowUrl(`/api/v1/workflow/claims/cases/${claimId}/prepare-appeal`),
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            rejection_reason: rejectionReason || customRejectionReason || undefined,
+            cited_clause: citedClause || customCitedClause || undefined,
+          }),
+        }
+      );
+      if (res.status === 403) {
+        const err = await res.json().catch(() => ({}));
+        const purposes = err?.details?.required_purposes || ["process_documents"];
+        setRequiredConsents(purposes);
+        setPendingActionAfterConsent(() => () => handlePrepareAppeal(rejectionReason, citedClause));
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to prepare appeal draft");
+      }
+      const data = await res.json();
+      await loadCaseDetail();
+      router.push(`/actions?action=${data.action.id}`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error preparing appeal draft");
+    } finally {
+      setPreparingAppeal(false);
+    }
+  };
 
   const loadCaseDetail = useCallback(async () => {
     setLoading(true);
@@ -351,6 +491,18 @@ export default function ClaimDetailPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          {caseData.sandbox_reference && (
+            <Button
+              onClick={handleSyncSandboxStatus}
+              disabled={syncingStatus}
+              variant="outline"
+              size="sm"
+              className="text-teal-700 border-teal-200 hover:bg-teal-50 flex items-center gap-1.5"
+            >
+              <RefreshCw size={13} className={syncingStatus ? "animate-spin" : ""} />
+              Sync Sandbox Status
+            </Button>
+          )}
           <Button asChild variant="outline" size="sm" className="text-slate-600">
             <Link href="/claims">
               <ArrowLeft size={14} className="mr-1.5" /> Back to List
@@ -404,6 +556,83 @@ export default function ClaimDetailPage() {
         </div>
       )}
 
+      {/* Interactive 4-Step Claim Progress Stepper */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-6 shadow-2xs grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <button
+          type="button"
+          onClick={() => setActiveTab("Required Information")}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-teal-50/60 border border-slate-200/80 text-left transition-colors cursor-pointer"
+        >
+          <span className="w-7 h-7 rounded-full bg-teal-700 text-white text-xs font-extrabold grid place-items-center shrink-0">
+            1
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 truncate">Evidence &amp; Checklist</div>
+            <div className="text-[11px] text-slate-500">
+              {completeCount}/{totalReq} required confirmed
+            </div>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("Consistency Check")}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-teal-50/60 border border-slate-200/80 text-left transition-colors cursor-pointer"
+        >
+          <span className="w-7 h-7 rounded-full bg-teal-700 text-white text-xs font-extrabold grid place-items-center shrink-0">
+            2
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 truncate">Consistency Checks</div>
+            <div className="text-[11px] text-emerald-700 font-semibold">
+              {consistency_checks.filter((c) => c.status === "PASS").length}/{consistency_checks.length} passed
+            </div>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("Claim Draft")}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-teal-50/60 border border-slate-200/80 text-left transition-colors cursor-pointer"
+        >
+          <span
+            className={`w-7 h-7 rounded-full text-xs font-extrabold grid place-items-center shrink-0 ${
+              draft?.form ? "bg-teal-700 text-white" : "bg-slate-200 text-slate-700"
+            }`}
+          >
+            3
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 truncate">Prepared Claim Form</div>
+            <div className="text-[11px] text-slate-500">
+              {draft?.form ? `Version ${draft.version} ready` : "Prepare draft form"}
+            </div>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/actions")}
+          className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-teal-50/60 border border-slate-200/80 text-left transition-colors cursor-pointer"
+        >
+          <span
+            className={`w-7 h-7 rounded-full text-xs font-extrabold grid place-items-center shrink-0 ${
+              caseData.status.includes("SANDBOX") || caseData.status === "AWAITING_APPROVAL"
+                ? "bg-teal-700 text-white"
+                : "bg-slate-200 text-slate-700"
+            }`}
+          >
+            4
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-slate-900 truncate">Approval &amp; Sandbox</div>
+            <div className="text-[11px] text-slate-500">
+              {caseData.status.replace(/_/g, " ")}
+            </div>
+          </div>
+        </button>
+      </div>
+
       {/* 6 Tabs Navigation (Screenshot 2) */}
       <div className="border-b border-slate-200 mb-6 overflow-x-auto">
         <div className="flex gap-8">
@@ -414,6 +643,7 @@ export default function ClaimDetailPage() {
               "Documents",
               "Consistency Check",
               "Claim Draft",
+              "Dispute & Appeal",
               "History",
             ] as TabType[]
           ).map((tab) => (
@@ -431,6 +661,11 @@ export default function ClaimDetailPage() {
               {tab === "Consistency Check" && (
                 <span className="ml-1.5 text-xs bg-emerald-100 text-emerald-800 rounded-full px-2 py-0.5">
                   6/6
+                </span>
+              )}
+              {tab === "Dispute & Appeal" && (caseData.status === "REJECTED_IN_SANDBOX" || evidence.some(e => e.evidence_kind === "REJECTION_LETTER")) && (
+                <span className="ml-1.5 text-xs bg-amber-100 text-amber-800 rounded-full px-2 py-0.5 font-bold">
+                  Action
                 </span>
               )}
             </button>
@@ -633,7 +868,14 @@ export default function ClaimDetailPage() {
                   >
                     {item.status === "COMPLETE" ? "Confirmed" : item.status === "MISSING" ? "Missing" : "Needs Review"}
                   </span>
-                  <Button variant="outline" size="sm" className="text-xs">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() =>
+                      setActiveTab(item.status === "COMPLETE" ? "Claim Draft" : "Documents")
+                    }
+                  >
                     {item.resolution_action || "View"}
                   </Button>
                 </div>
@@ -686,9 +928,26 @@ export default function ClaimDetailPage() {
                         </div>
                       </div>
                     </div>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      Confirmed Valid
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                        file.status === "CONFIRMED"
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                          : "bg-amber-100 text-amber-800 border border-amber-200"
+                      }`}>
+                        {file.status === "CONFIRMED" ? "Confirmed Valid" : "Needs Confirmation"}
+                      </span>
+                      {file.status !== "CONFIRMED" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={confirmingEvidenceId === file.id}
+                          onClick={() => handleConfirmEvidence(file.id, file.fields)}
+                          className="text-xs h-7 px-2.5 text-teal-700 border-teal-300 hover:bg-teal-50"
+                        >
+                          {confirmingEvidenceId === file.id ? "Confirming..." : "Confirm Fields"}
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {file.fields && file.fields.length > 0 && (
@@ -833,6 +1092,178 @@ export default function ClaimDetailPage() {
               </Button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB: DISPUTE & APPEAL (Flow C: Claim Dispute Agent) */}
+      {activeTab === "Dispute & Appeal" && (
+        <div className="space-y-6">
+          {/* Honest Uncertainty & Non-Conclusive Disclaimer (Criterion 6) */}
+          <div className="p-4.5 bg-sky-50/80 border border-sky-200 rounded-2xl flex items-start gap-3.5">
+            <Info size={22} className="text-sky-700 mt-0.5 flex-none" />
+            <div className="text-xs leading-relaxed text-sky-900">
+              <span className="font-bold block text-sm mb-1 text-sky-950">
+                Dispute Review &amp; Appeal Preparation (Non-Conclusive Clarification)
+              </span>
+              {claim.dispute_review?.disclaimer ||
+                "This review compares the stated rejection reason against recorded policy context and evidence to highlight points that may be clarified. It does not conclude that the insurer is at fault and does not guarantee that an appeal or claim will be accepted."}
+            </div>
+          </div>
+
+          {/* Rejection Letter Context Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">1. Stated Rejection Basis</h3>
+                <p className="text-xs text-slate-500">
+                  Information extracted from your insurer denial letter or recorded claim outcome.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={uploading}
+                  onClick={() =>
+                    handleUploadSimulatedEvidence(
+                      "REJECTION_LETTER",
+                      "Insurer Denial Notice - Clause Clarification.pdf"
+                    )
+                  }
+                  className="text-xs text-slate-700 border-slate-300"
+                >
+                  <FileText size={14} className="mr-1" /> Attach Rejection Notice
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+                <span className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
+                  Stated Rejection Reason
+                </span>
+                <p className="text-sm font-semibold text-slate-900">
+                  {claim.dispute_review?.stated_rejection_reason || "No rejection reason on record."}
+                </p>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+                <span className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
+                  Cited Policy Clause / Exclusion
+                </span>
+                <p className="text-sm font-semibold text-slate-900">
+                  {claim.dispute_review?.cited_clause || "Not specified by insurer."}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Matched Policy Clauses & Comparison */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-1">2. Policy Clause Comparison</h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Comparing stated denial grounds against your contract facts and recorded policy dates.
+            </p>
+
+            <div className="divide-y divide-slate-100">
+              {(claim.dispute_review?.matched_policy_clauses || []).map((clause, idx) => (
+                <div key={idx} className="py-3.5 flex items-start justify-between gap-4">
+                  <div>
+                    <span className="font-bold text-sm text-slate-800 block">
+                      {clause.clause_area}
+                    </span>
+                    <p className="text-xs text-slate-600 mt-0.5">{clause.policy_context}</p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                    {clause.comparison_status.replace(/_/g, " ")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Clarifiable Issues */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-1">
+              3. Factual Points for Clarification
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Specific issues identified for written clarification with the claims review team.
+            </p>
+
+            <div className="space-y-3">
+              {(claim.dispute_review?.clarifiable_issues || []).map((issue) => (
+                <div
+                  key={issue.code}
+                  className="p-4 rounded-xl border border-teal-100 bg-teal-50/40"
+                >
+                  <div className="font-bold text-sm text-teal-950 mb-1 flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-teal-700" />
+                    {issue.title}
+                  </div>
+                  <p className="text-xs text-slate-700 leading-relaxed mb-2">{issue.detail}</p>
+                  <div className="text-[11px] font-semibold text-teal-800 bg-white/80 border border-teal-200 rounded px-2 py-1 inline-block">
+                    Recommended Evidence: {issue.suggested_evidence}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Appeal Evidence Checklist */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-1">
+              4. Appeal Supporting Evidence Checklist
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Documents to compile before submitting your reconsideration request.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {(claim.dispute_review?.appeal_evidence_checklist || []).map((item) => (
+                <div
+                  key={item.code}
+                  className="p-3.5 border border-slate-200 rounded-xl bg-slate-50/50 flex items-start gap-3"
+                >
+                  <div className="mt-0.5">
+                    {item.present ? (
+                      <CheckCircle2 size={18} className="text-emerald-600" />
+                    ) : (
+                      <AlertCircle size={18} className="text-amber-500" />
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-900 text-xs block">{item.label}</span>
+                    <span className="text-[11px] text-slate-500">{item.note}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Review & Approval Handoff (Acceptance Criterion 2) */}
+          <div className="p-6 bg-slate-900 text-white rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
+            <div>
+              <span className="text-xs uppercase tracking-wider text-teal-400 font-bold block mb-1">
+                Step 5: Review &amp; Approval Boundary
+              </span>
+              <h4 className="text-base font-bold mb-1">
+                Ready to review the Reconsideration &amp; Appeal draft?
+              </h4>
+              <p className="text-xs text-slate-300 max-w-xl">
+                Preparing this action creates a draft bound to an exact payload hash in your Action Queue.
+                Nothing is sent to any external party without your explicit approval.
+              </p>
+            </div>
+            <Button
+              size="lg"
+              onClick={() => handlePrepareAppeal()}
+              disabled={preparingAppeal}
+              className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl whitespace-nowrap shadow"
+            >
+              <Send size={15} className="mr-1.5" />
+              {preparingAppeal ? "Preparing Draft..." : "Prepare Appeal Draft for Review"}
+            </Button>
+          </div>
         </div>
       )}
 

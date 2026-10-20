@@ -36,6 +36,9 @@ ALLOWED_DRAFT_KEYS = {
     "employee_name",
     "employer_name",
     "insurer_name",
+    "rejection_reason",
+    "cited_clause",
+    "clarification_points",
 }
 
 
@@ -118,6 +121,44 @@ def build_action_payload(
         return (
             title_override or f"Claim follow-up draft ({ref_label})",
             purpose_override or "Prepare a follow-up message for manual handoff.",
+            payload,
+            case,
+        )
+
+    if action_type == "claim_dispute_appeal":
+        case = _resolve_owned_claim(db, owner, entity_id)
+        review = claims.review_claim_rejection(
+            db,
+            owner,
+            case,
+            rejection_reason=inputs.get("rejection_reason"),
+            cited_clause=inputs.get("cited_clause"),
+        )
+        draft_data = review["appeal_draft"]
+        subject = inputs.get("subject") or draft_data["subject"]
+        body = inputs.get("body") or draft_data["body"]
+        payload = {
+            "subject": subject,
+            "body": body,
+            "recipient_note": draft_data["recipient_note"],
+            "claim_reference": case.reference,
+            "sandbox_reference": case.sandbox_ref,
+            "stated_rejection_reason": review["stated_rejection_reason"],
+            "cited_clause": review["cited_clause"],
+            "clarifiable_issues": [i["title"] for i in review["clarifiable_issues"]],
+            "evidence_checklist": [
+                e["label"] for e in review["appeal_evidence_checklist"]
+            ],
+            "review_posture": "CLARIFICATION_ONLY",
+            "insurer_at_fault_concluded": False,
+            "acceptance_guaranteed": False,
+            "disclaimer": review["disclaimer"],
+            "handoff_note": "Draft prepared. Not sent.",
+        }
+        return (
+            title_override or f"Claim clarification & appeal draft ({case.reference})",
+            purpose_override
+            or "Prepare a factual claim clarification and appeal draft for user review and approval.",
             payload,
             case,
         )

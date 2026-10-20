@@ -519,6 +519,51 @@ export default function ActionsPage() {
                 </div>
               </div>
 
+              {/* 3-Step Visual Approval Boundary Guide */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-2.5 p-2 rounded-lg bg-white border border-slate-200/80">
+                  <span className="w-6 h-6 rounded-full bg-teal-700 text-white text-xs font-bold grid place-items-center shrink-0">
+                    1
+                  </span>
+                  <div className="text-xs">
+                    <strong className="block text-slate-900">Review Payload</strong>
+                    <span className="text-slate-500 text-[11px]">Verify fields &amp; destination</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 p-2 rounded-lg bg-white border border-slate-200/80">
+                  <span
+                    className={`w-6 h-6 rounded-full text-xs font-bold grid place-items-center shrink-0 ${
+                      selectedAction.approved || selectedAction.status === "COMPLETED"
+                        ? "bg-teal-700 text-white"
+                        : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    2
+                  </span>
+                  <div className="text-xs">
+                    <strong className="block text-slate-900">Approve SHA-256</strong>
+                    <span className="text-slate-500 text-[11px]">
+                      {selectedAction.approved ? "Digest approved" : "Requires your consent"}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 p-2 rounded-lg bg-white border border-slate-200/80">
+                  <span
+                    className={`w-6 h-6 rounded-full text-xs font-bold grid place-items-center shrink-0 ${
+                      selectedAction.status === "COMPLETED" || selectedAction.status === "HANDOFF_READY"
+                        ? "bg-emerald-600 text-white"
+                        : "bg-slate-200 text-slate-700"
+                    }`}
+                  >
+                    3
+                  </span>
+                  <div className="text-xs">
+                    <strong className="block text-slate-900">Sandbox / Handoff</strong>
+                    <span className="text-slate-500 text-[11px]">{selectedAction.environment_label}</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Action Details Grid */}
               <div className="actions-info-grid">
                 <div className="actions-info-item">
@@ -709,8 +754,25 @@ export default function ActionsPage() {
                   </div>
                 )}
 
-              {/* Payload JSON Inspector */}
+              {/* Human-Readable Payload Summary + JSON Inspector */}
               <h3 className="actions-section-title">Submitted Payload Content</h3>
+              {selectedAction.payload && typeof selectedAction.payload === "object" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
+                  {Object.entries(selectedAction.payload).map(([k, v]) => (
+                    <div
+                      key={k}
+                      className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex flex-col justify-between"
+                    >
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        {k.replace(/_/g, " ")}
+                      </span>
+                      <span className="font-semibold text-slate-800 mt-0.5 break-words">
+                        {typeof v === "object" && v !== null ? JSON.stringify(v) : String(v ?? "—")}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <pre className="actions-payload-pre">
                 {JSON.stringify(selectedAction.payload, null, 2)}
               </pre>

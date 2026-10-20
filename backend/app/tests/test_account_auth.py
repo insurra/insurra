@@ -446,3 +446,185 @@ def test_auth_capabilities_is_public_and_honest(client):
     response = client.get("/api/v1/auth/capabilities")
     assert response.status_code == 200
     assert response.json() == {"email_delivery": False, "google_oauth": True}
+
+
+def test_auth_capabilities_reflects_email_delivery_enabled(client, app, monkeypatch):
+    app.state.settings.email_delivery_enabled = True
+    response = client.get("/api/v1/auth/capabilities")
+    assert response.status_code == 200
+    assert response.json()["email_delivery"] is True
+
+
+def test_registration_and_password_reset_trigger_email_delivery(client, app, monkeypatch):
+    sent_emails = []
+
+    def fake_send_email(*args, **kwargs):
+        sent_emails.append((args, kwargs))
+        return True
+
+    monkeypatch.setattr("app.services.email_delivery.send_email", fake_send_email)
+    app.state.settings.email_delivery_enabled = True
+
+    email = "email-delivery-user@example.com"
+    reg = client.post(
+        "/api/v1/account/auth/register",
+        json={
+            "email": email,
+            "password": "Password123",
+            "password_confirmation": "Password123",
+            "accepted_terms": True,
+        },
+    )
+    assert reg.status_code == 201
+    assert len(sent_emails) == 1
+    # send_email(to_email, subject, text_content, html_content, settings)
+    assert sent_emails[0][0][0] == email
+    assert "verify" in sent_emails[0][0][3]
+
+    # Password reset
+    forgot = client.post(
+        "/api/v1/account/auth/forgot-password",
+        json={"email": email},
+    )
+    assert forgot.status_code == 200
+    assert len(sent_emails) == 2
+    assert sent_emails[1][0][0] == email
+    assert "reset" in sent_emails[1][0][3]
+
+
+def test_supabase_google_redirect(client, app):
+    app.state.settings.supabase_url = "https://example.supabase.co"
+    res = client.get("/auth/google", follow_redirects=False)
+    assert res.status_code == 303
+    location = res.headers["location"]
+    assert location.startswith("https://example.supabase.co/auth/v1/authorize")
+    assert "provider=google" in location
+    assert "auth%2Fcallback" in location or "auth/callback" in location
+
+
+def test_supabase_token_login_and_account_creation(client, app, monkeypatch):
+    app.state.settings.supabase_url = "https://example.supabase.co"
+
+    mock_user = {
+        "id": "11111111-2222-3333-4444-555555555555",
+        "email": "supabase-user@example.com",
+        "email_confirmed_at": "2026-10-20T00:00:00Z",
+        "user_metadata": {
+            "full_name": "Supabase User",
+            "avatar_url": "https://example.com/avatar.png",
+        },
+    }
+
+    monkeypatch.setattr(
+        "app.api.auth._resolve_supabase_user",
+        lambda body, settings: mock_user,
+    )
+
+    # First login creates account
+    res = client.post(
+        "/api/v1/account/auth/supabase",
+        json={"access_token": "fake-supabase-jwt"},
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["account"]["email"] == "supabase-user@example.com"
+    assert data["account"]["display_name"] == "Supabase User"
+    assert data["account"]["avatar_url"] == "https://example.com/avatar.png"
+    assert data["account"]["email_verified"] is True
+    assert "access_token" in data
+
+    token = data["access_token"]
+    # Verify access token works with /auth/me
+    me = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert me.status_code == 200
+    assert me.json()["email"] == "supabase-user@example.com"
+
+    # Second login with same Supabase user id reuses account
+    res2 = client.post(
+        "/api/v1/account/auth/supabase",
+        json={"access_token": "fake-supabase-jwt"},
+    )
+    assert res2.status_code == 200
+    assert res2.json()["account"]["id"] == data["account"]["id"]
+
+
+def test_supabase_otp_verification_flow(client, app, db_session, monkeypatch):
+    app.state.settings.supabase_url = "https://example.supabase.co"
+
+    dispatched = []
+
+    def mock_send_otp(email, settings, is_signup=True):
+        dispatched.append((email, is_signup))
+        return True
+
+    def mock_verify_otp(email, token, otp_type, settings):
+        return token == "654321"
+
+    monkeypatch.setattr("app.services.email_delivery.send_supabase_otp_email", mock_send_otp)
+    monkeypatch.setattr("app.services.email_delivery.send_email", lambda *a, **k: True)
+    monkeypatch.setattr("app.api.auth.verify_supabase_otp", mock_verify_otp)
+    monkeypatch.setattr(
+        "app.api.auth.supabase_signup",
+        lambda email, pw, name, settings: {"id": "mock-supa-id"},
+    )
+    monkeypatch.setattr(
+        "app.api.auth.supabase_login_password",
+        lambda email, pw, settings: {
+            "access_token": "mock-access-token",
+            "user": {
+                "id": "mock-supa-id",
+                "email": email,
+                "email_confirmed_at": "2026-10-20T00:00:00Z",
+                "user_metadata": {"full_name": "OTP User"},
+            },
+        },
+    )
+
+    email = "otp-user@example.com"
+    reg = client.post(
+        "/api/v1/account/auth/register",
+        json={
+            "email": email,
+            "password": "Password123",
+            "password_confirmation": "Password123",
+            "accepted_terms": True,
+        },
+    )
+    assert reg.status_code == 201
+
+    # Backdate verification_sent_at to satisfy the 60s cooldown
+    account = _account(db_session, email)
+    account.verification_sent_at = datetime.now(UTC) - timedelta(seconds=65)
+    db_session.commit()
+
+    # Resend triggers Supabase OTP dispatch
+    resend = client.post(
+        "/api/v1/account/auth/resend-verification",
+        json={"email": email},
+    )
+    assert resend.status_code == 200
+    assert len(dispatched) == 1
+    assert dispatched[0][0] == email
+
+    # Attempt verify with invalid OTP
+    bad_verify = client.post(
+        "/api/v1/account/auth/verify-email",
+        json={"email": email, "token": "000000"},
+    )
+    assert bad_verify.status_code == 400
+
+    # Verify with valid Supabase 6-digit OTP
+    good_verify = client.post(
+        "/api/v1/account/auth/verify-email",
+        json={"email": email, "token": "654321"},
+    )
+    assert good_verify.status_code == 200
+    assert "verified" in good_verify.json()["message"].lower()
+
+    # Login succeeds now that account is verified
+    login_res = client.post(
+        "/api/v1/account/auth/login",
+        json={"email": email, "password": "Password123"},
+    )
+    assert login_res.status_code == 200
+    assert login_res.json()["account"]["email_verified"] is True

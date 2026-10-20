@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import { useWorkspace } from "@/lib/workspace";
+import { useAuth } from "@/lib/auth";
+import { getWorkflowHeaders, getWorkflowUrl } from "@/lib/api/workflow-client";
 import { WorkspaceState } from "@/components/workspace/workspace";
 import "./home-dashboard.css";
 
@@ -49,6 +51,36 @@ export default function HomePage() {
   const workspace = useWorkspace();
   const [askQuery, setAskQuery] = useState("");
   const [workflowData, setWorkflowData] = useState<WorkflowOverview | null>(null);
+  const { token: accountToken } = useAuth();
+  const [preparingActionId, setPreparingActionId] = useState<string | null>(null);
+
+  const handleInsightAction = async (action: any) => {
+    if (action?.kind === "PREPARE_ACTION" && action?.action_type) {
+      setPreparingActionId(action.action_type);
+      try {
+        const headers = getWorkflowHeaders(accountToken);
+        const res = await fetch(getWorkflowUrl("/api/v1/workflow/actions"), {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            action_type: action.action_type,
+            entity_type: action.entity_type,
+            entity_id: action.entity_id,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          router.push(`/actions?action=${data.id}`);
+          return;
+        }
+      } catch {
+        // Fallback to deep link
+      } finally {
+        setPreparingActionId(null);
+      }
+    }
+    router.push(action?.deep_link || "/actions");
+  };
 
   // Fetch live workflow data (claims, pending actions, audit activity)
   useEffect(() => {
@@ -204,8 +236,31 @@ export default function HomePage() {
     <div className="home-dashboard">
       {/* Top Header */}
       <header className="home-header">
-        <h1>Home</h1>
-        <p>Your command center for protection, care, and claims.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1>Home</h1>
+            <p>Your command center for protection, care, and claims.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-700 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-teal-600" />
+              Jurisdiction: <strong>{countryName}</strong>
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-teal-50 border border-teal-200 text-teal-800">
+              <strong>{s.active}</strong> Active {s.active === 1 ? "Policy" : "Policies"}
+            </span>
+            {s.needs_verification > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-800">
+                <strong>{s.needs_verification}</strong> Needs Verification
+              </span>
+            )}
+            {s.expiring_30d > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700">
+                <strong>{s.expiring_30d}</strong> Expiring ≤ 30d
+              </span>
+            )}
+          </div>
+        </div>
       </header>
 
       {/* Hero Section */}
@@ -257,7 +312,18 @@ export default function HomePage() {
             </div>
             <div className="home-mini-content">
               <div className="home-mini-title-row">
-                <h3>Upcoming Expiry</h3>
+                <div className="flex items-center gap-2">
+                  <h3>Upcoming Expiry</h3>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      s.expiring_30d > 0
+                        ? "bg-amber-50 text-amber-800 border border-amber-200"
+                        : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    }`}
+                  >
+                    {s.expiring_30d > 0 ? "Expiring Soon" : "Active"}
+                  </span>
+                </div>
                 <ChevronRight size={15} className="chevron" />
               </div>
               <p data-testid="home-expiry-text">{expiryText}</p>
@@ -276,7 +342,18 @@ export default function HomePage() {
             </div>
             <div className="home-mini-content">
               <div className="home-mini-title-row">
-                <h3>Claim Status</h3>
+                <div className="flex items-center gap-2">
+                  <h3>Claim Status</h3>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      openClaimsCount && openClaimsCount > 0
+                        ? "bg-sky-50 text-sky-700 border border-sky-200"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    {openClaimsCount && openClaimsCount > 0 ? `${openClaimsCount} Active` : "Clear"}
+                  </span>
+                </div>
                 <ChevronRight size={15} className="chevron" />
               </div>
               <p data-testid="home-claim-text">{claimText}</p>
@@ -295,7 +372,18 @@ export default function HomePage() {
             </div>
             <div className="home-mini-content">
               <div className="home-mini-title-row">
-                <h3>Pending Action</h3>
+                <div className="flex items-center gap-2">
+                  <h3>Pending Action</h3>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      pendingCount && pendingCount > 0
+                        ? "bg-amber-50 text-amber-800 border border-amber-200"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    {pendingCount && pendingCount > 0 ? "Needs Approval" : "Queue Empty"}
+                  </span>
+                </div>
                 <ChevronRight size={15} className="chevron" />
               </div>
               <p data-testid="home-pending-action-text">{pendingActionTitle}</p>
@@ -334,19 +422,43 @@ export default function HomePage() {
                     <div className="home-step-desc">
                       <div className="flex items-center gap-2 mb-0.5">
                         <strong>{ins.title}</strong>
-                        <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                            ins.severity === "HIGH"
+                              ? "bg-rose-50 text-rose-700 border-rose-200"
+                              : ins.severity === "NEEDS_VERIFICATION"
+                              ? "bg-amber-50 text-amber-800 border-amber-200"
+                              : "bg-teal-50 text-teal-800 border-teal-200"
+                          }`}
+                        >
                           {ins.severity.replace(/_/g, " ")}
                         </span>
                       </div>
                       <p>{ins.explanation}</p>
                     </div>
-                    <Link
-                      href={primaryAction?.deep_link || "/coverage-needs"}
-                      className="home-smallbtn"
-                    >
-                      <span>{primaryAction?.label || "Review Now"}</span>
-                      <ArrowRight size={12} />
-                    </Link>
+                    {primaryAction?.kind === "PREPARE_ACTION" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleInsightAction(primaryAction)}
+                        disabled={preparingActionId === primaryAction.action_type}
+                        className="home-smallbtn cursor-pointer"
+                      >
+                        <span>
+                          {preparingActionId === primaryAction.action_type
+                            ? "Preparing..."
+                            : primaryAction?.label || "Prepare Action"}
+                        </span>
+                        <ArrowRight size={12} />
+                      </button>
+                    ) : (
+                      <Link
+                        href={primaryAction?.deep_link || "/coverage-needs"}
+                        className="home-smallbtn"
+                      >
+                        <span>{primaryAction?.label || "Review Now"}</span>
+                        <ArrowRight size={12} />
+                      </Link>
+                    )}
                   </div>
                 );
               })
