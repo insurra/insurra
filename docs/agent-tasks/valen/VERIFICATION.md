@@ -43,14 +43,14 @@ A real-browser probe of the current wizard confirmed Raka launch, the original 7
 
 ## Remaining coordination and limits
 
-1. Shared reviewed red_flags/emergency resources and SC-08: currently empty/unverified/null. Zero-AI fail-closed behavior is tested; real number/redirect acceptance is blocked.
+1. Shared reviewed red_flags/emergency resources and SC-08: AU/ID now contain source-backed drafts and `000`/`119` candidates, all UNVERIFIED and hidden. Zero-AI fail-closed behavior is tested; real number/redirect acceptance is blocked pending review.
 2. SC-09 detail/checklist, SC-10 reminders/actions and account SC-11 audit presentation: case rows/events are real, but these downstream workflows remain unavailable. No fake reminder, claim readiness or submission was added.
-3. Existing ingestion/review must supply coverage-linked normalized benefit/date fields and retained exact source pages. Extraction templates/task matrices are empty; original Raka/Sinta placeholders are not policy clauses. Reviewed field provenance cannot be manufactured.
+3. Existing ingestion/review must supply coverage-linked normalized benefit/date fields and retained exact source pages. Extraction templates only allow UNVERIFIED provider/date candidates; task matrices are empty. Original Raka/Sinta placeholders are not policy clauses. Reviewed field provenance cannot be manufactured.
 4. GP/employer sources, worker requirements and reference tariffs remain unverified/missing. Only narrow UCC/JKN descriptive sources were checked. Numeric costs stay null until all source/eligibility inputs are valid.
 5. Legacy demo consent routing/test expectations require the decision described above. Current persona launch itself works.
 6. No CN changes were found on shared master. Future CN content must supply the complete sixteen-resource envelope set, canonical vocabulary, timezones and reviewed sources. Existing AU student/visa logic and account onboarding AU/ID presets cannot be relabeled to establish CN support. Review that snapshot before integrating; no merge was attempted.
 
-No live OpenAI call, real provider integration, hosted CI, PostgreSQL migration or deployment was run. PostgreSQL DDL compilation is not a live database check. The opt-in synthetic provider connectivity script is documented in INTEGRATION.md and never runs in CI. Starlette/httpx emits its existing deprecation warning.
+At this 19 October checkpoint, no live provider call, hosted CI, PostgreSQL migration or deployment had been run. PostgreSQL DDL compilation is not a live database check. The later synthetic Gemini calls are recorded below and do not establish real-policy accuracy. Starlette/httpx emits its existing deprecation warning.
 
 The remaining work depends on reviewed shared content and teammate interfaces. Allow roughly 2–4 hours for connecting supplied compatible dependencies and rerunning affected acceptance checks; creating/reviewing those dependencies has a separate, team-dependent schedule. Travel remains gated.
 
@@ -65,7 +65,7 @@ Current worktree branch: `feat/gemini-e2e-smoke`. The inherited Gemini migration
 - `INSURRA_LIVE_GEMINI=1 npm run test:e2e -- --config=playwright.live-gemini.config.ts`: **1 passed**. The browser logged in, granted the three separate purposes, uploaded the synthetic PDF through the real UI, received Gemini extraction and Q&A, opened a validated page 1 citation, then displayed `no_match` for an unsupported coverage question. The live browser test made two provider calls; its temporary SQLite database is unique per run.
 - The browser run exposed and fixed `/api/v1/account/setup/{country_code}` returning 500 because `AccountSetup` modeled KB `aliases` arrays as strings. The response now reuses the versioned KB vocabulary/document/task models, and an AU/ID regression test covers the list shape. Generated OpenAPI and TypeScript types were regenerated.
 - `uv run python ../scripts/check_live_ai.py --live`: **passed**, one synthetic structured response, zero answer points.
-- `make test`: **284 passed, 1 skipped** (the live test is opt-in by default). `make test-client`: **11 passed**. `make generate-types`, `make check-contracts`, and `make check`: **passed**.
+- Earlier `make test`: **284 passed, 1 skipped**. The current integration run is **290 passed, 1 skipped** (the live test is opt-in by default). `make test-client`: **11 passed**. Current `make generate-types`, `make check-contracts` (21 PRD operations), and `make check` including the production frontend build: **passed**.
 - SC-06 Playwright subset on isolated test services: **4 desktop + 4 mobile passed**. Auth, owned source pages and page anchors use the real local backend; the browser answer stream uses the existing explicit synthetic provider mock.
 
 Reproduce the live API checks from `backend/` with `GEMINI_API_KEY` configured in the root `.env`. Reproduce the SC-06 browser checks from `frontend/` with `npx playwright install chromium`; use the exact commands in the README to run on isolated ports 8001/3001 when the normal dev servers occupy 8000/3000.
