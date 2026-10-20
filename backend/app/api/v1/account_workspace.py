@@ -376,6 +376,9 @@ def save_profile_draft(body: ProfileUpdate, db: DB, account: ActiveAccount):
             if key not in changes:
                 changes[key] = None
     payload = {**old, **changes}
+    if body.display_name:
+        account.display_name = body.display_name
+        account.updated_at = datetime.now(UTC)
     if row is None:
         row = AccountProfileRow(account_id=account.id, payload=payload, completed=False)
         db.add(row)
@@ -401,8 +404,22 @@ def save_profile(body: ProfileData, db: DB, account: ActiveAccount, kb: KB, requ
     first_completion = row is None or not row.completed
     old_payload = row.payload if row and row.completed else {}
     now = datetime.now(UTC)
+    changes = body.model_dump(mode="json", exclude_unset=True)
+    if old_payload and changes.get(
+        "country_code", old_payload.get("country_code")
+    ) != old_payload.get("country_code"):
+        for field in COUNTRY_BOUND_FIELDS:
+            if field not in changes:
+                changes[field] = None
+    merged = {**old_payload, **changes}
+    changes = body.model_dump(mode="json", exclude_unset=True)
+    if old_payload and changes.get("country_code", old_payload.get("country_code")) != old_payload.get("country_code"):
+        for field in COUNTRY_BOUND_FIELDS:
+            if field not in changes:
+                changes[field] = None
+    merged = {**old_payload, **changes}
     payload = {
-        **body.model_dump(mode="json"),
+        **merged,
         "id": old_payload.get("id", str(uuid4())),
         "created_at": old_payload.get("created_at", now.isoformat()),
         "updated_at": now.isoformat(),
@@ -417,6 +434,8 @@ def save_profile(body: ProfileData, db: DB, account: ActiveAccount, kb: KB, requ
         row.payload = payload
         row.completed = True
         row.updated_at = now
+    account.display_name = body.display_name
+    account.updated_at = now
     audit(db, account.id, "PROFILE_UPDATED", country_code=body.country_code)
     audit(db, account.id, "profile_update", country_code=body.country_code)
     if first_completion:
