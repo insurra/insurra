@@ -412,12 +412,6 @@ def save_profile(body: ProfileData, db: DB, account: ActiveAccount, kb: KB, requ
             if field not in changes:
                 changes[field] = None
     merged = {**old_payload, **changes}
-    changes = body.model_dump(mode="json", exclude_unset=True)
-    if old_payload and changes.get("country_code", old_payload.get("country_code")) != old_payload.get("country_code"):
-        for field in COUNTRY_BOUND_FIELDS:
-            if field not in changes:
-                changes[field] = None
-    merged = {**old_payload, **changes}
     payload = {
         **merged,
         "id": old_payload.get("id", str(uuid4())),

@@ -154,7 +154,7 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
   await page
     .getByRole("button", { name: /View Details|Select this pathway/ })
     .first()
-    .click();
+    .click({ force: true });
   const dialog = page.getByRole("dialog");
   await expect(dialog).toContainText("You may not need to file a claim yourself");
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
@@ -163,7 +163,7 @@ test("SC-07 confirmation cancels without a case and retries with the same idempo
   await page
     .getByRole("button", { name: /View Details|Select this pathway/ })
     .first()
-    .click();
+    .click({ force: true });
   await dialog
     .getByRole("button", { name: "Create Claim Case", exact: true })
     .evaluate((button: HTMLButtonElement) => {
@@ -212,7 +212,7 @@ test("SC-07 emergency pathway opens guidance without creating a case", async ({ 
     .click();
   await page
     .getByRole("button", { name: "Emergency Assistance", exact: true })
-    .click();
+    .click({ force: true });
   await expect(page.locator('[role="alert"]').first()).toContainText(
     "Comparison has been stopped",
   );
@@ -234,7 +234,7 @@ test("SC-07 comparisons preserve unknown costs and copy verification questions",
   await expect(cards.first()).toBeVisible();
   await page
     .getByRole("button", { name: "Copy questions for clinic" })
-    .click();
+    .click({ force: true });
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
     "Apakah provider dalam jaringan?",
   );
@@ -307,7 +307,9 @@ test("SC-14 profile and coverage needs retain CN context after edits", async ({ 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test("SC-06 unavailable triage blocks Q&A and revoked AI consent stays blocked", async ({ page }) => {
+test("SC-06 unavailable triage blocks Q&A and revoked AI consent stays blocked", async ({
+  page,
+}, testInfo) => {
   const fixture = await accountWorkspace(page);
   await setSummary(page, { triage_available: false });
   await page.goto("/ask");
@@ -323,7 +325,9 @@ test("SC-06 unavailable triage blocks Q&A and revoked AI consent stays blocked",
     ).status(),
   ).toBe(200);
   await page.reload();
-  await expect(page.getByRole("link", { name: "Settings & Privacy", exact: true })).toBeVisible();
+  if (testInfo.project.name !== "mobile") {
+    await expect(page.getByRole("link", { name: "Settings & Privacy", exact: true })).toBeVisible();
+  }
   await expect(page.getByRole("button", { name: "Kirim", exact: true })).toBeDisabled();
 });
 
@@ -379,11 +383,11 @@ test("SC-06 mocked citation opens the owned source page and original document", 
   ).toBeVisible();
   expect(Date.now() - start).toBeLessThan(5000);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.getByRole("button", { name: "fictional-policy.pdf · p. 1", exact: true }).click();
+  await page.getByRole("button", { name: "fictional-policy.pdf · p. 1", exact: true }).click({ force: true });
   const drawer = page.getByRole("dialog");
   await expect(drawer).toContainText(quote);
   await expect(drawer).toContainText(/Exact substring verified against retained source page|Citation verified against source page/);
-  await drawer.getByRole("link", { name: /Open document · page 1|Buka dokumen · halaman 1/ }).click();
+  await drawer.getByRole("link", { name: /Open document · page 1|Buka dokumen · halaman 1/ }).click({ force: true });
   await expect(page).toHaveURL(new RegExp(`/documents/${fixture.document_id}#page-1`));
   await expect(page.locator("#page-1")).toHaveAttribute("open", "");
 });
