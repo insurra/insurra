@@ -14,6 +14,11 @@ def make_engine(url: str):
     if url.startswith(("postgres://", "postgresql://")):
         url = "postgresql+psycopg://" + url.split("://", 1)[1]
     sqlite = url.startswith("sqlite")
+    if sqlite and url.startswith("sqlite:///"):
+        from pathlib import Path
+
+        db_path = Path(url.removeprefix("sqlite:///"))
+        db_path.parent.mkdir(parents=True, exist_ok=True)
     engine_options = {
         "connect_args": {"check_same_thread": False} if sqlite else {},
     }

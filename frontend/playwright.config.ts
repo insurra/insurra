@@ -1,7 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
+import fs from "node:fs";
 import path from "node:path";
 
 const root = path.resolve(__dirname, "..");
+fs.mkdirSync(path.resolve(root, ".cache"), { recursive: true });
 const e2eDatabaseUrl =
   process.env.INSURRA_E2E_DATABASE_URL ?? `sqlite:///${root}/.cache/e2e.db`;
 export default defineConfig({
