@@ -24,7 +24,7 @@ test("Capture refined Home command center screenshot", async ({ page }) => {
   await expect(page.getByText(/Review 76-Day Potential Coverage Gap/i)).toBeVisible();
 
   await page.screenshot({
-    path: "/Users/reginaaruan/.gemini/antigravity/brain/d2c837db-b461-4a89-81e9-dce2e6accdea/home-command-center-refined.png",
+    path: "test-results/home-command-center-refined.png",
     fullPage: true,
   });
 });
